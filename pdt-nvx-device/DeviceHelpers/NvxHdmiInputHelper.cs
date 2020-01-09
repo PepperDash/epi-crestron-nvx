@@ -43,7 +43,7 @@ namespace NvxEpi.DeviceHelpers
             _input.StreamChange += (stream, args) =>
                 {
                     switch (args.EventId)
-                    {
+                    {     
                         case DMInputEventIds.SourceSyncEventId:
                             Debug.Console(2, this, "SyncDetectedEventId {0}", _input.SyncDetectedFeedback.BoolValue);
                             SyncDetectedFb.FireUpdate();
@@ -52,13 +52,18 @@ namespace NvxEpi.DeviceHelpers
                             
                             break;
                         case DMInputEventIds.HdcpCapabilityFeedbackEventId:
+                            Debug.Console(2, this, "HdcpCapabilityFeedbackEventId {0}", args.EventId);
                             HdmiCapabilityFb.FireUpdate();
                             break;
                         case DMInputEventIds.HdcpSupportedLevelFeedbackEventId:
+                            Debug.Console(2, this, "HdcpSupportedLevelFeedbackEventId {0}", args.EventId);
                             HdmiSupportedLevelFb.FireUpdate();
                             break;
+                        case DMInputEventIds.HdcpTransmitterModeFeedbackEventId:
+                            Debug.Console(2, this, "HdcpTransmitterModeFeedbackEventId {0}", args.EventId);
+                            break;
                         default:
-                            Debug.Console(2, this, "Unhandled DM OutputEventId {0}", args.EventId);
+                            //Debug.Console(2, this, "Unhandled DM OutputEventId {0}", args.EventId);
                             break;
                     }
                 };
@@ -77,12 +82,20 @@ namespace NvxEpi.DeviceHelpers
         }
         public int HdmiCapability
         {
-            get { return (int)_input.HdcpCapabilityFeedback; }
+            get 
+            {
+                Debug.Console(2, this, "HdmiCapability {0}", (int)_input.HdcpCapabilityFeedback);
+                return (int)_input.HdcpCapabilityFeedback;
+            }
             set { _input.HdcpCapability = (eHdcpCapabilityType)value; }
         }
         public int HdmiSupportedLevel
         {
-            get { return (int)_input.HdcpSupportedLevelFeedback; }
+            get 
+            {
+                Debug.Console(2, this, "HdmiCapability {0}", _input.HdcpSupportedLevelFeedback);
+                return (int)_input.HdcpSupportedLevelFeedback; 
+            }
             set { _input.HdcpSupportedLevel = (eHdcpSupportedLevel)value; }
         }
     }

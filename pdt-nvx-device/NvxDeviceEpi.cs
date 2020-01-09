@@ -341,15 +341,8 @@ namespace NvxEpi
             _device = device;
             _config = config;
 
-            var id = config.Properties.Value<int>("virtualDevice");
+            VirtualDevice = config.Properties.Value<int>("virtualDevice");
             var mode = _config.Properties.Value<string>("mode");
-            var rx = false;
-
-            if (mode.Equals("rx", StringComparison.InvariantCultureIgnoreCase))
-            {
-                rx = true;
-            }
-            VirtualDevice = id;
 
             _videoSwitcher = new NvxVideoSwitcher(config, _device).BuildFeedback();
             _audioSwitcher = new NvxAudioSwitcher(config, _device).BuildFeedback();
@@ -367,6 +360,12 @@ namespace NvxEpi
 
             AddPostActivationAction(SubscribeToEvents);
             AddPostActivationAction(SetDefaults);
+        }
+
+        public override bool CustomActivate()
+        {
+            Debug.Console(0, this, "ACTIVATING");
+            return RegisterDevice();
         }
 
         public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
@@ -388,6 +387,23 @@ namespace NvxEpi
             }
         }
 
+        private bool RegisterDevice()
+        {
+            _device.Register();
+            var model = _device.GetType().GetCType().Name;
+
+            if (_device.Registered)
+            {
+                Debug.Console(0, "Register device result: '{0}', type '{1} IP-ID-{2}', result Success", _config.Key, model, _device.ID);
+            }
+            else
+            {
+                throw new Exception(string.Format("There was an error registering device: {0}", _config.Key));
+            }
+
+            return _device.Registered;
+        }
+
         private void SubscribeToEvents()
         {
             _device.OnlineStatusChange += (sender, args) =>
@@ -395,6 +411,7 @@ namespace NvxEpi
                     if (DeviceOnlineFb != null) DeviceOnlineFb.FireUpdate();
                     if (StreamUrlFb != null) StreamUrlFb.FireUpdate();
                     if (MulticastAudioAddressFb != null) MulticastAudioAddressFb.FireUpdate();
+
                     if (MulticastVideoAddressFb != null) MulticastVideoAddressFb.FireUpdate();
 
                     if (args.DeviceOnLine)
@@ -420,6 +437,9 @@ namespace NvxEpi
                         case DMInputEventIds.StartEventId:
                             if (StreamStartedFb != null) StreamStartedFb.FireUpdate();
                             break;
+                        case DMInputEventIds.StopEventId:
+                            if (StreamStartedFb != null) StreamStartedFb.FireUpdate();
+                            break;
                         case DMInputEventIds.MulticastAddressEventId:
                             break;
                         case DMInputEventIds.NameFeedbackEventId:
@@ -431,13 +451,23 @@ namespace NvxEpi
                         case DMInputEventIds.StatusEventId:
                             if (DeviceStatusFb != null) DeviceStatusFb.FireUpdate();
                             break;
+                        default:
+                            //Debug.Console(2, this, "Base Event Unhandled DM EventId {0}", args.EventId);
+                            break;
+                    };
+                };
+
+            _device.HdmiOut.StreamChange += (sender, args) =>
+                {
+                    switch (args.EventId)
+                    {
                         case DMOutputEventIds.ResolutionEventId:
                             if (OutputResolutionFb != null) OutputResolutionFb.FireUpdate();
                             break;
                         default:
-                            Debug.Console(2, this, "Unhandled DM EventId {0}", args.EventId);
+                            //Debug.Console(2, this, "Sream Change Unhandled DM EventId {0}", args.EventId);
                             break;
-                    };
+                    }
                 };
 
             _videoSwitcher.RouteUpdated += (sender, args) =>
@@ -519,9 +549,6 @@ namespace NvxEpi
                 if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");
 
                 nvxDevice.Control.Name.StringValue = config.Name;
-                nvxDevice.Register();
-
-                Debug.Console(2, "Registering a new NVX device {0} | IPID-{1} | {2}", nvxDeviceType.Name, ipid, nvxDevice.Control.DeviceMode);
                 return nvxDevice;
             }
             catch (Exception)
