@@ -6,7 +6,9 @@
 
 Navigate to the BUILDS folder in the repository.  Place the .cplz file into the Plugins folder for Essentials and reset the application.
 
-__IMPORTANT:__ The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
+### __IMPORTANT:__ 
+
+The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
 
 ## Join Map
 
