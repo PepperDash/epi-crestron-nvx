@@ -17,7 +17,7 @@ using PepperDash.Essentials.Core.Devices;
 
 namespace NvxEpi
 {
-    public class NvxDeviceEpi : ReconfigurableDevice, IBridge, INvxDevice, IComPorts
+    public class NvxDeviceEpi : ReconfigurableDevice, IBridge, INvxDevice, IComPorts, IIROutputPorts
     {
         protected DmNvxBaseClass _device;
         protected DeviceConfig _config;
@@ -155,7 +155,6 @@ namespace NvxEpi
                 Debug.Console(2, this, "Device Mode = {0}", _device.Control.DeviceMode);
                 return (int)_device.Control.DeviceMode; 
             }
-            set { _device.Control.DeviceMode = (eDeviceMode)value; }
         }
 
         [Feedback(JoinNumber = 6)]
@@ -175,7 +174,6 @@ namespace NvxEpi
             get
             {
                 if (_inputs[0] == null) return default(int);
-                Debug.Console(2, this, "HdmiInput1HdmiCapability = {0}", _inputs[0].HdmiCapability);
                 return (_inputs[0].HdmiCapability);
             }
             set
@@ -198,11 +196,6 @@ namespace NvxEpi
                 if (_inputs[0] == null) return default(int);
                 return (_inputs[0].HdmiSupportedLevel);
             }
-            set
-            {
-                if (_inputs[0] == null) return;
-                _inputs[0].HdmiSupportedLevel = value;
-            }
         }
 
         [Feedback(JoinNumber = 8)]
@@ -218,11 +211,6 @@ namespace NvxEpi
                 if (_inputs[1] == null) return default(int);
                 return (_inputs[1].HdmiCapability);
             }
-            set
-            {
-                if (_inputs[1] == null) return;
-                _inputs[1].HdmiCapability = value;
-            }
         }
 
         [Feedback(JoinNumber = 9)]
@@ -237,11 +225,6 @@ namespace NvxEpi
             {
                 if (_inputs[1] == null) return default(int);
                 return (_inputs[1].HdmiSupportedLevel);
-            }
-            set
-            {
-                if (_inputs[1] == null) return;
-                _inputs[1].HdmiSupportedLevel = value;
             }
         }
 
@@ -342,7 +325,6 @@ namespace NvxEpi
             _config = config;
 
             VirtualDevice = config.Properties.Value<int>("virtualDevice");
-            var mode = _config.Properties.Value<string>("mode");
 
             _videoSwitcher = new NvxVideoSwitcher(config, _device).BuildFeedback();
             _audioSwitcher = new NvxAudioSwitcher(config, _device).BuildFeedback();
@@ -356,16 +338,20 @@ namespace NvxEpi
                 _inputs.Add(new NvxHdmiInputHelper(config, input, device));
             }
 
-            _devices.Add(this);
-
-            AddPostActivationAction(SubscribeToEvents);
-            AddPostActivationAction(SetDefaults);
+            AddPreActivationAction(() => _devices.Add(this));
         }
 
         public override bool CustomActivate()
         {
             Debug.Console(0, this, "ACTIVATING");
-            return RegisterDevice();
+            var result = false;
+
+            SubscribeToEvents();
+            SetDefaults();
+
+            result = RegisterDevice();
+
+            return result;
         }
 
         public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
@@ -387,7 +373,7 @@ namespace NvxEpi
             }
         }
 
-        private bool RegisterDevice()
+        protected bool RegisterDevice()
         {
             _device.Register();
             var model = _device.GetType().GetCType().Name;
@@ -404,19 +390,19 @@ namespace NvxEpi
             return _device.Registered;
         }
 
-        private void SubscribeToEvents()
+        protected void SubscribeToEvents()
         {
             _device.OnlineStatusChange += (sender, args) =>
                 {
                     if (DeviceOnlineFb != null) DeviceOnlineFb.FireUpdate();
                     if (StreamUrlFb != null) StreamUrlFb.FireUpdate();
-                    if (MulticastAudioAddressFb != null) MulticastAudioAddressFb.FireUpdate();
 
+                    if (MulticastAudioAddressFb != null) MulticastAudioAddressFb.FireUpdate();
                     if (MulticastVideoAddressFb != null) MulticastVideoAddressFb.FireUpdate();
 
                     if (args.DeviceOnLine)
                     {
-                        Debug.Console(0, this, "Good morning Dave...");
+                        Debug.Console(2, this, "Good morning Dave...");
                     }
                 };
 
@@ -425,7 +411,7 @@ namespace NvxEpi
                     switch (args.EventId)
                     {
                         case DMInputEventIds.DeviceModeFeedbackEventId:
-                            Debug.Console(2, this, "DeviceModeFeedbackEventId: {0}", _device.Control.DeviceModeFeedback);
+                            Debug.Console(2, this, "Device Mode Updated: {0}", _device.Control.DeviceModeFeedback);
                             if (DeviceModeFb != null) DeviceModeFb.FireUpdate();
                             break;
                         case DMInputEventIds.StreamUriFeedbackEventId:
@@ -465,7 +451,7 @@ namespace NvxEpi
                             if (OutputResolutionFb != null) OutputResolutionFb.FireUpdate();
                             break;
                         default:
-                            //Debug.Console(2, this, "Sream Change Unhandled DM EventId {0}", args.EventId);
+                            //Debug.Console(2, this, "Stream Change Unhandled DM EventId {0}", args.EventId);
                             break;
                     }
                 };
@@ -483,12 +469,19 @@ namespace NvxEpi
                 };
         }
 
-        private void SetDefaults()
+        protected void SetDefaults()
         {
             var mode = _config.Properties.Value<string>("mode");
             var audioBreakaway = _config.Properties.Value<bool>("enableAudioBreakaway");
 
-            _device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+            if (mode == null)
+            {
+                var ex = string.Format("The device mode MUST be defined in the config file: {0}", Key);
+                Debug.ConsoleWithLog(0, ex);
+
+                throw new Exception(ex);
+            }
+
             if (mode.Equals("rx", StringComparison.InvariantCultureIgnoreCase))
             {
                 _isReceiver = true;
@@ -506,6 +499,7 @@ namespace NvxEpi
                 _isTransmitter = true;
                 _device.Control.DeviceMode = eDeviceMode.Transmitter;               
                 _device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+                _device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
 
                 var multicastVideo = _config.Properties.Value<string>("multicastVideoAddress");
                 
@@ -528,6 +522,7 @@ namespace NvxEpi
 
         protected static DmNvxBaseClass GetNvxDevice(DeviceConfig config)
         {
+            var name = config.Properties.Value<string>("deviceName");
             var model = config.Properties.Value<string>("model");
             var ipid = config.Properties.Value<string>("ipid");
 
@@ -548,7 +543,9 @@ namespace NvxEpi
                 var nvxDevice = newDevice as DmNvxBaseClass;
                 if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");
 
-                nvxDevice.Control.Name.StringValue = config.Name;
+                if (name != null) nvxDevice.Control.Name.StringValue = name.Replace(" ", string.Empty);
+                else nvxDevice.Control.Name.StringValue = config.Name.Replace(" ", string.Empty);
+
                 return nvxDevice;
             }
             catch (Exception)
@@ -576,6 +573,16 @@ namespace NvxEpi
         public int NumberOfComPorts
         {
             get { return _device.NumberOfComPorts; }
+        }
+
+        public CrestronCollection<IROutputPort> IROutputPorts
+        {
+            get { return _device.IROutputPorts; }
+        }
+
+        public int NumberOfIROutputPorts
+        {
+            get { return _device.NumberOfIROutputPorts; }
         }
     }
 }
