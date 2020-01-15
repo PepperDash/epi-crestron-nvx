@@ -13,7 +13,6 @@ namespace NvxEpi.Interfaces
         int AudioSource { get; }
         int DeviceMode { get; }
         string DeviceName { get; }
-        bool DeviceOnline { get; }
         string StreamUrl { get; }
         string MulticastAudioAddress { get; }
         string MulticastVideoAddress { get; }

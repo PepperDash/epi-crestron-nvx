@@ -73,8 +73,6 @@ namespace NvxEpi.DeviceHelpers
                 {
                     Source = _selectedInput;
                 }
-
-                OnRouteUpdated();
             };
         }
 

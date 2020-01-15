@@ -17,7 +17,7 @@ using PepperDash.Essentials.Core.Devices;
 
 namespace NvxEpi
 {
-    public class NvxDeviceEpi : ReconfigurableDevice, IBridge, INvxDevice, IComPorts, IIROutputPorts
+    public class NvxDeviceEpi : CrestronGenericBaseDevice, IBridge, INvxDevice, IComPorts, IIROutputPorts
     {
         protected DmNvxBaseClass _device;
         protected DeviceConfig _config;
@@ -26,6 +26,7 @@ namespace NvxEpi
         protected ISwitcher _audioSwitcher;
         protected ISwitcher _videoInputSwitcher;
         protected ISwitcher _audioInputSwitcher;
+
         protected List<INvxHdmiInputHelper> _inputs;
 
         protected static List<INvxDevice> _devices = new List<INvxDevice>();
@@ -60,16 +61,6 @@ namespace NvxEpi
             get 
             {
                 return _isReceiver;
-            }
-        }
-
-        [Feedback(JoinNumber = 1)]
-        public Feedback DeviceOnlineFb { get; protected set; }
-        public bool DeviceOnline
-        {
-            get 
-            {
-                return _device.IsOnline; 
             }
         }
 
@@ -319,7 +310,7 @@ namespace NvxEpi
         }
 
         public NvxDeviceEpi(DeviceConfig config, DmNvxBaseClass device)
-            : base(config)
+            : base(config.Key, config.Name, device)
         {
             _device = device;
             _config = config;
@@ -343,19 +334,20 @@ namespace NvxEpi
 
         public override bool CustomActivate()
         {
-            Debug.Console(0, this, "ACTIVATING");
-            var result = false;
+            var result = base.CustomActivate();
+
+            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
 
             SubscribeToEvents();
             SetDefaults();
-
-            result = RegisterDevice();
 
             return result;
         }
 
         public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
+            IsOnline.LinkInputSig(trilist.BooleanInput[1]);
+
             this.LinkFeedback(trilist, joinStart, joinMapKey);
             var t = this.GetType().GetCType();
 
@@ -373,39 +365,8 @@ namespace NvxEpi
             }
         }
 
-        protected bool RegisterDevice()
-        {
-            _device.Register();
-            var model = _device.GetType().GetCType().Name;
-
-            if (_device.Registered)
-            {
-                Debug.Console(0, "Register device result: '{0}', type '{1} IP-ID-{2}', result Success", _config.Key, model, _device.ID);
-            }
-            else
-            {
-                throw new Exception(string.Format("There was an error registering device: {0}", _config.Key));
-            }
-
-            return _device.Registered;
-        }
-
         protected void SubscribeToEvents()
         {
-            _device.OnlineStatusChange += (sender, args) =>
-                {
-                    if (DeviceOnlineFb != null) DeviceOnlineFb.FireUpdate();
-                    if (StreamUrlFb != null) StreamUrlFb.FireUpdate();
-
-                    if (MulticastAudioAddressFb != null) MulticastAudioAddressFb.FireUpdate();
-                    if (MulticastVideoAddressFb != null) MulticastVideoAddressFb.FireUpdate();
-
-                    if (args.DeviceOnLine)
-                    {
-                        Debug.Console(2, this, "Good morning Dave...");
-                    }
-                };
-
             _device.BaseEvent += (sender, args) =>
                 {
                     switch (args.EventId)
