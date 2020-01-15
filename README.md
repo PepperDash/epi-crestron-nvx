@@ -71,7 +71,10 @@ See details section below for detailed description of device properties.
     "type": "nvxdevice",
     "group": "nvx",
     "properties": {
-        "ipid": "41",
+        "control": {
+            "method": "ipid",
+            "ipid": "41"
+        },
         "model": "DmNvx351",
         "mode": "tx",
         "virtualDevice": 1,
@@ -86,7 +89,10 @@ See details section below for detailed description of device properties.
     "type": "nvxdevice",
     "group": "nvx",
     "properties": {
-        "ipid": "51",
+        "control": {
+            "method": "ipid",
+            "ipid": "51"
+        },
         "model": "DmNvx351",
         "mode": "rx",
         "virtualDevice": 1
