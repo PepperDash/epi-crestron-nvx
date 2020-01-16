@@ -5,15 +5,21 @@ using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
+
 using EssentialsExtensions;
 using EssentialsExtensions.Attributes;
+
 using NvxEpi.DeviceHelpers;
 using NvxEpi.Interfaces;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Bridges;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace NvxEpi
 {
@@ -21,6 +27,7 @@ namespace NvxEpi
     {
         protected DmNvxBaseClass _device;
         protected DeviceConfig _config;
+        protected NvxDevicePropertiesConfig _propsConfig;
 
         protected ISwitcher _videoSwitcher;
         protected ISwitcher _audioSwitcher;
@@ -202,6 +209,11 @@ namespace NvxEpi
                 if (_inputs[1] == null) return default(int);
                 return (_inputs[1].HdmiCapability);
             }
+            set
+            {
+                if (_inputs[1] == null) return;
+                _inputs[1].HdmiCapability = value;
+            }
         }
 
         [Feedback(JoinNumber = 9)]
@@ -234,7 +246,8 @@ namespace NvxEpi
         public string DeviceName
         {
             get 
-            { 
+            {
+                if (_propsConfig.FriendlyName != null) return _propsConfig.FriendlyName;
                 return _device.Control.NameFeedback.StringValue; 
             }
             set { _device.Control.Name.StringValue = value; }
@@ -314,6 +327,7 @@ namespace NvxEpi
         {
             _device = device;
             _config = config;
+            _propsConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
 
             VirtualDevice = config.Properties.Value<int>("virtualDevice");
 
@@ -483,9 +497,7 @@ namespace NvxEpi
 
         protected static DmNvxBaseClass GetNvxDevice(DeviceConfig config)
         {
-            var name = config.Properties.Value<string>("deviceName");
-            var model = config.Properties.Value<string>("model");
-            var ipid = config.Properties.Value<string>("ipid");
+            var deviceConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
 
             try
             {
@@ -493,18 +505,19 @@ namespace NvxEpi
                     .GetCType()
                     .Assembly
                     .GetTypes()
-                    .FirstOrDefault(x => x.Name.Equals(model, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(x => x.Name.Equals(deviceConfig.Model, StringComparison.OrdinalIgnoreCase));
 
                 if (nvxDeviceType == null) throw new NullReferenceException();
+                if (deviceConfig.Control.IpId == null) throw new Exception("The IPID for this device must be defined");
                 
                 var newDevice = nvxDeviceType
                     .GetConstructor(new CType[] { typeof(ushort).GetCType(), typeof(CrestronControlSystem) })
-                    .Invoke(new object[] { Convert.ToUInt16(ipid, 16), Global.ControlSystem });
+                    .Invoke(new object[] { Convert.ToUInt16(deviceConfig.Control.IpId, 16), Global.ControlSystem });
 
                 var nvxDevice = newDevice as DmNvxBaseClass;
                 if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");
 
-                if (name != null) nvxDevice.Control.Name.StringValue = name.Replace(" ", string.Empty);
+                if (deviceConfig.DeviceName != null) nvxDevice.Control.Name.StringValue = deviceConfig.DeviceName.Replace(" ", string.Empty);
                 else nvxDevice.Control.Name.StringValue = config.Name.Replace(" ", string.Empty);
 
                 return nvxDevice;

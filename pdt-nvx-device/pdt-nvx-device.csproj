@@ -111,6 +111,7 @@
     <Compile Include="DeviceHelpers\NvxReceiveAudioSwitcher.cs" />
     <Compile Include="DeviceHelpers\NvxVideoInputHandler.cs" />
     <Compile Include="DeviceHelpers\NvxVideoSwitcher.cs" />
+    <Compile Include="NvxDevicePropertiesConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
