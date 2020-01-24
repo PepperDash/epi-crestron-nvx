@@ -33,6 +33,7 @@ namespace NvxEpi
         protected ISwitcher _audioSwitcher;
         protected ISwitcher _videoInputSwitcher;
         protected ISwitcher _audioInputSwitcher;
+        protected NvxVideoWallHelper _videoWall;
 
         protected List<INvxHdmiInputHelper> _inputs;
 
@@ -241,6 +242,13 @@ namespace NvxEpi
             }
         }
 
+        [Feedback(JoinNumber = 11)]
+        public Feedback VideoWallModeFb { get; protected set; }
+        public int VideoWallMode
+        {
+            get { return _device.HdmiOut.VideoWallModeFeedback.UShortValue; }
+        }
+
         [Feedback(JoinNumber = 1)]
         public Feedback DeviceNameFb { get; protected set; }
         public string DeviceName
@@ -336,6 +344,7 @@ namespace NvxEpi
 
             _videoInputSwitcher = new NvxVideoInputHandler(config, _device).BuildFeedback();
             _audioInputSwitcher = new NvxAudioInputHandler(config, _device).BuildFeedback();
+            _videoWall = new NvxVideoWallHelper(config, _device).BuildFeedback();
 
             _inputs = new List<INvxHdmiInputHelper>();
             foreach (var input in _device.HdmiIn)
