@@ -360,7 +360,7 @@ namespace NvxEpi
 
         public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            IsOnline.LinkInputSig(trilist.BooleanInput[1]);
+            IsOnline.LinkInputSig(trilist.BooleanInput[joinStart]);
 
             this.LinkFeedback(trilist, joinStart, joinMapKey);
             var t = this.GetType().GetCType();
