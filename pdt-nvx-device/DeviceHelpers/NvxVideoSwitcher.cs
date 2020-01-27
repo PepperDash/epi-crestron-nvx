@@ -109,7 +109,6 @@ namespace NvxEpi.DeviceHelpers
                 if (_isTransmitter) return result;
                 if (!_device.Control.StartFeedback.BoolValue)
                 {
-                    Debug.Console(2, this, "Video input is Virtual ID: {0}", result);
                     return result;
                 }
 
@@ -132,7 +131,7 @@ namespace NvxEpi.DeviceHelpers
                 if (value == 0) 
                 {
                     Debug.Console(2, this, "Setting video source to Virtual Device = 0");
-                    _device.Control.ServerUrl.StringValue = string.Empty;
+                    _device.Control.ServerUrl.StringValue = "0.0.0.0";
                     return;
                 }
 
