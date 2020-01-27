@@ -350,7 +350,7 @@ namespace NvxEpi
         {
             var result = base.CustomActivate();
 
-            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
+            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb, DeviceModeFb, HdmiInput1HdmiCapabilityFb, HdmiInput2HdmiCapabilityFb, DeviceStatusFb);
 
             SubscribeToEvents();
             SetDefaults();
@@ -512,7 +512,7 @@ namespace NvxEpi
                 
                 var newDevice = nvxDeviceType
                     .GetConstructor(new CType[] { typeof(ushort).GetCType(), typeof(CrestronControlSystem) })
-                    .Invoke(new object[] { Convert.ToUInt16(deviceConfig.Control.IpId, 16), Global.ControlSystem });
+                    .Invoke(new object[] { deviceConfig.Control.IpIdInt, Global.ControlSystem });
 
                 var nvxDevice = newDevice as DmNvxBaseClass;
                 if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");
