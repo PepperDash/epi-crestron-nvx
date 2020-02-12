@@ -16,8 +16,6 @@ namespace NvxEpi.DeviceHelpers
     {
         private int _selectedInput;
 
-        private readonly NvxUsbHelper _usbSwitcher;
-
         private readonly string _key;
         public override string Key
         {
