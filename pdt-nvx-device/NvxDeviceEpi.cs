@@ -4,6 +4,7 @@ using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
+using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 
 using EssentialsExtensions;
@@ -70,6 +71,27 @@ namespace NvxEpi
             {
                 return _isReceiver;
             }
+        }
+
+        public string LocalUsbId
+        {
+            get { return _device.UsbInput.LocalDeviceIdFeedback.StringValue; }
+        }
+
+        public string RemoteUsbId
+        {
+            get { return _device.UsbInput.RemoteDeviceId.StringValue; }
+            set { _device.UsbInput.RemoteDeviceId.StringValue = value; }
+        }
+
+        public void Pair()
+        {
+            _device.UsbInput.Pair();
+        }
+
+        public void RemovePairing()
+        {
+            _device.UsbInput.RemovePairing();
         }
 
         [Feedback(JoinNumber = 2)]
@@ -364,6 +386,13 @@ namespace NvxEpi
             }
 
             AddPreActivationAction(() => _devices.Add(this));
+
+            if (String.IsNullOrEmpty(_propsConfig.UsbMode)) return;
+
+            var usbMode =
+                (DmNvxUsbInput.eUsbMode) Enum.Parse(typeof (DmNvxUsbInput.eUsbMode), _propsConfig.UsbMode, true);
+
+            _device.UsbInput.Mode = usbMode;
         }
 
         public override bool CustomActivate()
