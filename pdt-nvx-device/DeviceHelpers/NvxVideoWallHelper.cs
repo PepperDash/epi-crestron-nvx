@@ -6,10 +6,11 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core.Config;
 using EssentialsExtensions.Attributes;
 using PepperDash.Essentials.Core;
+using PepperDash.Core;
 
 namespace NvxEpi.DeviceHelpers
 {
-    public class NvxVideoWallHelper:NvxDeviceHelperBase
+    public class NvxVideoWallHelper : NvxDeviceHelperBase
     {
         private readonly string _key;
         public override string Key
@@ -23,23 +24,26 @@ namespace NvxEpi.DeviceHelpers
         public int VideoWallMode
         {
             get { return _device.HdmiOut.VideoWallModeFeedback.UShortValue; }
-            set { _device.HdmiOut.VideoWallMode.UShortValue = (ushort) value; }
+            set { _device.HdmiOut.VideoWallMode.UShortValue = (ushort)value; }
         }
 
-        public NvxVideoWallHelper(DeviceConfig config, DmNvxBaseClass device) : base(device)
+        public NvxVideoWallHelper(DeviceConfig config, DmNvxBaseClass device)
+            : base(device)
         {
             _key = config.Key;
             Feedback = FeedbackFactory.GetFeedback(() => VideoWallMode);
-
-            _device.BaseEvent += DeviceOnBaseEvent;
+            _device.HdmiOut.StreamChange += new Crestron.SimplSharpPro.DeviceSupport.StreamEventHandler(HdmiOut_StreamChange);
         }
 
-        private void DeviceOnBaseEvent(GenericBase device, BaseEventArgs args)
+        void HdmiOut_StreamChange(Crestron.SimplSharpPro.DeviceSupport.Stream stream, Crestron.SimplSharpPro.DeviceSupport.StreamEventArgs args)
         {
             switch (args.EventId)
             {
                 case DMOutputEventIds.VideoWallModeFeedbackEventId:
                     Feedback.FireUpdate();
+                    break;
+                default:
+                    Debug.Console(2, this, "Unhandled StreamEvent {0}", args.EventId);
                     break;
             }
         }

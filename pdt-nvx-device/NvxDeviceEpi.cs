@@ -330,6 +330,17 @@ namespace NvxEpi
             }
         }
 
+        [Feedback(JoinNumber = 1)]
+        public Feedback OnlineFb { get; protected set; }
+        public bool Online
+        {
+            get
+            {
+                return _device.IsOnline;
+            }
+        }
+
+
         public NvxDeviceEpi(DeviceConfig config, DmNvxBaseClass device)
             : base(config.Key, config.Name, device)
         {
@@ -425,6 +436,10 @@ namespace NvxEpi
                             //Debug.Console(2, this, "Base Event Unhandled DM EventId {0}", args.EventId);
                             break;
                     };
+                };
+            _device.OnlineStatusChange += (sender, args) =>
+                {
+                    if (OnlineFb != null) OnlineFb.FireUpdate();
                 };
 
             _device.HdmiOut.StreamChange += (sender, args) =>
