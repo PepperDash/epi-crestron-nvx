@@ -50,11 +50,6 @@ namespace NvxEpi.DeviceHelpers
                             break;
                     }; 
                 };
-
-            _device.OnlineStatusChange += (sender, args) =>
-            {
-                OnRouteUpdated();
-            };
         }
 
         public string CurrentlyRouted

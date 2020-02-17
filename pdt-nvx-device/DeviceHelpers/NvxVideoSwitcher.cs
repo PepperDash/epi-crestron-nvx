@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using EssentialsExtensions;
 using PepperDash.Core;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using Crestron.SimplSharp.Reflection;
-using EssentialsExtensions;
 using EssentialsExtensions.Attributes;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -20,10 +16,10 @@ namespace NvxEpi.DeviceHelpers
     {
         private int _selectedInput;
 
-        private string _key;
+        private readonly string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, this.GetType().GetCType().Name); }
+            get { return string.Format("{0} {1}", _key, GetType().GetCType().Name); }
         }
 
         [Feedback(JoinNumber = 1, ValuePropertyName="Source")]
@@ -62,8 +58,6 @@ namespace NvxEpi.DeviceHelpers
                     case DMInputEventIds.MulticastAddressEventId:
                         OnRouteUpdated();
                         break;
-                    default:
-                        break;
                 }      
             };
 
@@ -73,8 +67,6 @@ namespace NvxEpi.DeviceHelpers
                 {
                     Source = _selectedInput;
                 }
-
-                OnRouteUpdated();
             };
         }
 
@@ -128,13 +120,14 @@ namespace NvxEpi.DeviceHelpers
             }
             set
             {
-                if (_selectedInput != value) _selectedInput = value;
+                _selectedInput = value;
                 if (_isTransmitter || !_device.IsOnline) return;
 
                 if (value == 0) 
                 {
                     Debug.Console(2, this, "Setting video source to Virtual Device = 0");
                     _device.Control.ServerUrl.StringValue = string.Empty;
+                    _device.UsbInput.RemovePairing();
                     return;
                 }
 
@@ -146,6 +139,14 @@ namespace NvxEpi.DeviceHelpers
                 Debug.Console(2, this, "Setting video source to Virtual Device = {0} | {1}", result.VirtualDevice, result.StreamUrl);
 
                 _device.Control.ServerUrl.StringValue = result.StreamUrl;
+
+                //set rx pairing
+                _device.UsbInput.RemoteDeviceId.StringValue = result.LocalUsbId;
+                _device.UsbInput.Pair();
+
+                //set tx pairing
+                result.RemoteUsbId = _device.UsbInput.LocalDeviceIdFeedback.StringValue;
+                result.Pair();
             }
         }
 

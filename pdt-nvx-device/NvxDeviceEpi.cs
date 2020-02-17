@@ -4,28 +4,38 @@ using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
+using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
+
 using EssentialsExtensions;
 using EssentialsExtensions.Attributes;
+
 using NvxEpi.DeviceHelpers;
 using NvxEpi.Interfaces;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Bridges;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace NvxEpi
 {
-    public class NvxDeviceEpi : ReconfigurableDevice, IBridge, INvxDevice, IComPorts, IIROutputPorts
+    public class NvxDeviceEpi : CrestronGenericBaseDevice, IBridge, INvxDevice, IComPorts, IIROutputPorts
     {
         protected DmNvxBaseClass _device;
         protected DeviceConfig _config;
+        protected NvxDevicePropertiesConfig _propsConfig;
 
         protected ISwitcher _videoSwitcher;
         protected ISwitcher _audioSwitcher;
         protected ISwitcher _videoInputSwitcher;
         protected ISwitcher _audioInputSwitcher;
+        protected NvxVideoWallHelper _videoWall;
+
         protected List<INvxHdmiInputHelper> _inputs;
 
         protected static List<INvxDevice> _devices = new List<INvxDevice>();
@@ -63,14 +73,25 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 1)]
-        public Feedback DeviceOnlineFb { get; protected set; }
-        public bool DeviceOnline
+        public string LocalUsbId
         {
-            get 
-            {
-                return _device.IsOnline; 
-            }
+            get { return _device.UsbInput.LocalDeviceIdFeedback.StringValue; }
+        }
+
+        public string RemoteUsbId
+        {
+            get { return _device.UsbInput.RemoteDeviceId.StringValue; }
+            set { _device.UsbInput.RemoteDeviceId.StringValue = value; }
+        }
+
+        public void Pair()
+        {
+            _device.UsbInput.Pair();
+        }
+
+        public void RemovePairing()
+        {
+            _device.UsbInput.RemovePairing();
         }
 
         [Feedback(JoinNumber = 2)]
@@ -211,6 +232,11 @@ namespace NvxEpi
                 if (_inputs[1] == null) return default(int);
                 return (_inputs[1].HdmiCapability);
             }
+            set
+            {
+                if (_inputs[1] == null) return;
+                _inputs[1].HdmiCapability = value;
+            }
         }
 
         [Feedback(JoinNumber = 9)]
@@ -238,12 +264,20 @@ namespace NvxEpi
             }
         }
 
+        [Feedback(JoinNumber = 11)]
+        public Feedback VideoWallModeFb { get; protected set; }
+        public int VideoWallMode
+        {
+            get { return _device.HdmiOut.VideoWallModeFeedback.UShortValue; }
+        }
+
         [Feedback(JoinNumber = 1)]
         public Feedback DeviceNameFb { get; protected set; }
         public string DeviceName
         {
             get 
-            { 
+            {
+                if (_propsConfig.FriendlyName != null) return _propsConfig.FriendlyName;
                 return _device.Control.NameFeedback.StringValue; 
             }
             set { _device.Control.Name.StringValue = value; }
@@ -318,11 +352,23 @@ namespace NvxEpi
             }
         }
 
+        [Feedback(JoinNumber = 1)]
+        public Feedback OnlineFb { get; protected set; }
+        public bool Online
+        {
+            get
+            {
+                return _device.IsOnline;
+            }
+        }
+
+
         public NvxDeviceEpi(DeviceConfig config, DmNvxBaseClass device)
-            : base(config)
+            : base(config.Key, config.Name, device)
         {
             _device = device;
             _config = config;
+            _propsConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
 
             VirtualDevice = config.Properties.Value<int>("virtualDevice");
 
@@ -331,6 +377,7 @@ namespace NvxEpi
 
             _videoInputSwitcher = new NvxVideoInputHandler(config, _device).BuildFeedback();
             _audioInputSwitcher = new NvxAudioInputHandler(config, _device).BuildFeedback();
+            _videoWall = new NvxVideoWallHelper(config, _device).BuildFeedback();
 
             _inputs = new List<INvxHdmiInputHelper>();
             foreach (var input in _device.HdmiIn)
@@ -339,23 +386,31 @@ namespace NvxEpi
             }
 
             AddPreActivationAction(() => _devices.Add(this));
+
+            if (String.IsNullOrEmpty(_propsConfig.UsbMode)) return;
+
+            var usbMode =
+                (DmNvxUsbInput.eUsbMode) Enum.Parse(typeof (DmNvxUsbInput.eUsbMode), _propsConfig.UsbMode, true);
+
+            _device.UsbInput.Mode = usbMode;
         }
 
         public override bool CustomActivate()
         {
-            Debug.Console(0, this, "ACTIVATING");
-            var result = false;
+            var result = base.CustomActivate();
+
+            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
 
             SubscribeToEvents();
             SetDefaults();
-
-            result = RegisterDevice();
 
             return result;
         }
 
         public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
+            IsOnline.LinkInputSig(trilist.BooleanInput[1]);
+
             this.LinkFeedback(trilist, joinStart, joinMapKey);
             var t = this.GetType().GetCType();
 
@@ -373,39 +428,8 @@ namespace NvxEpi
             }
         }
 
-        protected bool RegisterDevice()
-        {
-            _device.Register();
-            var model = _device.GetType().GetCType().Name;
-
-            if (_device.Registered)
-            {
-                Debug.Console(0, "Register device result: '{0}', type '{1} IP-ID-{2}', result Success", _config.Key, model, _device.ID);
-            }
-            else
-            {
-                throw new Exception(string.Format("There was an error registering device: {0}", _config.Key));
-            }
-
-            return _device.Registered;
-        }
-
         protected void SubscribeToEvents()
         {
-            _device.OnlineStatusChange += (sender, args) =>
-                {
-                    if (DeviceOnlineFb != null) DeviceOnlineFb.FireUpdate();
-                    if (StreamUrlFb != null) StreamUrlFb.FireUpdate();
-
-                    if (MulticastAudioAddressFb != null) MulticastAudioAddressFb.FireUpdate();
-                    if (MulticastVideoAddressFb != null) MulticastVideoAddressFb.FireUpdate();
-
-                    if (args.DeviceOnLine)
-                    {
-                        Debug.Console(2, this, "Good morning Dave...");
-                    }
-                };
-
             _device.BaseEvent += (sender, args) =>
                 {
                     switch (args.EventId)
@@ -441,6 +465,10 @@ namespace NvxEpi
                             //Debug.Console(2, this, "Base Event Unhandled DM EventId {0}", args.EventId);
                             break;
                     };
+                };
+            _device.OnlineStatusChange += (sender, args) =>
+                {
+                    if (OnlineFb != null) OnlineFb.FireUpdate();
                 };
 
             _device.HdmiOut.StreamChange += (sender, args) =>
@@ -522,9 +550,7 @@ namespace NvxEpi
 
         protected static DmNvxBaseClass GetNvxDevice(DeviceConfig config)
         {
-            var name = config.Properties.Value<string>("deviceName");
-            var model = config.Properties.Value<string>("model");
-            var ipid = config.Properties.Value<string>("ipid");
+            var deviceConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
 
             try
             {
@@ -532,18 +558,19 @@ namespace NvxEpi
                     .GetCType()
                     .Assembly
                     .GetTypes()
-                    .FirstOrDefault(x => x.Name.Equals(model, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(x => x.Name.Equals(deviceConfig.Model, StringComparison.OrdinalIgnoreCase));
 
                 if (nvxDeviceType == null) throw new NullReferenceException();
+                if (deviceConfig.Control.IpId == null) throw new Exception("The IPID for this device must be defined");
                 
                 var newDevice = nvxDeviceType
                     .GetConstructor(new CType[] { typeof(ushort).GetCType(), typeof(CrestronControlSystem) })
-                    .Invoke(new object[] { Convert.ToUInt16(ipid, 16), Global.ControlSystem });
+                    .Invoke(new object[] { Convert.ToUInt16(deviceConfig.Control.IpId, 16), Global.ControlSystem });
 
                 var nvxDevice = newDevice as DmNvxBaseClass;
                 if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");
 
-                if (name != null) nvxDevice.Control.Name.StringValue = name.Replace(" ", string.Empty);
+                if (deviceConfig.DeviceName != null) nvxDevice.Control.Name.StringValue = deviceConfig.DeviceName.Replace(" ", string.Empty);
                 else nvxDevice.Control.Name.StringValue = config.Name.Replace(" ", string.Empty);
 
                 return nvxDevice;

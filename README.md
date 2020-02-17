@@ -6,7 +6,7 @@
 
 Navigate to the BUILDS folder in the repository.  Place the .cplz file into the Plugins folder for Essentials and reset the application.
 
-### __IMPORTANT:__ 
+### __IMPORTANT:__
 
 The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
 
@@ -71,7 +71,10 @@ See details section below for detailed description of device properties.
     "type": "nvxdevice",
     "group": "nvx",
     "properties": {
-        "ipid": "41",
+        "control": {
+            "method": "ipid",
+            "ipid": "41"
+        },
         "model": "DmNvx351",
         "mode": "tx",
         "virtualDevice": 1,
@@ -86,7 +89,10 @@ See details section below for detailed description of device properties.
     "type": "nvxdevice",
     "group": "nvx",
     "properties": {
-        "ipid": "51",
+        "control": {
+            "method": "ipid",
+            "ipid": "51"
+        },
         "model": "DmNvx351",
         "mode": "rx",
         "virtualDevice": 1
