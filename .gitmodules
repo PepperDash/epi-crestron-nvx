@@ -3,5 +3,5 @@
 	url = https://bitbucket.org/Pepperdash_Products/pdt-essentials-extensions.git
 [submodule "submodules/essentials-builds"]
 	path = submodules/essentials-builds
-	url = https://bitbucket.org/Pepperdash_Products/essentials-builds.git
+	url = https://github.com/PepperDash/Essentials-Builds.git
 	branch = release
