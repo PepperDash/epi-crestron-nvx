@@ -12,6 +12,7 @@ using EssentialsExtensions.Attributes;
 
 using NvxEpi.DeviceHelpers;
 using NvxEpi.Interfaces;
+using NvxEpi.IRoutingImplementation;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Bridges;
@@ -26,6 +27,9 @@ namespace NvxEpi
 {
     public class NvxDeviceEpi : CrestronGenericBaseDevice, IBridge, INvxDevice, IComPorts, IIROutputPorts
     {
+        public RoutingOutputPort RoutingVideoOutput { get; protected set; }
+        public RoutingOutputPort RoutingAudioOutput { get; protected set; }
+
         protected DmNvxBaseClass _device;
         protected DeviceConfig _config;
         protected NvxDevicePropertiesConfig _propsConfig;
@@ -164,7 +168,7 @@ namespace NvxEpi
         {
             get 
             {
-                var result = eDeviceMode.Receiver;
+                eDeviceMode result;
                 if (_device.GetType().GetCType() == typeof(DmNvxE30).GetCType())
                 {
                     result = eDeviceMode.Transmitter;
@@ -173,8 +177,7 @@ namespace NvxEpi
                 {
                     result = _device.Control.DeviceMode;
                 }
-                Debug.Console(2, this, "Device Mode = {0}", _device.Control.DeviceMode);
-                return (int)_device.Control.DeviceMode; 
+                return (int)result; 
             }
         }
 
@@ -370,6 +373,23 @@ namespace NvxEpi
             _config = config;
             _propsConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
 
+            RoutingVideoOutput = 
+                new RoutingOutputPort(string.Format("{0}-Video", _config.Key), 
+                    eRoutingSignalType.Video, 
+                    eRoutingPortConnectionType.Streaming, 
+                    null, 
+                    this);
+
+            RoutingAudioOutput =
+                new RoutingOutputPort(string.Format("{0}-Audio", _config.Key), 
+                    eRoutingSignalType.Audio, 
+                    eRoutingPortConnectionType.Streaming, 
+                    null, 
+                    this);
+
+            InputPorts = new RoutingPortCollection<RoutingInputPort>();
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort>() { RoutingVideoOutput, RoutingAudioOutput };
+
             VirtualDevice = config.Properties.Value<int>("virtualDevice");
 
             _videoSwitcher = new NvxVideoSwitcher(config, _device).BuildFeedback();
@@ -380,11 +400,24 @@ namespace NvxEpi
             _videoWall = new NvxVideoWallHelper(config, _device).BuildFeedback();
 
             _inputs = new List<INvxHdmiInputHelper>();
-            foreach (var input in _device.HdmiIn)
+
+            for (uint x = 0; x <= _device.HdmiIn.Count; x++)
             {
+                var inputNumber = x;
+
+                InputPorts.Add(new RoutingInputPort(
+                    string.Format("{0}-Hdmi{1}"),
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    new NvxInputSourceSelector() { HdmiInput = (int)inputNumber },
+                    this));
+
+                if (inputNumber == 0) continue;
+
+                var input = _device.HdmiIn[x];
                 _inputs.Add(new NvxHdmiInputHelper(config, input, device));
             }
-
+            
             AddPreActivationAction(() => _devices.Add(this));
 
             if (String.IsNullOrEmpty(_propsConfig.UsbMode)) return;
@@ -401,6 +434,7 @@ namespace NvxEpi
 
             AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
 
+            SetupRoutingInputs();
             SubscribeToEvents();
             SetDefaults();
 
@@ -548,6 +582,35 @@ namespace NvxEpi
             _device.SecondaryAudio.EnableAutomaticInitiation();
         }
 
+        protected void SetupRoutingInputs()
+        {
+            if (_isTransmitter) return;
+            foreach (var device in NvxDeviceEpi.Transmitters)
+            {
+                if (device.Key.Equals(Key, StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                var videoRoutingInput = new RoutingInputPort(
+                        string.Format("{0}-VideoStreamId:{1}", Key, device.VirtualDevice), 
+                        eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.Streaming,
+                        new NvxInputSourceSelector() { Device = device },
+                        this);
+
+                var audioRoutingInput = new RoutingInputPort(
+                        string.Format("{0}-VideoStreamId:{1}", Key, device.VirtualDevice), 
+                        eRoutingSignalType.Audio,
+                        eRoutingPortConnectionType.Streaming,
+                        new NvxInputSourceSelector() { Device = device },
+                        this);
+
+                InputPorts.Add(videoRoutingInput);
+                InputPorts.Add(audioRoutingInput);
+
+                TieLineCollection.Default.Add(new TieLine(device.RoutingVideoOutput, videoRoutingInput));
+                TieLineCollection.Default.Add(new TieLine(device.RoutingAudioOutput, audioRoutingInput));
+            }
+        }
+
         protected static DmNvxBaseClass GetNvxDevice(DeviceConfig config)
         {
             var deviceConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
@@ -611,6 +674,67 @@ namespace NvxEpi
         {
             get { return _device.NumberOfIROutputPorts; }
         }
+
+        #region IRouting Members
+
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+        {
+            var input = inputSelector as NvxInputSourceSelector;
+            if (input == null) return;
+
+            switch (signalType)
+            {
+                case eRoutingSignalType.AudioVideo:
+                    if (input.Device == null)
+                    {
+                        _videoInputSwitcher.Source = input.HdmiInput;
+                        _audioInputSwitcher.Source = input.HdmiInput;
+                    }
+                    else
+                    {
+                        VideoSource = input.Device.VirtualDevice;
+                        AudioSource = input.Device.VirtualDevice;
+                    }
+
+                    break;
+                case eRoutingSignalType.Video:
+                    if (input.Device == null)
+                    {
+                        _videoInputSwitcher.Source = input.HdmiInput;
+                    }
+                    else
+                    {
+                        VideoSource = input.Device.VirtualDevice;
+                    }
+
+                    break;
+                case eRoutingSignalType.Audio:
+                    if (input.Device == null)
+                    {
+                        _audioInputSwitcher.Source = input.HdmiInput;
+                    }
+                    else
+                    {
+                        AudioSource = input.Device.VirtualDevice;
+                    }
+
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region IRoutingInputs Members
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts { get; protected set; }
+
+        #endregion
+
+        #region IRoutingOutputs Members
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; protected set; }
+
+        #endregion
     }
 }
 

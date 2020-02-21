@@ -1,12 +1,15 @@
 ﻿using System;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using EssentialsExtensions;
 using EssentialsExtensions.Attributes;
 
 namespace NvxEpi.Interfaces
 {
-    public interface INvxDevice : IDynamicFeedback
+    public interface INvxDevice : IDynamicFeedback, IRouting
     {
+        RoutingOutputPort RoutingVideoOutput { get; }
+        RoutingOutputPort RoutingAudioOutput { get; }
         bool IsTransmitter { get; }
         bool IsReceiver { get; }
         int AudioInputSource { get; }
@@ -23,6 +26,5 @@ namespace NvxEpi.Interfaces
         string RemoteUsbId { get; set; }
         void Pair();
         void RemovePairing();
-
     }
 }
