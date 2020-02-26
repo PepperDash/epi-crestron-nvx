@@ -19,5 +19,10 @@ namespace NvxEpi.Interfaces
         int VideoInputSource { get; set; }
         int VideoSource { get; set; }
         int VirtualDevice { get; }
+        string LocalUsbId { get; }
+        string RemoteUsbId { get; set; }
+        void Pair();
+        void RemovePairing();
+
     }
 }

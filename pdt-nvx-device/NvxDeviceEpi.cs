@@ -4,6 +4,7 @@ using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
+using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 
 using EssentialsExtensions;
@@ -33,6 +34,7 @@ namespace NvxEpi
         protected ISwitcher _audioSwitcher;
         protected ISwitcher _videoInputSwitcher;
         protected ISwitcher _audioInputSwitcher;
+        protected NvxVideoWallHelper _videoWall;
 
         protected List<INvxHdmiInputHelper> _inputs;
 
@@ -69,6 +71,27 @@ namespace NvxEpi
             {
                 return _isReceiver;
             }
+        }
+
+        public string LocalUsbId
+        {
+            get { return _device.UsbInput.LocalDeviceIdFeedback.StringValue; }
+        }
+
+        public string RemoteUsbId
+        {
+            get { return _device.UsbInput.RemoteDeviceId.StringValue; }
+            set { _device.UsbInput.RemoteDeviceId.StringValue = value; }
+        }
+
+        public void Pair()
+        {
+            _device.UsbInput.Pair();
+        }
+
+        public void RemovePairing()
+        {
+            _device.UsbInput.RemovePairing();
         }
 
         [Feedback(JoinNumber = 2)]
@@ -241,6 +264,13 @@ namespace NvxEpi
             }
         }
 
+        [Feedback(JoinNumber = 11)]
+        public Feedback VideoWallModeFb { get; protected set; }
+        public int VideoWallMode
+        {
+            get { return _device.HdmiOut.VideoWallModeFeedback.UShortValue; }
+        }
+
         [Feedback(JoinNumber = 1)]
         public Feedback DeviceNameFb { get; protected set; }
         public string DeviceName
@@ -322,6 +352,17 @@ namespace NvxEpi
             }
         }
 
+        [Feedback(JoinNumber = 1)]
+        public Feedback OnlineFb { get; protected set; }
+        public bool Online
+        {
+            get
+            {
+                return _device.IsOnline;
+            }
+        }
+
+
         public NvxDeviceEpi(DeviceConfig config, DmNvxBaseClass device)
             : base(config.Key, config.Name, device)
         {
@@ -336,6 +377,7 @@ namespace NvxEpi
 
             _videoInputSwitcher = new NvxVideoInputHandler(config, _device).BuildFeedback();
             _audioInputSwitcher = new NvxAudioInputHandler(config, _device).BuildFeedback();
+            _videoWall = new NvxVideoWallHelper(config, _device).BuildFeedback();
 
             _inputs = new List<INvxHdmiInputHelper>();
             foreach (var input in _device.HdmiIn)
@@ -344,13 +386,20 @@ namespace NvxEpi
             }
 
             AddPreActivationAction(() => _devices.Add(this));
+
+            if (String.IsNullOrEmpty(_propsConfig.UsbMode)) return;
+
+            var usbMode =
+                (DmNvxUsbInput.eUsbMode) Enum.Parse(typeof (DmNvxUsbInput.eUsbMode), _propsConfig.UsbMode, true);
+
+            _device.UsbInput.Mode = usbMode;
         }
 
         public override bool CustomActivate()
         {
             var result = base.CustomActivate();
 
-            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb, DeviceModeFb, HdmiInput1HdmiCapabilityFb, HdmiInput2HdmiCapabilityFb, DeviceStatusFb);
+            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
 
             SubscribeToEvents();
             SetDefaults();
@@ -360,7 +409,7 @@ namespace NvxEpi
 
         public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            IsOnline.LinkInputSig(trilist.BooleanInput[joinStart]);
+            IsOnline.LinkInputSig(trilist.BooleanInput[1]);
 
             this.LinkFeedback(trilist, joinStart, joinMapKey);
             var t = this.GetType().GetCType();
@@ -416,6 +465,10 @@ namespace NvxEpi
                             //Debug.Console(2, this, "Base Event Unhandled DM EventId {0}", args.EventId);
                             break;
                     };
+                };
+            _device.OnlineStatusChange += (sender, args) =>
+                {
+                    if (OnlineFb != null) OnlineFb.FireUpdate();
                 };
 
             _device.HdmiOut.StreamChange += (sender, args) =>
@@ -512,7 +565,7 @@ namespace NvxEpi
                 
                 var newDevice = nvxDeviceType
                     .GetConstructor(new CType[] { typeof(ushort).GetCType(), typeof(CrestronControlSystem) })
-                    .Invoke(new object[] { deviceConfig.Control.IpIdInt, Global.ControlSystem });
+                    .Invoke(new object[] { Convert.ToUInt16(deviceConfig.Control.IpId, 16), Global.ControlSystem });
 
                 var nvxDevice = newDevice as DmNvxBaseClass;
                 if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");

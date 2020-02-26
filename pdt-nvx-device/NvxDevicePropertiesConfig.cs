@@ -22,5 +22,8 @@ namespace NvxEpi
 
         [JsonProperty("control")]
         public ControlPropertiesConfig Control { get; set; }
+
+        [JsonProperty("usbMode")]
+        public string UsbMode { get; set; }
     }
 }
