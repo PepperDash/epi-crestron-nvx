@@ -106,6 +106,7 @@
     <Compile Include="Interfaces\ISwitcher.cs" />
     <Compile Include="DeviceHelpers\NvxAudioInputHandler.cs" />
     <Compile Include="DeviceHelpers\NvxAudioSwitcher.cs" />
+    <Compile Include="IRoutingImplementation\InputSourceSelector.cs" />
     <Compile Include="NvxDeviceEpi.cs" />
     <Compile Include="DeviceHelpers\NvxDeviceHelperBase.cs" />
     <Compile Include="DeviceHelpers\NvxHdmiInputHelper.cs" />
