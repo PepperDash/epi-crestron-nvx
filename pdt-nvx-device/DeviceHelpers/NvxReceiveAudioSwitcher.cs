@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using PepperDash.Core;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using Crestron.SimplSharp.Reflection;
-using EssentialsExtensions;
-using EssentialsExtensions.Attributes;
+using NvxEpi.Interfaces;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using NvxEpi.Interfaces;
 
 namespace NvxEpi.DeviceHelpers
 {
@@ -24,7 +18,6 @@ namespace NvxEpi.DeviceHelpers
             get { return string.Format("{0} {1}", _key, this.GetType().GetCType().Name); }
         }
 
-        [Feedback(JoinNumber = 2, ValuePropertyName="Source")]
         public Feedback Feedback { get; set; }
 
         public event EventHandler RouteUpdated;
@@ -33,7 +26,7 @@ namespace NvxEpi.DeviceHelpers
             : base(device)
         {
             _key = config.Key;
-            Feedback = new IntFeedback(() => Source);
+            Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             if (device.SecondaryAudio != null)
             {
@@ -45,7 +38,6 @@ namespace NvxEpi.DeviceHelpers
                             OnRouteUpdated();
                             break;
                         case DMInputEventIds.StatusEventId:
-                            Debug.Console(2, this, "StatusEventId: {0}", _device.SecondaryAudio.StatusFeedback);
                             OnRouteUpdated();
                             break;
                         case DMInputEventIds.StatusTextEventId:

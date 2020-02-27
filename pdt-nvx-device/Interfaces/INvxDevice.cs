@@ -6,10 +6,11 @@ using EssentialsExtensions.Attributes;
 
 namespace NvxEpi.Interfaces
 {
-    public interface INvxDevice : IDynamicFeedback, IRouting
+    public interface INvxDevice : IRouting
     {
         RoutingOutputPort RoutingVideoOutput { get; }
         RoutingOutputPort RoutingAudioOutput { get; }
+
         bool IsTransmitter { get; }
         bool IsReceiver { get; }
         int AudioInputSource { get; }
