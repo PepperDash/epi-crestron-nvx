@@ -136,6 +136,14 @@ namespace NvxEpi.DeviceHelpers
                 Debug.Console(2, this, "Setting video source to Virtual Device = {0} | {1}", result.VirtualDevice, result.StreamUrl);
 
                 _device.Control.ServerUrl.StringValue = result.StreamUrl;
+
+                //set rx pairing
+                _device.UsbInput.RemoteDeviceId.StringValue = result.LocalUsbId;
+                _device.UsbInput.Pair();
+
+                //set tx pairing
+                result.RemoteUsbId = _device.UsbInput.LocalDeviceIdFeedback.StringValue;
+                result.Pair();
             }
         }
 
