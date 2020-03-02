@@ -363,10 +363,9 @@ namespace NvxEpi
             return result;
         }
 
-        public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
+        public void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            
-            
+            this.LinkToApiExt(trilist, joinStart, joinMapKey);
         }
 
         protected void SubscribeToEvents()
