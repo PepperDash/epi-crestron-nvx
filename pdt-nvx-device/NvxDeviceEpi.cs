@@ -54,6 +54,7 @@ namespace NvxEpi
 
         public int VirtualDevice { get; protected set; }
 
+        protected bool _isTransmitter;
         public bool IsTransmitter
         {
             get 
@@ -61,8 +62,7 @@ namespace NvxEpi
                 return _isTransmitter;
             }
         }
-
-        protected bool _isTransmitter;
+    
         public bool IsReceiver
         {
             get 
@@ -324,19 +324,8 @@ namespace NvxEpi
             _videoWall = new NvxVideoWallHelper(config, _device);
 
             _inputs = new List<INvxHdmiInputHelper>();
-
-            for (uint x = 1; x <= _device.HdmiIn.Count; x++)
+            foreach (var input in _device.HdmiIn)
             {
-                var inputNumber = x;
-
-                InputPorts.Add(new RoutingInputPort(
-                    string.Format("{0}-Hdmi{1}"),
-                    eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Streaming,
-                    new NvxInputSourceSelector() { HdmiInput = (int)inputNumber },
-                    this));
-
-                var input = _device.HdmiIn[x];
                 _inputs.Add(new NvxHdmiInputHelper(config, input, device));
             }
 
@@ -352,13 +341,25 @@ namespace NvxEpi
 
         public override bool CustomActivate()
         {
-            var result = base.CustomActivate();
+            DeviceNameFb = FeedbackFactory.GetFeedback(() => DeviceName);
+            DeviceModeFb = FeedbackFactory.GetFeedback(() => DeviceMode);
+            StreamStartedFb = FeedbackFactory.GetFeedback(() => StreamStarted);
+            OutputResolutionFb = FeedbackFactory.GetFeedback(() => OutputResolution);
+            VideoWallModeFb = FeedbackFactory.GetFeedback(() => VideoWallMode);
+            MulticastVideoAddressFb = FeedbackFactory.GetFeedback(() => MulticastVideoAddress);
+            MulticastAudioAddressFb = FeedbackFactory.GetFeedback(() => MulticastAudioAddress);
+            CurrentlyRoutedVideoSourceFb = FeedbackFactory.GetFeedback(() => CurrentlyRoutedVideoSource);
+            CurrentlyRoutedAudioSourceFb = FeedbackFactory.GetFeedback(() => CurrentlyRoutedAudioSource);
+            StreamUrlFb = FeedbackFactory.GetFeedback(() => StreamUrl);
+            DeviceStatusFb = FeedbackFactory.GetFeedback(() => DeviceStatus);
 
-            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
+            AddToFeedbackList(DeviceNameFb, DeviceModeFb, StreamUrlFb, VideoWallModeFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
+
+            var result = base.CustomActivate();
 
             SubscribeToEvents();
             SetDefaults();
-            SetupRoutingInputs();
+            SetupRoutingPorts();
 
             return result;
         }
@@ -483,8 +484,20 @@ namespace NvxEpi
             _device.SecondaryAudio.EnableAutomaticInitiation();
         }
 
-        protected void SetupRoutingInputs()
+        protected void SetupRoutingPorts()
         {
+            for (uint x = 0; x < _device.HdmiIn.Count; x++)
+            {
+                var inputNumber = x + 1;
+
+                InputPorts.Add(new RoutingInputPort(
+                    string.Format("{0}-Hdmi{1}", Key, inputNumber),
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    new NvxInputSourceSelector() { HdmiInput = (int)inputNumber },
+                    this));
+            }
+
             if (_isTransmitter) return;
             foreach (var device in NvxDeviceEpi.Transmitters)
             {
