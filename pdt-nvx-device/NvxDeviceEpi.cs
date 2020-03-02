@@ -238,7 +238,6 @@ namespace NvxEpi
         {
             get 
             {
-                if (_propsConfig.FriendlyName != null) return _propsConfig.FriendlyName;
                 return _device.Control.NameFeedback.StringValue; 
             }
             set { _device.Control.Name.StringValue = value; }
@@ -341,7 +340,7 @@ namespace NvxEpi
 
         public override bool CustomActivate()
         {
-            DeviceNameFb = FeedbackFactory.GetFeedback(() => DeviceName);
+            DeviceNameFb = FeedbackFactory.GetFeedback(() => (String.IsNullOrEmpty(_propsConfig.FriendlyName)) ? DeviceName : _propsConfig.FriendlyName);
             DeviceModeFb = FeedbackFactory.GetFeedback(() => DeviceMode);
             StreamStartedFb = FeedbackFactory.GetFeedback(() => StreamStarted);
             OutputResolutionFb = FeedbackFactory.GetFeedback(() => OutputResolution);
