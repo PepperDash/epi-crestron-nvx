@@ -328,6 +328,15 @@ namespace NvxEpi
                 _inputs.Add(new NvxHdmiInputHelper(config, input, device));
             }
 
+            var videoOutputName = string.Format("{0}-VideoOutput", Key);
+            RoutingVideoOutput = new RoutingOutputPort(videoOutputName, eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming, null, this);
+
+            var audioOutputName = string.Format("{0}-AudioOutput", Key);
+            RoutingAudioOutput = new RoutingOutputPort(audioOutputName, eRoutingSignalType.Audio, eRoutingPortConnectionType.Streaming, null, this);
+
+            InputPorts = new RoutingPortCollection<RoutingInputPort>();
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort>() { RoutingVideoOutput, RoutingAudioOutput };
+
             AddPreActivationAction(() => _devices.Add(this));
 
             if (String.IsNullOrEmpty(_propsConfig.UsbMode)) return;
@@ -355,7 +364,7 @@ namespace NvxEpi
             AddToFeedbackList(DeviceNameFb, DeviceModeFb, StreamUrlFb, VideoWallModeFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
 
             var result = base.CustomActivate();
-
+            
             SubscribeToEvents();
             SetDefaults();
             SetupRoutingPorts();
@@ -485,9 +494,6 @@ namespace NvxEpi
 
         protected void SetupRoutingPorts()
         {
-            InputPorts = new RoutingPortCollection<RoutingInputPort>();
-            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
             for (uint x = 0; x < _device.HdmiIn.Count; x++)
             {
                 var inputNumber = x + 1;
