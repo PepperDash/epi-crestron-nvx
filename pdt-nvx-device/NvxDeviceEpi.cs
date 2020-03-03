@@ -485,6 +485,9 @@ namespace NvxEpi
 
         protected void SetupRoutingPorts()
         {
+            InputPorts = new RoutingPortCollection<RoutingInputPort>();
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
+
             for (uint x = 0; x < _device.HdmiIn.Count; x++)
             {
                 var inputNumber = x + 1;
