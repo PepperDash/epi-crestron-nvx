@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Linq;
-using EssentialsExtensions;
-using PepperDash.Core;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using Crestron.SimplSharp.Reflection;
-using EssentialsExtensions.Attributes;
+using NvxEpi.Interfaces;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using NvxEpi.Interfaces;
 
 namespace NvxEpi.DeviceHelpers
 {
@@ -16,13 +14,12 @@ namespace NvxEpi.DeviceHelpers
     {
         private int _selectedInput;
 
-        private readonly string _key;
+        private string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, GetType().GetCType().Name); }
+            get { return string.Format("{0} {1}", _key, this.GetType().GetCType().Name); }
         }
 
-        [Feedback(JoinNumber = 1, ValuePropertyName="Source")]
         public Feedback Feedback { get; set; }
 
         public event EventHandler RouteUpdated;
@@ -57,6 +54,8 @@ namespace NvxEpi.DeviceHelpers
                         break;
                     case DMInputEventIds.MulticastAddressEventId:
                         OnRouteUpdated();
+                        break;
+                    default:
                         break;
                 }      
             };
@@ -103,7 +102,6 @@ namespace NvxEpi.DeviceHelpers
                 if (_isTransmitter) return result;
                 if (!_device.Control.StartFeedback.BoolValue)
                 {
-                    Debug.Console(2, this, "Video input is Virtual ID: {0}", result);
                     return result;
                 }
 
@@ -120,14 +118,13 @@ namespace NvxEpi.DeviceHelpers
             }
             set
             {
-                _selectedInput = value;
+                if (_selectedInput != value) _selectedInput = value;
                 if (_isTransmitter || !_device.IsOnline) return;
 
                 if (value == 0) 
                 {
                     Debug.Console(2, this, "Setting video source to Virtual Device = 0");
-                    _device.Control.ServerUrl.StringValue = string.Empty;
-                    _device.UsbInput.RemovePairing();
+                    _device.Control.ServerUrl.StringValue = "0.0.0.0";
                     return;
                 }
 

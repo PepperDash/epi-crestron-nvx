@@ -7,25 +7,24 @@ using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 
-using EssentialsExtensions;
-using EssentialsExtensions.Attributes;
-
 using NvxEpi.DeviceHelpers;
 using NvxEpi.Interfaces;
+using NvxEpi.Routing;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Bridges;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Devices;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace NvxEpi
 {
     public class NvxDeviceEpi : CrestronGenericBaseDevice, IBridge, INvxDevice, IComPorts, IIROutputPorts
     {
+        public RoutingOutputPort RoutingVideoOutput { get; protected set; }
+        public RoutingOutputPort RoutingAudioOutput { get; protected set; }
+
         protected DmNvxBaseClass _device;
         protected DeviceConfig _config;
         protected NvxDevicePropertiesConfig _propsConfig;
@@ -63,13 +62,12 @@ namespace NvxEpi
                 return _isTransmitter;
             }
         }
-
-        protected bool _isReceiver;
+    
         public bool IsReceiver
         {
             get 
             {
-                return _isReceiver;
+                return !_isTransmitter;
             }
         }
 
@@ -94,7 +92,6 @@ namespace NvxEpi
             _device.UsbInput.RemovePairing();
         }
 
-        [Feedback(JoinNumber = 2)]
         public Feedback StreamStartedFb { get; protected set; }
         public bool StreamStarted
         {
@@ -104,12 +101,7 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 3)]
-        public Feedback HdmiInput1SyncDetectedFb
-        {
-            get { return _inputs[0].SyncDetectedFb; }
-            protected set { _inputs[0].SyncDetectedFb = value; }
-        }
+        public Feedback HdmiInput1SyncDetectedFb { get { return _inputs[0].SyncDetectedFb; } }
         public bool HdmiInput1SyncDetected
         {
             get
@@ -119,12 +111,7 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 4)]
-        public Feedback HdmiInput2SyncDetectedFb
-        {
-            get { return _inputs[1].SyncDetectedFb; }
-            protected set { _inputs[1].SyncDetectedFb = value; }
-        }
+        public Feedback HdmiInput2SyncDetectedFb { get { return _inputs[1].SyncDetectedFb; } }
         public bool HdmiInput2SyncDetected
         {
             get
@@ -134,31 +121,34 @@ namespace NvxEpi
             }
         }
 
+        public Feedback VideoSourceFb { get { return _videoSwitcher.Feedback; } }
         public int VideoSource
         {
             get { return _videoSwitcher.Source; }
             set { _videoSwitcher.Source = value; }
         }
 
+        public Feedback AudioSourceFb { get { return _audioSwitcher.Feedback; } }
         public int AudioSource
         {
             get { return _audioSwitcher.Source; }
             set { _audioSwitcher.Source = value; }
         }
 
+        public Feedback VideoInputSourceFb { get { return _videoInputSwitcher.Feedback; } }
         public int VideoInputSource
         {
             get { return _videoInputSwitcher.Source; }
             set { _videoInputSwitcher.Source = value; }
         }
 
+        public Feedback AudioInputSourceFb { get { return _audioInputSwitcher.Feedback; } }
         public int AudioInputSource
         {
             get { return _audioInputSwitcher.Source; }
             set { _audioInputSwitcher.Source = value; }
         }
 
-        [Feedback(JoinNumber = 5)]
         public Feedback DeviceModeFb { get; protected set; }
         public int DeviceMode
         {
@@ -178,18 +168,7 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 6)]
-        public Feedback HdmiInput1HdmiCapabilityFb
-        {
-            get 
-            { 
-                return _inputs[0].HdmiCapabilityFb;
-            }
-            protected set 
-            { 
-                _inputs[0].HdmiCapabilityFb = value; 
-            }
-        }
+        public Feedback HdmiInput1HdmiCapabilityFb { get { return _inputs[0].HdmiCapabilityFb; } }
         public int HdmiInput1HdmiCapability
         {
             get
@@ -204,12 +183,7 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 7)]
-        public Feedback HdmiInput1SupportedLevelFb
-        {
-            get { return _inputs[0].HdmiSupportedLevelFb; }
-            protected set { _inputs[0].HdmiSupportedLevelFb = value; }
-        }
+        public Feedback HdmiInput1SupportedLevelFb { get { return _inputs[0].HdmiSupportedLevelFb; } }
         public int HdmiInput1SupportedLevel
         {
             get
@@ -219,12 +193,7 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 8)]
-        public Feedback HdmiInput2HdmiCapabilityFb
-        {
-            get { return _inputs[1].HdmiCapabilityFb; }
-            protected set { _inputs[1].HdmiCapabilityFb = value; }
-        }
+        public Feedback HdmiInput2HdmiCapabilityFb { get { return _inputs[1].HdmiCapabilityFb; } }
         public int HdmiInput2HdmiCapability
         {
             get
@@ -239,12 +208,7 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 9)]
-        public Feedback HdmiInput2SupportedLevelFb
-        {
-            get { return _inputs[1].HdmiSupportedLevelFb; }
-            protected set { _inputs[1].HdmiSupportedLevelFb = value; }
-        }
+        public Feedback HdmiInput2SupportedLevelFb { get { return _inputs[1].HdmiSupportedLevelFb; } }
         public int HdmiInput2SupportedLevel
         {
             get
@@ -254,7 +218,6 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 10)]
         public Feedback OutputResolutionFb { get; protected set; }
         public int OutputResolution
         {
@@ -264,26 +227,22 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 11)]
         public Feedback VideoWallModeFb { get; protected set; }
         public int VideoWallMode
         {
             get { return _device.HdmiOut.VideoWallModeFeedback.UShortValue; }
         }
 
-        [Feedback(JoinNumber = 1)]
         public Feedback DeviceNameFb { get; protected set; }
         public string DeviceName
         {
             get 
             {
-                if (_propsConfig.FriendlyName != null) return _propsConfig.FriendlyName;
                 return _device.Control.NameFeedback.StringValue; 
             }
             set { _device.Control.Name.StringValue = value; }
         }
 
-        [Feedback(JoinNumber = 2)]
         public Feedback DeviceStatusFb { get; protected set; }
         public string DeviceStatus
         {
@@ -293,7 +252,6 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 3)]
         public Feedback StreamUrlFb { get; protected set; }
         public string StreamUrl
         {
@@ -303,7 +261,6 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 4)]
         public Feedback MulticastVideoAddressFb { get; protected set; }
         public string MulticastVideoAddress
         {
@@ -313,7 +270,6 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 5)]
         public Feedback MulticastAudioAddressFb { get; protected set; }
         public string MulticastAudioAddress
         {
@@ -332,7 +288,6 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 6)]
         public Feedback CurrentlyRoutedVideoSourceFb { get; protected set; }
         public string CurrentlyRoutedVideoSource
         {
@@ -342,7 +297,6 @@ namespace NvxEpi
             }
         }
 
-        [Feedback(JoinNumber = 7)]
         public Feedback CurrentlyRoutedAudioSourceFb { get; protected set; }
         public string CurrentlyRoutedAudioSource
         {
@@ -351,17 +305,6 @@ namespace NvxEpi
                 return _audioSwitcher.CurrentlyRouted;
             }
         }
-
-        [Feedback(JoinNumber = 1)]
-        public Feedback OnlineFb { get; protected set; }
-        public bool Online
-        {
-            get
-            {
-                return _device.IsOnline;
-            }
-        }
-
 
         public NvxDeviceEpi(DeviceConfig config, DmNvxBaseClass device)
             : base(config.Key, config.Name, device)
@@ -372,18 +315,27 @@ namespace NvxEpi
 
             VirtualDevice = config.Properties.Value<int>("virtualDevice");
 
-            _videoSwitcher = new NvxVideoSwitcher(config, _device).BuildFeedback();
-            _audioSwitcher = new NvxAudioSwitcher(config, _device).BuildFeedback();
+            _videoSwitcher = new NvxVideoSwitcher(config, _device);
+            _audioSwitcher = new NvxAudioSwitcher(config, _device);
 
-            _videoInputSwitcher = new NvxVideoInputHandler(config, _device).BuildFeedback();
-            _audioInputSwitcher = new NvxAudioInputHandler(config, _device).BuildFeedback();
-            _videoWall = new NvxVideoWallHelper(config, _device).BuildFeedback();
+            _videoInputSwitcher = new NvxVideoInputHandler(config, _device);
+            _audioInputSwitcher = new NvxAudioInputHandler(config, _device);
+            _videoWall = new NvxVideoWallHelper(config, _device);
 
             _inputs = new List<INvxHdmiInputHelper>();
             foreach (var input in _device.HdmiIn)
             {
                 _inputs.Add(new NvxHdmiInputHelper(config, input, device));
             }
+
+            var videoOutputName = string.Format("{0}-VideoOutput", Key);
+            RoutingVideoOutput = new RoutingOutputPort(videoOutputName, eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming, null, this);
+
+            var audioOutputName = string.Format("{0}-AudioOutput", Key);
+            RoutingAudioOutput = new RoutingOutputPort(audioOutputName, eRoutingSignalType.Audio, eRoutingPortConnectionType.Streaming, null, this);
+
+            InputPorts = new RoutingPortCollection<RoutingInputPort>();
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort>() { RoutingVideoOutput, RoutingAudioOutput };
 
             AddPreActivationAction(() => _devices.Add(this));
 
@@ -397,35 +349,32 @@ namespace NvxEpi
 
         public override bool CustomActivate()
         {
+            DeviceNameFb = FeedbackFactory.GetFeedback(() => (String.IsNullOrEmpty(_propsConfig.FriendlyName)) ? DeviceName : _propsConfig.FriendlyName);
+            DeviceModeFb = FeedbackFactory.GetFeedback(() => DeviceMode);
+            StreamStartedFb = FeedbackFactory.GetFeedback(() => StreamStarted);
+            OutputResolutionFb = FeedbackFactory.GetFeedback(() => OutputResolution);
+            VideoWallModeFb = FeedbackFactory.GetFeedback(() => VideoWallMode);
+            MulticastVideoAddressFb = FeedbackFactory.GetFeedback(() => MulticastVideoAddress);
+            MulticastAudioAddressFb = FeedbackFactory.GetFeedback(() => MulticastAudioAddress);
+            CurrentlyRoutedVideoSourceFb = FeedbackFactory.GetFeedback(() => CurrentlyRoutedVideoSource);
+            CurrentlyRoutedAudioSourceFb = FeedbackFactory.GetFeedback(() => CurrentlyRoutedAudioSource);
+            StreamUrlFb = FeedbackFactory.GetFeedback(() => StreamUrl);
+            DeviceStatusFb = FeedbackFactory.GetFeedback(() => DeviceStatus);
+
+            AddToFeedbackList(DeviceNameFb, DeviceModeFb, StreamUrlFb, VideoWallModeFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
+
             var result = base.CustomActivate();
-
-            AddToFeedbackList(StreamUrlFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
-
+            
             SubscribeToEvents();
             SetDefaults();
+            SetupRoutingPorts();
 
             return result;
         }
 
-        public virtual void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
+        public void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            IsOnline.LinkInputSig(trilist.BooleanInput[1]);
-
-            this.LinkFeedback(trilist, joinStart, joinMapKey);
-            var t = this.GetType().GetCType();
-
-            var fields = t
-                .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            foreach (var field in fields)
-            {
-                var m = t.GetField(field.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(this) as IDynamicFeedback;
-
-                if (m == null) continue;
-
-                m.LinkFeedback(trilist, joinStart, joinMapKey);
-            }
+            this.LinkToApiExt(trilist, joinStart, joinMapKey);
         }
 
         protected void SubscribeToEvents()
@@ -465,10 +414,6 @@ namespace NvxEpi
                             //Debug.Console(2, this, "Base Event Unhandled DM EventId {0}", args.EventId);
                             break;
                     };
-                };
-            _device.OnlineStatusChange += (sender, args) =>
-                {
-                    if (OnlineFb != null) OnlineFb.FireUpdate();
                 };
 
             _device.HdmiOut.StreamChange += (sender, args) =>
@@ -512,7 +457,6 @@ namespace NvxEpi
 
             if (mode.Equals("rx", StringComparison.InvariantCultureIgnoreCase))
             {
-                _isReceiver = true;
                 _device.Control.DeviceMode = eDeviceMode.Receiver;
                 _device.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
 
@@ -546,6 +490,47 @@ namespace NvxEpi
 
             _device.Control.EnableAutomaticInitiation();
             _device.SecondaryAudio.EnableAutomaticInitiation();
+        }
+
+        protected void SetupRoutingPorts()
+        {
+            for (uint x = 0; x < _device.HdmiIn.Count; x++)
+            {
+                var inputNumber = x + 1;
+
+                InputPorts.Add(new RoutingInputPort(
+                    string.Format("{0}-Hdmi{1}", Key, inputNumber),
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    new NvxInputSourceSelector() { HdmiInput = (int)inputNumber },
+                    this));
+            }
+
+            if (_isTransmitter) return;
+            foreach (var device in NvxDeviceEpi.Transmitters)
+            {
+                if (device.Key.Equals(Key, StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                var videoRoutingInput = new RoutingInputPort(
+                        string.Format("{0}-VideoStreamId:{1}", Key, device.VirtualDevice),
+                        eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.Streaming,
+                        new NvxInputSourceSelector() { Device = device },
+                        this);
+
+                var audioRoutingInput = new RoutingInputPort(
+                        string.Format("{0}-VideoStreamId:{1}", Key, device.VirtualDevice),
+                        eRoutingSignalType.Audio,
+                        eRoutingPortConnectionType.Streaming,
+                        new NvxInputSourceSelector() { Device = device },
+                        this);
+
+                InputPorts.Add(videoRoutingInput);
+                InputPorts.Add(audioRoutingInput);
+
+                TieLineCollection.Default.Add(new TieLine(device.RoutingVideoOutput, videoRoutingInput));
+                TieLineCollection.Default.Add(new TieLine(device.RoutingAudioOutput, audioRoutingInput));
+            }
         }
 
         protected static DmNvxBaseClass GetNvxDevice(DeviceConfig config)
@@ -589,7 +574,7 @@ namespace NvxEpi
         public static NvxDeviceEpi Build(DeviceConfig config)
         {
             var device = NvxDeviceEpi.GetNvxDevice(config);
-            return new NvxDeviceEpi(config, device).BuildFeedback();
+            return new NvxDeviceEpi(config, device);
         }
 
         public CrestronCollection<ComPort> ComPorts
@@ -611,6 +596,67 @@ namespace NvxEpi
         {
             get { return _device.NumberOfIROutputPorts; }
         }
+
+        #region IRouting Members
+
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+        {
+            var input = inputSelector as NvxInputSourceSelector;
+            if (input == null) return;
+
+            switch (signalType)
+            {
+                case eRoutingSignalType.AudioVideo:
+                    if (input.Device == null)
+                    {
+                        _videoInputSwitcher.Source = input.HdmiInput;
+                        _audioInputSwitcher.Source = input.HdmiInput;
+                    }
+                    else
+                    {
+                        VideoSource = input.Device.VirtualDevice;
+                        AudioSource = input.Device.VirtualDevice;
+                    }
+
+                    break;
+                case eRoutingSignalType.Video:
+                    if (input.Device == null)
+                    {
+                        _videoInputSwitcher.Source = input.HdmiInput;
+                    }
+                    else
+                    {
+                        VideoSource = input.Device.VirtualDevice;
+                    }
+
+                    break;
+                case eRoutingSignalType.Audio:
+                    if (input.Device == null)
+                    {
+                        _audioInputSwitcher.Source = input.HdmiInput;
+                    }
+                    else
+                    {
+                        AudioSource = input.Device.VirtualDevice;
+                    }
+
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region IRoutingInputs Members
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts { get; protected set; }
+
+        #endregion
+
+        #region IRoutingOutputs Members
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; protected set; }
+
+        #endregion
     }
 }
 

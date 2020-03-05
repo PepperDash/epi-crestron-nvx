@@ -15,7 +15,7 @@ using NvxEpi.Interfaces;
 
 namespace NvxEpi.DeviceHelpers
 {
-    public abstract class NvxDeviceHelperBase : IDynamicFeedback
+    public abstract class NvxDeviceHelperBase : IKeyed
     {
         protected DmNvxBaseClass _device;
 

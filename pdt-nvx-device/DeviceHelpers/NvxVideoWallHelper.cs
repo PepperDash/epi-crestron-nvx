@@ -18,7 +18,6 @@ namespace NvxEpi.DeviceHelpers
             get { return string.Format("{0} {1}", _key, GetType().GetCType().Name); }
         }
 
-        [Feedback(JoinNumber = 11, ValuePropertyName = "VideoWallMode")]
         public Feedback Feedback { get; set; }
 
         public int VideoWallMode
