@@ -10,6 +10,8 @@ Navigate to the BUILDS folder in the repository.  Place the .cplz file into the 
 
 The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
 
+<strong>This plugin does not currently support E30/D30 encoders and decoders.  They will throw null reference exeptions.  This is in development.</strong>
+
 ## Join Map
 
 See details section below for detailed description of device properties.
@@ -36,7 +38,8 @@ See details section below for detailed description of device properties.
 | 7    | R         | HDMI01 HDCP Supported Level |
 | 8    | RW        | HDMI02 HDCP Capability |
 | 9    | R         | HDMI02 HDCP Supported Level |
-| 10    | R        | HDMI Output Horizontal Resolution |
+| 10   | R         | HDMI Output Horizontal Resolution |
+| 11   | RW        | Videowall Mode |
 
 ### Serials
 
