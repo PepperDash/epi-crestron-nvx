@@ -597,16 +597,19 @@ namespace NvxEpi
 
         protected void SetupRoutingPorts()
         {
-            for (uint x = 0; x < _device.HdmiIn.Count; x++)
+            if (_device.HdmiIn != null)
             {
-                var inputNumber = x + 1;
+                for (uint x = 0; x < _device.HdmiIn.Count; x++)
+                {
+                    var inputNumber = x + 1;
 
-                InputPorts.Add(new RoutingInputPort(
-                    string.Format("{0}-Hdmi{1}", Key, inputNumber),
-                    eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Streaming,
-                    new NvxInputSourceSelector() { HdmiInput = (int)inputNumber },
-                    this));
+                    InputPorts.Add(new RoutingInputPort(
+                        string.Format("{0}-Hdmi{1}", Key, inputNumber),
+                        eRoutingSignalType.AudioVideo,
+                        eRoutingPortConnectionType.Streaming,
+                        new NvxInputSourceSelector() {HdmiInput = (int) inputNumber},
+                        this));
+                }
             }
 
             if (_isTransmitter) return;
