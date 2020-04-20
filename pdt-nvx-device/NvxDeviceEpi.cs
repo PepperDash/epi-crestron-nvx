@@ -101,23 +101,48 @@ namespace NvxEpi
             }
         }
 
-        public Feedback HdmiInput1SyncDetectedFb { get { return _inputs[0].SyncDetectedFb; } }
+        public Feedback HdmiInput1SyncDetectedFb
+        {
+            get { return _inputs == null ? null : _inputs[0].SyncDetectedFb; }
+            protected set
+            {
+                if (_inputs == null) return;
+                _inputs[0].SyncDetectedFb = value;
+            }
+        }
         public bool HdmiInput1SyncDetected
         {
             get
             {
-                if (_inputs[0] == null) return false;
-                return (_inputs[0].SyncDetected);
+                if (_inputs == null) return false;
+
+                return _inputs[0] != null && (_inputs[0].SyncDetected);
             }
         }
 
-        public Feedback HdmiInput2SyncDetectedFb { get { return _inputs[1].SyncDetectedFb; } }
+        public Feedback HdmiInput2SyncDetectedFb
+        {
+            get
+            {
+                if (_inputs == null) return null;
+
+                return _inputs.Count < 2 ? null : _inputs[1].SyncDetectedFb;
+            }
+            protected set
+            {
+                if (_inputs == null) return;
+                if (_inputs.Count < 2) return;
+                _inputs[1].SyncDetectedFb = value;
+            }
+        }
         public bool HdmiInput2SyncDetected
         {
             get
             {
-                if (_inputs[1] == null) return false;
-                return (_inputs[1].SyncDetected);
+                if (_inputs == null) return false;
+                if (_inputs.Count < 2) return false;
+
+                return _inputs[1] != null && _inputs[1].SyncDetected;
             }
         }
 
@@ -168,53 +193,112 @@ namespace NvxEpi
             }
         }
 
-        public Feedback HdmiInput1HdmiCapabilityFb { get { return _inputs[0].HdmiCapabilityFb; } }
+        public Feedback HdmiInput1HdmiCapabilityFb
+        {
+            get
+            {
+                return _inputs == null ? null : _inputs[0].HdmiCapabilityFb;
+            }
+            protected set
+            {
+                if (_inputs == null) return;
+
+                _inputs[0].HdmiCapabilityFb = value;
+            }
+        }
         public int HdmiInput1HdmiCapability
         {
             get
             {
-                if (_inputs[0] == null) return default(int);
-                return (_inputs[0].HdmiCapability);
+                return _inputs == null ? 0 : (_inputs[0].HdmiCapability);
             }
             set
             {
+                if (_inputs == null) return;
+
                 if (_inputs[0] == null) return;
+
                 _inputs[0].HdmiCapability = value;
             }
         }
 
-        public Feedback HdmiInput1SupportedLevelFb { get { return _inputs[0].HdmiSupportedLevelFb; } }
+        public Feedback HdmiInput1SupportedLevelFb
+        {
+            get { return _inputs == null ? null : _inputs[0].HdmiSupportedLevelFb; }
+            protected set
+            {
+                if (_inputs == null) return;
+                _inputs[0].HdmiSupportedLevelFb = value;
+            }
+        }
         public int HdmiInput1SupportedLevel
         {
             get
             {
-                if (_inputs[0] == null) return default(int);
-                return (_inputs[0].HdmiSupportedLevel);
+                if (_inputs == null) return default(int);
+
+                return _inputs[0] == null ? default(int) : (_inputs[0].HdmiSupportedLevel);
             }
         }
 
-        public Feedback HdmiInput2HdmiCapabilityFb { get { return _inputs[1].HdmiCapabilityFb; } }
+        public Feedback HdmiInput2HdmiCapabilityFb
+        {
+            get
+            {
+                if (_inputs == null) return null;
+
+                return _inputs.Count < 2 ? null : _inputs[1].HdmiCapabilityFb;
+            }
+            protected set
+            {
+                if (_inputs == null) return;
+                if (_inputs.Count < 2) return;
+                _inputs[1].HdmiCapabilityFb = value;
+            }
+        }
         public int HdmiInput2HdmiCapability
         {
             get
             {
-                if (_inputs[1] == null) return default(int);
-                return (_inputs[1].HdmiCapability);
+                if (_inputs == null) return default(int);
+                if (_inputs.Count < 2) return default(int);
+
+                return _inputs[1] == null ? default(int) : (_inputs[1].HdmiCapability);
             }
             set
             {
+                if (_inputs == null) return;
+                if (_inputs.Count < 2) return;
+
                 if (_inputs[1] == null) return;
                 _inputs[1].HdmiCapability = value;
             }
         }
 
-        public Feedback HdmiInput2SupportedLevelFb { get { return _inputs[1].HdmiSupportedLevelFb; } }
+        public Feedback HdmiInput2SupportedLevelFb
+        {
+            get
+            {
+                if (_inputs == null) return null;
+
+                return _inputs.Count < 2 ? null : _inputs[1].HdmiSupportedLevelFb;
+            }
+            protected set
+            {
+                if (_inputs == null) return;
+                if (_inputs.Count < 2) return;
+
+                _inputs[1].HdmiSupportedLevelFb = value;
+            }
+        }
         public int HdmiInput2SupportedLevel
         {
             get
             {
-                if (_inputs[1] == null) return default(int);
-                return (_inputs[1].HdmiSupportedLevel);
+                if (_inputs == null) return default(int);
+                if (_inputs.Count < 2) return default(int);
+
+                return _inputs[1] == null ? default(int) : (_inputs[1].HdmiSupportedLevel);
             }
         }
 
@@ -230,7 +314,10 @@ namespace NvxEpi
         public Feedback VideoWallModeFb { get; protected set; }
         public int VideoWallMode
         {
-            get { return _device.HdmiOut.VideoWallModeFeedback.UShortValue; }
+            get
+            {
+                return  _device.HdmiOut == null || _device.HdmiOut.VideoWallModeFeedback == null ? 0 : _device.HdmiOut.VideoWallModeFeedback.UShortValue;
+            }
         }
 
         public Feedback DeviceNameFb { get; protected set; }
@@ -275,6 +362,8 @@ namespace NvxEpi
         {
             get
             {
+                if (_device.SecondaryAudio == null) return String.Empty;
+
                 string result = string.Empty;
                 if (_audioSwitcher is NvxReceiveAudioSwitcher)
                 {    
@@ -322,10 +411,13 @@ namespace NvxEpi
             _audioInputSwitcher = new NvxAudioInputHandler(config, _device);
             _videoWall = new NvxVideoWallHelper(config, _device);
 
-            _inputs = new List<INvxHdmiInputHelper>();
-            foreach (var input in _device.HdmiIn)
+            if (_device.HdmiIn != null)
             {
-                _inputs.Add(new NvxHdmiInputHelper(config, input, device));
+                _inputs = new List<INvxHdmiInputHelper>();
+                foreach (var input in _device.HdmiIn)
+                {
+                    _inputs.Add(new NvxHdmiInputHelper(config, input, device));
+                }
             }
 
             var videoOutputName = string.Format("{0}-VideoOutput", Key);
@@ -416,7 +508,9 @@ namespace NvxEpi
                     };
                 };
 
-            _device.HdmiOut.StreamChange += (sender, args) =>
+            if (_device.HdmiOut != null)
+            {
+                _device.HdmiOut.StreamChange += (sender, args) =>
                 {
                     switch (args.EventId)
                     {
@@ -428,6 +522,7 @@ namespace NvxEpi
                             break;
                     }
                 };
+            }
 
             _videoSwitcher.RouteUpdated += (sender, args) =>
                 {
@@ -453,6 +548,14 @@ namespace NvxEpi
                 Debug.ConsoleWithLog(0, ex);
 
                 throw new Exception(ex);
+            }
+
+            _device.Control.EnableAutomaticInitiation();
+
+            if (_config.Properties.Value<string>("model").ToLower().Contains("d30") || _config.Properties.Value<string>("model").ToLower().Contains("e30"))
+            {
+                Debug.ConsoleWithLog(0, this, "Dedicated rx/tx device. Skipping setting defaults");
+                return;
             }
 
             if (mode.Equals("rx", StringComparison.InvariantCultureIgnoreCase))
@@ -488,22 +591,25 @@ namespace NvxEpi
                 }
             }
 
-            _device.Control.EnableAutomaticInitiation();
+            
             _device.SecondaryAudio.EnableAutomaticInitiation();
         }
 
         protected void SetupRoutingPorts()
         {
-            for (uint x = 0; x < _device.HdmiIn.Count; x++)
+            if (_device.HdmiIn != null)
             {
-                var inputNumber = x + 1;
+                for (uint x = 0; x < _device.HdmiIn.Count; x++)
+                {
+                    var inputNumber = x + 1;
 
-                InputPorts.Add(new RoutingInputPort(
-                    string.Format("{0}-Hdmi{1}", Key, inputNumber),
-                    eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Streaming,
-                    new NvxInputSourceSelector() { HdmiInput = (int)inputNumber },
-                    this));
+                    InputPorts.Add(new RoutingInputPort(
+                        string.Format("{0}-Hdmi{1}", Key, inputNumber),
+                        eRoutingSignalType.AudioVideo,
+                        eRoutingPortConnectionType.Streaming,
+                        new NvxInputSourceSelector() {HdmiInput = (int) inputNumber},
+                        this));
+                }
             }
 
             if (_isTransmitter) return;
