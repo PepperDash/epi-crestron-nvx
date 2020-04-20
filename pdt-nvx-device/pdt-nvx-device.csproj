@@ -101,12 +101,14 @@
   <ItemGroup>
     <Compile Include="DeviceHelpers\NvxVideoWallHelper.cs" />
     <Compile Include="DeviceHelpers\FeedbackFactory.cs" />
+    <Compile Include="Factory\NvxDeviceBuilder.cs" />
     <Compile Include="Interfaces\INvxDevice.cs" />
     <Compile Include="Interfaces\INvxHdmiInputHelper.cs" />
     <Compile Include="Interfaces\ISwitcher.cs" />
     <Compile Include="DeviceHelpers\NvxAudioInputHandler.cs" />
     <Compile Include="DeviceHelpers\NvxAudioSwitcher.cs" />
     <Compile Include="NvxDeviceBridge.cs" />
+    <Compile Include="Factory\NvxDeviceFactory.cs" />
     <Compile Include="Routing\InputSourceSelector.cs" />
     <Compile Include="NvxDeviceEpi.cs" />
     <Compile Include="DeviceHelpers\NvxDeviceHelperBase.cs" />

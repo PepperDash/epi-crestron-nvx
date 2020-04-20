@@ -26,7 +26,6 @@ namespace NvxEpi
         public RoutingOutputPort RoutingAudioOutput { get; protected set; }
 
         protected DmNvxBaseClass _device;
-        protected DeviceConfig _config;
         protected NvxDevicePropertiesConfig _propsConfig;
 
         protected ISwitcher _videoSwitcher;
@@ -306,27 +305,24 @@ namespace NvxEpi
             }
         }
 
-        public NvxDeviceEpi(DeviceConfig config, DmNvxBaseClass device)
-            : base(config.Key, config.Name, device)
+        public NvxDeviceEpi(string key, string name, DmNvxBaseClass device, NvxDevicePropertiesConfig config, 
+            ISwitcher videoSwitcher, ISwitcher audioSwitcher, ISwitcher videoInputSwitcher, ISwitcher audioInputSwitcher,
+            NvxVideoWallHelper videoWallHelper, List<INvxHdmiInputHelper> inputs)
+            : base(key, name, device)
         {
             _device = device;
-            _config = config;
-            _propsConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
+            _propsConfig = config;
 
-            VirtualDevice = config.Properties.Value<int>("virtualDevice");
+            VirtualDevice = config.VirtualDevice;
 
-            _videoSwitcher = new NvxVideoSwitcher(config, _device);
-            _audioSwitcher = new NvxAudioSwitcher(config, _device);
+            _videoSwitcher = videoSwitcher;
+            _audioSwitcher = audioSwitcher;
 
-            _videoInputSwitcher = new NvxVideoInputHandler(config, _device);
-            _audioInputSwitcher = new NvxAudioInputHandler(config, _device);
-            _videoWall = new NvxVideoWallHelper(config, _device);
+            _videoInputSwitcher = videoInputSwitcher;
+            _audioInputSwitcher = audioInputSwitcher;
+            _videoWall = videoWallHelper;
 
-            _inputs = new List<INvxHdmiInputHelper>();
-            foreach (var input in _device.HdmiIn)
-            {
-                _inputs.Add(new NvxHdmiInputHelper(config, input, device));
-            }
+            _inputs = inputs;
 
             var videoOutputName = string.Format("{0}-VideoOutput", Key);
             RoutingVideoOutput = new RoutingOutputPort(videoOutputName, eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming, null, this);
@@ -337,14 +333,16 @@ namespace NvxEpi
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>() { RoutingVideoOutput, RoutingAudioOutput };
 
+            if (!String.IsNullOrEmpty(_propsConfig.UsbMode))
+            {
+                var usbMode =
+                    (DmNvxUsbInput.eUsbMode)Enum.Parse(typeof(DmNvxUsbInput.eUsbMode), config.UsbMode, true);
+
+                _device.UsbInput.Mode = usbMode;
+            }
+
             AddPreActivationAction(() => _devices.Add(this));
-
-            if (String.IsNullOrEmpty(_propsConfig.UsbMode)) return;
-
-            var usbMode =
-                (DmNvxUsbInput.eUsbMode) Enum.Parse(typeof (DmNvxUsbInput.eUsbMode), _propsConfig.UsbMode, true);
-
-            _device.UsbInput.Mode = usbMode;
+            AddPostActivationAction(SetupRoutingPorts);
         }
 
         public override bool CustomActivate()
@@ -367,7 +365,6 @@ namespace NvxEpi
             
             SubscribeToEvents();
             SetDefaults();
-            SetupRoutingPorts();
 
             return result;
         }
@@ -444,16 +441,16 @@ namespace NvxEpi
 
         protected void SetDefaults()
         {
-            var mode = _config.Properties.Value<string>("mode");
-            var audioBreakaway = _config.Properties.Value<bool>("enableAudioBreakaway");
-
-            if (mode == null)
+            if (String.IsNullOrEmpty(_propsConfig.Mode))
             {
                 var ex = string.Format("The device mode MUST be defined in the config file: {0}", Key);
                 Debug.ConsoleWithLog(0, ex);
 
                 throw new Exception(ex);
             }
+
+            var mode = _propsConfig.Mode;
+            var audioBreakaway = _propsConfig.EnableAudioBreakaway;
 
             if (mode.Equals("rx", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -473,18 +470,14 @@ namespace NvxEpi
                 _device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
                 _device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
 
-                var multicastVideo = _config.Properties.Value<string>("multicastVideoAddress");
-                
-                if (multicastVideo != null) 
+                if (!String.IsNullOrEmpty(_propsConfig.MulticastVideoAddress)) 
                 {
-                    _device.Control.MulticastAddress.StringValue = multicastVideo;
+                    _device.Control.MulticastAddress.StringValue = _propsConfig.MulticastVideoAddress;
                 }
 
-                var multicastAudio = _config.Properties.Value<string>("multicastAudioAddress");
-
-                if (multicastAudio != null)
+                if (!String.IsNullOrEmpty(_propsConfig.MulticastAudioAddress))
                 {
-                    _device.SecondaryAudio.MulticastAddress.StringValue = multicastAudio;
+                    _device.SecondaryAudio.MulticastAddress.StringValue = _propsConfig.MulticastAudioAddress;
                 }
             }
 
@@ -531,50 +524,6 @@ namespace NvxEpi
                 TieLineCollection.Default.Add(new TieLine(device.RoutingVideoOutput, videoRoutingInput));
                 TieLineCollection.Default.Add(new TieLine(device.RoutingAudioOutput, audioRoutingInput));
             }
-        }
-
-        protected static DmNvxBaseClass GetNvxDevice(DeviceConfig config)
-        {
-            var deviceConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
-
-            try
-            {
-                var nvxDeviceType = typeof(DmNvxBaseClass)
-                    .GetCType()
-                    .Assembly
-                    .GetTypes()
-                    .FirstOrDefault(x => x.Name.Equals(deviceConfig.Model, StringComparison.OrdinalIgnoreCase));
-
-                if (nvxDeviceType == null) throw new NullReferenceException();
-                if (deviceConfig.Control.IpId == null) throw new Exception("The IPID for this device must be defined");
-                
-                var newDevice = nvxDeviceType
-                    .GetConstructor(new CType[] { typeof(ushort).GetCType(), typeof(CrestronControlSystem) })
-                    .Invoke(new object[] { Convert.ToUInt16(deviceConfig.Control.IpId, 16), Global.ControlSystem });
-
-                var nvxDevice = newDevice as DmNvxBaseClass;
-                if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");
-
-                if (deviceConfig.DeviceName != null) nvxDevice.Control.Name.StringValue = deviceConfig.DeviceName.Replace(" ", string.Empty);
-                else nvxDevice.Control.Name.StringValue = config.Name.Replace(" ", string.Empty);
-
-                return nvxDevice;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public static void LoadPlugin()
-        {
-            DeviceFactory.AddFactoryForType("NvxDevice", NvxDeviceEpi.Build);
-        }
-
-        public static NvxDeviceEpi Build(DeviceConfig config)
-        {
-            var device = NvxDeviceEpi.GetNvxDevice(config);
-            return new NvxDeviceEpi(config, device);
         }
 
         public CrestronCollection<ComPort> ComPorts
