@@ -31,7 +31,20 @@ namespace NvxEpi.DeviceHelpers
         {
             _key = config.Key;
             Feedback = FeedbackFactory.GetFeedback(() => VideoWallMode);
-            _device.HdmiOut.StreamChange += new Crestron.SimplSharpPro.DeviceSupport.StreamEventHandler(HdmiOut_StreamChange);
+            try
+            {
+                if (_device.HdmiOut == null)
+                {
+                    Debug.Console(0, "{0} does not have an HDMI Out. Skipping event subscription.", _device.ToString());
+                    return;
+                }
+
+                _device.HdmiOut.StreamChange += HdmiOut_StreamChange;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(Debug.ErrorLogLevel.Error, String.Format("Exception in VideoWallHelper: {0}", ex.Message));
+            }
         }
 
         void HdmiOut_StreamChange(Crestron.SimplSharpPro.DeviceSupport.Stream stream, Crestron.SimplSharpPro.DeviceSupport.StreamEventArgs args)
