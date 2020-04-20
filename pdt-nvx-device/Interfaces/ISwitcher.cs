@@ -1,11 +1,9 @@
 ﻿using System;
 using PepperDash.Essentials.Core;
-using EssentialsExtensions;
-using EssentialsExtensions.Attributes;
 
 namespace NvxEpi.Interfaces
 {
-    public interface ISwitcher : IDynamicFeedback
+    public interface ISwitcher
     {
         Feedback Feedback { get; set; }
         event EventHandler RouteUpdated;

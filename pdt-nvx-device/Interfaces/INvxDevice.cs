@@ -1,8 +1,6 @@
 ﻿using System;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using EssentialsExtensions;
-using EssentialsExtensions.Attributes;
 
 namespace NvxEpi.Interfaces
 {

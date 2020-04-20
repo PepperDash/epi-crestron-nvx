@@ -9,8 +9,6 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
-using EssentialsExtensions;
-using EssentialsExtensions.Attributes;
 using NvxEpi.Interfaces;
 
 namespace NvxEpi.DeviceHelpers

@@ -198,12 +198,6 @@ namespace NvxEpi
             {
                 return _inputs == null ? null : _inputs[0].HdmiCapabilityFb;
             }
-            protected set
-            {
-                if (_inputs == null) return;
-
-                _inputs[0].HdmiCapabilityFb = value;
-            }
         }
         public int HdmiInput1HdmiCapability
         {
@@ -224,11 +218,6 @@ namespace NvxEpi
         public Feedback HdmiInput1SupportedLevelFb
         {
             get { return _inputs == null ? null : _inputs[0].HdmiSupportedLevelFb; }
-            protected set
-            {
-                if (_inputs == null) return;
-                _inputs[0].HdmiSupportedLevelFb = value;
-            }
         }
         public int HdmiInput1SupportedLevel
         {
@@ -247,12 +236,6 @@ namespace NvxEpi
                 if (_inputs == null) return null;
 
                 return _inputs.Count < 2 ? null : _inputs[1].HdmiCapabilityFb;
-            }
-            protected set
-            {
-                if (_inputs == null) return;
-                if (_inputs.Count < 2) return;
-                _inputs[1].HdmiCapabilityFb = value;
             }
         }
         public int HdmiInput2HdmiCapability
@@ -282,13 +265,6 @@ namespace NvxEpi
 
                 return _inputs.Count < 2 ? null : _inputs[1].HdmiSupportedLevelFb;
             }
-            protected set
-            {
-                if (_inputs == null) return;
-                if (_inputs.Count < 2) return;
-
-                _inputs[1].HdmiSupportedLevelFb = value;
-            }
         }
         public int HdmiInput2SupportedLevel
         {
@@ -315,7 +291,8 @@ namespace NvxEpi
         {
             get
             {
-                return  _device.HdmiOut == null || _device.HdmiOut.VideoWallModeFeedback == null ? 0 : _device.HdmiOut.VideoWallModeFeedback.UShortValue;
+                return  _device.HdmiOut == null || _device.HdmiOut.VideoWallModeFeedback == null ? 0 : 
+                    _device.HdmiOut.VideoWallModeFeedback.UShortValue;
             }
         }
 
@@ -361,18 +338,8 @@ namespace NvxEpi
         {
             get
             {
-                if (_device.SecondaryAudio == null) return String.Empty;
-
-                string result = string.Empty;
-                if (_audioSwitcher is NvxReceiveAudioSwitcher)
-                {    
-                    result = _device.SecondaryAudio.ReceiveMulticastAddressFeedback.StringValue;
-                }
-                else
-                {
-                    result = _device.SecondaryAudio.MulticastAddressFeedback.StringValue;
-                }
-                return result;
+                return _device.SecondaryAudio == null ? String.Empty :
+                    _device.SecondaryAudio.MulticastAddressFeedback.StringValue;
             }
         }
 

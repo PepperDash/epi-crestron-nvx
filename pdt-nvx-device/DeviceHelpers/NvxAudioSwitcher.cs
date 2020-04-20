@@ -15,7 +15,7 @@ namespace NvxEpi.DeviceHelpers
         private string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, this.GetType().GetCType().Name); }
+            get { return _key; }
         }
 
         private int _selectedInput;
@@ -27,7 +27,7 @@ namespace NvxEpi.DeviceHelpers
         public NvxAudioSwitcher(DeviceConfig config, DmNvxBaseClass device)
             : base(device)
         {
-            _key = config.Key;
+            _key = string.Format("{0} {1}", config.Key, this.GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             if (device.SecondaryAudio != null)

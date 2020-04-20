@@ -4,7 +4,6 @@ using PepperDash.Core;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using Crestron.SimplSharp.Reflection;
-using EssentialsExtensions.Attributes;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using NvxEpi.Interfaces;
@@ -18,10 +17,9 @@ namespace NvxEpi.DeviceHelpers
         private readonly string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, GetType().GetCType().Name); }
+            get { return _key; }
         }
 
-        [Feedback(JoinNumber = 1, ValuePropertyName="Source")]
         public Feedback Feedback { get; set; }
 
         public event EventHandler RouteUpdated;
@@ -29,7 +27,7 @@ namespace NvxEpi.DeviceHelpers
         public NvxVideoSwitcher(DeviceConfig config, DmNvxBaseClass device)
             : base(device)
         {
-            _key = config.Key;
+            _key = string.Format("{0} {1}", config.Key, GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             _device.BaseEvent += (sender, args) =>

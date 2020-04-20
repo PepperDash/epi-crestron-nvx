@@ -13,7 +13,8 @@ namespace NvxEpi.DeviceHelpers
 
         private DmNvxBaseClass _device;
 
-        private string _key;
+        private readonly string _key;
+
         public string Key
         {
             get { return string.Format("{0} {1}", _key, _input.NameFeedback.StringValue); }
