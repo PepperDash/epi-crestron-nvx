@@ -1,10 +1,8 @@
 ﻿using System;
 using Crestron.SimplSharp.Reflection;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core.Config;
-using EssentialsExtensions.Attributes;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
@@ -15,7 +13,7 @@ namespace NvxEpi.DeviceHelpers
         private readonly string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, GetType().GetCType().Name); }
+            get { return _key; }
         }
 
         public Feedback Feedback { get; set; }
@@ -26,12 +24,25 @@ namespace NvxEpi.DeviceHelpers
             set { _device.HdmiOut.VideoWallMode.UShortValue = (ushort)value; }
         }
 
-        public NvxVideoWallHelper(DeviceConfig config, DmNvxBaseClass device)
+        public NvxVideoWallHelper(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = config.Key;
+            _key = string.Format("{0} {1}", key, GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => VideoWallMode);
-            _device.HdmiOut.StreamChange += new Crestron.SimplSharpPro.DeviceSupport.StreamEventHandler(HdmiOut_StreamChange);
+            try
+            {
+                if (_device.HdmiOut == null)
+                {
+                    Debug.Console(0, "{0} does not have an HDMI Out. Skipping event subscription.", _device.ToString());
+                    return;
+                }
+
+                _device.HdmiOut.StreamChange += HdmiOut_StreamChange;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(Debug.ErrorLogLevel.Error, String.Format("Exception in VideoWallHelper: {0}", ex.Message));
+            }
         }
 
         void HdmiOut_StreamChange(Crestron.SimplSharpPro.DeviceSupport.Stream stream, Crestron.SimplSharpPro.DeviceSupport.StreamEventArgs args)

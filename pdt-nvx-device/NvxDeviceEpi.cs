@@ -25,8 +25,14 @@ namespace NvxEpi
         public RoutingOutputPort RoutingVideoOutput { get; protected set; }
         public RoutingOutputPort RoutingAudioOutput { get; protected set; }
 
+        public static readonly string DefaultRouterKey = "Default";
+
+        public string ParentRouterKey
+        {
+            get { return _propsConfig.ParentDeviceKey ?? DefaultRouterKey; }
+        }
+
         protected DmNvxBaseClass _device;
-        protected DeviceConfig _config;
         protected NvxDevicePropertiesConfig _propsConfig;
 
         protected ISwitcher _videoSwitcher;
@@ -37,17 +43,17 @@ namespace NvxEpi
 
         protected List<INvxHdmiInputHelper> _inputs;
 
-        protected static List<INvxDevice> _devices = new List<INvxDevice>();
+        protected IEnumerable<INvxDevice> _devices;
 
-        public static IEnumerable<INvxDevice> Devices
+        public IEnumerable<INvxDevice> Devices
         {
             get { return _devices; }
         }
-        public static IEnumerable<INvxDevice> Transmitters
+        public IEnumerable<INvxDevice> Transmitters
         {
             get { return _devices.Where(x => x.IsTransmitter); }
         }
-        public static IEnumerable<INvxDevice> Receivers
+        public IEnumerable<INvxDevice> Receivers
         {
             get { return _devices.Where(x => x.IsReceiver); }
         }
@@ -78,7 +84,10 @@ namespace NvxEpi
 
         public string RemoteUsbId
         {
-            get { return _device.UsbInput.RemoteDeviceId.StringValue; }
+            get 
+            { 
+                return _device.UsbInput.RemoteDeviceIdFeedback.StringValue; 
+            }
             set { _device.UsbInput.RemoteDeviceId.StringValue = value; }
         }
 
@@ -101,23 +110,48 @@ namespace NvxEpi
             }
         }
 
-        public Feedback HdmiInput1SyncDetectedFb { get { return _inputs[0].SyncDetectedFb; } }
+        public Feedback HdmiInput1SyncDetectedFb
+        {
+            get { return _inputs == null ? null : _inputs[0].SyncDetectedFb; }
+            protected set
+            {
+                if (_inputs == null) return;
+                _inputs[0].SyncDetectedFb = value;
+            }
+        }
         public bool HdmiInput1SyncDetected
         {
             get
             {
-                if (_inputs[0] == null) return false;
-                return (_inputs[0].SyncDetected);
+                if (_inputs == null) return false;
+
+                return _inputs[0] != null && (_inputs[0].SyncDetected);
             }
         }
 
-        public Feedback HdmiInput2SyncDetectedFb { get { return _inputs[1].SyncDetectedFb; } }
+        public Feedback HdmiInput2SyncDetectedFb
+        {
+            get
+            {
+                if (_inputs == null) return null;
+
+                return _inputs.Count < 2 ? null : _inputs[1].SyncDetectedFb;
+            }
+            protected set
+            {
+                if (_inputs == null) return;
+                if (_inputs.Count < 2) return;
+                _inputs[1].SyncDetectedFb = value;
+            }
+        }
         public bool HdmiInput2SyncDetected
         {
             get
             {
-                if (_inputs[1] == null) return false;
-                return (_inputs[1].SyncDetected);
+                if (_inputs == null) return false;
+                if (_inputs.Count < 2) return false;
+
+                return _inputs[1] != null && _inputs[1].SyncDetected;
             }
         }
 
@@ -168,53 +202,88 @@ namespace NvxEpi
             }
         }
 
-        public Feedback HdmiInput1HdmiCapabilityFb { get { return _inputs[0].HdmiCapabilityFb; } }
+        public Feedback HdmiInput1HdmiCapabilityFb
+        {
+            get
+            {
+                return _inputs == null ? null : _inputs[0].HdmiCapabilityFb;
+            }
+        }
         public int HdmiInput1HdmiCapability
         {
             get
             {
-                if (_inputs[0] == null) return default(int);
-                return (_inputs[0].HdmiCapability);
+                return _inputs == null ? 0 : (_inputs[0].HdmiCapability);
             }
             set
             {
+                if (_inputs == null) return;
+
                 if (_inputs[0] == null) return;
+
                 _inputs[0].HdmiCapability = value;
             }
         }
 
-        public Feedback HdmiInput1SupportedLevelFb { get { return _inputs[0].HdmiSupportedLevelFb; } }
+        public Feedback HdmiInput1SupportedLevelFb
+        {
+            get { return _inputs == null ? null : _inputs[0].HdmiSupportedLevelFb; }
+        }
         public int HdmiInput1SupportedLevel
         {
             get
             {
-                if (_inputs[0] == null) return default(int);
-                return (_inputs[0].HdmiSupportedLevel);
+                if (_inputs == null) return default(int);
+
+                return _inputs[0] == null ? default(int) : (_inputs[0].HdmiSupportedLevel);
             }
         }
 
-        public Feedback HdmiInput2HdmiCapabilityFb { get { return _inputs[1].HdmiCapabilityFb; } }
+        public Feedback HdmiInput2HdmiCapabilityFb
+        {
+            get
+            {
+                if (_inputs == null) return null;
+
+                return _inputs.Count < 2 ? null : _inputs[1].HdmiCapabilityFb;
+            }
+        }
         public int HdmiInput2HdmiCapability
         {
             get
             {
-                if (_inputs[1] == null) return default(int);
-                return (_inputs[1].HdmiCapability);
+                if (_inputs == null) return default(int);
+                if (_inputs.Count < 2) return default(int);
+
+                return _inputs[1] == null ? default(int) : (_inputs[1].HdmiCapability);
             }
             set
             {
+                if (_inputs == null) return;
+                if (_inputs.Count < 2) return;
+
                 if (_inputs[1] == null) return;
                 _inputs[1].HdmiCapability = value;
             }
         }
 
-        public Feedback HdmiInput2SupportedLevelFb { get { return _inputs[1].HdmiSupportedLevelFb; } }
+        public Feedback HdmiInput2SupportedLevelFb
+        {
+            get
+            {
+                if (_inputs == null) return null;
+
+                return _inputs.Count < 2 ? null : _inputs[1].HdmiSupportedLevelFb;
+            }
+        }
         public int HdmiInput2SupportedLevel
         {
             get
             {
-                if (_inputs[1] == null) return default(int);
-                return (_inputs[1].HdmiSupportedLevel);
+                if (_inputs == null) return default(int);
+                if (_inputs.Count < 2) return default(int);
+
+                return _inputs[1] == null ? default(int) : (_inputs[1].HdmiSupportedLevel);
             }
         }
 
@@ -230,7 +299,11 @@ namespace NvxEpi
         public Feedback VideoWallModeFb { get; protected set; }
         public int VideoWallMode
         {
-            get { return _device.HdmiOut.VideoWallModeFeedback.UShortValue; }
+            get
+            {
+                return  _device.HdmiOut == null || _device.HdmiOut.VideoWallModeFeedback == null ? 0 : 
+                    _device.HdmiOut.VideoWallModeFeedback.UShortValue;
+            }
         }
 
         public Feedback DeviceNameFb { get; protected set; }
@@ -275,16 +348,8 @@ namespace NvxEpi
         {
             get
             {
-                string result = string.Empty;
-                if (_audioSwitcher is NvxReceiveAudioSwitcher)
-                {    
-                    result = _device.SecondaryAudio.ReceiveMulticastAddressFeedback.StringValue;
-                }
-                else
-                {
-                    result = _device.SecondaryAudio.MulticastAddressFeedback.StringValue;
-                }
-                return result;
+                return _device.SecondaryAudio == null ? String.Empty :
+                    _device.SecondaryAudio.MulticastAddressFeedback.StringValue;
             }
         }
 
@@ -306,27 +371,28 @@ namespace NvxEpi
             }
         }
 
-        public NvxDeviceEpi(DeviceConfig config, DmNvxBaseClass device)
-            : base(config.Key, config.Name, device)
+        public Feedback OutputDisabledByHdcpFb { get; protected set; }
+
+        public Feedback IsOnlineFb { get { return IsOnline; } }
+
+        public NvxDeviceEpi(string key, string name, DmNvxBaseClass device, NvxDevicePropertiesConfig config, 
+            ISwitcher videoSwitcher, ISwitcher audioSwitcher, ISwitcher videoInputSwitcher, ISwitcher audioInputSwitcher,
+            NvxVideoWallHelper videoWallHelper, List<INvxHdmiInputHelper> inputs)
+            : base(key, name, device)
         {
             _device = device;
-            _config = config;
-            _propsConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
+            _propsConfig = config;
 
-            VirtualDevice = config.Properties.Value<int>("virtualDevice");
+            VirtualDevice = config.VirtualDevice;
 
-            _videoSwitcher = new NvxVideoSwitcher(config, _device);
-            _audioSwitcher = new NvxAudioSwitcher(config, _device);
+            _videoSwitcher = videoSwitcher;
+            _audioSwitcher = audioSwitcher;
 
-            _videoInputSwitcher = new NvxVideoInputHandler(config, _device);
-            _audioInputSwitcher = new NvxAudioInputHandler(config, _device);
-            _videoWall = new NvxVideoWallHelper(config, _device);
+            _videoInputSwitcher = videoInputSwitcher;
+            _audioInputSwitcher = audioInputSwitcher;
+            _videoWall = videoWallHelper;
 
-            _inputs = new List<INvxHdmiInputHelper>();
-            foreach (var input in _device.HdmiIn)
-            {
-                _inputs.Add(new NvxHdmiInputHelper(config, input, device));
-            }
+            _inputs = inputs;
 
             var videoOutputName = string.Format("{0}-VideoOutput", Key);
             RoutingVideoOutput = new RoutingOutputPort(videoOutputName, eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming, null, this);
@@ -337,14 +403,29 @@ namespace NvxEpi
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>() { RoutingVideoOutput, RoutingAudioOutput };
 
-            AddPreActivationAction(() => _devices.Add(this));
+            if (!String.IsNullOrEmpty(_propsConfig.UsbMode))
+            {
+                var usbMode =
+                    (DmNvxUsbInput.eUsbMode)Enum.Parse(typeof(DmNvxUsbInput.eUsbMode), config.UsbMode, true);
 
-            if (String.IsNullOrEmpty(_propsConfig.UsbMode)) return;
+                _device.UsbInput.Mode = usbMode;
+            }
 
-            var usbMode =
-                (DmNvxUsbInput.eUsbMode) Enum.Parse(typeof (DmNvxUsbInput.eUsbMode), _propsConfig.UsbMode, true);
+            AddPostActivationAction(() => 
+                {
+                    _devices = DeviceManager
+                        .AllDevices
+                        .Where(x => x.GetType().GetCType().IsAssignableFrom(typeof(INvxDevice).GetCType()))
+                        .Cast<INvxDevice>()
+                        .Where(x => x.ParentRouterKey.Equals(ParentRouterKey, StringComparison.OrdinalIgnoreCase));
 
-            _device.UsbInput.Mode = usbMode;
+                    _videoSwitcher.SetInputs(Transmitters);
+                    _audioSwitcher.SetInputs(Transmitters);
+                    _videoInputSwitcher.SetInputs(Transmitters);
+                    _audioInputSwitcher.SetInputs(Transmitters);
+                });
+
+            AddPostActivationAction(SetupRoutingPorts);
         }
 
         public override bool CustomActivate()
@@ -361,13 +442,18 @@ namespace NvxEpi
             StreamUrlFb = FeedbackFactory.GetFeedback(() => StreamUrl);
             DeviceStatusFb = FeedbackFactory.GetFeedback(() => DeviceStatus);
 
+            OutputDisabledByHdcpFb = new BoolFeedback(() =>
+                {
+                    if (IsTransmitter) return false;
+                    return _device.HdmiOut.DisabledByHdcpFeedback.BoolValue;
+                });
+
             AddToFeedbackList(DeviceNameFb, DeviceModeFb, StreamUrlFb, VideoWallModeFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
 
             var result = base.CustomActivate();
             
             SubscribeToEvents();
             SetDefaults();
-            SetupRoutingPorts();
 
             return result;
         }
@@ -416,18 +502,24 @@ namespace NvxEpi
                     };
                 };
 
-            _device.HdmiOut.StreamChange += (sender, args) =>
+            if (_device.HdmiOut != null)
+            {
+                _device.HdmiOut.StreamChange += (sender, args) =>
                 {
                     switch (args.EventId)
                     {
                         case DMOutputEventIds.ResolutionEventId:
                             if (OutputResolutionFb != null) OutputResolutionFb.FireUpdate();
                             break;
+                        case DMOutputEventIds.DisabledByHdcpEventId:
+                            if (OutputDisabledByHdcpFb != null) OutputDisabledByHdcpFb.FireUpdate();
+                            break;
                         default:
                             //Debug.Console(2, this, "Stream Change Unhandled DM EventId {0}", args.EventId);
                             break;
                     }
                 };
+            }
 
             _videoSwitcher.RouteUpdated += (sender, args) =>
                 {
@@ -444,16 +536,16 @@ namespace NvxEpi
 
         protected void SetDefaults()
         {
-            var mode = _config.Properties.Value<string>("mode");
-            var audioBreakaway = _config.Properties.Value<bool>("enableAudioBreakaway");
-
-            if (mode == null)
+            if (String.IsNullOrEmpty(_propsConfig.Mode))
             {
                 var ex = string.Format("The device mode MUST be defined in the config file: {0}", Key);
                 Debug.ConsoleWithLog(0, ex);
 
                 throw new Exception(ex);
             }
+
+            var mode = _propsConfig.Mode;
+            var audioBreakaway = _propsConfig.EnableAudioBreakaway;
 
             if (mode.Equals("rx", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -473,41 +565,39 @@ namespace NvxEpi
                 _device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
                 _device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
 
-                var multicastVideo = _config.Properties.Value<string>("multicastVideoAddress");
-                
-                if (multicastVideo != null) 
+                if (!String.IsNullOrEmpty(_propsConfig.MulticastVideoAddress)) 
                 {
-                    _device.Control.MulticastAddress.StringValue = multicastVideo;
+                    _device.Control.MulticastAddress.StringValue = _propsConfig.MulticastVideoAddress;
                 }
 
-                var multicastAudio = _config.Properties.Value<string>("multicastAudioAddress");
-
-                if (multicastAudio != null)
+                if (!String.IsNullOrEmpty(_propsConfig.MulticastAudioAddress))
                 {
-                    _device.SecondaryAudio.MulticastAddress.StringValue = multicastAudio;
+                    _device.SecondaryAudio.MulticastAddress.StringValue = _propsConfig.MulticastAudioAddress;
                 }
             }
-
-            _device.Control.EnableAutomaticInitiation();
+    
             _device.SecondaryAudio.EnableAutomaticInitiation();
         }
 
         protected void SetupRoutingPorts()
         {
-            for (uint x = 0; x < _device.HdmiIn.Count; x++)
+            if (_device.HdmiIn != null)
             {
-                var inputNumber = x + 1;
+                for (uint x = 0; x < _device.HdmiIn.Count; x++)
+                {
+                    var inputNumber = x + 1;
 
-                InputPorts.Add(new RoutingInputPort(
-                    string.Format("{0}-Hdmi{1}", Key, inputNumber),
-                    eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Streaming,
-                    new NvxInputSourceSelector() { HdmiInput = (int)inputNumber },
-                    this));
+                    InputPorts.Add(new RoutingInputPort(
+                        string.Format("{0}-Hdmi{1}", Key, inputNumber),
+                        eRoutingSignalType.AudioVideo,
+                        eRoutingPortConnectionType.Streaming,
+                        new NvxInputSourceSelector() {HdmiInput = (int) inputNumber},
+                        this));
+                }
             }
 
             if (_isTransmitter) return;
-            foreach (var device in NvxDeviceEpi.Transmitters)
+            foreach (var device in Transmitters)
             {
                 if (device.Key.Equals(Key, StringComparison.InvariantCultureIgnoreCase)) continue;
 
@@ -531,50 +621,6 @@ namespace NvxEpi
                 TieLineCollection.Default.Add(new TieLine(device.RoutingVideoOutput, videoRoutingInput));
                 TieLineCollection.Default.Add(new TieLine(device.RoutingAudioOutput, audioRoutingInput));
             }
-        }
-
-        protected static DmNvxBaseClass GetNvxDevice(DeviceConfig config)
-        {
-            var deviceConfig = JsonConvert.DeserializeObject<NvxDevicePropertiesConfig>(config.Properties.ToString());
-
-            try
-            {
-                var nvxDeviceType = typeof(DmNvxBaseClass)
-                    .GetCType()
-                    .Assembly
-                    .GetTypes()
-                    .FirstOrDefault(x => x.Name.Equals(deviceConfig.Model, StringComparison.OrdinalIgnoreCase));
-
-                if (nvxDeviceType == null) throw new NullReferenceException();
-                if (deviceConfig.Control.IpId == null) throw new Exception("The IPID for this device must be defined");
-                
-                var newDevice = nvxDeviceType
-                    .GetConstructor(new CType[] { typeof(ushort).GetCType(), typeof(CrestronControlSystem) })
-                    .Invoke(new object[] { Convert.ToUInt16(deviceConfig.Control.IpId, 16), Global.ControlSystem });
-
-                var nvxDevice = newDevice as DmNvxBaseClass;
-                if (nvxDevice == null) throw new NullReferenceException("Could not find the base nvx type");
-
-                if (deviceConfig.DeviceName != null) nvxDevice.Control.Name.StringValue = deviceConfig.DeviceName.Replace(" ", string.Empty);
-                else nvxDevice.Control.Name.StringValue = config.Name.Replace(" ", string.Empty);
-
-                return nvxDevice;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public static void LoadPlugin()
-        {
-            DeviceFactory.AddFactoryForType("NvxDevice", NvxDeviceEpi.Build);
-        }
-
-        public static NvxDeviceEpi Build(DeviceConfig config)
-        {
-            var device = NvxDeviceEpi.GetNvxDevice(config);
-            return new NvxDeviceEpi(config, device);
         }
 
         public CrestronCollection<ComPort> ComPorts

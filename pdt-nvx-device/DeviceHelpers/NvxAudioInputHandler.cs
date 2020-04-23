@@ -11,17 +11,18 @@ namespace NvxEpi.DeviceHelpers
 {
     public class NvxAudioInputHandler : NvxDeviceHelperBase, ISwitcher
     {
-        private string _key;
+        private readonly string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, this.GetType().GetCType().Name); }
+            get { return _key; }
         }
+
         public Feedback Feedback { get; set; }
 
-        public NvxAudioInputHandler(DeviceConfig config, DmNvxBaseClass device)
+        public NvxAudioInputHandler(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = config.Key;
+            _key = string.Format("{0} {1}", key, this.GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             if (_device.Control.DeviceMode == eDeviceMode.Receiver)
@@ -71,5 +72,15 @@ namespace NvxEpi.DeviceHelpers
             if (RouteUpdated == null) return;
             handler.Invoke(this, EventArgs.Empty);
         }
+
+        #region ISwitcher Members
+
+
+        public void SetInputs(System.Collections.Generic.IEnumerable<INvxDevice> inputs)
+        {
+            _inputs = inputs;
+        }
+
+        #endregion
     }
 }
