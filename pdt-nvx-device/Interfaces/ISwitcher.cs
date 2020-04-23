@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Interfaces
@@ -9,5 +10,7 @@ namespace NvxEpi.Interfaces
         event EventHandler RouteUpdated;
         int Source { get; set; }
         string CurrentlyRouted { get; }
+
+        void SetInputs(IEnumerable<INvxDevice> inputs);
     }
 }

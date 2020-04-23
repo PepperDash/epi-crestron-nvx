@@ -15,6 +15,8 @@ namespace NvxEpi.DeviceHelpers
 {
     public abstract class NvxDeviceHelperBase : IKeyed
     {
+        protected IEnumerable<INvxDevice> _inputs = new List<INvxDevice>();
+
         protected DmNvxBaseClass _device;
 
         protected bool _isTransmitter { get { return _device.Control.DeviceModeFeedback == eDeviceMode.Transmitter; } }

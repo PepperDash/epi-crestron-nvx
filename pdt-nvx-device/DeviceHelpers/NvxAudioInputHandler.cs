@@ -19,10 +19,10 @@ namespace NvxEpi.DeviceHelpers
 
         public Feedback Feedback { get; set; }
 
-        public NvxAudioInputHandler(DeviceConfig config, DmNvxBaseClass device)
+        public NvxAudioInputHandler(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = string.Format("{0} {1}", config.Key, this.GetType().GetCType().Name);
+            _key = string.Format("{0} {1}", key, this.GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             if (_device.Control.DeviceMode == eDeviceMode.Receiver)
@@ -72,5 +72,15 @@ namespace NvxEpi.DeviceHelpers
             if (RouteUpdated == null) return;
             handler.Invoke(this, EventArgs.Empty);
         }
+
+        #region ISwitcher Members
+
+
+        public void SetInputs(System.Collections.Generic.IEnumerable<INvxDevice> inputs)
+        {
+            _inputs = inputs;
+        }
+
+        #endregion
     }
 }

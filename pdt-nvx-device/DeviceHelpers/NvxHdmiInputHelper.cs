@@ -17,16 +17,16 @@ namespace NvxEpi.DeviceHelpers
 
         public string Key
         {
-            get { return string.Format("{0} {1}", _key, _input.NameFeedback.StringValue); }
+            get { return _key; }
         }
 
         public Feedback SyncDetectedFb { get; set; }
         public Feedback HdmiCapabilityFb { get; set; }
         public Feedback HdmiSupportedLevelFb { get; set; }
 
-        public NvxHdmiInputHelper(DeviceConfig config, Crestron.SimplSharpPro.DeviceSupport.HdmiInWithColorSpaceMode input, DmNvxBaseClass device)
+        public NvxHdmiInputHelper(string key, Crestron.SimplSharpPro.DeviceSupport.HdmiInWithColorSpaceMode input, DmNvxBaseClass device)
         {
-            _key = config.Key;
+            _key = string.Format("{0} {1}", key, _input.NameFeedback.StringValue);
             _input = input;
             _device = device;
 

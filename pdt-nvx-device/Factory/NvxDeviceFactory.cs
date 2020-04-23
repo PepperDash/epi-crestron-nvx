@@ -26,29 +26,36 @@ namespace NvxEpi.Factory
     {
         public static void LoadPlugin()
         {
-            DeviceFactory.AddFactoryForType("NvxDevice", Build);
+            DeviceFactory.AddFactoryForType("NvxDevice", BuildDevice);
+            DeviceFactory.AddFactoryForType("NvxRouter", BuildRouter);
         }
 
-        static IKeyed Build(DeviceConfig config)
+        static IKeyed BuildDevice(DeviceConfig config)
         {
             var props = NvxDevicePropertiesConfig.FromDeviceConfig(config);
             var device = new NvxDeviceBuilder(config.Name, props).GetNvxDevice();
 
-            var videoSwitcher = new NvxVideoSwitcher(config, device);
-            var audioSwitcher = new NvxAudioSwitcher(config, device);
-            var videoInputSwitcher = new NvxVideoInputHandler(config, device);
-            var audioInputSwitcher = new NvxAudioInputHandler(config, device);
-            var videoWallHelper = new NvxVideoWallHelper(config, device);
+            var videoSwitcher = new NvxVideoSwitcher(config.Key, device);
+            var audioSwitcher = new NvxAudioSwitcher(config.Key, device);
+            var videoInputSwitcher = new NvxVideoInputHandler(config.Key, device);
+            var audioInputSwitcher = new NvxAudioInputHandler(config.Key, device);
+            var videoWallHelper = new NvxVideoWallHelper(config.Key, device);
 
             var inputs = new List<INvxHdmiInputHelper>();
 
             foreach (var hdmi in device.HdmiIn)
             {
-                inputs.Add(new NvxHdmiInputHelper(config, hdmi, device));
+                inputs.Add(new NvxHdmiInputHelper(config.Key, hdmi, device));
             }
 
             return new NvxDeviceEpi(config.Key, config.Name, device, props, videoSwitcher,
                 audioSwitcher, videoInputSwitcher, audioInputSwitcher, videoWallHelper, inputs);
+        }
+
+        static IKeyed BuildRouter(DeviceConfig config)
+        {
+            var props = NvxRouterPropertiesConfig.FromDeviceConfig(config);
+            return new NvxRouterEpi(config.Key, config.Name, props);
         }
     }
 }

@@ -23,6 +23,9 @@ namespace NvxEpi
         [JsonProperty("friendlyName")]
         public string FriendlyName { get; set; }
 
+        [JsonProperty("parentDeviceKey")]
+        public string ParentDeviceKey { get; set; }
+
         [JsonProperty("model")]
         public string Model { get; set; }
 

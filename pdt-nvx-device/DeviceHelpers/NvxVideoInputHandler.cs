@@ -19,10 +19,10 @@ namespace NvxEpi.DeviceHelpers
 
         public Feedback Feedback { get; set; }
 
-        public NvxVideoInputHandler(DeviceConfig config, DmNvxBaseClass device)
+        public NvxVideoInputHandler(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = string.Format("{0} {1}", config.Key, this.GetType().GetCType().Name);
+            _key = string.Format("{0} {1}", key, this.GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             _device.BaseEvent += (sender, args) =>
@@ -75,5 +75,15 @@ namespace NvxEpi.DeviceHelpers
             if (RouteUpdated == null) return;
             handler.Invoke(this, EventArgs.Empty);
         }
+
+        #region ISwitcher Members
+
+
+        public void SetInputs(System.Collections.Generic.IEnumerable<INvxDevice> inputs)
+        {
+            _inputs = inputs;
+        }
+
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PepperDash.Core;
 using Crestron.SimplSharpPro.DM;
@@ -24,10 +25,10 @@ namespace NvxEpi.DeviceHelpers
 
         public event EventHandler RouteUpdated;
 
-        public NvxVideoSwitcher(DeviceConfig config, DmNvxBaseClass device)
+        public NvxVideoSwitcher(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = string.Format("{0} {1}", config.Key, GetType().GetCType().Name);
+            _key = string.Format("{0}-{1}", key, GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             _device.BaseEvent += (sender, args) =>
@@ -79,7 +80,7 @@ namespace NvxEpi.DeviceHelpers
                     return result;
                 }
 
-                var device = NvxDeviceEpi.Transmitters
+                var device = _inputs
                     .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue);
                
                 if (device != null)
@@ -104,7 +105,7 @@ namespace NvxEpi.DeviceHelpers
                     return result;
                 }
 
-                var device = NvxDeviceEpi.Transmitters
+                var device = _inputs
                     .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue);
                
                 if (device != null)
@@ -129,7 +130,7 @@ namespace NvxEpi.DeviceHelpers
                     return;
                 }
 
-                var result = NvxDeviceEpi.Transmitters
+                var result = _inputs
                     .FirstOrDefault(x => x.VirtualDevice == value);
                 
                 if (result == null) return;
@@ -164,5 +165,15 @@ namespace NvxEpi.DeviceHelpers
             if (handler == null) return;
             handler.Invoke(this, EventArgs.Empty);
         }
+
+        #region ISwitcher Members
+
+
+        public void SetInputs(System.Collections.Generic.IEnumerable<INvxDevice> inputs)
+        {
+            _inputs = inputs;
+        }
+
+        #endregion
     }
 }

@@ -24,10 +24,10 @@ namespace NvxEpi.DeviceHelpers
             set { _device.HdmiOut.VideoWallMode.UShortValue = (ushort)value; }
         }
 
-        public NvxVideoWallHelper(DeviceConfig config, DmNvxBaseClass device)
+        public NvxVideoWallHelper(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = string.Format("{0} {1}", config.Key, GetType().GetCType().Name);
+            _key = string.Format("{0} {1}", key, GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => VideoWallMode);
             try
             {

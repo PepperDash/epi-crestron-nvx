@@ -9,12 +9,24 @@ namespace NvxEpi.Interfaces
         RoutingOutputPort RoutingVideoOutput { get; }
         RoutingOutputPort RoutingAudioOutput { get; }
 
+        Feedback VideoSourceFb { get; }
+        Feedback AudioSourceFb { get; }
+        Feedback HdmiInput1HdmiCapabilityFb { get; }
+        Feedback DeviceNameFb { get; }
+        Feedback CurrentlyRoutedVideoSourceFb { get; }
+        Feedback CurrentlyRoutedAudioSourceFb { get; }
+        Feedback InputResolutionStringFb { get; }
+        Feedback OutputResolutionFb { get; }
+        Feedback HdmiInput1SyncDetectedFb { get; }
+        Feedback IsOnlineFb { get; }
+
         bool IsTransmitter { get; }
         bool IsReceiver { get; }
-        int AudioInputSource { get; }
-        int AudioSource { get; }
+        int AudioInputSource { get; set; }
+        int AudioSource { get; set; }
         int DeviceMode { get; }
         string DeviceName { get; }
+        string ParentRouterKey { get; }
         string StreamUrl { get; }
         string MulticastAudioAddress { get; }
         string MulticastVideoAddress { get; }

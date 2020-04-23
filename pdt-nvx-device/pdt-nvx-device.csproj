@@ -54,10 +54,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DM.dll</HintPath>
     </Reference>
-    <Reference Include="essentials-extensions, Version=1.0.0.42050, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\submodules\essentials-extensions\essentials-extensions\bin\Debug\essentials-extensions.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="PepperDashEssentials, Version=1.4.28.29475, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -109,6 +105,8 @@
     <Compile Include="DeviceHelpers\NvxAudioSwitcher.cs" />
     <Compile Include="NvxDeviceBridge.cs" />
     <Compile Include="Factory\NvxDeviceFactory.cs" />
+    <Compile Include="NvxRouterEpi.cs" />
+    <Compile Include="NvxRouterPropertiesConfig.cs" />
     <Compile Include="Routing\InputSourceSelector.cs" />
     <Compile Include="NvxDeviceEpi.cs" />
     <Compile Include="DeviceHelpers\NvxDeviceHelperBase.cs" />

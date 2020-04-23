@@ -25,6 +25,11 @@ namespace NvxEpi
         public RoutingOutputPort RoutingVideoOutput { get; protected set; }
         public RoutingOutputPort RoutingAudioOutput { get; protected set; }
 
+        public string ParentRouterKey
+        {
+            get { return _propsConfig.ParentDeviceKey ?? "Default"; }
+        }
+
         protected DmNvxBaseClass _device;
         protected NvxDevicePropertiesConfig _propsConfig;
 
@@ -36,17 +41,17 @@ namespace NvxEpi
 
         protected List<INvxHdmiInputHelper> _inputs;
 
-        protected static List<INvxDevice> _devices = new List<INvxDevice>();
+        protected IEnumerable<INvxDevice> _devices;
 
-        public static IEnumerable<INvxDevice> Devices
+        public IEnumerable<INvxDevice> Devices
         {
             get { return _devices; }
         }
-        public static IEnumerable<INvxDevice> Transmitters
+        public IEnumerable<INvxDevice> Transmitters
         {
             get { return _devices.Where(x => x.IsTransmitter); }
         }
-        public static IEnumerable<INvxDevice> Receivers
+        public IEnumerable<INvxDevice> Receivers
         {
             get { return _devices.Where(x => x.IsReceiver); }
         }
@@ -361,6 +366,10 @@ namespace NvxEpi
             }
         }
 
+        public Feedback OutputDisabledByHdcpFb { get; protected set; }
+
+        public Feedback IsOnlineFb { get { return IsOnline; } }
+
         public NvxDeviceEpi(string key, string name, DmNvxBaseClass device, NvxDevicePropertiesConfig config, 
             ISwitcher videoSwitcher, ISwitcher audioSwitcher, ISwitcher videoInputSwitcher, ISwitcher audioInputSwitcher,
             NvxVideoWallHelper videoWallHelper, List<INvxHdmiInputHelper> inputs)
@@ -397,7 +406,20 @@ namespace NvxEpi
                 _device.UsbInput.Mode = usbMode;
             }
 
-            AddPreActivationAction(() => _devices.Add(this));
+            AddPostActivationAction(() => 
+                {
+                    _devices = DeviceManager
+                        .AllDevices
+                        .Where(x => x.GetType().GetCType().IsAssignableFrom(typeof(INvxDevice).GetCType()))
+                        .Cast<INvxDevice>()
+                        .Where(x => x.ParentRouterKey.Equals(ParentRouterKey, StringComparison.OrdinalIgnoreCase));
+
+                    _videoSwitcher.SetInputs(Transmitters);
+                    _audioSwitcher.SetInputs(Transmitters);
+                    _videoInputSwitcher.SetInputs(Transmitters);
+                    _audioInputSwitcher.SetInputs(Transmitters);
+                });
+
             AddPostActivationAction(SetupRoutingPorts);
         }
 
@@ -414,6 +436,12 @@ namespace NvxEpi
             CurrentlyRoutedAudioSourceFb = FeedbackFactory.GetFeedback(() => CurrentlyRoutedAudioSource);
             StreamUrlFb = FeedbackFactory.GetFeedback(() => StreamUrl);
             DeviceStatusFb = FeedbackFactory.GetFeedback(() => DeviceStatus);
+
+            OutputDisabledByHdcpFb = new BoolFeedback(() =>
+                {
+                    if (IsTransmitter) return false;
+                    return _device.HdmiOut.DisabledByHdcpFeedback.BoolValue;
+                });
 
             AddToFeedbackList(DeviceNameFb, DeviceModeFb, StreamUrlFb, VideoWallModeFb, MulticastVideoAddressFb, MulticastAudioAddressFb);
 
@@ -478,6 +506,9 @@ namespace NvxEpi
                         case DMOutputEventIds.ResolutionEventId:
                             if (OutputResolutionFb != null) OutputResolutionFb.FireUpdate();
                             break;
+                        case DMOutputEventIds.DisabledByHdcpEventId:
+                            if (OutputDisabledByHdcpFb != null) OutputDisabledByHdcpFb.FireUpdate();
+                            break;
                         default:
                             //Debug.Console(2, this, "Stream Change Unhandled DM EventId {0}", args.EventId);
                             break;
@@ -539,8 +570,7 @@ namespace NvxEpi
                     _device.SecondaryAudio.MulticastAddress.StringValue = _propsConfig.MulticastAudioAddress;
                 }
             }
-
-            
+    
             _device.SecondaryAudio.EnableAutomaticInitiation();
         }
 
@@ -562,7 +592,7 @@ namespace NvxEpi
             }
 
             if (_isTransmitter) return;
-            foreach (var device in NvxDeviceEpi.Transmitters)
+            foreach (var device in Transmitters)
             {
                 if (device.Key.Equals(Key, StringComparison.InvariantCultureIgnoreCase)) continue;
 
