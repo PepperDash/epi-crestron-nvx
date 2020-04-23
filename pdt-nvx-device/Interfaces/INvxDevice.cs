@@ -15,7 +15,6 @@ namespace NvxEpi.Interfaces
         Feedback DeviceNameFb { get; }
         Feedback CurrentlyRoutedVideoSourceFb { get; }
         Feedback CurrentlyRoutedAudioSourceFb { get; }
-        Feedback InputResolutionStringFb { get; }
         Feedback OutputResolutionFb { get; }
         Feedback HdmiInput1SyncDetectedFb { get; }
         Feedback IsOnlineFb { get; }
@@ -30,6 +29,7 @@ namespace NvxEpi.Interfaces
         string StreamUrl { get; }
         string MulticastAudioAddress { get; }
         string MulticastVideoAddress { get; }
+        int HdmiInput1HdmiCapability { get; set; }
         int VideoInputSource { get; set; }
         int VideoSource { get; set; }
         int VirtualDevice { get; }

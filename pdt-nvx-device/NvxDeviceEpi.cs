@@ -25,9 +25,11 @@ namespace NvxEpi
         public RoutingOutputPort RoutingVideoOutput { get; protected set; }
         public RoutingOutputPort RoutingAudioOutput { get; protected set; }
 
+        public static readonly string DefaultRouterKey = "Default";
+
         public string ParentRouterKey
         {
-            get { return _propsConfig.ParentDeviceKey ?? "Default"; }
+            get { return _propsConfig.ParentDeviceKey ?? DefaultRouterKey; }
         }
 
         protected DmNvxBaseClass _device;
@@ -82,7 +84,10 @@ namespace NvxEpi
 
         public string RemoteUsbId
         {
-            get { return _device.UsbInput.RemoteDeviceId.StringValue; }
+            get 
+            { 
+                return _device.UsbInput.RemoteDeviceIdFeedback.StringValue; 
+            }
             set { _device.UsbInput.RemoteDeviceId.StringValue = value; }
         }
 

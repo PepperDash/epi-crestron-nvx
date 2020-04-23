@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
 
@@ -90,15 +91,6 @@ namespace NvxEpi
             return new StringFeedback(() => "No Source");
         }
 
-        public StringFeedback GetCurrentResolutionFeedback(uint index)
-        {
-            StringFeedback feedback;
-            if (_outputResolutions.TryGetValue(index, out feedback))
-                return feedback;
-
-            return new StringFeedback(() => String.Empty);
-        }
-
         public IntFeedback GetCurrentHorizontalResolutionFeedback(uint index)
         {
             IntFeedback feedback;
@@ -135,6 +127,15 @@ namespace NvxEpi
             return new BoolFeedback(() => false);
         }
 
+        public IntFeedback GetHdcpStateFb(uint index)
+        {
+            IntFeedback feedback;
+            if (_hdcpStates.TryGetValue(index, out feedback))
+                return feedback;
+
+            return new IntFeedback(() => default(int));
+        }
+
         public NvxRouterEpi(string key, string name, NvxRouterPropertiesConfig config)
             : base(key, name)
         {
@@ -144,17 +145,30 @@ namespace NvxEpi
                 {
                     _transmitters = DeviceManager
                         .AllDevices
-                        .Where(x => x.GetType().GetCType().IsAssignableFrom(typeof(INvxDevice).GetCType()))
+                        .Where(x => x as INvxDevice != null)
                         .Cast<INvxDevice>()
-                        .Where(x => x.ParentRouterKey.Equals(Key, StringComparison.OrdinalIgnoreCase) && x.IsTransmitter)
+                        .Where(x => (x.ParentRouterKey.Equals(Key, StringComparison.OrdinalIgnoreCase) 
+                            || x.ParentRouterKey.Equals(NvxDeviceEpi.DefaultRouterKey)) 
+                            && x.IsTransmitter)
                         .ToDictionary(x => x.VirtualDevice);
 
                     _receivers = DeviceManager
                         .AllDevices
-                        .Where(x => x.GetType().GetCType().IsAssignableFrom(typeof(INvxDevice).GetCType()))
+                        .Where(x => x as INvxDevice != null)
                         .Cast<INvxDevice>()
-                        .Where(x => x.ParentRouterKey.Equals(Key, StringComparison.OrdinalIgnoreCase) && x.IsReceiver)
+                        .Where(x => (x.ParentRouterKey.Equals(Key, StringComparison.OrdinalIgnoreCase)
+                            || x.ParentRouterKey.Equals(NvxDeviceEpi.DefaultRouterKey))
+                            && x.IsReceiver)
                         .ToDictionary(x => x.VirtualDevice);
+                });
+
+            AddPostActivationAction(() =>
+                {
+                    Debug.Console(2, this, "My transmitters...");
+                    _transmitters.ToList().ForEach(tx => Debug.Console(2, this, "{0}", tx.Value.DeviceName));
+
+                    Debug.Console(2, this, "My receivers...");
+                    _receivers.ToList().ForEach(rx => Debug.Console(2, this, "{0}", rx.Value.DeviceName));
                 });
 
             AddPostActivationAction(() =>
@@ -166,6 +180,7 @@ namespace NvxEpi
                     SetupOutputResolutions();
                     SetupSyncDetectedFeedbacks();
                     SetupDeviceOnlineFeedbacks();
+                    SetupHdcpFeedbacks();
                 });
         }
 
@@ -250,11 +265,21 @@ namespace NvxEpi
             rx.AudioSource = tx.VirtualDevice;
         }
 
+        public void SetHdcpState(int input, int state)
+        {
+            INvxDevice tx = null;
+            if (!_transmitters.TryGetValue(input, out tx))
+                return;
+
+            tx.HdmiInput1HdmiCapability = state;
+        }
+
         #region IBridge Members
 
         public void LinkToApi(Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            throw new NotImplementedException();
+            var bridge = new NvxRouterBridge(this, trilist, joinStart, joinMapKey);
+            bridge.LinkToApi();
         }
 
         #endregion

@@ -14,16 +14,35 @@ using Newtonsoft.Json;
 
 namespace NvxEpi
 {
-    public static class NvxRouterBridge
+    public class NvxRouterBridge
     {
-        public static void LinkToApiExt(this NvxRouterEpi router, Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
+        private readonly Crestron.SimplSharpPro.DeviceSupport.BasicTriList _trilist;
+        private readonly uint _joinStart;
+        private readonly string _joinMapKey;
+        private readonly IKeyed _router;
+
+        public NvxRouterBridge(IKeyed router, Crestron.SimplSharpPro.DeviceSupport.BasicTriList trilist, uint joinStart, string joinMapKey)
         {
+            _router = router;
+            _trilist = trilist;
+            _joinStart = joinStart;
+            _joinMapKey = joinMapKey;
+        }
+
+        public void LinkToApi()
+        {
+            var router = _router as NvxRouterEpi;
+            if (router == null) return;
+
+            var joinMapKey = _joinMapKey;
+            var joinStart = _joinStart;
+            var trilist = _trilist;
+
             var joinMap = new DmChassisControllerJoinMap();
             var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmChassisControllerJoinMap>(joinMapSerialized);
-
 
             joinMap.OffsetJoinNumbers(joinStart);
 
@@ -31,25 +50,68 @@ namespace NvxEpi
 
             for (uint x = 0; x < router.Config.NumberOfInputs; x++)
             {
-                var inputNameJoin = x + joinMap.InputNames;
-                var inputNameFb = router.GetInputNameFeedback(x + 1);
-                LinkFeedbackAndFire(inputNameJoin, inputNameFb, trilist);
+                var currentInput = x + 1;
 
-                var inputTxOnlineJoin = x + joinMap.InputEndpointOnline;
-                var inputTxOnlineFb = router.GetTxOnlineFb(x + 1);
+                var inputSyncDetectedJoin = currentInput + joinMap.VideoSyncStatus;
+                var inputSyncDetectedFb = router.GetHdmiSyncStatusFeedback(currentInput);
+                Debug.Console(2, router, "Linking 'Sync Detected' for input:{0} to Join {1}", currentInput, inputSyncDetectedJoin);
+                LinkFeedbackAndFire(inputSyncDetectedJoin, inputSyncDetectedFb, trilist);
+
+                var inputTxOnlineJoin = currentInput + joinMap.InputEndpointOnline;
+                var inputTxOnlineFb = router.GetTxOnlineFb(currentInput);
+                Debug.Console(2, router, "Linking 'Tx Online' for input:{0} to Join {1}", currentInput, inputTxOnlineJoin);
                 LinkFeedbackAndFire(inputTxOnlineJoin, inputTxOnlineFb, trilist);
 
-                var inputSyncDetectedJoin = x + joinMap.VideoSyncStatus;
-                var inputSyncDetectedFb = router.GetHdmiSyncStatusFeedback(x + 1);
-                LinkFeedbackAndFire(inputSyncDetectedJoin, inputSyncDetectedFb
+                var inputNameJoin = currentInput + joinMap.InputNames;
+                var inputNameFb = router.GetInputNameFeedback(currentInput);
+                Debug.Console(2, router, "Linking 'Name' for input:{0} to Join {1}", currentInput, inputNameJoin);
+                LinkFeedbackAndFire(inputNameJoin, inputNameFb, trilist);
+
+                var hdcpStateJoin = currentInput + joinMap.HdcpSupportState;
+                var hdcpStateFb = router.GetHdcpStateFb(currentInput);
+                Debug.Console(2, router, "Linking 'Hdcp State' for input:{0} to Join {1}", currentInput, hdcpStateJoin);
+                LinkFeedbackAndFire(hdcpStateJoin, hdcpStateFb, trilist);
+
+                trilist.SetUShortSigAction(hdcpStateJoin, state => router.SetHdcpState((int)currentInput, state));
             }
 
             for (uint x = 0; x < router.Config.NumberOfOutputs; x++)
             {
-                var joinActual = x + joinMap.InputNames;
-                var fb = router.GetOutputNameFeedback(x + 1);
-                fb.LinkInputSig(trilist.StringInput[joinActual]);
-                fb.FireUpdate();
+                var currentoutput = x + 1;
+
+                var outputNameJoin = currentoutput + joinMap.OutputNames;
+                var outputNameFb = router.GetOutputNameFeedback(currentoutput);
+                Debug.Console(2, router, "Linking 'Name' for output:{0} to Join {1}", currentoutput, outputNameJoin);
+                LinkFeedbackAndFire(outputNameJoin, outputNameFb, trilist);
+
+                var outputTxOnlineJoin = currentoutput + joinMap.OutputEndpointOnline;
+                var outputTxOnlineFb = router.GetTxOnlineFb(currentoutput);
+                Debug.Console(2, router, "Linking 'Rx Online' for output:{0} to Join {1}", currentoutput, outputTxOnlineJoin);
+                LinkFeedbackAndFire(outputTxOnlineJoin, outputTxOnlineFb, trilist);
+
+                var outputVideoJoin = currentoutput + joinMap.OutputVideo;
+                var outputVideoFb = router.GetVideoRouteFeedback(currentoutput);
+                Debug.Console(2, router, "Linking 'Video Output' for output:{0} to Join {1}", currentoutput, outputVideoJoin);
+                LinkFeedbackAndFire(outputVideoJoin, outputVideoFb, trilist);
+
+                trilist.SetUShortSigAction(outputVideoJoin, source => router.RouteVideo(source, (int)currentoutput));
+
+                var outputAudioJoin = currentoutput + joinMap.OutputAudio;
+                var outputAudioFb = router.GetAudioRouteFeedback(currentoutput);
+                Debug.Console(2, router, "Linking 'Audio Output' for output:{0} to Join {1}", currentoutput, outputAudioJoin);
+                LinkFeedbackAndFire(outputAudioJoin, outputAudioFb, trilist);
+
+                trilist.SetUShortSigAction(outputAudioJoin, source => router.RouteAudio(source, (int)currentoutput));
+
+                var outputCurrentVideoNameJoin = currentoutput + joinMap.OutputCurrentVideoInputNames;
+                var outputCurrentVideoNameFb = router.GetCurrentVideoRouteFeedback(currentoutput);
+                Debug.Console(2, router, "Linking 'Current Video Input' for output:{0} to Join {1}", currentoutput, outputCurrentVideoNameJoin);
+                LinkFeedbackAndFire(outputCurrentVideoNameJoin, outputCurrentVideoNameFb, trilist);
+
+                var outputCurrentAudioNameJoin = currentoutput + joinMap.OutputCurrentAudioInputNames;
+                var outputCurrentAudioNameFb = router.GetCurrentAudioRouteFeedback(currentoutput);
+                Debug.Console(2, router, "Linking 'Current Audio Input' for output:{0} to Join {1}", currentoutput, outputCurrentAudioNameJoin);
+                LinkFeedbackAndFire(outputCurrentAudioNameJoin, outputCurrentAudioNameFb, trilist);
             }
         }
 

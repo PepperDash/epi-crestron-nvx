@@ -26,7 +26,7 @@ namespace NvxEpi.DeviceHelpers
 
         public NvxHdmiInputHelper(string key, Crestron.SimplSharpPro.DeviceSupport.HdmiInWithColorSpaceMode input, DmNvxBaseClass device)
         {
-            _key = string.Format("{0} {1}", key, _input.NameFeedback.StringValue);
+            _key = key;
             _input = input;
             _device = device;
 

@@ -22,33 +22,49 @@ using Newtonsoft.Json;
 
 namespace NvxEpi.Factory
 {
-    public class NvxDeviceFactory
+    public class NvxDeviceFactory : IKeyed
     {
+        private readonly DeviceConfig _config;
+
         public static void LoadPlugin()
         {
-            DeviceFactory.AddFactoryForType("NvxDevice", BuildDevice);
+            DeviceFactory.AddFactoryForType("NvxDevice", config => new NvxDeviceFactory(config).BuildDevice());
             DeviceFactory.AddFactoryForType("NvxRouter", BuildRouter);
         }
 
-        static IKeyed BuildDevice(DeviceConfig config)
+        public NvxDeviceFactory(DeviceConfig config)
         {
-            var props = NvxDevicePropertiesConfig.FromDeviceConfig(config);
-            var device = new NvxDeviceBuilder(config.Name, props).GetNvxDevice();
+            _config = config;
+        }
 
-            var videoSwitcher = new NvxVideoSwitcher(config.Key, device);
-            var audioSwitcher = new NvxAudioSwitcher(config.Key, device);
-            var videoInputSwitcher = new NvxVideoInputHandler(config.Key, device);
-            var audioInputSwitcher = new NvxAudioInputHandler(config.Key, device);
-            var videoWallHelper = new NvxVideoWallHelper(config.Key, device);
+        public IKeyed BuildDevice()
+        {
+            Debug.Console(2, this, "Building a new NVX device {0}... Wish me luck!", _config.Key);
+
+            var props = NvxDevicePropertiesConfig.FromDeviceConfig(_config);
+            var device = new NvxDeviceBuilder(_config.Name, props).GetNvxDevice();
+
+            var videoSwitcher = new NvxVideoSwitcher(_config.Key, device);
+            var audioSwitcher = new NvxAudioSwitcher(_config.Key, device);
+            var videoInputSwitcher = new NvxVideoInputHandler(_config.Key, device);
+            var audioInputSwitcher = new NvxAudioInputHandler(_config.Key, device);
+            var videoWallHelper = new NvxVideoWallHelper(_config.Key, device);
 
             var inputs = new List<INvxHdmiInputHelper>();
 
-            foreach (var hdmi in device.HdmiIn)
+
+            if (device.HdmiIn != null)
             {
-                inputs.Add(new NvxHdmiInputHelper(config.Key, hdmi, device));
+                for (uint x = 1; x <= device.HdmiIn.Count; x++)
+                {
+                    if (device.HdmiIn[x] == null)
+                        continue;
+
+                    inputs.Add(new NvxHdmiInputHelper(_config.Key + "-HdmiIn-" + x, device.HdmiIn[x], device));
+                }
             }
 
-            return new NvxDeviceEpi(config.Key, config.Name, device, props, videoSwitcher,
+            return new NvxDeviceEpi(_config.Key, _config.Name, device, props, videoSwitcher,
                 audioSwitcher, videoInputSwitcher, audioInputSwitcher, videoWallHelper, inputs);
         }
 
@@ -57,5 +73,14 @@ namespace NvxEpi.Factory
             var props = NvxRouterPropertiesConfig.FromDeviceConfig(config);
             return new NvxRouterEpi(config.Key, config.Name, props);
         }
+
+        #region IKeyed Members
+
+        public string Key
+        {
+            get { return "NvxFactory"; }
+        }
+
+        #endregion
     }
 }
