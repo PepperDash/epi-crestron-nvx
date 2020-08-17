@@ -1,2 +1,3 @@
+[submodule "submodules/essentials-builds"]
 	url = https://github.com/PepperDash-Engineering/essentials-builds.git
 	branch = main
