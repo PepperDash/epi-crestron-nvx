@@ -20,14 +20,20 @@ namespace NvxEpi.Device.Builders
         {
             Config = config;
             _props = NvxDeviceProperties.FromDeviceConfig(Config);
-
-            Device = BuildDevice(Config.Type, _props);
+         
             Feedbacks = new Dictionary<NvxDevice.DeviceFeedbacks, Feedback>();
             BoolActions = new Dictionary<NvxDevice.BoolActions, Action<bool>>();
             IntActions = new Dictionary<NvxDevice.IntActions, Action<ushort>>();
             StringActions = new Dictionary<NvxDevice.StringActions, Action<string>>();
 
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            Device = BuildDevice(Config.Type, _props);
             BuildFeedbacks();
+            BuildActions();
         }
 
         public DmNvxBaseClass Device { get; private set; }
@@ -110,6 +116,17 @@ namespace NvxEpi.Device.Builders
 
             Feedbacks.Add(NvxDevice.DeviceFeedbacks.MulticastAddress,
                 Device.GetMulticastAddressFeedback());
+        }
+
+        private void BuildActions()
+        {
+            BoolActions.Add(NvxDevice.BoolActions.EnableVideoStream, enable =>
+            {
+                if (enable)
+                    Device.Control.Start();
+                else
+                    Device.Control.Stop();
+            });
         }
 
         protected abstract void BuildRoutingPorts(NvxDevice device);

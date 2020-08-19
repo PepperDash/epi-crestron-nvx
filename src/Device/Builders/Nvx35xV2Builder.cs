@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Device.Enums;
 using NvxEpi.Device.Models;
 using NvxEpi.Device.Services.DeviceExtensions;
+using NvxEpi.Device.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -14,8 +15,7 @@ namespace NvxEpi.Device.Builders
     {
         public Nvx35xV2Builder(DeviceConfig config) : base(config)
         {
-            AddFeedbacks();
-            AddActions();
+            Initialize();
 
             Device.OnlineStatusChange += (device, args) =>
             {
@@ -27,6 +27,12 @@ namespace NvxEpi.Device.Builders
                 else
                     SetRxDefaults();
             };
+        }
+
+        private void Initialize()
+        {
+            AddFeedbacks();
+            AddActions();
         }
 
         private void AddFeedbacks()
@@ -106,13 +112,7 @@ namespace NvxEpi.Device.Builders
             IntActions.Add(NvxDevice.IntActions.Hdmi2HdcpCapability,
                 capability => Device.HdmiIn[2].HdcpCapability = (eHdcpCapabilityType) capability);  
 
-            BoolActions.Add(NvxDevice.BoolActions.EnableVideoStream, enable =>
-            {
-                if (enable)
-                    Device.Control.Start();
-                else
-                    Device.Control.Stop();
-            });
+            
 
             BoolActions.Add(NvxDevice.BoolActions.EnableAudioStream, enable =>
             {
@@ -130,23 +130,28 @@ namespace NvxEpi.Device.Builders
             else
                 SetRxDefaults();
 
+            SetDefaultInputs();
+        }
+
+        private void SetDefaultInputs()
+        {
             try
             {
                 if (!String.IsNullOrEmpty(_props.DefaultVideoSource))
                 {
                     var videoInput =
-                        (eSfpVideoSourceTypes)Enum.Parse(typeof(eSfpVideoSourceTypes), _props.DefaultVideoSource, true);
+                        (eSfpVideoSourceTypes) Enum.Parse(typeof (eSfpVideoSourceTypes), _props.DefaultVideoSource, true);
 
                     Debug.Console(1, this, "Setting default video input:{0}", videoInput.ToString());
                     Device.Control.VideoSource = videoInput;
                 }
 
-                if (String.IsNullOrEmpty(_props.DefaultAudioSource)) 
+                if (String.IsNullOrEmpty(_props.DefaultAudioSource))
                     return;
 
                 var audioInput =
                     (DmNvxControl.eAudioSource)
-                        Enum.Parse(typeof(DmNvxControl.eAudioSource), _props.DefaultAudioSource, true);
+                        Enum.Parse(typeof (DmNvxControl.eAudioSource), _props.DefaultAudioSource, true);
 
                 Debug.Console(1, this, "Setting default audio input:{0}", audioInput.ToString());
                 Device.Control.AudioSource = audioInput;
@@ -159,38 +164,7 @@ namespace NvxEpi.Device.Builders
 
         protected override void BuildRoutingPorts(NvxDevice device)
         {
-            device.InputPorts.AddRange(new[]
-            {
-                new RoutingInputPort(
-                    VideoInputEnum.Hdmi1.Name,
-                    eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Hdmi,
-                    new Action(() =>
-                    {
-                        Device.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
-                        Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
-                    }),
-                    device),
-
-                new RoutingInputPort(
-                    VideoInputEnum.Hdmi2.Name,
-                    eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Hdmi,
-                    new Action(() =>
-                    {
-                        Device.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
-                        Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
-                    }),
-                    device),
-            });
-
-            device.OutputPorts.Add(
-                new RoutingOutputPort(
-                    VideoOutputEnum.Hdmi.Name,
-                    eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Hdmi,
-                    null,
-                    device));
+            AddStandardPorts(device);
 
             if (IsTransmitter)
             {
@@ -199,7 +173,7 @@ namespace NvxEpi.Device.Builders
                         AudioInputEnum.AnalogAudio.Name,
                         eRoutingSignalType.Audio,
                         eRoutingPortConnectionType.LineAudio,
-                        new Action(() => Device.Control.AudioSource = DmNvxControl.eAudioSource.AnalogAudio),
+                        new Action<eRoutingSignalType>(type => Device.Control.AudioSource = DmNvxControl.eAudioSource.AnalogAudio),
                         device));
 
                 device.OutputPorts.Add(
@@ -216,10 +190,12 @@ namespace NvxEpi.Device.Builders
                         VideoInputEnum.Stream.Name,
                         eRoutingSignalType.AudioVideo,
                         eRoutingPortConnectionType.Streaming,
-                        new Action(() =>
+                        new Action<eRoutingSignalType>(type =>
                         {
+                            Debug.Console(1, this, "Making an awesome route : {0} | {1}", VideoInputEnum.Stream.Name, type.ToString());
                             Device.Control.VideoSource = eSfpVideoSourceTypes.Stream;
                             Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+
                         }),
                         device));
 
@@ -231,6 +207,43 @@ namespace NvxEpi.Device.Builders
                         null,
                         device));
             }
+        }
+
+        private void AddStandardPorts(NvxDevice device)
+        {
+            device.InputPorts.AddRange(new[]
+            {
+                new RoutingInputPort(
+                    VideoInputEnum.Hdmi1.Name,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Hdmi,
+                    new Action<eRoutingSignalType>(type =>
+                    {
+                        Debug.Console(1, this, "Making an awesome route : {0} | {1}", VideoInputEnum.Hdmi1.Name, type.ToString());
+                        Device.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
+                        Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+                    }),
+                    device),
+                new RoutingInputPort(
+                    VideoInputEnum.Hdmi2.Name,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Hdmi,
+                    new Action<eRoutingSignalType>(type =>
+                    {
+                        Debug.Console(1, this, "Making an awesome route : {0} | {1}", VideoInputEnum.Hdmi2.Name, type.ToString());
+                        Device.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
+                        Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+                    }),
+                    device),
+            });
+
+            device.OutputPorts.Add(
+                new RoutingOutputPort(
+                    VideoOutputEnum.Hdmi.Name,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Hdmi,
+                    null,
+                    device));
         }
 
         private void SetTxDefaults()

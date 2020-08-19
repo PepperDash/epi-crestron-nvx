@@ -264,11 +264,11 @@ namespace NvxEpi.Device.Models
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            var input = inputSelector as Action;
+            var input = inputSelector as Action<eRoutingSignalType>;
             if (input == null)
                 return;
 
-            input.Invoke();
+            input.Invoke(signalType);
         }
 
         public void SetVideoInput(ushort input)

@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Device.Models;
 using NvxEpi.DynRouting.Builder;
-using NvxEpi.DynRouting.JoinMap;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -17,7 +14,7 @@ namespace NvxEpi.DynRouting
     {
         private Dictionary<int, NvxDevice> _transmitters;
         private Dictionary<int, NvxDevice> _receivers;
- 
+
         public DynNvx(IDynNvxBuilder builder) : base(builder.Key)
         {
             AddPreActivationAction(() =>
@@ -62,28 +59,31 @@ namespace NvxEpi.DynRouting
 
             foreach (var transmitter in _transmitters)
             {
-                var feedback = transmitter.Value.Feedbacks[NvxDevice.DeviceFeedbacks.Hdmi1SyncDetected.ToString()] as BoolFeedback;
+                var feedback =
+                    transmitter.Value.Feedbacks[NvxDevice.DeviceFeedbacks.Hdmi1SyncDetected.ToString()] as BoolFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint)transmitter.Key - 1;
+                var index = (uint) transmitter.Key - 1;
                 feedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + index]);
             }
 
             foreach (var transmitter in _transmitters)
             {
-                var feedback = transmitter.Value.Feedbacks[NvxDevice.DeviceFeedbacks.DeviceName.ToString()] as StringFeedback;
+                var feedback =
+                    transmitter.Value.Feedbacks[NvxDevice.DeviceFeedbacks.DeviceName.ToString()] as StringFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint)transmitter.Key - 1;
+                var index = (uint) transmitter.Key - 1;
                 feedback.LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + index]);
             }
 
             foreach (var device in _receivers)
             {
-                var index = (uint)device.Key - 1;
-                var feedback = device.Value.Feedbacks[NvxDevice.DeviceFeedbacks.CurrentVideoRouteName.ToString()] as StringFeedback;
+                var index = (uint) device.Key - 1;
+                var feedback =
+                    device.Value.Feedbacks[NvxDevice.DeviceFeedbacks.CurrentVideoRouteName.ToString()] as StringFeedback;
                 if (feedback == null)
                     continue;
 
@@ -95,8 +95,9 @@ namespace NvxEpi.DynRouting
                 if (device.Value == null)
                     continue;
 
-                var index = (uint)device.Key - 1;
-                var feedback = device.Value.Feedbacks[NvxDevice.DeviceFeedbacks.CurrentAudioRouteName.ToString()] as StringFeedback;
+                var index = (uint) device.Key - 1;
+                var feedback =
+                    device.Value.Feedbacks[NvxDevice.DeviceFeedbacks.CurrentAudioRouteName.ToString()] as StringFeedback;
                 if (feedback == null)
                     continue;
 
@@ -111,7 +112,7 @@ namespace NvxEpi.DynRouting
                 if (device.Value == null)
                     continue;
 
-                var index = (uint)device.Key - 1;
+                var index = (uint) device.Key - 1;
                 var rx = device.Value;
 
                 var currentVideoRouteFeedback =
@@ -128,7 +129,9 @@ namespace NvxEpi.DynRouting
 
                     var result =
                         _transmitters.FirstOrDefault(
-                            x => x.Value.Name.Equals(currentVideoRouteFeedback.StringValue, StringComparison.OrdinalIgnoreCase));
+                            x =>
+                                x.Value.Name.Equals(currentVideoRouteFeedback.StringValue,
+                                    StringComparison.OrdinalIgnoreCase));
 
                     return result.Value != null ? result.Key : 0;
                 });
@@ -137,10 +140,13 @@ namespace NvxEpi.DynRouting
                     (sender, args) => Debug.Console(1, this, "Video Output Change {0} | {1}", rx.Key, args.IntValue);
 
                 currentVideoRouteFeedback.OutputChange += (sender, args) => feedback.FireUpdate();
-                
+
                 feedback.LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + index]);
                 trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + index, source =>
                 {
+                    if (source == 0)
+                        rx.StopVideoStream();
+
                     NvxDevice tx;
                     if (_transmitters.TryGetValue(source, out tx))
                         NvxRouter.RouteVideo(rx, tx);
@@ -172,7 +178,9 @@ namespace NvxEpi.DynRouting
 
                     var result =
                         _transmitters.FirstOrDefault(
-                            x => x.Value.Name.Equals(currentAudioRouteFeedback.StringValue, StringComparison.OrdinalIgnoreCase));
+                            x =>
+                                x.Value.Name.Equals(currentAudioRouteFeedback.StringValue,
+                                    StringComparison.OrdinalIgnoreCase));
 
                     return result.Value != null ? result.Key : 0;
                 });
@@ -192,7 +200,6 @@ namespace NvxEpi.DynRouting
             }
         }
 
-        
 
         private void LinkOnlineStatus(BasicTriList trilist, DmChassisControllerJoinMap joinMap)
         {
