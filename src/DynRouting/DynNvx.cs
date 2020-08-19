@@ -191,8 +191,11 @@ namespace NvxEpi.DynRouting
                 currentAudioRouteFeedback.OutputChange += (sender, args) => feedback.FireUpdate();
 
                 feedback.LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + index]);
-                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + index, source =>
+                trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + index, source =>
                 {
+                    if (source == 0)
+                        rx.StopAudioStream();
+
                     NvxDevice tx;
                     if (_transmitters.TryGetValue(source, out tx))
                         NvxRouter.RouteAudio(rx, tx);

@@ -92,12 +92,38 @@ namespace NvxEpi.Device.Builders
             if (IsTransmitter)
             {
                 IntActions.Add(NvxDevice.IntActions.VideoInputSelect, Device.SetTxVideoInput);
-                IntActions.Add(NvxDevice.IntActions.AudioInputSelect, Device.SetAudioTxInput);
+                IntActions.Add(NvxDevice.IntActions.AudioInputSelect, source =>
+                {
+                    AudioInputEnum input;
+                    if (!AudioInputEnum.TryFromValue(source, out input))
+                        return;
+
+                    if (input == AudioInputEnum.Stream)
+                        return;
+
+                    Device.SetAudioTxInput(input); 
+                });
             }
             else
             {
                 IntActions.Add(NvxDevice.IntActions.VideoInputSelect, Device.SetRxVideoInput);
-                IntActions.Add(NvxDevice.IntActions.AudioInputSelect, Device.SetAudioRxInput);
+                IntActions.Add(NvxDevice.IntActions.AudioInputSelect, source =>
+                {
+                    AudioInputEnum input;
+                    if (!AudioInputEnum.TryFromValue(source, out input))
+                        return;
+
+                    if (input == AudioInputEnum.AnalogAudio || input == AudioInputEnum.NaxAudio)
+                        return;
+
+                    Device.SetAudioTxInput(input);
+                    if (input == AudioInputEnum.Stream)
+                        Device.SecondaryAudio.Start();
+                    else
+                    {
+                        Device.SecondaryAudio.Stop();
+                    }
+                });
 
                 StringActions.Add(NvxDevice.StringActions.StreamUrl,
                     s => Device.Control.ServerUrl.StringValue = s);
@@ -112,12 +138,13 @@ namespace NvxEpi.Device.Builders
             IntActions.Add(NvxDevice.IntActions.Hdmi2HdcpCapability,
                 capability => Device.HdmiIn[2].HdcpCapability = (eHdcpCapabilityType) capability);  
 
-            
-
             BoolActions.Add(NvxDevice.BoolActions.EnableAudioStream, enable =>
             {
                 if (enable)
+                {
+                    Device.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
                     Device.SecondaryAudio.Start();
+                }  
                 else
                     Device.SecondaryAudio.Stop();
             });

@@ -26,28 +26,20 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             return feedback;
         }
 
-        public static void SetAudioRxInput(this DmNvxBaseClass device, ushort input)
+        public static void SetAudioRxInput(this DmNvxBaseClass device, AudioInputEnum input)
         {
-            AudioInputEnum result;
-            if (!AudioInputEnum.TryFromValue(input, out result))
+            if (input == AudioInputEnum.AnalogAudio)
                 return;
 
-            if (result == AudioInputEnum.Stream)
-                return;
-
-            device.SetAudioInput(result);
+            device.SetAudioInput(input);
         }
 
-        public static void SetAudioTxInput(this DmNvxBaseClass device, ushort input)
+        public static void SetAudioTxInput(this DmNvxBaseClass device, AudioInputEnum input)
         {
-            AudioInputEnum result;
-            if (!AudioInputEnum.TryFromValue(input, out result))
+            if (input == AudioInputEnum.Stream)
                 return;
 
-            if (result == AudioInputEnum.Stream)
-                return;
-
-            device.SetAudioInput(result);
+            device.SetAudioInput(input);
         }
 
         public static DmNvxBaseClass SetAudioInput(this DmNvxBaseClass device, AudioInputEnum input)
