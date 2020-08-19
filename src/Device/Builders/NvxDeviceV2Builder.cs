@@ -5,10 +5,8 @@ using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Device.Models;
-using NvxEpi.Device.Services.DeviceExtensions;
-using NvxEpi.Device.Enums;
 using NvxEpi.Device.Services.Config;
-using NvxEpi.Device.Services.RoutingPortExtensions;
+using NvxEpi.Device.Services.DeviceExtensions;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -17,13 +15,6 @@ namespace NvxEpi.Device.Builders
     public abstract class NvxDeviceV2Builder : INvxDeviceBuilder
     {
         protected readonly NvxDeviceProperties _props;
-        public DmNvxBaseClass Device { get; private set; }
-        public DeviceConfig Config { get; private set; }
-
-        public bool IsTransmitter
-        {
-            get { return _props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase); }
-        }
 
         protected NvxDeviceV2Builder(DeviceConfig config)
         {
@@ -37,6 +28,14 @@ namespace NvxEpi.Device.Builders
             StringActions = new Dictionary<NvxDevice.StringActions, Action<string>>();
 
             BuildFeedbacks();
+        }
+
+        public DmNvxBaseClass Device { get; private set; }
+        public DeviceConfig Config { get; private set; }
+
+        public bool IsTransmitter
+        {
+            get { return _props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase); }
         }
 
         public Dictionary<NvxDevice.DeviceFeedbacks, Feedback> Feedbacks { get; private set; }
@@ -56,17 +55,22 @@ namespace NvxEpi.Device.Builders
 
         public virtual NvxDevice Build()
         {
+            if (DeviceManager.GetDeviceForKey(NvxRouter.Instance.Key) == null)
+                DeviceManager.AddDevice(NvxRouter.Instance);
+
             if (Device is DmNvxE3x && !IsTransmitter)
                 throw new NotSupportedException("cannot be a receiver");
 
             if (Device is DmNvxD3x && IsTransmitter)
                 throw new NotSupportedException("cannot be a transmitter");
 
-            SetDeviceDefaults();
+            var device = new NvxDevice(this)
+                .RegisterForDeviceFeedback(Device);
 
-            return new NvxDevice(this)
-                .RegisterForDeviceFeedback()
-                .BuildRoutingPorts();
+            SetDeviceDefaults();
+            BuildRoutingPorts(device);
+
+            return device;
         }
 
         public abstract void SetDeviceDefaults();
@@ -107,5 +111,7 @@ namespace NvxEpi.Device.Builders
             Feedbacks.Add(NvxDevice.DeviceFeedbacks.MulticastAddress,
                 Device.GetMulticastAddressFeedback());
         }
+
+        protected abstract void BuildRoutingPorts(NvxDevice device);
     }
 }

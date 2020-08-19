@@ -7,17 +7,17 @@ namespace NvxEpi.Device.Services.DeviceExtensions
 {
     public static class DeviceDebug
     {
-        public static NvxDevice RegisterForDeviceFeedback(this NvxDevice device)
+        public static NvxDevice RegisterForDeviceFeedback(this NvxDevice device, DmNvxBaseClass hardware)
         {
             try
             {
-                device.Hardware.BaseEvent += (sender, args) =>
+                hardware.BaseEvent += (sender, args) =>
                     Debug.Console(2, device, "Received Base Event:{0}", args.EventId);
 
-                RegisterForHdmiInputFeedback(device.Hardware, device);
-                RegisterForHdmiOutputFeedback(device.Hardware, device);
-                RegisterForNaxFeedback(device.Hardware, device);
-                RegisterForSecondaryAudioFeedback(device.Hardware, device);
+                RegisterForHdmiInputFeedback(hardware, device);
+                RegisterForHdmiOutputFeedback(hardware, device);
+                RegisterForSecondaryAudioFeedback(hardware, device);
+                RegisterForNaxFeedback(hardware, device);   
             }
             catch (MissingMethodException ex)
             {
@@ -80,8 +80,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
                 if (device.DmNaxRouting.DmNaxTransmit != null)
                 {
                     device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) =>
-                        Debug.Console(2, keyed, "Recieved NAX Routing Transmit Change:{0} from {1}", args.EventId,
-                            device.HdmiOut.NameFeedback.StringValue);
+                        Debug.Console(2, keyed, "Recieved NAX Routing Transmit Change:{0}", args.EventId);
                 }
             }
             catch (MissingMethodException ex)
@@ -95,12 +94,11 @@ namespace NvxEpi.Device.Services.DeviceExtensions
         {
             try
             {
-                if (device.DmNaxRouting == null)
+                if (device.SecondaryAudio == null)
                     return;
 
                 device.SecondaryAudio.SecondaryAudioChange += (sender, args) =>
-                    Debug.Console(2, keyed, "Received Secondary Audio Change Event ID:{0} from {1}", args.EventId,
-                        device.HdmiOut.NameFeedback.StringValue);
+                    Debug.Console(2, keyed, "Received Secondary Audio Change Event ID:{0}", args.EventId);
             }
             catch (MissingMethodException ex)
             {

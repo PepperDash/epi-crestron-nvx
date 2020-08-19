@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Device.Enums;
 using NvxEpi.Device.Models;
-using NvxEpi.Device.Services.Config;
 using NvxEpi.Device.Services.DeviceExtensions;
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Builders
@@ -69,64 +67,170 @@ namespace NvxEpi.Device.Builders
             Feedbacks.Add(NvxDevice.DeviceFeedbacks.Hdmi2SyncDetected,
                 Device.GetHdmiIn2SyncDetectedFeedback());
 
-            Feedbacks.Add(NvxDevice.DeviceFeedbacks.CurrentVideoRouteName,
-                Device.GetCurrentVideoRouteNameFeedback());
-
-            Feedbacks.Add(NvxDevice.DeviceFeedbacks.CurrentAudioRouteName,
-                Device.GetSecondaryAudioRouteNameFeedback());
-
             Feedbacks.Add(NvxDevice.DeviceFeedbacks.HdmiOutputDisabledByHdcp,
                 Device.GetHdmiOutputDisabledFeedback());
 
             Feedbacks.Add(NvxDevice.DeviceFeedbacks.HdmiOutputHorizontalResolution,
                 Device.GetHorizontalResolutionFeedback());
+
+            if (IsTransmitter) return;
+            Feedbacks.Add(NvxDevice.DeviceFeedbacks.CurrentVideoRouteName,
+                Device.GetCurrentVideoRouteNameFeedback());
+
+            Feedbacks.Add(NvxDevice.DeviceFeedbacks.CurrentAudioRouteName,
+                Device.GetSecondaryAudioRouteNameFeedback());
         }
 
         private void AddActions()
         {
-            IntActions.Add(NvxDevice.IntActions.VideoInputSelect,
-                input => Device.Control.VideoSource = (eSfpVideoSourceTypes) input);
+            if (IsTransmitter)
+            {
+                IntActions.Add(NvxDevice.IntActions.VideoInputSelect, Device.SetTxVideoInput);
+                IntActions.Add(NvxDevice.IntActions.AudioInputSelect, Device.SetAudioTxInput);
+            }
+            else
+            {
+                IntActions.Add(NvxDevice.IntActions.VideoInputSelect, Device.SetRxVideoInput);
+                IntActions.Add(NvxDevice.IntActions.AudioInputSelect, Device.SetAudioRxInput);
 
-            IntActions.Add(NvxDevice.IntActions.AudioInputSelect,
-                input => Device.Control.AudioSource = (DmNvxControl.eAudioSource) input);
+                StringActions.Add(NvxDevice.StringActions.StreamUrl,
+                    s => Device.Control.ServerUrl.StringValue = s);
+
+                StringActions.Add(NvxDevice.StringActions.SecondaryAudioAddress,
+                    s => Device.SecondaryAudio.MulticastAddress.StringValue = s);
+            }
 
             IntActions.Add(NvxDevice.IntActions.Hdmi1HdcpCapability,
                 capability => Device.HdmiIn[1].HdcpCapability = (eHdcpCapabilityType) capability);
 
             IntActions.Add(NvxDevice.IntActions.Hdmi2HdcpCapability,
-                capability => Device.HdmiIn[2].HdcpCapability = (eHdcpCapabilityType) capability);
+                capability => Device.HdmiIn[2].HdcpCapability = (eHdcpCapabilityType) capability);  
 
-            if (IsTransmitter) 
-                return;
+            BoolActions.Add(NvxDevice.BoolActions.EnableVideoStream, enable =>
+            {
+                if (enable)
+                    Device.Control.Start();
+                else
+                    Device.Control.Stop();
+            });
 
-            StringActions.Add(NvxDevice.StringActions.RouteVideo, Device.RouteVideo);
-            StringActions.Add(NvxDevice.StringActions.RouteAudio, Device.RouteSecondaryAudio);
-
-            StringActions.Add(NvxDevice.StringActions.StreamUrl, 
-                s => Device.Control.ServerUrl.StringValue = s);
-
-            StringActions.Add(NvxDevice.StringActions.SecondaryAudioAddress, 
-                s => Device.SecondaryAudio.MulticastAddress.StringValue = s);
+            BoolActions.Add(NvxDevice.BoolActions.EnableAudioStream, enable =>
+            {
+                if (enable)
+                    Device.SecondaryAudio.Start();
+                else
+                    Device.SecondaryAudio.Stop();
+            });
         }
 
         public override void SetDeviceDefaults()
         {
-            if (!String.IsNullOrEmpty(_props.DefaultVideoSource))
-            {
-                var videoInput = (eSfpVideoSourceTypes) Enum.Parse(typeof(eSfpVideoSourceTypes), _props.DefaultVideoSource, true);
-                Device.Control.VideoSource = videoInput;
-            }
-
-            if (!String.IsNullOrEmpty(_props.DefaultAudioSource))
-            {
-                var videoInput = (DmNvxControl.eAudioSource) Enum.Parse(typeof(DmNvxControl.eAudioSource), _props.DefaultAudioSource, true);
-                Device.Control.AudioSource = videoInput;
-            }
-
             if (IsTransmitter)
                 SetTxDefaults();
             else
                 SetRxDefaults();
+
+            try
+            {
+                if (!String.IsNullOrEmpty(_props.DefaultVideoSource))
+                {
+                    var videoInput =
+                        (eSfpVideoSourceTypes)Enum.Parse(typeof(eSfpVideoSourceTypes), _props.DefaultVideoSource, true);
+
+                    Debug.Console(1, this, "Setting default video input:{0}", videoInput.ToString());
+                    Device.Control.VideoSource = videoInput;
+                }
+
+                if (String.IsNullOrEmpty(_props.DefaultAudioSource)) 
+                    return;
+
+                var audioInput =
+                    (DmNvxControl.eAudioSource)
+                        Enum.Parse(typeof(DmNvxControl.eAudioSource), _props.DefaultAudioSource, true);
+
+                Debug.Console(1, this, "Setting default audio input:{0}", audioInput.ToString());
+                Device.Control.AudioSource = audioInput;
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.Console(1, this, "Cannot set default input, argument not resolved:{0}", ex.Message);
+            }
+        }
+
+        protected override void BuildRoutingPorts(NvxDevice device)
+        {
+            device.InputPorts.AddRange(new[]
+            {
+                new RoutingInputPort(
+                    VideoInputEnum.Hdmi1.Name,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Hdmi,
+                    new Action(() =>
+                    {
+                        Device.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
+                        Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+                    }),
+                    device),
+
+                new RoutingInputPort(
+                    VideoInputEnum.Hdmi2.Name,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Hdmi,
+                    new Action(() =>
+                    {
+                        Device.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
+                        Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+                    }),
+                    device),
+            });
+
+            device.OutputPorts.Add(
+                new RoutingOutputPort(
+                    VideoOutputEnum.Hdmi.Name,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Hdmi,
+                    null,
+                    device));
+
+            if (IsTransmitter)
+            {
+                device.InputPorts.Add(
+                    new RoutingInputPort(
+                        AudioInputEnum.AnalogAudio.Name,
+                        eRoutingSignalType.Audio,
+                        eRoutingPortConnectionType.LineAudio,
+                        new Action(() => Device.Control.AudioSource = DmNvxControl.eAudioSource.AnalogAudio),
+                        device));
+
+                device.OutputPorts.Add(
+                    new RoutingOutputPort(VideoOutputEnum.Stream.Name,
+                        eRoutingSignalType.AudioVideo,
+                        eRoutingPortConnectionType.Streaming,
+                        null,
+                        device));
+            }
+            else
+            {
+                device.InputPorts.Add(
+                    new RoutingInputPort(
+                        VideoInputEnum.Stream.Name,
+                        eRoutingSignalType.AudioVideo,
+                        eRoutingPortConnectionType.Streaming,
+                        new Action(() =>
+                        {
+                            Device.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+                            Device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+                        }),
+                        device));
+
+                device.OutputPorts.Add(
+                    new RoutingOutputPort(
+                        AudioOutputEnum.Analog.Name,
+                        eRoutingSignalType.Audio,
+                        eRoutingPortConnectionType.Streaming,
+                        null,
+                        device));
+            }
         }
 
         private void SetTxDefaults()

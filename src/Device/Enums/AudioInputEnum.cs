@@ -13,6 +13,6 @@
         public static readonly AudioInputEnum Hdmi2 = new AudioInputEnum(2, "Hdmi2");
         public static readonly AudioInputEnum AnalogAudio = new AudioInputEnum(3, "AnalogAudio");
         public static readonly AudioInputEnum Stream = new AudioInputEnum(4, "Stream");
-        public static readonly AudioInputEnum NaxAudio = new AudioInputEnum(4, "Nax");
+        public static readonly AudioInputEnum NaxAudio = new AudioInputEnum(5, "Nax");
     }
 }

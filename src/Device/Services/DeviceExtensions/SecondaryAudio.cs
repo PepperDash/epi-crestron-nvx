@@ -20,6 +20,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             var feedback = new StringFeedback(NvxDevice.DeviceFeedbacks.SecondaryAudioStatus.ToString(), 
                 () => device.SecondaryAudio.StatusFeedback.ToString());
 
+            device.BaseEvent += (@base, args) => feedback.FireUpdate();
             device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
 
             return feedback;
@@ -30,7 +31,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             if (device.SecondaryAudio == null)
                 throw new NotSupportedException("Secondary Audio");
 
-            var feedback = new StringFeedback(NvxDevice.DeviceFeedbacks.SecondaryAudioAddress.ToString(), 
+            var feedback = new StringFeedback(NvxDevice.DeviceFeedbacks.SecondaryAudioAddress.ToString(),
                 () => device.SecondaryAudio.MulticastAddressFeedback.StringValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();

@@ -107,8 +107,9 @@
     <Compile Include="Device\Enums\VideoInputEnum.cs" />
     <Compile Include="Device\Factories\Nvx35XDeviceFactory.cs" />
     <Compile Include="Device\JoinMaps\NvxDeviceJoinMap.cs" />
+    <Compile Include="Device\Models\NvxRouter.cs" />
     <Compile Include="Device\Services\DeviceExtensions\AudioInput.cs" />
-    <Compile Include="Device\Services\DeviceExtensions\Router.cs" />
+    <Compile Include="Device\Services\DeviceExtensions\CurrentRoute.cs" />
     <Compile Include="Device\Services\DeviceExtensions\DeviceDebug.cs" />
     <Compile Include="Device\Services\DeviceExtensions\NaxInput.cs" />
     <Compile Include="Device\Services\DeviceExtensions\DeviceName.cs" />
@@ -125,14 +126,18 @@
     <Compile Include="Device\Services\DeviceExtensions\SecondaryAudio.cs" />
     <Compile Include="Device\Services\TrilistExtensions\ActionExtensions.cs" />
     <Compile Include="Device\Services\TrilistExtensions\FeedbackExtensions.cs" />
+    <Compile Include="DynRouting\Builder\DynNvxDeviceBuilder.cs" />
+    <Compile Include="DynRouting\Builder\IDynNvxBuilder.cs" />
+    <Compile Include="DynRouting\Config\DynNvxConfig.cs" />
+    <Compile Include="DynRouting\DynNvx.cs" />
+    <Compile Include="DynRouting\Factories\DynNvxFactory.cs" />
+    <Compile Include="DynRouting\JoinMap\DynRoutingJoinMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Device\Services\DeviceExtensions\DeviceMode.cs" />
     <Compile Include="Device\Services\DeviceExtensions\StreamUrl.cs" />
     <Compile Include="Device\Services\DeviceExtensions\VideoInput.cs" />
     <Compile Include="Device\Services\DeviceExtensions\InputHdcpCapability.cs" />
     <Compile Include="Device\Services\Config\NvxDeviceProperties.cs" />
-    <Compile Include="Device\Services\RoutingPortExtensions\DeviceRoutingPorts.cs" />
-    <Compile Include="Device\Services\RoutingPortExtensions\RoutingPorts.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

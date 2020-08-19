@@ -57,12 +57,6 @@ namespace NvxEpi.Device.Services.TrilistExtensions
             {
                 switch (action.Key)
                 {
-                    case NvxDevice.StringActions.RouteVideo:
-                        trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber, action.Value);
-                        break;
-                    case NvxDevice.StringActions.RouteAudio:
-                        trilist.SetStringSigAction(joinMap.AudioRoute.JoinNumber, action.Value);
-                        break;
                     case NvxDevice.StringActions.StreamUrl:
                         trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, action.Value);
                         break;

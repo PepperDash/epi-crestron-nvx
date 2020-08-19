@@ -11,7 +11,9 @@ namespace NvxEpi.Device.Services.DeviceExtensions
         public static StringFeedback GetMulticastAddressFeedback(this DmNvxBaseClass device)
         {
             var feedback = new StringFeedback(NvxDevice.DeviceFeedbacks.MulticastAddress.ToString(),
-                () => device.Control.MulticastAddressFeedback.StringValue);
+                () => device.Control.StartFeedback.BoolValue
+                    ? device.Control.MulticastAddressFeedback.StringValue
+                    : String.Empty);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
 

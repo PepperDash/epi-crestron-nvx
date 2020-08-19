@@ -14,19 +14,12 @@ namespace NvxEpi.Device.Services.DeviceExtensions
     {
         public static StringFeedback GetDeviceNameFeedback(this DmNvxBaseClass device, DeviceConfig config)
         {
-            device.UpdateName(config.Name);
-            var props = NvxDeviceProperties.FromDeviceConfig(config);
+            device.UpdateName(config.Key);
 
             var feedback = new StringFeedback(NvxDevice.DeviceFeedbacks.DeviceName.ToString(),
-                () => String.IsNullOrEmpty(props.FriendlyName) ? device.Control.NameFeedback.StringValue : props.FriendlyName);
+                () => config.Name);
 
-            device.BaseEvent += (@base, args) =>
-            {
-                if (args.EventId != DMInputEventIds.NameFeedbackEventId)
-                    return;
-
-                feedback.FireUpdate();
-            };
+            device.BaseEvent += (@base, args) => feedback.FireUpdate();
 
             return feedback;
         }
