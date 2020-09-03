@@ -2,7 +2,10 @@
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Device.Abstractions;
 using NvxEpi.Device.Enums;
+using NvxEpi.Device.Models.Entities;
+using NvxEpi.Device.Services.DeviceExtensions;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Models
@@ -41,8 +44,8 @@ namespace NvxEpi.Device.Models
 
             AddPostActivationAction(() => DeviceManager
                 .AllDevices
-                .OfType<NvxDevice>()
-                .Where(x => x.IsTransmitter)
+                .OfType<INvxDevice>()
+                .Where(x => x.IsTransmitter.BoolValue)
                 .ToList()
                 .ForEach(tx =>
                 {
@@ -64,7 +67,7 @@ namespace NvxEpi.Device.Models
             AddPostActivationAction(() => DeviceManager
                 .AllDevices
                 .OfType<NvxDevice>()
-                .Where(x => !x.IsTransmitter)
+                .Where(x => !x.IsTransmitter.BoolValue)
                 .ToList()
                 .ForEach(rx =>
                 {
@@ -76,7 +79,7 @@ namespace NvxEpi.Device.Models
                         rx.Key + streamRoutingPort.ParentDevice.Key,
                         eRoutingSignalType.AudioVideo,
                         eRoutingPortConnectionType.Streaming,
-                        rx.Key,
+                        rx,
                         this);
 
                     OutputPorts.Add(output);
@@ -90,103 +93,13 @@ namespace NvxEpi.Device.Models
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
             var txKey = inputSelector as string;
-            var rx = outputSelector as NvxDevice;
+            var rx = outputSelector as INvxDevice;
             if (rx == null)
                 return;
 
-            RouteVideo(rx, String.IsNullOrEmpty(txKey) ? RouteOff : txKey);
+            rx.RouteVideoStream(String.IsNullOrEmpty(txKey) ? RouteOff : txKey);
         }
 
-        public static void RouteVideo(NvxDevice rx, string txName)
-        {
-            if (String.IsNullOrEmpty(txName))
-                return;
-
-            if (txName.Equals(RouteOff, StringComparison.OrdinalIgnoreCase))
-            {
-                rx.StopVideoStream();
-                return;
-            }
-
-            var tx = DeviceManager
-                .AllDevices
-                .OfType<NvxDevice>()
-                .Where(t => t.IsTransmitter)
-                .ToList();
-
-            var txByName = tx.FirstOrDefault(x => x.Name.Equals(txName, StringComparison.OrdinalIgnoreCase));
-            if (txByName != null)
-            {
-                RouteVideo(rx, txByName);
-                return;
-            }
-
-            var txByKey = tx.FirstOrDefault(x => x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase));
-            if (txByKey == null)
-                return;
-
-            RouteVideo(rx, txByKey);
-        }
-
-        public static void RouteVideo(NvxDevice rx, NvxDevice tx)
-        {
-            if (tx == null)
-                throw new NullReferenceException("tx");
-
-            if (rx == null)
-                throw new NullReferenceException("rx");
-
-            rx.SetStreamUrl(tx.StreamUrl);
-            rx.SetVideoInput((ushort) eSfpVideoSourceTypes.Stream);
-            rx.StartVideoStream();
-        }
-
-        public static void RouteAudio(NvxDevice rx, string txName)
-        {
-            if (String.IsNullOrEmpty(txName))
-                return;
-
-            rx.SetAudioInput((ushort) DmNvxControl.eAudioSource.SecondaryStreamAudio);
-            if (txName.Equals(RouteOff, StringComparison.OrdinalIgnoreCase))
-            {
-                rx.StopAudioStream();
-                return;
-            }
-
-            var tx = DeviceManager
-                .AllDevices
-                .OfType<NvxDevice>()
-                .Where(t => t.IsTransmitter)
-                .ToList();
-
-            var txByName = tx.FirstOrDefault(x => x.Name.Equals(txName, StringComparison.OrdinalIgnoreCase));
-            if (txByName != null)
-            {
-                RouteAudio(rx, txByName);
-                return;
-            }
-
-            var txByKey = tx.FirstOrDefault(x => x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase));
-            if (txByKey == null)
-                return;
-
-            RouteAudio(rx, txByKey);
-        }
-
-        public static void RouteAudio(NvxDevice rx, NvxDevice tx)
-        {
-            if (tx == null)
-                throw new NullReferenceException("tx");
-
-            if (rx == null)
-                throw new NullReferenceException("rx");
-
-            rx.SetAudioMulticastAddress(
-                String.IsNullOrEmpty(tx.MulticastAudioAddress)
-                    ? tx.MulticastAddress
-                    : tx.MulticastAudioAddress);
-
-            rx.StartAudioStream();
-        }
+        
     }
 }

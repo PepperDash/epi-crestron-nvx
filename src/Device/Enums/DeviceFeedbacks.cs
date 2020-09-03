@@ -1,0 +1,36 @@
+namespace NvxEpi.Device.Enums
+{
+    public enum DeviceFeedbacks
+    {
+        DeviceName,//
+        DeviceStatus,//
+        DeviceMode,
+        IsStreamingVideo,//
+        IsStreamingAudio,//
+        SecondaryAudioStatus,//
+        NaxTxStatus,
+        NaxRxStatus,
+        StreamUrl,//
+        HdmiOutputHorizontalResolution,//
+        Hdmi1SyncDetected,//
+        Hdmi2SyncDetected,//
+        Hdmi1HdcpCapabilityName,//
+        Hdmi2HdcpCapabilityName,//
+        HdmiOutputDisabledByHdcp,//
+        VideoInputName,//
+        VideoInputValue,//
+        NaxInput,
+        MulticastAddress,//
+        SecondaryAudioAddress,//
+        NaxTxAddress,//
+        NaxRxAddress,//
+        VideowallMode,//
+        CurrentVideoRouteName,
+        CurrentAudioRouteName,
+        CurrentUsbRouteName,
+        CurrentUsbRouteValue,
+        UsbMode,
+        Hdmi1HdcpCapabilityValue,//
+        Hdmi2HdcpCapabilityValue//
+    }
+}

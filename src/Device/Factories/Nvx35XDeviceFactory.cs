@@ -4,12 +4,14 @@ using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Device.Builders;
 using NvxEpi.Device.Models;
+using NvxEpi.Device.Models.Aggregates;
+using NvxEpi.Device.Models.Entities;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Factories
 {
-    public class Nvx35XDeviceFactory : EssentialsPluginDeviceFactory<NvxDevice>
+    public class Nvx35XDeviceFactory : EssentialsPluginDeviceFactory<Nvx35x>
     {
         private const string _minumumEssentialsVersion = "1.5.8";
         private static readonly IEnumerable<string> _typeNames;
@@ -32,7 +34,11 @@ namespace NvxEpi.Device.Factories
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            return new Nvx35xV2Builder(dc).Build();
+            var nvxDevice = NvxDeviceBuilder
+                .Create(dc)
+                .Build();
+
+            return new Nvx35x(nvxDevice);
         }
     }
 }

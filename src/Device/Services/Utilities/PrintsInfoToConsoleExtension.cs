@@ -1,0 +1,24 @@
+﻿using NvxEpi.Device.Abstractions;
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+
+namespace NvxEpi.Device.Services.Utilities
+{
+    public static class PrintsInfoToConsoleExtension
+    {
+        public static void PrintInfoToConsole(this INvxDevice device)
+        {
+            foreach (var feedback in device.Feedbacks)
+            {
+                if (feedback is BoolFeedback)
+                    Debug.Console(1, device, "{0} : '{1}'", feedback.Key, feedback.BoolValue);
+
+                if (feedback is IntFeedback)
+                    Debug.Console(1, device, "{0} : '{1}'", feedback.Key, feedback.IntValue);
+
+                if (feedback is StringFeedback)
+                    Debug.Console(1, device, "{0} : '{1}'", feedback.Key, feedback.StringValue);
+            }
+        }
+    }
+}

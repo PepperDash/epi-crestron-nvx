@@ -11,6 +11,9 @@ namespace NvxEpi.Device.Services.Config
             return JsonConvert.DeserializeObject<NvxDeviceProperties>(config.Properties.ToString());
         }
 
+        [JsonProperty("virtualDeviceId")]
+        public int VirtualDeviceId { get; set; }
+
         [JsonProperty("friendlyName")]
         public string FriendlyName { get; set; }
 

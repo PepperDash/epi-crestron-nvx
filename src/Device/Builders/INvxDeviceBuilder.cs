@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Device.Abstractions;
 using NvxEpi.Device.Models;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Builders
 {
-    public interface INvxDeviceBuilder : IKeyName
+    public interface INvxDeviceBuilder
     {
+        int VirtualDeviceId { get; }
         DeviceConfig Config { get; }
         DmNvxBaseClass Device { get; }
-        Dictionary<NvxDevice.BoolActions, Action<bool>> BoolActions { get; }
-        Dictionary<NvxDevice.IntActions, Action<ushort>> IntActions { get; }
-        Dictionary<NvxDevice.StringActions, Action<string>> StringActions { get; }
-        Dictionary<NvxDevice.DeviceFeedbacks, Feedback> Feedbacks { get; }
-        bool IsTransmitter { get; }
-        NvxDevice Build();
+        BoolFeedback IsTransmitter { get; }
+        INvxDevice Build();
     }
 }
