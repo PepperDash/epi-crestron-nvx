@@ -6,7 +6,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
 {
     public static class AudioInputSwitching
     {
-        public static void SetInput(this IAudioInputSwitcher device, AudioInputEnum input)
+        public static void SetInput(this IAudioInputSwitcher device, DmNvxControl.eAudioSource input)
         {
             if (device.IsTransmitter.BoolValue)
                 device.SetAudioInputForTransmitter(input);
@@ -14,17 +14,17 @@ namespace NvxEpi.Device.Services.DeviceExtensions
                 device.SetAudioInputForReceiver(input);
         }
 
-        private static void SetAudioInputForTransmitter(this IHardware device, AudioInputEnum input)
+        private static void SetAudioInputForTransmitter(this IHardware device, DmNvxControl.eAudioSource input)
         {
-            if (input == AudioInputEnum.PrimaryStream || input == AudioInputEnum.SecondaryStream)
+            if (input == DmNvxControl.eAudioSource.PrimaryStreamAudio || input == DmNvxControl.eAudioSource.SecondaryStreamAudio)
                 return;
 
-            device.Hardware.Control.AudioSource = (DmNvxControl.eAudioSource) input.Value;
+            device.Hardware.Control.AudioSource = input;
         }
 
-        private static void SetAudioInputForReceiver(this IHardware device, AudioInputEnum input)
+        private static void SetAudioInputForReceiver(this IHardware device, DmNvxControl.eAudioSource input)
         {
-            device.Hardware.Control.AudioSource = (DmNvxControl.eAudioSource) input.Value;
+            device.Hardware.Control.AudioSource = input;
         }
     }
 }

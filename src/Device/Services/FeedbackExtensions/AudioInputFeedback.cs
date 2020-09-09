@@ -6,7 +6,7 @@ namespace NvxEpi.Device.Services.FeedbackExtensions
     public static class AudioInputFeedback
     {
         public static readonly string NameKey = "AudioInput";
-        public static readonly string ValueKey = "AudioInput";
+        public static readonly string ValueKey = "AudioInputValue";
 
         public static StringFeedback GetAudioInputFeedback(this DmNvxBaseClass device)
         {

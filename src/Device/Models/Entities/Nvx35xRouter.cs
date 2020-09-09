@@ -91,6 +91,7 @@ namespace NvxEpi.Device.Models.Entities
                         _audioInput.SetInput(AudioInputEnum.AudioFollowsVideo);
                     }),
                     this),
+
                 new RoutingInputPort(
                     VideoInputEnum.Hdmi2.Name,
                     eRoutingSignalType.AudioVideo,
@@ -151,12 +152,6 @@ namespace NvxEpi.Device.Models.Entities
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _videoInput.OutputPorts; }
-        }
-
-        public UsageTracking UsageTracker
-        {
-            get { return _videoInput.UsageTracker; }
-            set { _videoInput.UsageTracker = value; }
         }
 
         public int VirtualDeviceId

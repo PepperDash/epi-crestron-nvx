@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
@@ -81,12 +82,12 @@ namespace NvxEpi.Device.Enums
                 foreach (CType enumType in enumTypes)
                 {
                     Debug.Console(2, "Found enum type: {0}", enumType.Name);
-                    IEnumerable<TEnum> fields =
+                    var fields =
                         enumType.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
                             .Select(x => x.GetValue(null))
                             .Cast<TEnum>();
 
-                    foreach (TEnum field in fields.Where(field => field != null))
+                    foreach (var field in fields.Where(field => field != null))
                     {
                         Debug.Console(2, "Adding field to this enum:{0} - {1}", field.Name, enumType.Name);
                         if (options.Contains(field))
@@ -100,7 +101,7 @@ namespace NvxEpi.Device.Enums
             }
             catch (Exception ex)
             {
-                string error = "Error getting all options -" +
+                var error = "Error getting all options -" +
                                string.Format("{0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
                 Debug.Console(0, error);
                 throw;
@@ -129,7 +130,7 @@ namespace NvxEpi.Device.Enums
             CheckAll();
             if (ignoreCase)
             {
-                TEnum result = _all.FirstOrDefault(x => x.Name.Equals(name));
+                var result = _all.FirstOrDefault(x => x.Name.Equals(name));
                 if (result == null)
                     throw new ArgumentNullException(name);
 
@@ -137,7 +138,7 @@ namespace NvxEpi.Device.Enums
             }
             else
             {
-                TEnum result = _all.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                var result = _all.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if (result == null)
                     throw new ArgumentNullException(name);
 
@@ -171,8 +172,8 @@ namespace NvxEpi.Device.Enums
 
             result = null;
 
-            string nameToCheck = name.Replace(" ", "");
-            foreach (TEnum item in _all)
+            var nameToCheck = name.Replace(" ", "");
+            foreach (var item in _all)
             {
                 string itemNameToCheck = item.Name.Replace(" ", "");
                 if (!nameToCheck.Equals(itemNameToCheck, StringComparison.OrdinalIgnoreCase))
@@ -188,9 +189,9 @@ namespace NvxEpi.Device.Enums
         public static TEnum FromValue(int value)
         {
             CheckAll();
-            TEnum result = _all.FirstOrDefault(x => x.Value == value);
+            var result = _all.FirstOrDefault(x => x.Value == value);
             if (result == null)
-                throw new ArgumentNullException(value.ToString());
+                throw new ArgumentNullException(value.ToString(CultureInfo.InvariantCulture));
 
             return result;
         }

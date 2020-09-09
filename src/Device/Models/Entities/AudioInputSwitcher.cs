@@ -105,11 +105,5 @@ namespace NvxEpi.Device.Models.Entities
         {
             get { return _device.OutputPorts; }
         }
-
-        public UsageTracking UsageTracker
-        {
-            get { return _device.UsageTracker; }
-            set { _device.UsageTracker = value; }
-        }
     }
 }

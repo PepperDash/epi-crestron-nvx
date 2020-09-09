@@ -10,7 +10,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Abstractions
 {
-    public interface INvxDevice : IHardware, IKeyName, IHasFeedback, IRoutingInputsOutputs, IUsageTracking
+    public interface INvxDevice : IHardware, IKeyName, IHasFeedback, IRoutingInputsOutputs
     {
         int VirtualDeviceId { get; }
         DeviceConfig Config { get; }

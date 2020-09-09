@@ -52,9 +52,6 @@ namespace NvxEpi.Device.Models.Aggregates
         {
             _device.RegisterForDeviceFeedback();
 
-            _device.UsageTracker = new UsageTracking(this);
-            UsageTracker = _device.UsageTracker;
-
             Hardware.OnlineStatusChange += (device, args) =>
             {
                 if (!args.DeviceOnLine)

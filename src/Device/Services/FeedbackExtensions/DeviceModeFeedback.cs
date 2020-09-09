@@ -11,13 +11,12 @@ namespace NvxEpi.Device.Services.FeedbackExtensions
         public static IntFeedback GetDeviceModeFeedback(this DmNvxBaseClass device)
         {
             if (device is DmNvxD3x)
-                return new IntFeedback(Key, () => DeviceModeEnum.Receiver.Value);
+                return new IntFeedback(Key, () => (int) DeviceModeEnum.Receiver);
 
             if (device is DmNvxE3x)
-                return new IntFeedback(Key, () => DeviceModeEnum.Transmitter.Value);
+                return new IntFeedback(Key, () => (int) DeviceModeEnum.Transmitter);
 
             var feedback = new IntFeedback(Key, () => (int) device.Control.DeviceModeFeedback);
-
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
 
             return feedback;

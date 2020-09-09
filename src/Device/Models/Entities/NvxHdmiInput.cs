@@ -16,7 +16,6 @@ namespace NvxEpi.Device.Models.Entities
     public class NvxHdmiInput : IHdmiInput
     {
         private readonly INvxDevice _device;
-        private HdmiInWithColorSpaceMode _input;
 
         public NvxHdmiInput(int index, INvxDevice device)
         {
@@ -30,7 +29,7 @@ namespace NvxEpi.Device.Models.Entities
             if (_device.Hardware.HdmiIn == null || _device.Hardware.HdmiIn[(uint)index] == null)
                 throw new NotSupportedException("Hdmi In " + index);
 
-            _input = _device.Hardware.HdmiIn[(uint)index];
+            Input = _device.Hardware.HdmiIn[(uint)index];
             switch (index)
             {
                 case 1:
@@ -52,13 +51,9 @@ namespace NvxEpi.Device.Models.Entities
             _device.Feedbacks.Add(CapabilityValue);
         }
 
+        public HdmiInWithColorSpaceMode Input { get; private set; }
         public BoolFeedback SyncDetected { get; private set; }
         public StringFeedback CapabilityName { get; private set; }
         public IntFeedback CapabilityValue { get; private set; }
-
-        public void SetHdcpCapability(HdcpCapabilityEnum capability)
-        {
-            _input.HdcpCapability = (eHdcpCapabilityType) capability.Value;
-        }
     }
 }
