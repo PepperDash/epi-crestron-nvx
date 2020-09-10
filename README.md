@@ -16,42 +16,28 @@ The name property in the Esssentials Device config is what the actual NVX device
 
 See details section below for detailed description of device properties.
 
-### Digitals
+### Joins
 
-| Join | Type (RW) | Description |
-| ---- | --------- | ----------- |
-| 1    | R         | Device Online |
-| 2    | R         | Stream Started |
-| 3    | R         | HDMI01 Sync Detected |
-| 4    | R         | HDMI02 Sync Detected |
-
-### Analogs
-
-| Join | Type (RW) | Description |
-| ---- | --------- | ----------- |
-| 1    | RW        | Video Source |
-| 2    | RW        | Audio Source |
-| 3    | RW        | Video Input Source |
-| 4    | RW        | Audio Input Source |
-| 5    | R         | Device Mode |
-| 6    | RW        | HDMI01 HDCP Capability |
-| 7    | R         | HDMI01 HDCP Supported Level |
-| 8    | RW        | HDMI02 HDCP Capability |
-| 9    | R         | HDMI02 HDCP Supported Level |
-| 10   | R         | HDMI Output Horizontal Resolution |
-| 11   | RW        | Videowall Mode |
-
-### Serials
-
-| Join | Type (RW) | Description |
-| ---- | --------- | ----------- |
-| 1    | R         | Device Name |
-| 2    | R         | Device Status |
-| 3    | R         | Stream Url  |
-| 4    | R         | Multicast Video Address |
-| 5    | R         | Multicast Audio Address |
-| 6    | R         | Currently Routed Video Source |
-| 7    | R         | Currently Routed Audio Source |
+| Join | Digital                | Analog                   | Serial                   |
+| ---- | ---------------------- | ------------------------ | ------------------------ |
+| 1    | Device Online          | Video Route              | Video Route              |
+| 2    | -                      | Audio Route              | Audio Route              |
+| 3    | HDMI01 Sync Detected   | Video Input              | Video Input              |
+| 4    | HDMI02 Sync Detected   | Audio Input              | Audio Input              |
+| 5    | -                      | Usb Route                | Usb Route                |
+| 6    | HDMI01 Present         | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
+| 7    | HDMI02 Present         | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
+| 8    | HDMI OUT Present       | HDMI Out Disabled        | -                        |
+| 9    | HDMI OUT Present       | HDMI Out Disabled        | -                        |
+| 10   | Supports Videowall     | Videowall Mode           | -                        |
+| 11   | Supports NAX           | NAX Input                | NAX Input                |
+| 12   | -                      | NAX Route                | NAX Route                |
+| 13   | -                      | -                        | Device Name              |
+| 14   | -                      | -                        | Stream URL               |
+| 15   | -                      | -                        | Multicast Address        |
+| 16   | -                      | -                        | Secondary Audio Address  |
+| 17   | -                      | -                        | NAX Tx Address           |
+| 18   | -                      | -                        | NAX Rx Address           |
 
 ## Join Details
 
