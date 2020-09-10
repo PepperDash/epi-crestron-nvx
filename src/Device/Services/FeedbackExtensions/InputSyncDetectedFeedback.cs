@@ -1,12 +1,13 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Device.Enums;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Services.FeedbackExtensions
 {
     public static class InputSyncDetectedFeedback
     {
-        public static string Hdmi1Key = "Hdmi1SyncDetected";
-        public static string Hdmi2Key = "Hdmi2SyncDetected";
+        public static string Hdmi1Key = DeviceFeedbackEnum.Hdmi1SyncDetected.ToString();
+        public static string Hdmi2Key = DeviceFeedbackEnum.Hdmi2SyncDetected.ToString();
 
         public static BoolFeedback GetHdmiIn1SyncDetectedFeedback(this DmNvxBaseClass device)
         {

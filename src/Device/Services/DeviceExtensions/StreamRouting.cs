@@ -110,7 +110,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             rx.SetStreamUrl(tx.StreamUrl.StringValue);
             var videoInputSwitcher = rx as IVideoInputSwitcher;
             if (videoInputSwitcher != null)
-                videoInputSwitcher.SetInput(VideoInputEnum.Stream);
+                videoInputSwitcher.SetInput(eSfpVideoSourceTypes.Stream);
 
             rx.StartVideoStream();
         }

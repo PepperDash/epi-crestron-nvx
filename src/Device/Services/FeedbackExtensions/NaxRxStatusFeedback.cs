@@ -1,5 +1,4 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Device.Models.Entities;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Services.FeedbackExtensions

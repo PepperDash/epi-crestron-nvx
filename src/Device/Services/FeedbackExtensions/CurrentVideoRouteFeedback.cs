@@ -2,6 +2,7 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Device.Abstractions;
+using NvxEpi.Device.Enums;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -9,8 +10,8 @@ namespace NvxEpi.Device.Services.FeedbackExtensions
 {
     public static class CurrentVideoRouteFeedback
     {
-        public static readonly string NameKey = "CurrentVideoRoute";
-        public static readonly string ValueKey = "CurrentVideoRouteValue";
+        public static readonly string NameKey = DeviceFeedbackEnum.CurrentVideoRoute.ToString();
+        public static readonly string ValueKey = DeviceFeedbackEnum.CurrentVideoRouteValue.ToString();
 
         public static bool TryGetCurrentVideoRoute(this INvxDevice device, out INvxDevice result)
         {

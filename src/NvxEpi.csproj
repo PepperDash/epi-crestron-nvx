@@ -107,10 +107,7 @@
     <Compile Include="Device\Abstractions\IVideoStreamRouting.cs" />
     <Compile Include="Device\Abstractions\IVideowallMode.cs" />
     <Compile Include="Device\Abstractions\IAudioStreamRouting.cs" />
-    <Compile Include="Device\Enums\DeviceModeEnum.cs" />
     <Compile Include="Device\Models\Entities\Nvx35xRouter.cs" />
-    <Compile Include="Device\Services\DeviceExtensions\AudioInputSwitching.cs" />
-    <Compile Include="Device\Services\DeviceExtensions\VideoInputSwitching.cs" />
     <Compile Include="Device\Services\Utilities\PrintsInfoToConsoleExtension.cs" />
     <Compile Include="Device\Builders\NvxDeviceBuilder.cs" />
     <Compile Include="Device\Builders\INvxDeviceBuilder.cs" />
@@ -118,7 +115,7 @@
     <Compile Include="Device\Factories\Nvx35XDeviceFactory.cs" />
     <Compile Include="Device\JoinMaps\NvxDeviceJoinMap.cs" />
     <Compile Include="Device\Models\Entities\AudioInputSwitcher.cs" />
-    <Compile Include="Device\Enums\DeviceFeedbacks.cs" />
+    <Compile Include="Device\Enums\DeviceFeedbackEnum.cs" />
     <Compile Include="Device\Models\Entities\NvxHdmiOutput.cs" />
     <Compile Include="Device\Models\Entities\NvxHdmiInput.cs" />
     <Compile Include="Device\Models\Entities\NvxHdmiInputs.cs" />

@@ -1,14 +1,15 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Device.Enums;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Services.FeedbackExtensions
 {
     public static class InputHdcpCapabilityFeedback
     {
-        public static readonly string Hdmi1NameKey = "Hdmi1Capability";
-        public static readonly string Hdmi1ValueKey = "Hdmi1CapabilityValue";
-        public static readonly string Hdmi2NameKey = "Hdmi2Capability";
-        public static readonly string Hdmi2ValueKey = "Hdmi2CapabilityValue";
+        public static readonly string Hdmi1NameKey = DeviceFeedbackEnum.Hdmi1HdcpCapability.ToString();
+        public static readonly string Hdmi1ValueKey = DeviceFeedbackEnum.Hdmi1HdcpCapabilityValue.ToString();
+        public static readonly string Hdmi2NameKey = DeviceFeedbackEnum.Hdmi2HdcpCapability.ToString();
+        public static readonly string Hdmi2ValueKey = DeviceFeedbackEnum.Hdmi2HdcpCapabilityValue.ToString();
 
         public static StringFeedback GetHdmiIn1HdcpCapabilityFeedback(this DmNvxBaseClass device)
         {
