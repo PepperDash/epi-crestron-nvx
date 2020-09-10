@@ -1,12 +1,13 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Device.Enums;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Services.FeedbackExtensions
 {
     public static class AudioInputFeedback
     {
-        public static readonly string NameKey = "AudioInput";
-        public static readonly string ValueKey = "AudioInputValue";
+        public static readonly string NameKey = DeviceFeedbackEnum.AudioInput.ToString();
+        public static readonly string ValueKey = DeviceFeedbackEnum.AudioInputValue.ToString();
 
         public static StringFeedback GetAudioInputFeedback(this DmNvxBaseClass device)
         {

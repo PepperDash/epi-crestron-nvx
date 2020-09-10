@@ -2,6 +2,7 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Device.Abstractions;
+using NvxEpi.Device.Enums;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -9,8 +10,8 @@ namespace NvxEpi.Device.Services.FeedbackExtensions
 {
     public static class CurrentAudioRouteFeedback
     {
-        public static readonly string NameKey = "CurrentAudioRoute";
-        public static readonly string ValueKey = "CurrentAudioRouteValue";
+        public static readonly string NameKey = DeviceFeedbackEnum.CurrentAudioRoute.ToString();
+        public static readonly string ValueKey = DeviceFeedbackEnum.CurrentAudioRouteValue.ToString();
 
         public static bool TryGetCurrentAudioRoute(this IAudioStream device, out INvxDevice result)
         {
