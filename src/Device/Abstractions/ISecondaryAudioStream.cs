@@ -2,7 +2,7 @@
 
 namespace NvxEpi.Device.Abstractions
 {
-    public interface IAudioStream : INvxDevice
+    public interface ISecondaryAudioStream : INvxDevice
     {
         BoolFeedback IsStreamingAudio { get; }
         StringFeedback AudioStreamStatus { get; }

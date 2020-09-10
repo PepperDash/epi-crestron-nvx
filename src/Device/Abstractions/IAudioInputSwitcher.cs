@@ -6,10 +6,5 @@ namespace NvxEpi.Device.Abstractions
     {
         StringFeedback AudioInputName { get; }
         IntFeedback AudioInputValue { get; }
-
-        void SetInputToFollowVideo();
-        void SetInputToStream();
-        void SetInputToHdmi1();
-        void SetInputToHdmi2();
     }
 }

@@ -84,6 +84,26 @@ namespace NvxEpi.Device.Models.Entities
         public StringFeedback AudioInputName { get; private set; }
         public IntFeedback AudioInputValue { get; private set; }
 
+        public void SetInputToFollowVideo()
+        {
+            _device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+        }
+
+        public void SetInputToStream()
+        {
+            _device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
+        }
+
+        public void SetInputToHdmi1()
+        {
+            _device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Input1;
+        }
+
+        public void SetInputToHdmi2()
+        {
+            _device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Input2;
+        }
+
         private void Initialize()
         {
             AudioInputName = Hardware.GetAudioInputFeedback();

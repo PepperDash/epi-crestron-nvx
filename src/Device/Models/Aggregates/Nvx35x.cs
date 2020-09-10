@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Device.Abstractions;
-using NvxEpi.Device.Builders;
 using NvxEpi.Device.JoinMaps;
 using NvxEpi.Device.Models.Entities;
 using NvxEpi.Device.Services.DeviceExtensions;
@@ -20,16 +18,16 @@ using PepperDash.Essentials.Core.Config;
 namespace NvxEpi.Device.Models.Aggregates
 {
     public class Nvx35x : CrestronGenericBridgeableBaseDevice, IComPorts, ICec, IIROutputPorts, IVideoInputSwitcher,
-        IAudioInputSwitcher, IHdmiInputs, IHdmiOutput, IVideoStreamRouting, IAudioStreamRouting, IRouting
+        IAudioInputSwitcher, IHdmiInputs, IHdmiOutput, IVideoStreamRouting, ISecondaryAudioStreamRouting, IRouting
     {
         private readonly INvxDevice _device;
         private readonly IVideoInputSwitcher _videoInput;
-        private readonly IAudioInputSwitcher _audioInput;
-        private readonly IAudioStream _audioStream;
+        private readonly IAudioInputSwitcher _audioInput;       
         private readonly IHdmiInputs _hdmiInputs;
         private readonly IHdmiOutput _hdmiOutput;
         private readonly IVideoStreamRouting _videoStreamRouting;
-        private readonly IAudioStreamRouting _audioStreamRouting;
+        private readonly ISecondaryAudioStream _secondaryAudioStream;
+        private readonly ISecondaryAudioStreamRouting _secondaryAudioStreamRouting;
         private readonly IRouting _router;
 
         public Nvx35x(INvxDevice device)
@@ -39,8 +37,8 @@ namespace NvxEpi.Device.Models.Aggregates
             _videoInput = new VideoInputSwitcher(_device);
             _audioInput = new AudioInputSwitcher(_device);
             _videoStreamRouting = new PrimaryVideoRouter(_device);
-            _audioStream = new AudioStream(_device);
-            _audioStreamRouting = new SecondaryAudioRouter(_audioStream);
+            _secondaryAudioStream = new SecondaryAudioStream(_device);
+            _secondaryAudioStreamRouting = new SecondarySecondaryAudioRouter(_secondaryAudioStream);
             _hdmiInputs = new NvxHdmiInputs(_device);
             _hdmiOutput = new NvxHdmiOutput(_device);
             _router = new Nvx35xRouter(_videoInput, _audioInput);
@@ -211,17 +209,17 @@ namespace NvxEpi.Device.Models.Aggregates
 
         public BoolFeedback IsStreamingAudio
         {
-            get { return _audioStream.IsStreamingAudio; }
+            get { return _secondaryAudioStream.IsStreamingAudio; }
         }
 
         public StringFeedback AudioStreamStatus
         {
-            get { return _audioStream.AudioStreamStatus; }
+            get { return _secondaryAudioStream.AudioStreamStatus; }
         }
 
         public StringFeedback AudioMulticastAddress
         {
-            get { return _audioStream.AudioMulticastAddress; }
+            get { return _secondaryAudioStream.AudioMulticastAddress; }
         }
 
         public IntFeedback HorizontalResolution
@@ -246,27 +244,27 @@ namespace NvxEpi.Device.Models.Aggregates
 
         public IntFeedback CurrentAudioRouteValue
         {
-            get { return _audioStreamRouting.CurrentAudioRouteValue; }
+            get { return _secondaryAudioStreamRouting.CurrentAudioRouteValue; }
         }
 
         public StringFeedback CurrentAudioRouteName
         {
-            get { return _audioStreamRouting.CurrentAudioRouteName; }
+            get { return _secondaryAudioStreamRouting.CurrentAudioRouteName; }
         }
 
         public void SetAudioAddress(string address)
         {
-            _audioStreamRouting.SetAudioAddress(address);
+            _secondaryAudioStreamRouting.SetAudioAddress(address);
         }
 
         public void StartAudioStream()
         {
-            _audioStreamRouting.StartAudioStream();
+            _secondaryAudioStreamRouting.StartAudioStream();
         }
 
         public void StopAudioStream()
         {
-            _audioStreamRouting.StopAudioStream();
+            _secondaryAudioStreamRouting.StopAudioStream();
         }
 
         public ReadOnlyDictionary<uint, IHdmiInput> HdmiInputs

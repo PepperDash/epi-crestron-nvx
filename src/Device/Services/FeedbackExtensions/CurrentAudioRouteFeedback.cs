@@ -13,7 +13,7 @@ namespace NvxEpi.Device.Services.FeedbackExtensions
         public static readonly string NameKey = DeviceFeedbackEnum.CurrentAudioRoute.ToString();
         public static readonly string ValueKey = DeviceFeedbackEnum.CurrentAudioRouteValue.ToString();
 
-        public static bool TryGetCurrentAudioRoute(this IAudioStream device, out INvxDevice result)
+        public static bool TryGetCurrentAudioRoute(this ISecondaryAudioStream device, out INvxDevice result)
         {
             try
             {
@@ -32,7 +32,7 @@ namespace NvxEpi.Device.Services.FeedbackExtensions
                 {
                     result = DeviceManager
                         .AllDevices
-                        .OfType<IAudioStreamRouting>()
+                        .OfType<ISecondaryAudioStreamRouting>()
                         .Where(t => t.IsTransmitter.BoolValue && t.IsStreamingAudio.BoolValue)
                         .FirstOrDefault(
                             x =>

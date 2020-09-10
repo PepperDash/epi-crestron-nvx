@@ -74,20 +74,6 @@ namespace NvxEpi.Device.JoinMaps
                 Description = "Hdmi Output Disabled By Hdcp"
             });
 
-        [JoinName("Enable Audio Breakaway")]
-        public JoinDataComplete EnableAudioBreakaway = new JoinDataComplete(
-            new JoinData()
-            {
-                JoinNumber = 6,
-                JoinSpan = 1
-            },
-            new JoinMetadata()
-            {
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Digital,
-                Description = "Enable Audio Breakaway"
-            });
-
         [JoinName("Video Route")]
         public JoinDataComplete VideoRoute = new JoinDataComplete(
             new JoinData()
@@ -144,76 +130,76 @@ namespace NvxEpi.Device.JoinMaps
                 Description = "Audio Input Source"
             });
 
+        [JoinName("Usb Route")]
+        public JoinDataComplete UsbRoute = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 5,
+                JoinSpan = 1
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.AnalogSerial,
+                Description = "Audio Input Source"
+            });
+
         [JoinName("Hdmi1 Capability")]
         public JoinDataComplete Hdmi1Capability = new JoinDataComplete(
             new JoinData()
             {
-                JoinNumber = 11,
+                JoinNumber = 6,
                 JoinSpan = 1,
             },
             new JoinMetadata()
             {
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.AnalogSerial,
-                Description = "Hdmi Capability"
-            });
-
-        [JoinName("Device Mode")]
-        public JoinDataComplete DeviceMode = new JoinDataComplete(
-            new JoinData()
-            {
-                JoinNumber = 12,
-                JoinSpan = 1,
-            },
-            new JoinMetadata()
-            {
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.AnalogSerial,
-                Description = "Hdmi Capability"
+                Description = "Hdmi1 Capability"
             });
 
         [JoinName("Hdmi2 Capability")]
         public JoinDataComplete Hdmi2Capability = new JoinDataComplete(
             new JoinData()
             {
-                JoinNumber = 12,
+                JoinNumber = 7,
                 JoinSpan = 1,
             },
             new JoinMetadata()
             {
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Serial,
-                Description = "Hdmi Capability"
+                JoinType = eJoinType.AnalogSerial,
+                Description = "Hdmi2 Capability"
             });
         
 
         [JoinName("Device Name")]
-        public JoinDataComplete DeviceName = new JoinDataComplete(
+        public JoinDataComplete HdmiOutputResolution = new JoinDataComplete(
             new JoinData()
             {
-                JoinNumber = 7,
+                JoinNumber = 8,
                 JoinSpan = 1
             },
             new JoinMetadata()
             {
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Serial,
+                JoinType = eJoinType.AnalogSerial,
                 Description = "Device Name"
             });
 
-        [JoinName("Device Status")]
-        public JoinDataComplete DeviceStatus = new JoinDataComplete(
+        [JoinName("Videowall Mode")]
+        public JoinDataComplete VideowallMode = new JoinDataComplete(
             new JoinData()
             {
-                JoinNumber = 8,
+                JoinNumber = 9,
                 JoinSpan = 1,
             },
             new JoinMetadata()
             {
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Serial,
-                Description = "Device Status"
-            });
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.AnalogSerial,
+                Description = "Videowall Mode"
+            }); 
 
         [JoinName("Secondary Audio Status")]
         public JoinDataComplete SecondaryAudioStatus = new JoinDataComplete(
@@ -226,23 +212,7 @@ namespace NvxEpi.Device.JoinMaps
             {
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Serial,
-                Description = "Device Status"
-            });
-
-        
-
-        [JoinName("Usb Route")]
-        public JoinDataComplete UsbRoute = new JoinDataComplete(
-            new JoinData()
-            {
-                JoinNumber = 12,
-                JoinSpan = 1
-            },
-            new JoinMetadata()
-            {
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.AnalogSerial,
-                Description = "Usb Route"
+                Description = "Secondary Audio Status"
             });
 
         [JoinName("Nax Source")]
@@ -301,19 +271,7 @@ namespace NvxEpi.Device.JoinMaps
                 Description = "Multicast Audio Address"
             });
 
-        [JoinName("Videowall Mode")]
-        public JoinDataComplete VideowallMode = new JoinDataComplete(
-            new JoinData()
-            {
-                JoinNumber = 17,
-                JoinSpan = 1,
-            },
-            new JoinMetadata()
-            {
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Analog,
-                Description = "Videowall Mode"
-            }); 
+        
 
         [JoinName("Usb Remote Id")]
         public JoinDataComplete UsbRemoteId = new JoinDataComplete(

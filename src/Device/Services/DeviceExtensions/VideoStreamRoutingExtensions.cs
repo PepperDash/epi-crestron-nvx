@@ -11,7 +11,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Services.DeviceExtensions
 {
-    public static class StreamRoutingExtensions
+    public static class VideoStreamRoutingExtensions
     {
         public static void StartVideoStream(this INvxDevice device)
         {
@@ -110,92 +110,11 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             rx.SetStreamUrl(tx.StreamUrl.StringValue);
             var videoInputSwitcher = rx as IVideoInputSwitcher;
             if (videoInputSwitcher != null)
-                videoInputSwitcher.SetInput(eSfpVideoSourceTypes.Stream);
+                videoInputSwitcher.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
 
             rx.StartVideoStream();
         }
 
 
-        public static void RouteAudioStream(this IAudioStreamRouting rx, int txVirtualId)
-        {
-            if (rx.IsTransmitter.BoolValue)
-                throw new NotSupportedException("route device is transmitter");
-
-            if (txVirtualId == 0)
-                rx.StopAudioStream();
-            else
-            {
-                var tx = DeviceManager
-                    .AllDevices
-                    .OfType<IAudioStreamRouting>()
-                    .Where(x => x.IsTransmitter.BoolValue)
-                    .FirstOrDefault(x => x.VirtualDeviceId == txVirtualId);
-
-                if (tx == null)
-                    return;
- 
-                rx.RouteAudioStream(tx);
-            }
-        }
-
-        public static void RouteAudioStream(this IAudioStreamRouting rx, string txName)
-        {
-            if (rx.IsTransmitter.BoolValue)
-                throw new NotSupportedException("route device is transmitter");
-
-            if (String.IsNullOrEmpty(txName))
-                return;
-
-            if (txName.Equals(NvxRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
-            {
-                rx.StopAudioStream();
-                return;
-            }
-
-            var tx = DeviceManager
-                .AllDevices
-                .OfType<IAudioStream>()
-                .Where(t => t.IsTransmitter.BoolValue)
-                .ToList();
-
-            var txByName = tx.FirstOrDefault(x => x.Name.Equals(txName, StringComparison.OrdinalIgnoreCase));
-            if (txByName != null)
-            {
-                rx.RouteAudioStream(txByName);
-                return;
-            }
-
-            var txByKey = tx.FirstOrDefault(x => x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase));
-            if (txByKey == null)
-                return;
-
-            rx.RouteAudioStream(txByKey);
-        }
-
-        public static void RouteAudioStream(this IAudioStreamRouting rx, IAudioStream tx)
-        {
-            if (tx == null)
-            {
-                rx.StopAudioStream();
-                return;
-            }
-
-            if (rx.IsTransmitter.BoolValue || !tx.IsTransmitter.BoolValue)
-                throw new NotSupportedException("device type");
-
-            if (rx == null)
-                throw new NullReferenceException("rx");
-
-            var rxWithInput = rx as IAudioInputSwitcher;
-            if (rxWithInput != null)
-                rxWithInput.SetInput(AudioInputEnum.SecondaryStream);
-
-            rx.SetAudioAddress(
-                String.IsNullOrEmpty(tx.AudioMulticastAddress.StringValue)
-                    ? tx.MulticastAddress.StringValue
-                    : tx.AudioMulticastAddress.StringValue);
-
-            rx.StartAudioStream();
-        }
     }
 }

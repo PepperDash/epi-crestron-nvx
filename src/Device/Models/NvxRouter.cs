@@ -99,7 +99,5 @@ namespace NvxEpi.Device.Models
 
             rx.RouteVideoStream(String.IsNullOrEmpty(txKey) ? RouteOff : txKey);
         }
-
-        
     }
 }

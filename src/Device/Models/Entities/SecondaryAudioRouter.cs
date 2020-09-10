@@ -9,13 +9,13 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Models.Entities
 {
-    public class SecondaryAudioRouter : IAudioStreamRouting
+    public class SecondarySecondaryAudioRouter : ISecondaryAudioStreamRouting
     {
         private readonly CCriticalSection _lock = new CCriticalSection();
-        private readonly IAudioStream _device;
+        private readonly ISecondaryAudioStream _device;
         private INvxDevice _current;
 
-        public SecondaryAudioRouter(IAudioStream device)
+        public SecondarySecondaryAudioRouter(ISecondaryAudioStream device)
         {
             _device = device;
             Initialize();

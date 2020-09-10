@@ -98,16 +98,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Device\Abstractions\INvxDevice.cs" />
-    <Compile Include="Device\Abstractions\IAudioSwitcher.cs" />
+    <Compile Include="Device\Abstractions\IAudioInputSwitcher.cs" />
     <Compile Include="Device\Abstractions\IHardware.cs" />
     <Compile Include="Device\Abstractions\IHdmiInput.cs" />
     <Compile Include="Device\Abstractions\IHdmiOutput.cs" />
-    <Compile Include="Device\Abstractions\IAudioStream.cs" />
+    <Compile Include="Device\Abstractions\ISecondaryAudioStream.cs" />
     <Compile Include="Device\Abstractions\IVideoInputSwitcher.cs" />
     <Compile Include="Device\Abstractions\IVideoStreamRouting.cs" />
     <Compile Include="Device\Abstractions\IVideowallMode.cs" />
-    <Compile Include="Device\Abstractions\IAudioStreamRouting.cs" />
+    <Compile Include="Device\Abstractions\ISecondaryAudioStreamRouting.cs" />
     <Compile Include="Device\Models\Entities\Nvx35xRouter.cs" />
+    <Compile Include="Device\Services\DeviceExtensions\SecondaryAudioStreamRoutingExtensions.cs" />
     <Compile Include="Device\Services\Utilities\PrintsInfoToConsoleExtension.cs" />
     <Compile Include="Device\Builders\NvxDeviceBuilder.cs" />
     <Compile Include="Device\Builders\INvxDeviceBuilder.cs" />
@@ -126,7 +127,7 @@
     <Compile Include="Device\Models\Aggregates\Nvx35x.cs" />
     <Compile Include="Device\Models\NvxRouter.cs" />
     <Compile Include="Device\Services\DeviceExtensions\DeviceDefaults.cs" />
-    <Compile Include="Device\Services\DeviceExtensions\StreamRouting.cs" />
+    <Compile Include="Device\Services\DeviceExtensions\VideoStreamRoutingExtensions.cs" />
     <Compile Include="Device\Services\FeedbackExtensions\AudioInputFeedback.cs" />
     <Compile Include="Device\Services\FeedbackExtensions\CurrentAudioRouteFeedback.cs" />
     <Compile Include="Device\Services\FeedbackExtensions\CurrentVideoRouteFeedback.cs" />

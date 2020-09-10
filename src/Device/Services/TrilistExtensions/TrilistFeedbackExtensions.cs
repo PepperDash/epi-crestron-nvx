@@ -1,4 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
+using NvxEpi.Device.Enums;
 using NvxEpi.Device.JoinMaps;
 using NvxEpi.Device.Services.FeedbackExtensions;
 using PepperDash.Core;

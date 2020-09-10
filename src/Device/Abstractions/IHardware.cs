@@ -6,4 +6,9 @@ namespace NvxEpi.Device.Abstractions
     {
         DmNvxBaseClass Hardware { get; }
     }
+
+    public interface INvx35x : IHardware
+    {
+        new DmNvx35x Hardware { get; }
+    }
 }

@@ -11,11 +11,11 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Models.Entities
 {
-    public class AudioStream : IAudioStream
+    public class SecondaryAudioStream : ISecondaryAudioStream
     {
         private readonly INvxDevice _device;
 
-        public AudioStream(INvxDevice device)
+        public SecondaryAudioStream(INvxDevice device)
         {
             _device = device;
             Initialize();
@@ -108,11 +108,5 @@ namespace NvxEpi.Device.Models.Entities
         public BoolFeedback IsStreamingAudio { get; private set; }
         public StringFeedback AudioStreamStatus { get; private set; }
         public StringFeedback AudioMulticastAddress { get; private set; }
-
-        public UsageTracking UsageTracker
-        {
-            get { return _device.UsageTracker; }
-            set { _device.UsageTracker = value; }
-        }
     }
 }
