@@ -81,8 +81,9 @@ namespace NvxEpi.DeviceHelpers
                 }
 
                 var device = _inputs
-                    .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue);
-               
+                   .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue || 
+                       (!string.IsNullOrEmpty(x.StreamUrlExternal) && x.StreamUrlExternal == _device.Control.ServerUrlFeedback.StringValue));
+
                 if (device != null)
                 {
                     result = device.DeviceName;
@@ -106,8 +107,9 @@ namespace NvxEpi.DeviceHelpers
                 }
 
                 var device = _inputs
-                    .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue);
-               
+                    .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue ||
+                        (!string.IsNullOrEmpty(x.StreamUrlExternal) && x.StreamUrlExternal == _device.Control.ServerUrlFeedback.StringValue));
+
                 if (device != null)
                 {
                     result = device.VirtualDevice;
@@ -137,8 +139,12 @@ namespace NvxEpi.DeviceHelpers
 
                 Debug.Console(2, this, "Setting video source to Virtual Device = {0} | {1}", result.VirtualDevice, result.StreamUrl);
 
-                _device.Control.ServerUrl.StringValue = result.StreamUrl;
-
+                // if external streamUrl is defined, use it
+                if(!string.IsNullOrEmpty(result.StreamUrlExternal))
+                    _device.Control.ServerUrl.StringValue = result.StreamUrlExternal;
+                else
+                    _device.Control.ServerUrl.StringValue = result.StreamUrl;
+                
                 //set rx pairing
                 try
                 {

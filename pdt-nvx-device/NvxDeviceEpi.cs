@@ -371,10 +371,47 @@ namespace NvxEpi
             }
         }
 
+        public Feedback StreamLocationFb { get; protected set; }
+        public string StreamLocation
+        {
+            get
+            {
+                return _device.Control.ServerUrlFeedback == null ? String.Empty :
+                   _device.Control.ServerUrlFeedback.StringValue; 
+            }
+        }
+
+
         public Feedback OutputDisabledByHdcpFb { get; protected set; }
 
         public Feedback IsOnlineFb { get { return IsOnline; } }
 
+        protected string _streamUrlExternal;
+        public string StreamUrlExternal
+        {
+            get
+            {
+                return _streamUrlExternal;
+            }
+            set
+            {
+                _streamUrlExternal = value;
+            }
+        }
+
+        protected string _multicastAudioAddressExternal;
+        public string MulticastAudioAddressExternal
+        {
+            get
+            {
+                return _multicastAudioAddressExternal;
+            }
+            set
+            {
+                _multicastAudioAddressExternal = value;
+            }
+        } 
+        
         public NvxDeviceEpi(string key, string name, DmNvxBaseClass device, NvxDevicePropertiesConfig config, 
             ISwitcher videoSwitcher, ISwitcher audioSwitcher, ISwitcher videoInputSwitcher, ISwitcher audioInputSwitcher,
             NvxVideoWallHelper videoWallHelper, List<INvxHdmiInputHelper> inputs)

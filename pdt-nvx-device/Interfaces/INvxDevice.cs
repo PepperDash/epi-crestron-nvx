@@ -18,7 +18,7 @@ namespace NvxEpi.Interfaces
         Feedback OutputResolutionFb { get; }
         Feedback HdmiInput1SyncDetectedFb { get; }
         Feedback IsOnlineFb { get; }
-
+       
         bool IsTransmitter { get; }
         bool IsReceiver { get; }
         int AudioInputSource { get; set; }
@@ -27,7 +27,9 @@ namespace NvxEpi.Interfaces
         string DeviceName { get; }
         string ParentRouterKey { get; }
         string StreamUrl { get; }
+        string StreamUrlExternal { get; set; }
         string MulticastAudioAddress { get; }
+        string MulticastAudioAddressExternal { get; }
         string MulticastVideoAddress { get; }
         int HdmiInput1HdmiCapability { get; set; }
         int VideoInputSource { get; set; }

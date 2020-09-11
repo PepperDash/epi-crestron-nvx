@@ -80,6 +80,11 @@ namespace NvxEpi
             var currentlyRoutedAudioFb = device.CurrentlyRoutedAudioSourceFb as StringFeedback;
             if (currentlyRoutedAudioFb != null) currentlyRoutedAudioFb.LinkInputSig(trilist.StringInput[joinMap.CurrentlyRoutedAudioSource]);
 
+
+            trilist.SetStringSigAction(joinMap.SetStreamUrl, url => device.StreamUrlExternal = url);
+            trilist.SetStringSigAction(joinMap.SetMulticastAudioAddress, url => device.MulticastAudioAddressExternal = url);
+
+
             trilist.SetUShortSigAction(joinMap.VideoSource, source => device.VideoSource = source);
             trilist.SetUShortSigAction(joinMap.AudioSource, source => device.AudioSource = source);
             trilist.SetUShortSigAction(joinMap.VideoInputSource, input => device.VideoInputSource = input);
@@ -111,11 +116,13 @@ namespace NvxEpi
         public uint DeviceName { get; private set; }
         public uint DeviceStatus { get; private set; }
         public uint StreamUrl { get; private set; }
+        public uint SetStreamUrl { get; private set; }
         public uint MulticastVideoAddress { get; private set; }
         public uint MulticastAudioAddress { get; private set; }
+        public uint SetMulticastAudioAddress { get; private set; }
         public uint CurrentlyRoutedVideoSource { get; private set; }
         public uint CurrentlyRoutedAudioSource { get; private set; }
-
+       
         NvxDeviceJoinMap()
         {
             DeviceOnline = 1;
@@ -134,14 +141,19 @@ namespace NvxEpi
             Hdmi02HdcpSupportedLevel = 9;
             HdmiOuputResolution = 10;
             VideowallMode = 11;
+            
 
             DeviceName = 1;
             DeviceStatus = 2;
             StreamUrl = 3;
+            SetStreamUrl = 3;
             MulticastVideoAddress = 4;
             MulticastAudioAddress = 5;
+            SetMulticastAudioAddress = 5;
             CurrentlyRoutedVideoSource = 6;
             CurrentlyRoutedAudioSource = 7;
+
+        
         }
 
         public NvxDeviceJoinMap(uint joinStart)

@@ -92,7 +92,8 @@ namespace NvxEpi.DeviceHelpers
                 if (_isTransmitter) return _device.Control.AudioSourceFeedback.ToString();
 
                 var device = _inputs
-                    .FirstOrDefault(x => x.MulticastAudioAddress == _device.SecondaryAudio.MulticastAddressFeedback.StringValue);
+                    .FirstOrDefault(x => x.MulticastAudioAddress == _device.SecondaryAudio.MulticastAddressFeedback.StringValue ||
+                       (!string.IsNullOrEmpty(x.MulticastAudioAddressExternal) && x.MulticastAudioAddressExternal == _device.SecondaryAudio.MulticastAddressFeedback.StringValue));
 
                 if (device != null && !string.IsNullOrEmpty(_device.SecondaryAudio.MulticastAddressFeedback.StringValue))
                 {
@@ -102,7 +103,7 @@ namespace NvxEpi.DeviceHelpers
                 return result;
             }
         }
-
+        
         public int Source
         {
             get
@@ -111,7 +112,8 @@ namespace NvxEpi.DeviceHelpers
                 if (_isTransmitter) return result;
 
                 var device = _inputs
-                    .FirstOrDefault(x => x.MulticastAudioAddress == _device.SecondaryAudio.MulticastAddressFeedback.StringValue);
+                    .FirstOrDefault(x => x.MulticastAudioAddress == _device.SecondaryAudio.MulticastAddressFeedback.StringValue ||
+                       (!string.IsNullOrEmpty(x.MulticastAudioAddressExternal) && x.MulticastAudioAddressExternal == _device.SecondaryAudio.MulticastAddressFeedback.StringValue));
            
                 if (device != null && !string.IsNullOrEmpty(_device.SecondaryAudio.MulticastAddressFeedback.StringValue))
                 {
@@ -146,7 +148,12 @@ namespace NvxEpi.DeviceHelpers
                 }
 
                 Debug.Console(2, this, "Attemping to start the stream... Address: {0}", result.MulticastAudioAddress);
-                _device.SecondaryAudio.MulticastAddress.StringValue = result.MulticastAudioAddress;
+
+
+                if (!string.IsNullOrEmpty(result.MulticastAudioAddressExternal))
+                    _device.SecondaryAudio.MulticastAddress.StringValue = result.MulticastAudioAddressExternal;
+                else
+                    _device.SecondaryAudio.MulticastAddress.StringValue = result.MulticastAudioAddress;
             }
         }
 
