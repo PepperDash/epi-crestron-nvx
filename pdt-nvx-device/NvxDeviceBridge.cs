@@ -153,7 +153,6 @@ namespace NvxEpi
             CurrentlyRoutedVideoSource = 6;
             CurrentlyRoutedAudioSource = 7;
 
-        
         }
 
         public NvxDeviceJoinMap(uint joinStart)
