@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NvxEpi", "src\NvxEpi.csproj", "{C6706558-3482-422B-936D-0AB38A3D239D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NvxEpi.Device", "src\NvxEpi.Device\NvxEpi.Device.csproj", "{C6706558-3482-422B-936D-0AB38A3D239D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NvxEpi.Application", "src\NvxEpi.Application\NvxEpi.Application.csproj", "{6934CD39-0DAA-41F8-8D51-FB9E7B2C8E44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,10 @@ Global
 		{C6706558-3482-422B-936D-0AB38A3D239D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6706558-3482-422B-936D-0AB38A3D239D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6706558-3482-422B-936D-0AB38A3D239D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6934CD39-0DAA-41F8-8D51-FB9E7B2C8E44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6934CD39-0DAA-41F8-8D51-FB9E7B2C8E44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6934CD39-0DAA-41F8-8D51-FB9E7B2C8E44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6934CD39-0DAA-41F8-8D51-FB9E7B2C8E44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
