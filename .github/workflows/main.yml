@@ -3,7 +3,7 @@ name: Main Build using Docker
 on:
   release:
     types:
-      - created
+      - published
     branches:
       - main
 env:
@@ -15,7 +15,7 @@ env:
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
   BUILD_TYPE: Release
-  # Defaults to main as the release branch.  Change as necessary
+  # Defaults to master as the release branch.  Change as necessary
   RELEASE_BRANCH: main
 jobs:
   Build_Project:
@@ -40,6 +40,8 @@ jobs:
         run: |
           Write-Output ${{ env.VERSION }}
           ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
+      - name: restore Nuget Packages
+        run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
       # Login to Docker
       - name: Login to Docker
         uses: azure/docker-login@v1
