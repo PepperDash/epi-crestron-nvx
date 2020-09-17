@@ -19,7 +19,7 @@ env:
   # Defaults to debug for build type
   BUILD_TYPE: Debug
   # Defaults to master as the release branch.  Change as necessary
-  RELEASE_BRANCH: main
+  RELEASE_BRANCH: master
 jobs:
   Build_Project:
     runs-on: windows-latest
@@ -46,6 +46,8 @@ jobs:
         run: |
           Write-Output ${{ env.VERSION }}
           ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
+      - name: restore Nuget Packages
+        run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
       # Login to Docker
       - name: Login to Docker
         uses: azure/docker-login@v1
@@ -70,7 +72,7 @@ jobs:
       # Create the release on the source repo
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: fleskesvor/create-release@feature/support-target-commitish
         with:
           tag_name: ${{ env.VERSION  }}
           release_name: ${{ env.VERSION }}
