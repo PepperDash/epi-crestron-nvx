@@ -10,7 +10,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Abstractions
 {
-    public interface INvxDevice : IHardware, IKeyName, IHasFeedback, IRoutingInputsOutputs
+    /*public interface INvxDevice : IHardware, IKeyName, IHasFeedback, IRoutingInputsOutputs
     {
         int VirtualDeviceId { get; }
         DeviceConfig Config { get; }
@@ -20,5 +20,5 @@ namespace NvxEpi.Device.Abstractions
         StringFeedback VideoStreamStatus { get; }
         StringFeedback StreamUrl { get; }
         StringFeedback MulticastAddress { get; }
-    }
+    }*/
 }

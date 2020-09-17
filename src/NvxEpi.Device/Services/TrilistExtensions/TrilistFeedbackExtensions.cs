@@ -1,7 +1,8 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
+using NvxEpi.Device.DeviceFeedback;
 using NvxEpi.Device.Enums;
 using NvxEpi.Device.JoinMaps;
-using NvxEpi.Device.Services.FeedbackExtensions;
+using NvxEpi.Device.Services.DeviceFeedback;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Feedback = PepperDash.Essentials.Core.Feedback;
@@ -22,7 +23,7 @@ namespace NvxEpi.Device.Services.TrilistExtensions
                 if (feedback.Key == DeviceStatusFeedback.Key)
                     joinNumber = joinMap.DeviceStatus.JoinNumber;
 
-                if (feedback.Key == SecondaryAudioStatusFeedback.Key)
+                if (feedback.Key == SecondaryAudioStatus.Key)
                     joinNumber = joinMap.SecondaryAudioStatus.JoinNumber;
 
                 if (feedback.Key == StreamUrlFeedback.Key)
@@ -49,10 +50,10 @@ namespace NvxEpi.Device.Services.TrilistExtensions
                 if (feedback.Key == HdmiOutputDisabledFeedback.Key)
                     joinNumber = joinMap.HdmiOutputDisableByHdcp.JoinNumber;
 
-                if (feedback.Key == VideoInputFeedback.NameKey)
+                if (feedback.Key == VideoInput.NameKey)
                     joinNumber = joinMap.VideoInput.JoinNumber;
 
-                if (feedback.Key == VideoInputFeedback.ValueKey)
+                if (feedback.Key == VideoInput.ValueKey)
                     joinNumber = joinMap.VideoInput.JoinNumber;
 
                 if (feedback.Key == AudioInputFeedback.NameKey)

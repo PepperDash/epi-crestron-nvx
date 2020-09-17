@@ -1,8 +1,9 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
+using PepperDash.Core;
 
 namespace NvxEpi.Device.Abstractions
 {
-    public interface IHardware
+    /*public interface IHardware : IKeyed
     {
         DmNvxBaseClass Hardware { get; }
     }
@@ -15,5 +16,5 @@ namespace NvxEpi.Device.Abstractions
     public interface INvxD3x : IHardware
     {
         new DmNvxD3x Hardware { get; }
-    }
+    }*/
 }

@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C6706558-3482-422B-936D-0AB38A3D239D}</ProjectGuid>
+    <ProjectGuid>{85395B75-D38B-4009-9CF8-D4834B1823A6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NvxEpi.Device</RootNamespace>
-    <AssemblyName>NvxEpi.Device</AssemblyName>
+    <RootNamespace>NvxEpi.Abstractions</RootNamespace>
+    <AssemblyName>NvxEpi.Abstractions</AssemblyName>
     <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92300};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>WindowsCE</PlatformFamilyName>
     <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
@@ -25,7 +25,6 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <IntermediateOutputPath>bin\obj\</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -39,7 +38,6 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <IntermediateOutputPath>bin\obj\</IntermediateOutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <FileAlignment>512</FileAlignment>
@@ -48,24 +46,20 @@
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
-    </Reference>
     <Reference Include="Crestron.SimplSharpPro.DM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DM.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="PepperDashEssentials, Version=1.5.8.36287, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDashEssentials, Version=1.6.4.31727, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\submodules\essentials-builds\PepperDashEssentials.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Core, Version=1.0.38.2539, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Core, Version=1.0.41.31808, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\submodules\essentials-builds\PepperDash_Core.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Essentials_Core, Version=1.5.8.36276, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Essentials_Core, Version=1.6.4.31717, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\submodules\essentials-builds\PepperDash_Essentials_Core.dll</HintPath>
     </Reference>
@@ -97,70 +91,21 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\RoutingPortEnum.cs" />
-    <Compile Include="Services\DeviceFeedback\AudioInput.cs" />
-    <Compile Include="Services\DeviceFeedback\Hdmi1HdcpCapability.cs" />
-    <Compile Include="Services\DeviceFeedback\Hdmi1HdcpCapabilityValue.cs" />
-    <Compile Include="Services\DeviceFeedback\Hdmi2HdcpCapability.cs" />
-    <Compile Include="Services\DeviceFeedback\Hdmi2SyncDetected.cs" />
-    <Compile Include="Entities\Aggregates\NvxBaseDevice.cs" />
-    <Compile Include="Entities\Ports\HdmiOutputPort.cs" />
-    <Compile Include="Entities\Routing\NaxAudioRouter.cs" />
-    <Compile Include="Entities\Routing\SecondaryAudioRouter.cs" />
-    <Compile Include="Entities\Routing\PrimaryStreamRouter.cs" />
-    <Compile Include="Services\DeviceFeedback\VideoInput.cs" />
-    <Compile Include="Services\DeviceExtensions\NaxAudioStreamExtensions.cs" />
-    <Compile Include="Services\DeviceExtensions\RoutingPortExtensions.cs" />
-    <Compile Include="Services\DeviceExtensions\SecondaryAudioStreamExtensions.cs" />
-    <Compile Include="Services\Utilities\DeviceConsole.cs" />
-    <Compile Include="Builders\NvxDeviceBuilder.cs" />
-    <Compile Include="Builders\INvxDeviceBuilder.cs" />
-    <Compile Include="Enums\Enumeration.cs" />
-    <Compile Include="Factories\Nvx35XDeviceFactory.cs" />
-    <Compile Include="JoinMaps\NvxDeviceJoinMap.cs" />
-    <Compile Include="Enums\DeviceFeedbackEnum.cs" />
-    <Compile Include="Entities\Device\DeviceHdmiOutput.cs" />
-    <Compile Include="Entities\Device\DeviceHdmiInput.cs" />
-    <Compile Include="Entities\Device\DeviceHdmiInputs.cs" />
-    <Compile Include="Entities\Device\SecondaryAudioStream.cs" />
-    <Compile Include="Entities\Device\CurrentSecondaryAudio.cs" />
-    <Compile Include="Entities\Device\CurrentVideoInput.cs" />
-    <Compile Include="Entities\Device\PrimaryVideoStream.cs" />
-    <Compile Include="Entities\Aggregates\Nvx35x.cs" />
-    <Compile Include="Entities\Aggregates\NvxDeviceRouter.cs" />
-    <Compile Include="Services\DeviceExtensions\DeviceDefaults.cs" />
-    <Compile Include="Services\DeviceExtensions\VideoStreamRoutingExtensions.cs" />
-    <Compile Include="Services\DeviceFeedback\AudioInputValue.cs" />
-    <Compile Include="Services\DeviceFeedback\HdmiOutputDisabled.cs" />
-    <Compile Include="Services\DeviceFeedback\IsStreamingVideo.cs" />
-    <Compile Include="Services\DeviceFeedback\NaxRxStatus.cs" />
-    <Compile Include="Services\DeviceFeedback\SecondaryAudioAddress.cs" />
-    <Compile Include="Services\DeviceFeedback\IsStreamingSecondaryAudio.cs" />
-    <Compile Include="Services\DeviceFeedback\VideowallMode.cs" />
-    <Compile Include="Services\Utilities\DeviceDebug.cs" />
-    <Compile Include="Services\DeviceFeedback\NaxInput.cs" />
-    <Compile Include="Services\DeviceFeedback\VideoStreamStatus.cs" />
-    <Compile Include="Services\DeviceFeedback\NaxTxStatus.cs" />
-    <Compile Include="Services\DeviceFeedback\Hdmi1SyncDetected.cs" />
-    <Compile Include="Services\DeviceFeedback\HorizontalResolution.cs" />
-    <Compile Include="Entities\Device\NvxDevice.cs" />
-    <Compile Include="Services\DeviceFeedback\MulticastAddress.cs" />
-    <Compile Include="Services\DeviceFeedback\SecondaryAudioStatus.cs" />
-    <Compile Include="Services\TrilistExtensions\TrilistFeedbackExtensions.cs" />
-    <Compile Include="Services\Utilities\EnumExtensions.cs" />
+    <Compile Include="HdmiInput\IHdmiInput.cs" />
+    <Compile Include="HdmiOutput\IHdmiOutput.cs" />
+    <Compile Include="NaxAudio\ICurrentNaxAudioStream.cs" />
+    <Compile Include="NaxAudio\INaxAudioRx.cs" />
+    <Compile Include="NaxAudio\INaxAudioStream.cs" />
+    <Compile Include="NaxAudio\INaxAudioTx.cs" />
+    <Compile Include="Hardware\INvx35XHardware.cs" />
+    <Compile Include="Device\INvxDevice.cs" />
+    <Compile Include="Hardware\INvxHardware.cs" />
+    <Compile Include="SecondaryAudio\ICurrentSecondaryAudioStream.cs" />
+    <Compile Include="SecondaryAudio\ISecondaryAudioStream.cs" />
+    <Compile Include="Stream\ICurrentStream.cs" />
+    <Compile Include="Stream\IStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\DeviceFeedback\DeviceMode.cs" />
-    <Compile Include="Services\DeviceFeedback\StreamUrl.cs" />
-    <Compile Include="Services\DeviceFeedback\VideoInputValue.cs" />
-    <Compile Include="Services\DeviceFeedback\Hdmi2HdcpCapabilityValue.cs" />
-    <Compile Include="Services\Config\NvxDeviceProperties.cs" />
     <None Include="Properties\ControlSystem.cfg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NvxEpi.Abstractions\NvxEpi.Abstractions.csproj">
-      <Project>{85395B75-D38B-4009-9CF8-D4834B1823A6}</Project>
-      <Name>NvxEpi.Abstractions</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <PropertyGroup>

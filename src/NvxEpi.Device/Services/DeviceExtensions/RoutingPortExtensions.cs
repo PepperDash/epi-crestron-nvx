@@ -1,6 +1,6 @@
 ﻿using System;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Device.Abstractions;
+using NvxEpi.Abstractions.Device;
 using NvxEpi.Device.Models.Ports;
 using NvxEpi.Device.Services.Utilities;
 using PepperDash.Core;
@@ -8,14 +8,14 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Services.DeviceExtensions
 {
-    public static class RoutingPortExtensions
+    public class RoutingPortExtensions
     {
-        public static INvxDevice AddStreams(this INvxDevice device)
+        public static INvxDevice AddStreams(INvxDevice device)
         {
-            return device.IsTransmitter.BoolValue ? device.AddStreamOutputs() : device.AddStreamInputs();
+            return device.IsTransmiter ? device.AddStreamOutputs() : device.AddStreamInputs();
         }
 
-        private static INvxDevice AddStreamOutputs(this INvxDevice device)
+        private static INvxDevice AddStreamOutputs(INvxDevice device)
         {
             var streamKey = eSfpVideoSourceTypes.Stream.ToString();
             device.OutputPorts.Add(new RoutingOutputPort(
@@ -28,7 +28,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             return device;
         }
 
-        private static INvxDevice AddStreamInputs(this INvxDevice device)
+        private static INvxDevice AddStreamInputs(INvxDevice device)
         {
             var videoStreamKey = eSfpVideoSourceTypes.Stream.ToString();
             device.InputPorts.Add(new RoutingInputPort(
@@ -50,7 +50,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             return device;
         }
 
-        public static INvxDevice AddSecondaryAudio(this INvxDevice device)
+        public static INvxDevice AddSecondaryAudio(INvxDevice device)
         {
             if (device.IsTransmitter.BoolValue)
                 return device;
@@ -74,7 +74,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             return device;
         }
 
-        public static INvxDevice AddHdmiInput1(this INvxDevice device)
+        public static INvxDevice AddHdmiInput1(INvxDevice device)
         {
             var key = eSfpVideoSourceTypes.Hdmi1.ToString();
             device.InputPorts.Add(new RoutingInputPort(
@@ -96,7 +96,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             return device;
         }
 
-        public static INvxDevice AddHdmiInput2(this INvxDevice device)
+        public static INvxDevice AddHdmiInput2(INvxDevice device)
         {
             var key = eSfpVideoSourceTypes.Hdmi1.ToString();
             device.InputPorts.Add(new RoutingInputPort(
@@ -118,7 +118,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             return device;
         }
 
-        public static INvxDevice AddHdmiOutput(this INvxDevice device)
+        public static INvxDevice AddHdmiOutput(INvxDevice device)
         {
             if (device.Hardware.HdmiOut == null)
                 return device;
@@ -133,7 +133,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             return device;
         }
 
-        public static INvxDevice AddNaxAudio(this INvxDevice device)
+        public static INvxDevice AddNaxAudio(INvxDevice device)
         {
             var audioTxStreamKey = DmNvxControl.eAudioSource.DmNaxAudio + "Tx";
             device.OutputPorts.Add(new RoutingOutputPort(

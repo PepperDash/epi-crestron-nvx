@@ -1,31 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Device.Abstractions;
 using NvxEpi.Device.Services.Config;
 using PepperDash.Core;
-using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Services.DeviceExtensions
 {
     //TODO : Add NAX audio to this
-    public static class DeviceDefaults
+    public class DeviceDefaults
     {
-        public static void SetDeviceDefaults(this INvxDevice device)
-        {
-            var props = NvxDeviceProperties.FromDeviceConfig(device.Config);
-            if (device.IsTransmitter.BoolValue)
-                SetTxDefaults(device.Hardware, props);
-            else
-                SetRxDefaults(device.Hardware, props);
-
-            SetDefaultInputs(device.Hardware, props);
-        }
-
-        private static void SetTxDefaults(DmNvxBaseClass device, NvxDeviceProperties props)
+        public static void SetTxDefaults(DmNvxBaseClass device, NvxDeviceProperties props)
         {
             device.Control.DeviceMode = eDeviceMode.Transmitter;
             device.Control.EnableAutomaticInitiation();
@@ -47,7 +30,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             }
         }
 
-        private static void SetRxDefaults(DmNvxBaseClass device, NvxDeviceProperties props)
+        public static void SetRxDefaults(DmNvxBaseClass device, NvxDeviceProperties props)
         {
             device.Control.DeviceMode = eDeviceMode.Receiver;
             device.Control.DisableAutomaticInitiation();
@@ -55,7 +38,7 @@ namespace NvxEpi.Device.Services.DeviceExtensions
             device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
         }
 
-        private static void SetDefaultInputs(DmNvxBaseClass device, NvxDeviceProperties props)
+        public static void SetDefaultInputs(DmNvxBaseClass device, NvxDeviceProperties props)
         {
             try
             {
