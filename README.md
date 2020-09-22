@@ -25,11 +25,11 @@ See details section below for detailed description of device properties.
 | 3    | HDMI01 Sync Detected   | Video Input              | Video Input              |
 | 4    | HDMI02 Sync Detected   | Audio Input              | Audio Input              |
 | 5    | -                      | Usb Route                | Usb Route                |
-| 6    | HDMI01 Present         | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
-| 7    | HDMI02 Present         | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
-| 8    | HDMI OUT Present       | HDMI Out Disabled        | -                        |
-| 9    | HDMI OUT Present       | HDMI Out Disabled        | -                        |
-| 10   | Supports Videowall     | Videowall Mode           | -                        |
+| 6    | Supports HDMI01        | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
+| 7    | Supports HDMI02        | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
+| 8    | HDMI OUT Present       | HDMI Out Disabled by Hdcp| -                        |
+| 9    | Supports Videowall     | Videowall Mode           | -                        |
+| 10   | -                      | -                        | -                        |
 | 11   | Supports NAX           | NAX Input                | NAX Input                |
 | 12   | -                      | NAX Route                | NAX Route                |
 | 13   | -                      | -                        | Device Name              |
