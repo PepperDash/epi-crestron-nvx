@@ -4,7 +4,7 @@ using Crestron.SimplSharp;
 using NvxEpi.Abstractions.Stream;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Extensions
+namespace NvxEpi.Extensions
 {
     public class StreamUtilities
     {

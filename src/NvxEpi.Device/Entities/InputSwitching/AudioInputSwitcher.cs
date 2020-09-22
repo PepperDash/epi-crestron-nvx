@@ -4,7 +4,7 @@ using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Device.Services.Feedback;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Device.Entities.Hardware
+namespace NvxEpi.Device.Entities.InputSwitching
 {
     public class AudioInputSwitcher : ICurrentAudioInput
     {
@@ -70,9 +70,14 @@ namespace NvxEpi.Device.Entities.Hardware
         public StringFeedback CurrentAudioInput { get; private set; }
         public IntFeedback CurrentAudioInputValue { get; private set; }
 
-        public void HandleSwitch(object input, eRoutingSignalType type)
+        public FeedbackCollection<Feedback> Feedbacks
         {
-            throw new System.NotImplementedException();
+            get { return _device.Feedbacks; }
+        }
+
+        public BoolFeedback IsOnline
+        {
+            get { return _device.IsOnline; }
         }
     }
 }

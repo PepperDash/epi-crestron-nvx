@@ -6,15 +6,15 @@ namespace NvxEpi.Device.Entities.Routing
     {
         private static readonly NvxDeviceRouter _instance = new NvxDeviceRouter();
 
-        private const string _instanceKey = "$NvxRouter";
+        public const string InstanceKey = "$NvxRouter";
         public const string RouteOff = "$off";
         public const string NoSourceText = "No Source";
 
-        public IRouting PrimaryStreamRouter { get; private set; }
-        public IRouting SecondaryAudioRouter { get; private set; }
+        public PrimaryStreamRouter PrimaryStreamRouter { get; private set; }
+        public SecondaryAudioRouter SecondaryAudioRouter { get; private set; }
 
         private NvxDeviceRouter()
-            : base(_instanceKey)
+            : base(InstanceKey)
         {
             PrimaryStreamRouter = new PrimaryStreamRouter(Key + "-PrimaryStream");
             SecondaryAudioRouter = new SecondaryAudioRouter(Key + "-SecondaryAudio");

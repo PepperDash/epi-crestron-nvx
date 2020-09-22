@@ -2,7 +2,7 @@ using System;
 using NvxEpi.Abstractions.Stream;
 using PepperDash.Core;
 
-namespace NvxEpi.Abstractions.Extensions
+namespace NvxEpi.Extensions
 {
     public static class StreamExtensions
     {
@@ -64,10 +64,16 @@ namespace NvxEpi.Abstractions.Extensions
             if (device.IsTransmitter)
                 throw new ArgumentException("device");
 
+            if (tx == null)
+            {
+                device.StopStream();
+                return;
+            }
+
             if (!tx.IsTransmitter)
                 throw new ArgumentException("tx");
 
-            Debug.Console(1, device, "Routing stream : '{0}'", tx.Name);
+            Debug.Console(1, device, "Routing device stream : '{0}'", tx.Name);
             device.SetStreamUrl(tx.StreamUrl.StringValue);
         }
     }

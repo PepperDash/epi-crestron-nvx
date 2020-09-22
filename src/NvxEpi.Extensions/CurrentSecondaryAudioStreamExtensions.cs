@@ -5,7 +5,7 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Extensions
+namespace NvxEpi.Extensions
 {
     public static class CurrentSecondaryAudioStreamExtensions
     {

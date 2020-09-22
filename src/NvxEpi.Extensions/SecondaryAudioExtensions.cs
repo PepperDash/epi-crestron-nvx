@@ -5,7 +5,7 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Extensions
+namespace NvxEpi.Extensions
 {
     public static class SecondaryAudioExtensions
     {
@@ -76,7 +76,7 @@ namespace NvxEpi.Abstractions.Extensions
             if (!tx.IsTransmitter)
                 throw new ArgumentException("tx");
 
-            Debug.Console(1, device, "Routing stream : '{0}'", tx.Name);
+            Debug.Console(1, device, "Routing device secondary audio stream : '{0}'", tx.Name);
             device.SetSecondaryAudioAddress(tx.SecondaryAudioAddress.StringValue);
         }
     }

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Device;
-using NvxEpi.Abstractions.Extensions;
 using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Device.Enums;
+using NvxEpi.Device.Services.InputSwitching;
 using NvxEpi.Device.Services.Utilities;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -27,6 +28,8 @@ namespace NvxEpi.Device.Entities.Routing
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
+            InputPorts.Add(Off);
+
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
                 .OfType<INvxDevice>()
@@ -38,7 +41,7 @@ namespace NvxEpi.Device.Entities.Routing
                     if (stream == null)
                         return;
         
-                    var streamRoutingPort = tx.OutputPorts[DmNvxControl.eAudioSource.SecondaryStreamAudio.ToString()];
+                    var streamRoutingPort = tx.OutputPorts[SecondaryAudioOutput.Key];
                     if (streamRoutingPort == null)
                         return;
 
@@ -63,7 +66,7 @@ namespace NvxEpi.Device.Entities.Routing
                     if (stream == null)
                         return;
 
-                    var streamRoutingPort = rx.InputPorts[DmNvxControl.eAudioSource.SecondaryStreamAudio.ToString()];
+                    var streamRoutingPort = rx.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
                     if (streamRoutingPort == null)
                         return;
 
@@ -76,8 +79,21 @@ namespace NvxEpi.Device.Entities.Routing
 
                     OutputPorts.Add(output);
                 }));
+        }
 
-            AddPreActivationAction(CheckDictionaries);
+        public override bool CustomActivate()
+        {
+            foreach (var routingInputPort in InputPorts)
+            {
+                Debug.Console(1, this, "Routing Input Port : {0}", routingInputPort.Key);
+            }
+
+            foreach (var routingOutputPort in OutputPorts)
+            {
+                Debug.Console(1, this, "Routing Output Port : {0}", routingOutputPort.Key);
+            }
+
+            return base.CustomActivate();
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -108,12 +124,12 @@ namespace NvxEpi.Device.Entities.Routing
 
         public static string GetInputPortKeyForTx(ISecondaryAudioStream tx)
         {
-            return tx.Key + "--" + "SecondaryAudio";
+            return "SecondaryAudio" + "--" + tx.Key;
         }
 
         public static string GetOutputPortKeyForRx(ISecondaryAudioStream rx)
         {
-            return rx.Key + "--" + "SecondaryAudio";
+            return "SecondaryAudio" + "--" + rx.Key;
         }
 
         private static readonly CCriticalSection _lock = new CCriticalSection();
@@ -125,6 +141,7 @@ namespace NvxEpi.Device.Entities.Routing
             if (rxId == 0)
                 return;
 
+            CheckDictionaries();
             ISecondaryAudioStream rx;
             if (!_receivers.TryGetValue(rxId, out rx))
                 return;
@@ -135,7 +152,7 @@ namespace NvxEpi.Device.Entities.Routing
                 return;
             }
 
-            rx.RouteSecondaryAudio(txId);
+            rx.RouteSecondaryAudio((ushort)txId);
         }
 
         public static void Route(string txName, ISecondaryAudioStream rx)
@@ -152,6 +169,7 @@ namespace NvxEpi.Device.Entities.Routing
                 return;
             }
 
+            CheckDictionaries();
             ISecondaryAudioStream txByName;
             if (_transmitters.TryGetValue(txName, out txByName))
             {

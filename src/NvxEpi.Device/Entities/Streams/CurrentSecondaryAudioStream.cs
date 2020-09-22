@@ -2,10 +2,10 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Extensions;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Device.Entities.Routing;
+using NvxEpi.Extensions;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Entities.Streams
@@ -22,12 +22,6 @@ namespace NvxEpi.Device.Entities.Streams
         public CurrentSecondaryAudioStream(ISecondaryAudioStream stream)
         {
             _stream = stream;
-            Initialize();
-        }
-
-        public CurrentSecondaryAudioStream(INvx35XHardware device)
-        {
-            _stream = new SecondaryAudioStream(device);
             Initialize();
         }
 

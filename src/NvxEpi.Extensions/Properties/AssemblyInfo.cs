@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("NvxEpi.Pro")]
+[assembly: AssemblyTitle("NvxEpi.Extensions")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NvxEpi.Pro")]
+[assembly: AssemblyProduct("NvxEpi.Extensions")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyVersion("1.0.0.*")]
 

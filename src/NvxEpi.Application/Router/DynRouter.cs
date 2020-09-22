@@ -1,11 +1,18 @@
 ﻿using System.Linq;
+using NvxEpi.Device.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Application.Router
 {
-    public static class Router
+    public static class DynRouter
     {
+        public static TieLineCollection TieLines
+        {
+            get { return _ties; }
+        }
+
+        private static readonly TieLineCollection _ties = new TieLineCollection();
         private static readonly RouteDescriptorCollection _routes = new RouteDescriptorCollection();
 
         public static void MakeRoute(this IRoutingInputs dest, IRoutingOutputs source, eRoutingSignalType signalType)
@@ -64,12 +71,12 @@ namespace NvxEpi.Application.Router
         {
             Debug.Console(1, port.ParentDevice, "Looking for a {0} route to {1} on {2}", signalType.ToString(), source.Key, port.Key);
 
-            var tie = TieLineCollection.Default.FirstOrDefault(t => t.DestinationPort.Key.Equals(port.Key) &&
-                (t.Type == signalType || (t.Type & (eRoutingSignalType.Audio | eRoutingSignalType.Video)) == (eRoutingSignalType.Audio | eRoutingSignalType.Video)));
+            var tie = DynRouter.TieLines.FirstOrDefault(t => t.DestinationPort.Key.Equals(port.Key) &&
+                (t.Type.Has(signalType)));
 
             if (tie == null)
             {
-                Debug.Console(1, port.ParentDevice, "None on this port, trying the next...");
+                Debug.Console(1, port.ParentDevice, "None on this port:'{0}', trying the next...", port.Key);
                 return false;
             }
 
@@ -108,7 +115,7 @@ namespace NvxEpi.Application.Router
             {
                 Debug.Console(1, input.ParentDevice, "Looking for a {0} route to {1} on {2}", signalType.ToString(), source.Key, input.Key);
 
-                var tie = TieLineCollection.Default.FirstOrDefault(t => t.DestinationPort.Key.Equals(input.Key) &&
+                var tie = DynRouter.TieLines.FirstOrDefault(t => t.DestinationPort.Key.Equals(input.Key) &&
                     (t.Type == signalType || (t.Type & (eRoutingSignalType.Audio | eRoutingSignalType.Video)) == (eRoutingSignalType.Audio | eRoutingSignalType.Video)));
 
                 if (tie == null)
@@ -154,14 +161,13 @@ namespace NvxEpi.Application.Router
                     inputTie.DestinationPort.ParentDevice.Key, inputTie.DestinationPort.Key,
                     outputTie.SourcePort.ParentDevice.Key, outputTie.SourcePort.Key);
                     if (device != null)
-                    {
                         descriptor.Routes.Add(new RouteSwitchDescriptor(lastTie.SourcePort, tie.DestinationPort));
-                    }
 
                     return true;
                 }
             }
 
+            Debug.Console(1, dest, "No route to source found!");
             return false;
         }
     }

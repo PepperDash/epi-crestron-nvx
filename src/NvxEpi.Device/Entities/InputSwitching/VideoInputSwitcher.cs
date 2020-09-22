@@ -4,7 +4,7 @@ using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Device.Services.Feedback;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Device.Entities.Hardware
+namespace NvxEpi.Device.Entities.InputSwitching
 {
     public class VideoInputSwitcher : ICurrentVideoInput
     {
@@ -69,5 +69,15 @@ namespace NvxEpi.Device.Entities.Hardware
 
         public StringFeedback CurrentVideoInput { get; private set; }
         public IntFeedback CurrentVideoInputValue { get; private set; }
+
+        public FeedbackCollection<Feedback> Feedbacks
+        {
+            get { return _device.Feedbacks; }
+        }
+
+        public BoolFeedback IsOnline
+        {
+            get { return _device.IsOnline; }
+        }
     }
 }

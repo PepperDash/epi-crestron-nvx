@@ -3,7 +3,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
 using PepperDash.Core;
 
-namespace NvxEpi.Abstractions.Extensions
+namespace NvxEpi.Extensions
 {
     public static class AudioInputExtensions
     {

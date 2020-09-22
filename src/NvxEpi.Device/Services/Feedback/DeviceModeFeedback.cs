@@ -1,7 +1,7 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Device.Services.DeviceFeedback
+namespace NvxEpi.Device.Services.Feedback
 {
     public class DeviceModeFeedback
     {
@@ -19,6 +19,16 @@ namespace NvxEpi.Device.Services.DeviceFeedback
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
 
             return feedback;
+        }
+    }
+
+    public class DeviceNameFeedback
+    {
+        public const string Key = "DeviceName";
+
+        public static StringFeedback GetFeedback(string deviceName)
+        {
+            return new StringFeedback(Key, () => deviceName);
         }
     }
 }

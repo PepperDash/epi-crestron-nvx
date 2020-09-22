@@ -4,10 +4,13 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Device;
-using NvxEpi.Abstractions.Extensions;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Device.Enums;
+using NvxEpi.Device.Services.InputPorts;
+using NvxEpi.Device.Services.InputSwitching;
 using NvxEpi.Device.Services.Utilities;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -28,6 +31,8 @@ namespace NvxEpi.Device.Entities.Routing
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
+            InputPorts.Add(Off);
+
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
                 .OfType<INvxDevice>()
@@ -39,7 +44,7 @@ namespace NvxEpi.Device.Entities.Routing
                     if (stream == null)
                         return;
                     
-                    var streamRoutingPort = tx.OutputPorts[eSfpVideoSourceTypes.Stream.ToString()];
+                    var streamRoutingPort = tx.OutputPorts[StreamOutput.Key];
                     if (streamRoutingPort == null)
                         return;
 
@@ -64,7 +69,7 @@ namespace NvxEpi.Device.Entities.Routing
                     if (stream == null)
                         return;
 
-                    var streamRoutingPort = rx.InputPorts[eSfpVideoSourceTypes.Stream.ToString()];
+                    var streamRoutingPort = rx.InputPorts[DeviceInputEnum.Stream.Name];
                     if (streamRoutingPort == null)
                         return;
 
@@ -77,8 +82,6 @@ namespace NvxEpi.Device.Entities.Routing
 
                     OutputPorts.Add(output);
                 }));
-
-            AddPreActivationAction(CheckDictionaries);
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -88,6 +91,7 @@ namespace NvxEpi.Device.Entities.Routing
         {
             try
             {
+                Debug.Console(1, this, "Executing route : '{0}'", signalType.ToString());
                 if (signalType.Is(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include video");
 
@@ -96,27 +100,38 @@ namespace NvxEpi.Device.Entities.Routing
                     rx.RouteStream(inputSelector as IStream);
 
                 if (!signalType.Has(eRoutingSignalType.Audio)) return;
-
-                var rxWithAudioInput = rx as INvx35XHardware;
-                if (rxWithAudioInput == null) return;
-
-                rxWithAudioInput.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.PrimaryStreamAudio;
+                if (rx != null) 
+                    rx.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.PrimaryStreamAudio;
             }
             catch (Exception ex)
             {
                 Debug.Console(0, this, "Error executing route : '{0}'", ex.Message);
-                throw;
             }
+        }
+
+        public override bool CustomActivate()
+        {
+            foreach (var routingInputPort in InputPorts)
+            {
+                Debug.Console(1, this, "Routing Input Port : {0}", routingInputPort.Key);
+            }
+
+            foreach (var routingOutputPort in OutputPorts)
+            {
+                Debug.Console(1, this, "Routing Output Port : {0}", routingOutputPort.Key);
+            }
+
+            return base.CustomActivate();
         }
 
         public static string GetInputPortKeyForTx(IStream tx)
         {
-            return tx.Key + "--" + "Stream";
+            return "Stream" + "--" + tx.Key;
         }
 
         public static string GetOutputPortKeyForRx(IStream rx)
         {
-            return rx.Key + "--" + "Stream";
+            return "Stream" + "--" + rx.Key;
         }
 
         private static readonly CCriticalSection _lock = new CCriticalSection();
@@ -128,6 +143,7 @@ namespace NvxEpi.Device.Entities.Routing
             if (rxDeviceId == 0)
                 return;
 
+            CheckDictionaries();
             IStream rx;
             if (!_receivers.TryGetValue(rxDeviceId, out rx))
                 return;
@@ -136,7 +152,7 @@ namespace NvxEpi.Device.Entities.Routing
                 rx.StopStream();
             else
             {
-                rx.RouteStream(txDeviceId);
+                rx.RouteStream((ushort)txDeviceId);
             }
         }
 
@@ -154,6 +170,7 @@ namespace NvxEpi.Device.Entities.Routing
                 return;
             }
 
+            CheckDictionaries();
             IStream txByName;
             if (_transmitters.TryGetValue(txName, out txByName))
             {

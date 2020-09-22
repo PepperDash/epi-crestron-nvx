@@ -98,9 +98,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Aggregates\NvxBaseDevice.cs" />
-    <Compile Include="Entities\Hardware\AudioInputSwitcher.cs" />
+    <Compile Include="Entities\Hardware\Nvx35xHardware.cs" />
+    <Compile Include="Entities\Hardware\NvxBaseHardware.cs" />
+    <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
     <Compile Include="Entities\Streams\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
+    <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Services\Feedback\Hdmi1HdcpCapabilityFeedback.cs" />
     <Compile Include="Services\Feedback\AudioInputFeedback.cs" />
     <Compile Include="Services\Feedback\Hdmi1HdcpCapabilityValueFeedback.cs" />
@@ -121,14 +124,13 @@
     <Compile Include="Services\InputSwitching\StreamOutput.cs" />
     <Compile Include="Services\InputSwitching\HdmiOutput.cs" />
     <Compile Include="Services\InputSwitching\IHandleInputSwitch.cs" />
-    <Compile Include="Services\Json\DeviceModeConverter.cs" />
     <Compile Include="Services\Utilities\DeviceConsole.cs" />
     <Compile Include="Enums\Enumeration.cs" />
     <Compile Include="Factories\Nvx35XDeviceFactory.cs" />
     <Compile Include="JoinMaps\NvxDeviceJoinMap.cs" />
     <Compile Include="Entities\Streams\SecondaryAudioStream.cs" />
     <Compile Include="Entities\Streams\CurrentSecondaryAudioStream.cs" />
-    <Compile Include="Entities\Hardware\VideoInputSwitcher.cs" />
+    <Compile Include="Entities\InputSwitching\VideoInputSwitcher.cs" />
     <Compile Include="Entities\Streams\CurrentVideoStream.cs" />
     <Compile Include="Entities\Aggregates\Nvx35x.cs" />
     <Compile Include="Entities\Routing\NvxDeviceRouter.cs" />
@@ -162,6 +164,10 @@
     <ProjectReference Include="..\NvxEpi.Abstractions\NvxEpi.Abstractions.csproj">
       <Project>{85395B75-D38B-4009-9CF8-D4834B1823A6}</Project>
       <Name>NvxEpi.Abstractions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NvxEpi.Extensions\NvxEpi.Extensions.csproj">
+      <Project>{7F55F47A-2AC0-46E0-A380-523C49C464FE}</Project>
+      <Name>NvxEpi.Extensions</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

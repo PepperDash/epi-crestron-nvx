@@ -9,7 +9,7 @@ namespace NvxEpi.Device.Services.InputPorts
     {
         public static void AddRoutingPort(INvxDevice device)
         {
-            if (!device.IsTransmitter)
+            if (device.IsTransmitter)
                 throw new NotSupportedException("primary audio");
 
             var port = new RoutingInputPort(

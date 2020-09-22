@@ -94,8 +94,22 @@
     <Compile Include="Factories\DynNvxFactory.cs" />
     <Compile Include="JoinMap\DynRoutingJoinMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Router\Router.cs" />
+    <Compile Include="Router\DynRouter.cs" />
     <None Include="Properties\ControlSystem.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NvxEpi.Abstractions\NvxEpi.Abstractions.csproj">
+      <Project>{85395B75-D38B-4009-9CF8-D4834B1823A6}</Project>
+      <Name>NvxEpi.Abstractions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NvxEpi.Device\NvxEpi.Device.csproj">
+      <Project>{C6706558-3482-422B-936D-0AB38A3D239D}</Project>
+      <Name>NvxEpi.Device</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NvxEpi.Extensions\NvxEpi.Extensions.csproj">
+      <Project>{7F55F47A-2AC0-46E0-A380-523C49C464FE}</Project>
+      <Name>NvxEpi.Extensions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <PropertyGroup>

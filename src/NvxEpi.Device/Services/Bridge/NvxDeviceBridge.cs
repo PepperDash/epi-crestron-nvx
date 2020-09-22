@@ -1,17 +1,17 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
-using NvxEpi.Abstractions.Device;
-using NvxEpi.Abstractions.Extensions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
+using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Device.Entities.Aggregates;
 using NvxEpi.Device.Entities.Routing;
 using NvxEpi.Device.Entities.Streams;
 using NvxEpi.Device.JoinMaps;
 using NvxEpi.Device.Services.DeviceFeedback;
 using NvxEpi.Device.Services.Feedback;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -34,6 +34,9 @@ namespace NvxEpi.Device.Services.Bridge
             {
                 uint joinNumber = 0;
 
+                if (feedback.Key == DeviceNameFeedback.Key)
+                    joinNumber = joinMap.DeviceName.JoinNumber;
+ 
                 if (feedback.Key == IsStreamingVideoFeedback.Key)
                     joinNumber = joinMap.StreamStarted.JoinNumber;
 
@@ -120,9 +123,6 @@ namespace NvxEpi.Device.Services.Bridge
             if (bridge != null)
                 bridge.AddJoinMap(_device.Key, joinMap);
 
-            var nameFb = new StringFeedback(() => _device.Name);
-            nameFb.FireUpdate();
-
             _device.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.DeviceOnline.JoinNumber]);
 
             BuildFeedbackList(trilist, _device.Feedbacks, joinMap);
@@ -130,18 +130,30 @@ namespace NvxEpi.Device.Services.Bridge
             LinkVideowallMode(trilist, joinMap);
             LinkRouting(trilist, joinMap);
 
-            trilist.SetUShortSigAction(joinMap.VideoInput.JoinNumber, _device.SetAudioInput);
-            trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, _device.SetAudioInput);
-            trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, _device.SetStreamUrl);
+            var videoInput = _device as ICurrentVideoInput;
+            if (videoInput != null)
+                trilist.SetUShortSigAction(joinMap.VideoInput.JoinNumber, videoInput.SetVideoInput);
+
+            var audioInput = _device as ICurrentAudioInput;
+            if (audioInput != null)
+                trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, audioInput.SetAudioInput);
+
+            var stream = _device as IStream;
+            if (stream != null)
+                trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, stream.SetStreamUrl);
         }
 
         private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
         {
             if (_device.IsTransmitter) return;
-            trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, _device.RouteStream);
-            trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber,
-                name => PrimaryStreamRouter.Route(name, _device));
 
+            var stream = _device as IStream;
+            if (stream != null)
+            {
+                trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, stream.RouteStream);
+                trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber,
+                    name => PrimaryStreamRouter.Route(name, stream));
+            }
             var secondaryAudio = _device as ISecondaryAudioStream;
             if (secondaryAudio == null) return;
             trilist.SetUShortSigAction(joinMap.AudioRoute.JoinNumber, secondaryAudio.RouteSecondaryAudio);

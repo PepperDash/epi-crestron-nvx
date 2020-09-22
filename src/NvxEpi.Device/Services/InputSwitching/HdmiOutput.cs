@@ -1,8 +1,8 @@
 ﻿using System;
-using NvxEpi.Abstractions.Extensions;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Device.Enums;
 using NvxEpi.Device.Services.Utilities;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -10,7 +10,7 @@ namespace NvxEpi.Device.Services.InputSwitching
 {
     public class HdmiOutput : IHandleInputSwitch
     {
-        public const string Key = "StreamOutput";
+        public const string Key = "HdmiOutput";
         private readonly ICurrentVideoInput _device;
 
         public HdmiOutput(ICurrentVideoInput device)
@@ -20,6 +20,8 @@ namespace NvxEpi.Device.Services.InputSwitching
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
+            Debug.Console(1, _device, "Executing route on HdmiOutput : '{0}'", type.ToString());
+
             if (_device.IsTransmitter)
                 throw new NotSupportedException("transmitter");
 

@@ -5,7 +5,7 @@ using NvxEpi.Abstractions.NaxAudio;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Extensions
+namespace NvxEpi.Extensions
 {
     public static class NaxAudioStreamExtensions
     {

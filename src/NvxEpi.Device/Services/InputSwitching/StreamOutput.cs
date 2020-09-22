@@ -1,8 +1,9 @@
 ﻿using System;
-using NvxEpi.Abstractions.Extensions;
+using NvxEpi.Extensions;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Device.Enums;
 using NvxEpi.Device.Services.Utilities;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Services.InputSwitching
@@ -20,15 +21,16 @@ namespace NvxEpi.Device.Services.InputSwitching
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
+            Debug.Console(1, _device, "Executing route on StreamOutput : '{0}'", type.ToString());
+
             if (!_device.IsTransmitter)
                 throw new NotSupportedException("receiver");
-
-            if (_device.Hardware.HdmiOut == null)
-                throw new NotSupportedException("hdmi out");
 
             var routingInput = input as DeviceInputEnum;
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
+
+            Debug.Console(1, _device, "Switching input on StreamOutput: '{0}'", routingInput.Name);
 
             if (type.Is(eRoutingSignalType.AudioVideo))
             {

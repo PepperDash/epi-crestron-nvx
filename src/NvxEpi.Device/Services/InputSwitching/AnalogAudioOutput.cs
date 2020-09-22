@@ -1,8 +1,8 @@
 ﻿using System;
-using NvxEpi.Abstractions.Extensions;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Device.Enums;
 using NvxEpi.Device.Services.Utilities;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -21,6 +21,8 @@ namespace NvxEpi.Device.Services.InputSwitching
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
+            Debug.Console(1, _device, "Executing route on AnalogAudio : '{0}'", type.ToString());
+
             if (_device.IsTransmitter)
                 throw new NotSupportedException("transmitter"); 
 
@@ -28,7 +30,7 @@ namespace NvxEpi.Device.Services.InputSwitching
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
 
-            Debug.Console(1, _device, "Switching input on AudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
+            Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
 
             if (type.Has(eRoutingSignalType.Audio))
                 SwitchAudio(routingInput);

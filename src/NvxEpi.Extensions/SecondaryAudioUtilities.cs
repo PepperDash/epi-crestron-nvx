@@ -4,7 +4,7 @@ using Crestron.SimplSharp;
 using NvxEpi.Abstractions.SecondaryAudio;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Extensions
+namespace NvxEpi.Extensions
 {
     public class SecondaryAudioUtilities
     {

@@ -2,9 +2,9 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Device;
-using NvxEpi.Abstractions.Extensions;
 using NvxEpi.Abstractions.NaxAudio;
 using NvxEpi.Device.Services.Utilities;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 

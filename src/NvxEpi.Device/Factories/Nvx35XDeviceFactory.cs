@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Streaming;
@@ -8,10 +9,10 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Factories
 {
-    public class Nvx35XDeviceFactory : EssentialsPluginDeviceFactory<Nvx35x>
+    public class Nvx35XDeviceFactory : NvxBaseDeviceFactory<Nvx35x>
     {
-        private const string _minumumEssentialsVersion = "1.5.8";
-        private static readonly IEnumerable<string> _typeNames;
+        private const string _minumumEssentialsVersion = "1.6.4";
+        private static readonly List<string> _typeNames;
 
         static Nvx35XDeviceFactory()
         {
@@ -20,7 +21,8 @@ namespace NvxEpi.Device.Factories
                 .Assembly
                 .GetTypes()
                 .Where(x => x.IsSubclassOf(typeof (DmNvx35x).GetCType()))
-                .Select(x => x.Name);
+                .Select(x => x.Name)
+                .ToList();
         }
 
         public Nvx35XDeviceFactory()
@@ -31,11 +33,12 @@ namespace NvxEpi.Device.Factories
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            var nvxDevice = NvxDeviceBuilder
-                .Create(dc)
-                .Build();
+            var device = BuildDeviceFromConfig(dc);
+            var hardware = device as DmNvx35x;
+            if (hardware == null)
+                throw new ArgumentException("type");
 
-            return new Nvx35x(nvxDevice);
+            return new Nvx35x(dc, hardware);
         }
     }
 }

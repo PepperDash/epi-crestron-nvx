@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using NvxEpi.Device.Services.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -12,11 +11,8 @@ namespace NvxEpi.Device.Entities.Config
             return JsonConvert.DeserializeObject<NvxDeviceProperties>(config.Properties.ToString());
         }
 
-        [JsonProperty("virtualDeviceId")]
+        [JsonProperty("deviceId")]
         public int DeviceId { get; set; }
-
-        [JsonProperty("friendlyName")]
-        public string FriendlyName { get; set; }
 
         [JsonProperty("control")]
         public ControlPropertiesConfig Control { get; set; }
@@ -26,10 +22,6 @@ namespace NvxEpi.Device.Entities.Config
 
         [JsonProperty("mode")]
         public string Mode { get; set; }
-
-        [JsonProperty("mode")]
-        [JsonConverter(typeof(DeviceModeConverter))]
-        public bool IsTransmitter { get; set; }
 
         [JsonProperty("multicastVideoAddress")]
         public string MulticastVideoAddress { get; set; }
