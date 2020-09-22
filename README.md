@@ -27,7 +27,7 @@ See details section below for detailed description of device properties.
 | 5    | -                      | Usb Route                | Usb Route                |
 | 6    | Supports HDMI01        | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
 | 7    | Supports HDMI02        | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
-| 8    | HDMI OUT Present       | HDMI Out Disabled by Hdcp| -                        |
+| 8    | Output Disabled by Hdcp| Output Horizontal Res.   | -                        |
 | 9    | Supports Videowall     | Videowall Mode           | -                        |
 | 10   | -                      | -                        | -                        |
 | 11   | Supports NAX           | NAX Input                | NAX Input                |
