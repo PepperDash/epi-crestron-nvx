@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.NaxAudio
 {
-    public interface INaxAudioRx : INvxDevice
+    public interface INaxAudioRx : INvxHardware, IDeviceId
     {
         StringFeedback NaxAudioRxAddress { get; }
         BoolFeedback IsStreamingNaxRx { get; }

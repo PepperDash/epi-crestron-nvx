@@ -60,18 +60,74 @@ namespace NvxEpi.Device.JoinMaps
                 Description = "Hdmi2 Sync Detected"
             });
 
-        [JoinName("Hdmi Output Disabled By Hdcp")]
-        public JoinDataComplete HdmiOutputDisableByHdcp = new JoinDataComplete(
+        [JoinName("HdmiIn1Present")]
+        public JoinDataComplete HdmiIn1Present = new JoinDataComplete(
             new JoinData()
             {
-                JoinNumber = 5,
+                JoinNumber = 6,
                 JoinSpan = 1
             },
             new JoinMetadata()
             {
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Digital,
+                Description = "Hdmi In1 Present"
+            });
+
+        [JoinName("HdmiIn2Present")]
+        public JoinDataComplete HdmiIn2Present = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 7,
+                JoinSpan = 1
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital,
+                Description = "Hdmi In2 Present"
+            });
+
+        [JoinName("Hdmi Output Disabled By Hdcp")]
+        public JoinDataComplete HdmiOutputDisableByHdcp = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 8,
+                JoinSpan = 1
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog,
                 Description = "Hdmi Output Disabled By Hdcp"
+            });
+
+        [JoinName("Supports Videowall")]
+        public JoinDataComplete SupportsVideowall = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 9,
+                JoinSpan = 1
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital,
+                Description = "Supports Videowall"
+            });
+
+        [JoinName("Supports NAX")]
+        public JoinDataComplete SupportsNax = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 9,
+                JoinSpan = 1
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital,
+                Description = "SupportsNax"
             });
 
         [JoinName("Video Route")]
@@ -116,7 +172,7 @@ namespace NvxEpi.Device.JoinMaps
                 Description = "Video Input Source"
             });
 
-        [JoinName("Audio Source")]
+        [JoinName("Audio Input")]
         public JoinDataComplete AudioInput = new JoinDataComplete(
             new JoinData()
             {
@@ -141,7 +197,7 @@ namespace NvxEpi.Device.JoinMaps
             {
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.AnalogSerial,
-                Description = "Audio Input Source"
+                Description = "Usb Route"
             });
 
         [JoinName("Hdmi1 Capability")]
@@ -197,29 +253,15 @@ namespace NvxEpi.Device.JoinMaps
             new JoinMetadata()
             {
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.AnalogSerial,
+                JoinType = eJoinType.Analog,
                 Description = "Videowall Mode"
             }); 
 
-        [JoinName("Secondary Audio Status")]
-        public JoinDataComplete SecondaryAudioStatus = new JoinDataComplete(
-            new JoinData()
-            {
-                JoinNumber = 9,
-                JoinSpan = 1,
-            },
-            new JoinMetadata()
-            {
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Serial,
-                Description = "Secondary Audio Status"
-            });
-
-        [JoinName("Nax Source")]
+        [JoinName("Nax Input")]
         public JoinDataComplete NaxInput = new JoinDataComplete(
             new JoinData()
             {
-                JoinNumber = 6,
+                JoinNumber = 11,
                 JoinSpan = 1
             },
             new JoinMetadata()
@@ -229,8 +271,22 @@ namespace NvxEpi.Device.JoinMaps
                 Description = "Nax Audio Input Source"
             });
 
-        [JoinName("Stream Url")]
-        public JoinDataComplete StreamUrl = new JoinDataComplete(
+        [JoinName("Nax Route")]
+        public JoinDataComplete NaxRoute = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 12,
+                JoinSpan = 1
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.AnalogSerial,
+                Description = "Nax Route"
+            });
+
+        [JoinName("Device Name")]
+        public JoinDataComplete DeviceName = new JoinDataComplete(
             new JoinData()
             {
                 JoinNumber = 13,
@@ -238,13 +294,13 @@ namespace NvxEpi.Device.JoinMaps
             },
             new JoinMetadata()
             {
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial,
-                Description = "Stream Url"
+                Description = "Device Name"
             });
 
-        [JoinName("Multicast Video Address")]
-        public JoinDataComplete MulticastVideoAddress = new JoinDataComplete(
+        [JoinName("Stream Url")]
+        public JoinDataComplete StreamUrl = new JoinDataComplete(
             new JoinData()
             {
                 JoinNumber = 14,
@@ -252,13 +308,13 @@ namespace NvxEpi.Device.JoinMaps
             },
             new JoinMetadata()
             {
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial,
-                Description = "Multicast Video Address"
+                Description = "Stream Url"
             });
 
-        [JoinName("Multicast Audio Address")]
-        public JoinDataComplete MulticastAudioAddress = new JoinDataComplete(
+        [JoinName("Multicast Video Address")]
+        public JoinDataComplete MulticastVideoAddress = new JoinDataComplete(
             new JoinData()
             {
                 JoinNumber = 15,
@@ -268,13 +324,39 @@ namespace NvxEpi.Device.JoinMaps
             {
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Serial,
-                Description = "Multicast Audio Address"
+                Description = "Multicast Video Address"
             });
 
-        
+        [JoinName("Secondary Audio Address")]
+        public JoinDataComplete MulticastAudioAddress = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 16,
+                JoinSpan = 1,
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Secondary Audio Address"
+            });
 
-        [JoinName("Usb Remote Id")]
-        public JoinDataComplete UsbRemoteId = new JoinDataComplete(
+        [JoinName("NaxTxAddress")]
+        public JoinDataComplete NaxTxAddress = new JoinDataComplete(
+            new JoinData()
+            {
+                JoinNumber = 17,
+                JoinSpan = 1,
+            },
+            new JoinMetadata()
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "NaxTxAddress"
+            });
+
+        [JoinName("NaxRxAddress")]
+        public JoinDataComplete NaxRxAddress = new JoinDataComplete(
             new JoinData()
             {
                 JoinNumber = 18,
@@ -284,21 +366,7 @@ namespace NvxEpi.Device.JoinMaps
             {
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Serial,
-                Description = "Usb Remote Id"
-            });
-
-        [JoinName("Usb Local Id")]
-        public JoinDataComplete UsbLocalId = new JoinDataComplete(
-            new JoinData()
-            {
-                JoinNumber = 18,
-                JoinSpan = 1,
-            },
-            new JoinMetadata()
-            {
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Serial,
-                Description = "Usb Remote Id"
+                Description = "NaxRxAddress"
             });
 
         public NvxDeviceJoinMap(uint joinStart)

@@ -2,10 +2,7 @@
 using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Device.Builders;
-using NvxEpi.Device.Models;
-using NvxEpi.Device.Models.Aggregates;
-using NvxEpi.Device.Models.Entities;
+using NvxEpi.Device.Entities.Aggregates;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 

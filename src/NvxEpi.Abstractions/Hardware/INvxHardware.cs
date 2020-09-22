@@ -4,21 +4,8 @@ using PepperDash.Core;
 
 namespace NvxEpi.Abstractions.Hardware
 {
-    public interface INvxHardware : ITransmitterReceiver, IKeyed
+    public interface INvxHardware : ITransmitterReceiver, IKeyName, IDeviceId
     {
         DmNvxBaseClass Hardware { get; }
-    }
-
-    public static class NvxHardwareExtensions
-    {
-        public static void SetVideoToInputNone(this INvxHardware device)
-        {
-            device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
-        }
-
-        public static void SetAudioToInputAutomatic(this INvx35XHardware device)
-        {
-            device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
-        }
     }
 }

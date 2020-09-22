@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Device.Abstractions;
-using NvxEpi.Device.Models.Aggregates;
-using NvxEpi.Device.Services.DeviceExtensions;
+using NvxEpi.Abstractions.Device;
+using NvxEpi.Abstractions.Extensions;
+using NvxEpi.Abstractions.NaxAudio;
 using NvxEpi.Device.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Device.Models.Routing
+namespace NvxEpi.Device.Entities.Routing
 {
     public class NaxAudioRouter : EssentialsDevice, IRouting
     {
@@ -30,19 +27,23 @@ namespace NvxEpi.Device.Models.Routing
 
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
-                .OfType<IHasNaxAudioTxStream>()
+                .OfType<INvxDevice>()
                 .ToList()
                 .ForEach(tx =>
                 {
+                    var naxTx = tx as INaxAudioTx;
+                    if (naxTx == null)
+                        return;
+
                     var streamRoutingPort = tx.OutputPorts[DmNvxControl.eAudioSource.SecondaryStreamAudio.ToString()];
                     if (streamRoutingPort == null)
                         return;
 
                     var input = new RoutingInputPort(
-                        GetInputPortKeyForTx(tx),
+                        GetInputPortKeyForTx(naxTx),
                         eRoutingSignalType.Audio,
                         eRoutingPortConnectionType.Streaming,
-                        tx,
+                        naxTx,
                         this);
 
                     InputPorts.Add(input);
@@ -50,19 +51,23 @@ namespace NvxEpi.Device.Models.Routing
 
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
-                .OfType<IHasNaxAudioRxStream>()
+                .OfType<INvxDevice>()
                 .ToList()
                 .ForEach(rx =>
                 {
+                    var naxTx = rx as INaxAudioRx;
+                    if (naxTx == null)
+                        return;
+
                     var streamRoutingPort = rx.InputPorts[DmNvxControl.eAudioSource.SecondaryStreamAudio.ToString()];
                     if (streamRoutingPort == null)
                         return;
 
                     var output = new RoutingOutputPort(
-                        GetOutputPortKeyForRx(rx),
+                        GetOutputPortKeyForRx(naxTx),
                         eRoutingSignalType.Audio,
                         eRoutingPortConnectionType.Streaming,
-                        rx,
+                        naxTx,
                         this);
 
                     OutputPorts.Add(output);
@@ -76,17 +81,7 @@ namespace NvxEpi.Device.Models.Routing
         {
             try
             {
-                if (signalType.Has(eRoutingSignalType.Video))
-                    throw new ArgumentException("signal type cannot include video");
-
-                if (!signalType.Has(eRoutingSignalType.Audio))
-                    throw new ArgumentException("signal type must include audio");
-
-                var rx = outputSelector as IHasHasNaxAudioStreamRouting;
-                if (rx == null)
-                    throw new ArgumentNullException("rx");
-
-                rx.RouteAudioStream(inputSelector as IHasHasNaxAudioStreamRouting);
+                throw new NotImplementedException();
             }
             catch (Exception ex)
             {
@@ -97,13 +92,15 @@ namespace NvxEpi.Device.Models.Routing
 
         public static void Route(int rxVirtualId, int txVirtualId)
         {
+            throw new NotImplementedException();
+
             if (rxVirtualId == 0)
                 return;
 
             var rx = DeviceManager
                     .AllDevices
-                    .OfType<IHasHasNaxAudioStreamRouting>()
-                    .FirstOrDefault(x => x.VirtualDeviceId == rxVirtualId);
+                    .OfType<INaxAudioRx>()
+                    .FirstOrDefault(x => x.DeviceId == rxVirtualId);
 
             if (rx == null) return;
 
@@ -113,22 +110,55 @@ namespace NvxEpi.Device.Models.Routing
             {
                 var tx = DeviceManager
                     .AllDevices
-                    .OfType<IHasNaxAudioTxStream>()
-                    .FirstOrDefault(x => x.VirtualDeviceId == txVirtualId);
+                    .OfType<INaxAudioTx>()
+                    .FirstOrDefault(x => x.DeviceId == txVirtualId);
 
                 if (tx == null)
                     return;
 
-                rx.RouteAudioStream(tx);
+                //rx.RouteAudioStream(tx);
             }
         }
 
-        public static string GetInputPortKeyForTx(IHasNaxAudioTxStream tx)
+        public static void RouteAudioStream(string txName, INaxAudioRx rx)
+        {
+            throw new NotImplementedException();
+
+            if (String.IsNullOrEmpty(txName))
+                return;
+
+            if (txName.Equals(NvxDeviceRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
+            {
+                rx.StopAudioStream();
+                return;
+            }
+
+            var tx = DeviceManager
+                .AllDevices
+                .OfType<INaxAudioTx>()
+                .Where(t => t.IsTransmitter)
+                .ToList();
+
+            var txByName = tx.FirstOrDefault(x => x.Name.Equals(txName, StringComparison.OrdinalIgnoreCase));
+            if (txByName != null)
+            {
+                //rx.RouteAudioStream(txByName);
+                return;
+            }
+
+            var txByKey = tx.FirstOrDefault(x => x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase));
+            if (txByKey == null)
+                return;
+
+            //rx.RouteAudioStream(txByKey);
+        }
+
+        public static string GetInputPortKeyForTx(INaxAudioTx tx)
         {
             return tx.Key + "--" + "NaxAudio";
         }
 
-        public static string GetOutputPortKeyForRx(IHasNaxAudioRxStream rx)
+        public static string GetOutputPortKeyForRx(INaxAudioRx rx)
         {
             return rx.Key + "--" + "NaxAudio";
         }

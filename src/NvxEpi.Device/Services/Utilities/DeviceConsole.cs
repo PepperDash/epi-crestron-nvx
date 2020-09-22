@@ -10,13 +10,14 @@ namespace NvxEpi.Device.Services.Utilities
         public static void PrintInfoForAllDevices()
         {
             var devices = DeviceManager.GetDevices()
-                .OfType<INvxDevice>();
+                .OfType<INvxDevice>()
+                .OfType<IHasFeedback>();
 
             foreach (var device in devices)
                 PrintInfoToConsole(device);
         }
 
-        public static void PrintInfoToConsole(INvxDevice device)
+        public static void PrintInfoToConsole(IHasFeedback device)
         {
             foreach (var feedback in device.Feedbacks)
             {
