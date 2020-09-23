@@ -17,9 +17,6 @@ namespace NvxEpi.Extensions
                 return;
             }
            
-            if (device.Hardware.SecondaryAudio.StartFeedback.BoolValue)
-                return;
-
             Debug.Console(1, device, "Starting Secondary Audio...");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
             device.Hardware.SecondaryAudio.DisableAutomaticInitiation();
@@ -33,9 +30,6 @@ namespace NvxEpi.Extensions
                 device.Hardware.SecondaryAudio.EnableAutomaticInitiation();
                 return;
             }
-
-            if (device.Hardware.SecondaryAudio.StopFeedback.BoolValue)
-                return;
 
             Debug.Console(1, device, "Stopping Secondary Audio...");
             device.Hardware.SecondaryAudio.DisableAutomaticInitiation();

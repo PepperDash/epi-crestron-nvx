@@ -261,6 +261,22 @@ namespace NvxEpi.Application
             LinkDeviceNames(trilist, joinMap);
             LinkHdcpCapability(trilist, joinMap);
             LinkOutputDisabledFeedback(trilist, joinMap);
+            LinkHorizontalResolution(trilist);
+        }
+
+        private void LinkHorizontalResolution(BasicTriList trilist)
+        {
+            foreach (var device in _receivers)
+            {
+                var feedback =
+                    device.Value.Feedbacks[HorizontalResolutionFeedback.Key] as IntFeedback;
+                if (feedback == null)
+                    continue;
+
+                var index = (uint) device.Key - 1;
+                Debug.Console(1, device.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, 3301 + index);
+                feedback.LinkInputSig(trilist.UShortInput[3301 + index]);
+            }
         }
 
         private void LinkOutputDisabledFeedback(BasicTriList trilist, DmChassisControllerJoinMap joinMap)

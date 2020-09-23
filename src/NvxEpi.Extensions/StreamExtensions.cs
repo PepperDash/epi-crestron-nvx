@@ -9,9 +9,6 @@ namespace NvxEpi.Extensions
     {
         public static void StartStream(this IStream device)
         {
-            if (device.Hardware.Control.StartFeedback.BoolValue)
-                return;
-
             if (device.IsTransmitter)
             {
                 device.Hardware.Control.EnableAutomaticInitiation();
@@ -25,8 +22,11 @@ namespace NvxEpi.Extensions
 
         public static void StopStream(this IStream device)
         {
-            if (!device.Hardware.Control.StartFeedback.BoolValue)
+            if (device.IsTransmitter)
+            {
+                device.Hardware.Control.EnableAutomaticInitiation();
                 return;
+            }
 
             Debug.Console(1, device, "Stopping stream...");
             device.Hardware.Control.DisableAutomaticInitiation();

@@ -8,7 +8,7 @@ namespace NvxEpi.Application.Factories
 {
     public class DynNvxFactory : EssentialsPluginDeviceFactory<DynNvx>
     {
-        private const string _minumumEssentialsVersion = "1.6.1";
+        private const string _minumumEssentialsVersion = "1.6.4";
         private static readonly IEnumerable<string> _typeNames;
 
         static DynNvxFactory()
