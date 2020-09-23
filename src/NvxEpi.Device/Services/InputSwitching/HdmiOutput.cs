@@ -20,8 +20,6 @@ namespace NvxEpi.Device.Services.InputSwitching
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
-            Debug.Console(1, _device, "Executing route on HdmiOutput : '{0}'", type.ToString());
-
             if (_device.IsTransmitter)
                 throw new NotSupportedException("transmitter");
 
