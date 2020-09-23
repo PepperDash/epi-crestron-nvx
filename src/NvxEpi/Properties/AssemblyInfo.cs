@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("NvxEpi.Device")]
+[assembly: AssemblyTitle("NvxEpi")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NvxEpi.Device")]
+[assembly: AssemblyProduct("NvxEpi")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyVersion("1.0.0.*")]
 

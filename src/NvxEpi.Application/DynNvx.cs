@@ -36,18 +36,47 @@ namespace NvxEpi.Application
         {
             AddPreActivationAction(() =>
             {
-                _transmitters = builder
-                    .Transmitters
-                    .Select(x => DeviceManager.GetDeviceForKey(x.Value) as INvxDevice)
-                    .ToDictionary(x => x.DeviceId);
+                _transmitters = new Dictionary<int, INvxDevice>();
+
+                foreach (var item in builder.Transmitters)
+                {
+                    var tx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
+                    if (tx == null)
+                    {
+                        Debug.Console(1, this, "Could not get TX : {0}", item.Value);
+                        continue;
+                    }
+
+                    if (!tx.IsTransmitter)
+                    {
+                        Debug.Console(1, this, "Device is not a TX : {0}", item.Value);
+                        continue;
+                    }
+                    _transmitters.Add(tx.DeviceId, tx);
+                }
             });
 
             AddPreActivationAction(() =>
             {
-                _receivers = builder
-                    .Receivers
-                    .Select(x => DeviceManager.GetDeviceForKey(x.Value) as INvxDevice)
-                    .ToDictionary(x => x.DeviceId);
+                _receivers = new Dictionary<int, INvxDevice>();
+
+                foreach (var item in builder.Receivers)
+                {
+                    var rx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
+                    if (rx == null)
+                    {
+                        Debug.Console(1, this, "Could not get RX : {0}", item.Value);
+                        continue;
+                    }
+
+                    if (rx.IsTransmitter)
+                    {
+                        Debug.Console(1, this, "Device is not a RX : {0}", item.Value);
+                        continue;
+                    }
+
+                    _receivers.Add(rx.DeviceId, rx);
+                }
             });
 
             AddPreActivationAction(() =>

@@ -9,33 +9,6 @@ namespace NvxEpi.Extensions
 {
     public static class SecondaryAudioExtensions
     {
-        public static void StartSecondaryAudio(this ISecondaryAudioStream device)
-        {
-            if (device.IsTransmitter)
-            {
-                device.Hardware.SecondaryAudio.EnableAutomaticInitiation();
-                return;
-            }
-           
-            Debug.Console(1, device, "Starting Secondary Audio...");
-            device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
-            device.Hardware.SecondaryAudio.DisableAutomaticInitiation();
-            device.Hardware.SecondaryAudio.Start();
-        }
-
-        public static void StopSecondaryAudio(this ISecondaryAudioStream device)
-        {
-            if (device.IsTransmitter)
-            {
-                device.Hardware.SecondaryAudio.EnableAutomaticInitiation();
-                return;
-            }
-
-            Debug.Console(1, device, "Stopping Secondary Audio...");
-            device.Hardware.SecondaryAudio.DisableAutomaticInitiation();
-            device.Hardware.SecondaryAudio.Stop();
-        }
-
         public static void SetSecondaryAudioAddress(this ISecondaryAudioStream device, string address)
         {
             if (device.IsTransmitter)
@@ -48,7 +21,15 @@ namespace NvxEpi.Extensions
 
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
             device.Hardware.SecondaryAudio.MulticastAddress.StringValue = address;
-            device.StartSecondaryAudio();
+        }
+
+        public static void ClearSecondaryStream(this ISecondaryAudioStream device)
+        {
+            if (device.IsTransmitter)
+                return;
+
+            Debug.Console(1, device, "Clearing Secondary Audio Stream");
+            device.Hardware.SecondaryAudio.MulticastAddress.StringValue = null;
         }
 
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ushort txId)
@@ -58,7 +39,7 @@ namespace NvxEpi.Extensions
 
             if (txId == 0)
             {
-                device.StopSecondaryAudio();
+                device.ClearSecondaryStream();
                 return;
             }
 
@@ -81,7 +62,7 @@ namespace NvxEpi.Extensions
 
             if (tx == null)
             {
-                device.StopSecondaryAudio();
+                device.ClearSecondaryStream();
                 return;
             }
 

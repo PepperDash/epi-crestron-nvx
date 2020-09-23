@@ -33,8 +33,8 @@ namespace NvxEpi.Device.Services.Utilities
         public static void SetRxDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
         {
             device.Control.DeviceMode = eDeviceMode.Receiver;
-            device.Control.DisableAutomaticInitiation();
-            device.SecondaryAudio.DisableAutomaticInitiation();
+            device.Control.EnableAutomaticInitiation();
+            device.SecondaryAudio.EnableAutomaticInitiation();
             device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
         }
 

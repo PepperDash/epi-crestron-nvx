@@ -7,41 +7,26 @@ namespace NvxEpi.Extensions
 {
     public static class StreamExtensions
     {
-        public static void StartStream(this IStream device)
-        {
-            if (device.IsTransmitter)
-            {
-                device.Hardware.Control.EnableAutomaticInitiation();
-                return;
-            }
-
-            Debug.Console(1, device, "Starting stream...");
-            device.Hardware.Control.DisableAutomaticInitiation();
-            device.Hardware.Control.Start();
-        }
-
-        public static void StopStream(this IStream device)
-        {
-            if (device.IsTransmitter)
-            {
-                device.Hardware.Control.EnableAutomaticInitiation();
-                return;
-            }
-
-            Debug.Console(1, device, "Stopping stream...");
-            device.Hardware.Control.DisableAutomaticInitiation();
-            device.Hardware.Control.Stop();
-        }
-
         public static void SetStreamUrl(this IStream device, string url)
         {
+            if (device.IsTransmitter)
+                return;
+
             if (String.IsNullOrEmpty(url))
                 return;
 
             Debug.Console(1, device, "Setting stream: '{0}", url);
             device.Hardware.Control.ServerUrl.StringValue = url;
             device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
-            device.StartStream();
+        }
+
+        public static void ClearStream(this IStream device)
+        {
+            if (device.IsTransmitter)
+                return;
+
+            Debug.Console(1, device, "Clearing stream");
+            device.Hardware.Control.ServerUrl.StringValue = null;
         }
 
         public static void RouteStream(this IStream device, ushort txId)
@@ -51,7 +36,7 @@ namespace NvxEpi.Extensions
 
             if (txId == 0)
             {
-                device.StopStream();
+                device.SetStreamUrl(String.Empty);
                 return;
             }
 
@@ -69,7 +54,7 @@ namespace NvxEpi.Extensions
 
             if (tx == null)
             {
-                device.StopStream();
+                device.ClearStream();
                 return;
             }
 

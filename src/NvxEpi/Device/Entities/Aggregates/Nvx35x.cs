@@ -57,10 +57,10 @@ namespace NvxEpi.Device.Entities.Aggregates
             if (!args.DeviceOnLine)
                 return;
 
-            _currentVideoStream.StopStream();
+            _currentVideoStream.ClearStream();
             _currentVideoStream.RouteStream(CurrentStreamId.UShortValue);
 
-            _currentSecondaryAudioStream.StopSecondaryAudio();
+            _currentSecondaryAudioStream.ClearSecondaryStream();
             _currentSecondaryAudioStream.RouteSecondaryAudio(CurrentSecondaryAudioStreamId.UShortValue);
         }
 
