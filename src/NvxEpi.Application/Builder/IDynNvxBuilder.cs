@@ -10,9 +10,6 @@ namespace NvxEpi.Application.Builder
     {
         Dictionary<int, string> Transmitters { get; }
         Dictionary<int, string> Receivers { get; }
-        Dictionary<int, MockDisplay> VideoDestinations { get; }
-        Dictionary<int, Amplifier> AudioDestinations { get; }
-        Dictionary<int, DummyRoutingInputsDevice> Sources { get; }
 
         EssentialsDevice Build();
     }

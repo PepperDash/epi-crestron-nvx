@@ -11,9 +11,15 @@ namespace NvxEpi.Extensions
     {
         public static void StartSecondaryAudio(this ISecondaryAudioStream device)
         {
-            if (SecondaryAudioUtilities.ValidateSecondaryAudioStreamStart(device))
+            if (device.IsTransmitter)
+            {
+                device.Hardware.SecondaryAudio.EnableAutomaticInitiation();
                 return;
-  
+            }
+           
+            if (device.Hardware.SecondaryAudio.StartFeedback.BoolValue)
+                return;
+
             Debug.Console(1, device, "Starting Secondary Audio...");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
             device.Hardware.SecondaryAudio.DisableAutomaticInitiation();
@@ -22,12 +28,18 @@ namespace NvxEpi.Extensions
 
         public static void StopSecondaryAudio(this ISecondaryAudioStream device)
         {
-            if (SecondaryAudioUtilities.ValidateSecondaryAudioStreamStop(device))
+            if (device.IsTransmitter)
+            {
+                device.Hardware.SecondaryAudio.EnableAutomaticInitiation();
+                return;
+            }
+
+            if (device.Hardware.SecondaryAudio.StopFeedback.BoolValue)
                 return;
 
-            Debug.Console(1, device, "Starting Secondary Audio...");
+            Debug.Console(1, device, "Stopping Secondary Audio...");
             device.Hardware.SecondaryAudio.DisableAutomaticInitiation();
-            device.Hardware.SecondaryAudio.Start();
+            device.Hardware.SecondaryAudio.Stop();
         }
 
         public static void SetSecondaryAudioAddress(this ISecondaryAudioStream device, string address)
@@ -41,8 +53,8 @@ namespace NvxEpi.Extensions
             Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
 
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
-            device.StartSecondaryAudio();
             device.Hardware.SecondaryAudio.MulticastAddress.StringValue = address;
+            device.StartSecondaryAudio();
         }
 
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ushort txId)
@@ -72,6 +84,12 @@ namespace NvxEpi.Extensions
         {
             if (device.IsTransmitter)
                 throw new ArgumentException("device");
+
+            if (tx == null)
+            {
+                device.StopSecondaryAudio();
+                return;
+            }
 
             if (!tx.IsTransmitter)
                 throw new ArgumentException("tx");

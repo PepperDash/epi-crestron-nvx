@@ -1,12 +1,14 @@
 using System;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
+using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Device.Entities.Config;
 using NvxEpi.Device.Entities.InputSwitching;
 using NvxEpi.Device.Entities.Streams;
 using NvxEpi.Device.Services.Feedback;
 using NvxEpi.Device.Services.Utilities;
+using NvxEpi.Extensions;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
@@ -42,7 +44,7 @@ namespace NvxEpi.Device.Entities.Hardware
                 if (!args.DeviceOnLine)
                     return;
 
-                Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
+                Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
 
                 if (IsTransmitter)
                     Hardware.SetTxDefaults(props);
@@ -80,7 +82,7 @@ namespace NvxEpi.Device.Entities.Hardware
         public IntFeedback DeviceMode { get; private set; }
         public StringFeedback MulticastAddress { get; private set; }
 
-        public new DmNvxBaseClass Hardware { get; private set; }
+        public DmNvxBaseClass Hardware { get; private set; }
 
         public StringFeedback StreamUrl
         {

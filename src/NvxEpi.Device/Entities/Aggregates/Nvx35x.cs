@@ -14,6 +14,7 @@ using NvxEpi.Device.Entities.Streams;
 using NvxEpi.Device.Services.Feedback;
 using NvxEpi.Device.Services.InputPorts;
 using NvxEpi.Device.Services.InputSwitching;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -43,11 +44,24 @@ namespace NvxEpi.Device.Entities.Aggregates
 
             var stream = new VideoStream(_device);
             _currentVideoStream = new CurrentVideoStream(stream);
-            _secondaryAudioStream = new SecondaryAudioStream(_device);
+            _secondaryAudioStream = new SecondaryAudioStream(_device, IsOnline);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(_secondaryAudioStream);
 
             AddRoutingPorts();
             SetupFeedbacks();
+            Hardware.OnlineStatusChange += HardwareOnOnlineStatusChange;
+        }
+
+        private void HardwareOnOnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            if (!args.DeviceOnLine)
+                return;
+
+            _currentVideoStream.StopStream();
+            _currentVideoStream.RouteStream(CurrentStreamId.UShortValue);
+
+            _currentSecondaryAudioStream.StopSecondaryAudio();
+            _currentSecondaryAudioStream.RouteSecondaryAudio(CurrentSecondaryAudioStreamId.UShortValue);
         }
 
         private void SetupFeedbacks()
@@ -75,7 +89,10 @@ namespace NvxEpi.Device.Entities.Aggregates
                 _currentVideoStream.CurrentStreamName,
                 _currentVideoStream.CurrentStreamId,
                 _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId,
-                _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName
+                _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName,
+                _currentSecondaryAudioStream.IsStreamingSecondaryAudio,
+                _currentSecondaryAudioStream.SecondaryAudioAddress,
+                _currentSecondaryAudioStream.SecondaryAudioStreamStatus
             });
         }
 

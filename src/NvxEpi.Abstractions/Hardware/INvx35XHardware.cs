@@ -6,6 +6,4 @@ namespace NvxEpi.Abstractions.Hardware
     {
         new DmNvx35x Hardware { get; }
     }
-
-    
 }

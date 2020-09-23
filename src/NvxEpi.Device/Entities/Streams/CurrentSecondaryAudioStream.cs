@@ -17,7 +17,7 @@ namespace NvxEpi.Device.Entities.Streams
         private ISecondaryAudioStream _current;
 
         public const string RouteNameKey = "CurrentSecondaryAudioRoute";
-        public const string RouteValueKey = "CurrentVideoRouteValue";
+        public const string RouteValueKey = "CurrentSecondaryAudioRouteValue";
 
         public CurrentSecondaryAudioStream(ISecondaryAudioStream stream)
         {
@@ -60,9 +60,12 @@ namespace NvxEpi.Device.Entities.Streams
 
         private void UpdateCurrentAudioRoute()
         {
+            if (!IsOnline.BoolValue)
+                return;
+
             try
             {
-                _lock.Enter();
+                _lock.Enter();    
                 _current = _stream.GetCurrentAudioRoute();
 
                 CurrentSecondaryAudioStreamId.FireUpdate();
@@ -126,5 +129,10 @@ namespace NvxEpi.Device.Entities.Streams
 
         public StringFeedback CurrentSecondaryAudioStreamName { get; private set; }
         public IntFeedback CurrentSecondaryAudioStreamId { get; private set; }
+
+        public BoolFeedback IsOnline
+        {
+            get { return _stream.IsOnline; }
+        }
     }
 }

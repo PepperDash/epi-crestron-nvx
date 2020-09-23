@@ -10,9 +10,10 @@ namespace NvxEpi.Device.Entities.Streams
     {
         private readonly INvx35XHardware _device;
 
-        public SecondaryAudioStream(INvx35XHardware device)
+        public SecondaryAudioStream(INvx35XHardware device, BoolFeedback isOnline)
         {
             _device = device;
+            IsOnline = isOnline;
             Initialize();
         }
 
@@ -61,5 +62,7 @@ namespace NvxEpi.Device.Entities.Streams
         {
             get { return _device.Hardware; }
         }
+
+        public BoolFeedback IsOnline { get; private set; }
     }
 }

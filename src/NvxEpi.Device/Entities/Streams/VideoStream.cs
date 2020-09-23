@@ -67,5 +67,10 @@ namespace NvxEpi.Device.Entities.Streams
         public StringFeedback StreamUrl { get; private set; }
         public BoolFeedback IsStreamingVideo { get; private set; }
         public StringFeedback VideoStreamStatus { get; private set; }
+
+        public BoolFeedback IsOnline
+        {
+            get { return _device.IsOnline; }
+        }
     }
 }

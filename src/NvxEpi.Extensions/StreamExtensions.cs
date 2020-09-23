@@ -1,4 +1,5 @@
 using System;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Stream;
 using PepperDash.Core;
 
@@ -39,6 +40,8 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Setting stream: '{0}", url);
             device.Hardware.Control.ServerUrl.StringValue = url;
+            device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+            device.StartStream();
         }
 
         public static void RouteStream(this IStream device, ushort txId)

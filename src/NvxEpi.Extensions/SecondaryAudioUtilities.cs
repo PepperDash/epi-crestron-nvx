@@ -8,24 +8,6 @@ namespace NvxEpi.Extensions
 {
     public class SecondaryAudioUtilities
     {
-        internal static bool ValidateSecondaryAudioStreamStart(ISecondaryAudioStream device)
-        {
-            if (!device.IsTransmitter) 
-                return device.Hardware.SecondaryAudio.StartFeedback.BoolValue;
-
-            device.Hardware.SecondaryAudio.EnableAutomaticInitiation();
-            return true;
-        }
-
-        internal static bool ValidateSecondaryAudioStreamStop(ISecondaryAudioStream device)
-        {
-            if (!device.IsTransmitter) 
-                return !device.Hardware.SecondaryAudio.StartFeedback.BoolValue;
-
-            device.Hardware.SecondaryAudio.EnableAutomaticInitiation();
-            return true;
-        }
-
         private static readonly CCriticalSection _lock = new CCriticalSection();
         private static Dictionary<int, ISecondaryAudioStream> _transmitters;
 

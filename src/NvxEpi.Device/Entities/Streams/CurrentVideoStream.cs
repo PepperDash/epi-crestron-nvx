@@ -5,6 +5,8 @@ using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Device.Entities.Routing;
+using NvxEpi.Extensions;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Device.Entities.Streams
@@ -34,24 +36,20 @@ namespace NvxEpi.Device.Entities.Streams
                 ? new StringFeedback(RouteNameKey, () => String.Empty)
                 : new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxDeviceRouter.NoSourceText);
 
-            _stream.Hardware.BaseEvent += (@base, args) =>
-            {
-                if (args.EventId != DMInputEventIds.ServerUrlEventId && args.EventId != DMInputEventIds.StartEventId &&
-                    args.EventId != DMInputEventIds.StopEventId && args.EventId != DMInputEventIds.PauseEventId &&
-                    args.EventId != DMInputEventIds.VideoSourceEventId)
-                    return;
-
-                UpdateCurrentRoute();
-            };
-
-            _stream.Hardware.OnlineStatusChange += (currentDevice, args) => UpdateCurrentRoute();
+            _stream.IsOnline.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
+            _stream.IsStreamingVideo.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
+            _stream.StreamUrl.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
         }
 
         public void UpdateCurrentRoute()
-        { 
+        {
+            if (!_stream.IsOnline.BoolValue)
+                return;
+
             try
             {
                 _lock.Enter();
+                Debug.Console(1, this, "Updating current stream...");
                 _current = _stream.GetCurrentStreamRoute();
 
                 CurrentStreamId.FireUpdate();
@@ -114,6 +112,11 @@ namespace NvxEpi.Device.Entities.Streams
         public StringFeedback VideoStreamStatus
         {
             get { return _stream.VideoStreamStatus; }
+        }
+
+        public BoolFeedback IsOnline
+        {
+            get { return _stream.IsOnline; }
         }
     }
 }
