@@ -14,8 +14,8 @@ namespace NvxEpi.Device.Factories
     {
         static NvxBaseDeviceFactory()
         {
-            if (DeviceManager.GetDeviceForKey(NvxDeviceRouter.InstanceKey) == null)
-                DeviceManager.AddDevice(NvxDeviceRouter.Instance);
+            if (DeviceManager.GetDeviceForKey(NvxGlobalRouter.InstanceKey) == null)
+                DeviceManager.AddDevice(NvxGlobalRouter.Instance);
         }
 
         public static DmNvxBaseClass BuildDeviceFromConfig(DeviceConfig config)

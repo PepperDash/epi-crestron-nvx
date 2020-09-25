@@ -1,34 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Device.Entities.Config;
 using NvxEpi.Device.Entities.Hardware;
+using NvxEpi.Device.Entities.Routing;
 using NvxEpi.Device.Entities.Streams;
+using NvxEpi.Device.Services.Bridge;
 using NvxEpi.Device.Services.Feedback;
 using NvxEpi.Device.Services.InputPorts;
 using NvxEpi.Device.Services.InputSwitching;
-using NvxEpi.Extensions;
-using PepperDash.Core;
+using NvxEpi.Device.Services.Utilities;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Device.Entities.Aggregates
 {
-    public class Nvx35x : NvxBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, ICurrentVideoInput, ICurrentAudioInput,
-        ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting
+    public class Nvx35X : CrestronGenericBridgeableBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, 
+        ICurrentVideoInput, ICurrentAudioInput, ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting
     {
         private readonly Nvx35xHardware _device;
         private readonly ICurrentStream _currentVideoStream;
-        private readonly ISecondaryAudioStream _secondaryAudioStream;
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
+        private readonly IRouting _router;
 
         private readonly Dictionary<uint, IntFeedback> _hdcpCapability = 
             new Dictionary<uint, IntFeedback>();
@@ -36,32 +40,39 @@ namespace NvxEpi.Device.Entities.Aggregates
         private readonly Dictionary<uint, BoolFeedback> _syncDetected = 
             new Dictionary<uint, BoolFeedback>();
 
-        public Nvx35x(DeviceConfig config, DmNvx35x hardware)
-            : base(config, hardware)
+        public Nvx35X(DeviceConfig config, DmNvx35x hardware)
+            : base(config.Key, config.Name, hardware)
         {
             Hardware = hardware;
             _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
 
-            var stream = new VideoStream(_device);
-            _currentVideoStream = new CurrentVideoStream(stream);
-            _secondaryAudioStream = new SecondaryAudioStream(_device, IsOnline);
-            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(_secondaryAudioStream);
+            _currentVideoStream = new CurrentVideoStream(_device);
+            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(_device);
+            _router = new NvxDeviceRouter(_device);
+
+            var props = NvxDeviceProperties.FromDeviceConfig(config);
+            RegisterForOnlineFeedback(hardware, props);
 
             AddRoutingPorts();
             SetupFeedbacks();
-            Hardware.OnlineStatusChange += HardwareOnOnlineStatusChange;
         }
 
-        private void HardwareOnOnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
         {
-            if (!args.DeviceOnLine)
-                return;
+            hardware.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine)
+                    return;
 
-            _currentVideoStream.ClearStream();
-            _currentVideoStream.RouteStream(CurrentStreamId.UShortValue);
+                Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
 
-            _currentSecondaryAudioStream.ClearSecondaryStream();
-            _currentSecondaryAudioStream.RouteSecondaryAudio(CurrentSecondaryAudioStreamId.UShortValue);
+                if (IsTransmitter)
+                    Hardware.SetTxDefaults(props);
+                else
+                    Hardware.SetRxDefaults(props);
+
+                Hardware.SetDefaultInputs(props);
+            };
         }
 
         private void SetupFeedbacks()
@@ -85,15 +96,13 @@ namespace NvxEpi.Device.Entities.Aggregates
                 _hdcpCapability[1],
                 _hdcpCapability[2],
                 Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware),
-                Hdmi2HdcpCapabilityFeedback.GetFeedback(Hardware),
-                _currentVideoStream.CurrentStreamName,
-                _currentVideoStream.CurrentStreamId,
-                _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId,
-                _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName,
-                _currentSecondaryAudioStream.IsStreamingSecondaryAudio,
-                _currentSecondaryAudioStream.SecondaryAudioAddress,
-                _currentSecondaryAudioStream.SecondaryAudioStreamStatus
+                Hdmi2HdcpCapabilityFeedback.GetFeedback(Hardware)
             });
+
+            DeviceDebug.RegisterForDeviceFeedback(this);
+            DeviceDebug.RegisterForPluginFeedback(this);
+            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
+            DeviceDebug.RegisterForRoutingOutputFeedback(this);
         }
 
         private void AddRoutingPorts()
@@ -126,33 +135,27 @@ namespace NvxEpi.Device.Entities.Aggregates
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            try
-            {
-                var switcher = outputSelector as IHandleInputSwitch;
-                if (switcher == null)
-                    throw new NullReferenceException("input selector");
-
-                switcher.HandleSwitch(inputSelector, signalType);
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(1, this, "Error executing route! : {0}", ex.Message);
-            }
+            _router.ExecuteSwitch(inputSelector, outputSelector, signalType);
         }
 
-        public override IntFeedback DeviceMode
+        public IntFeedback DeviceMode
         {
             get { return _device.DeviceMode; }
         }
 
-        public override bool IsTransmitter
+        public bool IsTransmitter
         {
             get { return _device.IsTransmitter; }
         }
 
-        public override int DeviceId
+        public int DeviceId
         {
             get { return _device.DeviceId; }
+        }
+
+        public void UpdateDeviceId(uint id)
+        {
+            _device.UpdateDeviceId(id);
         }
 
         public new DmNvx35x Hardware { get; private set; }
@@ -167,21 +170,6 @@ namespace NvxEpi.Device.Entities.Aggregates
             get { return _currentVideoStream.CurrentStreamId; }
         }
 
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _secondaryAudioStream.SecondaryAudioAddress; }
-        }
-
-        public BoolFeedback IsStreamingSecondaryAudio
-        {
-            get { return _secondaryAudioStream.IsStreamingSecondaryAudio; }
-        }
-
-        public StringFeedback SecondaryAudioStreamStatus
-        {
-            get { return _secondaryAudioStream.SecondaryAudioStreamStatus; }
-        }
-
         public StringFeedback CurrentSecondaryAudioStreamName
         {
             get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName; }
@@ -192,13 +180,6 @@ namespace NvxEpi.Device.Entities.Aggregates
             get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId; }
         }
 
-        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability { get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); } }
-        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected { get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); } }
-
-        public BoolFeedback DisabledByHdcp { get; private set; }
-        public IntFeedback HorizontalResolution { get; private set; }
-        public IntFeedback VideowallMode { get; private set; }
-
         public StringFeedback MulticastAddress
         {
             get { return _device.MulticastAddress; }
@@ -206,17 +187,17 @@ namespace NvxEpi.Device.Entities.Aggregates
 
         public StringFeedback StreamUrl
         {
-            get { return _device.StreamUrl; }
+            get { return _currentVideoStream.StreamUrl; }
         }
 
         public BoolFeedback IsStreamingVideo
         {
-            get { return _device.IsStreamingVideo; }
+            get { return _currentVideoStream.IsStreamingVideo; }
         }
 
         public StringFeedback VideoStreamStatus
         {
-            get { return _device.VideoStreamStatus; }
+            get { return _currentVideoStream.VideoStreamStatus; }
         }
 
         public StringFeedback CurrentVideoInput
@@ -237,6 +218,49 @@ namespace NvxEpi.Device.Entities.Aggregates
         public IntFeedback CurrentAudioInputValue
         {
             get { return _device.CurrentAudioInputValue; }
+        }
+
+        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability { get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); } }
+        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected { get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); } }
+
+        public BoolFeedback DisabledByHdcp { get; private set; }
+        public IntFeedback HorizontalResolution { get; private set; }
+        public IntFeedback VideowallMode { get; private set; }
+
+        DmNvxBaseClass INvxHardware.Hardware
+        {
+            get { return _device.Hardware; }
+        }
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts
+        {
+            get { return _device.InputPorts; }
+        }
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { return _device.OutputPorts; }
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var deviceBridge = new NvxDeviceBridge(this);
+            deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
+        }
+
+        public BoolFeedback IsStreamingSecondaryAudio
+        {
+            get { return _currentSecondaryAudioStream.IsStreamingSecondaryAudio; }
+        }
+
+        public StringFeedback SecondaryAudioStreamStatus
+        {
+            get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
         }
     }
 }

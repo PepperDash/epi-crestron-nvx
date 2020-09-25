@@ -44,18 +44,12 @@ namespace NvxEpi.Extensions
         {
             if (stream.IsTransmitter || stream.DeviceId == default(int) ||
                 !stream.IsStreamingVideo.BoolValue || !stream.IsOnline.BoolValue)
-            {
-                Debug.Console(1, stream, "Device not streaming...");
                 return true;
-            }
 
             if (stream.Hardware.Control.VideoSourceFeedback != eSfpVideoSourceTypes.Hdmi1 &&
                 stream.Hardware.Control.VideoSourceFeedback != eSfpVideoSourceTypes.Hdmi2 &&
                 stream.Hardware.Control.VideoSourceFeedback != eSfpVideoSourceTypes.Disable) 
                 return false;
-
-            Debug.Console(1, stream, "Device not on Stream Input... {0}",
-                stream.Hardware.Control.VideoSourceFeedback.ToString());
 
             return true;
         }

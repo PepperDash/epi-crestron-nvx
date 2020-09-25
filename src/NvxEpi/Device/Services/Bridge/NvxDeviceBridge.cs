@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
-using NvxEpi.Device.Entities.Aggregates;
 using NvxEpi.Device.Entities.Routing;
 using NvxEpi.Device.Entities.Streams;
 using NvxEpi.Device.JoinMaps;
@@ -20,9 +20,9 @@ namespace NvxEpi.Device.Services.Bridge
 {
     public class NvxDeviceBridge : IBridgeAdvanced
     {
-        private readonly NvxBaseDevice _device;
+        private readonly INvxDevice _device;
 
-        public NvxDeviceBridge(NvxBaseDevice device)
+        public NvxDeviceBridge(INvxDevice device)
         {
             _device = device;
         }

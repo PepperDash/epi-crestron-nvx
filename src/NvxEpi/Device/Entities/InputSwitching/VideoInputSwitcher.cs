@@ -1,5 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Device;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Device.Services.Feedback;
 using PepperDash.Essentials.Core;
@@ -20,6 +20,9 @@ namespace NvxEpi.Device.Entities.InputSwitching
         {
             CurrentVideoInput = VideoInputFeedback.GetFeedback(Hardware);
             CurrentVideoInputValue = VideoInputValueFeedback.GetFeedback(Hardware);
+
+            _device.Feedbacks.Add(CurrentVideoInput);
+            _device.Feedbacks.Add(CurrentVideoInputValue);
         }
 
         public string Key
@@ -55,6 +58,11 @@ namespace NvxEpi.Device.Entities.InputSwitching
         public int DeviceId
         {
             get { return _device.DeviceId; }
+        }
+
+        public void UpdateDeviceId(uint id)
+        {
+            _device.UpdateDeviceId(id);
         }
 
         public DmNvxBaseClass Hardware

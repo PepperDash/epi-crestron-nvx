@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Device;
+﻿using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Device.Services.DeviceFeedback;
 using NvxEpi.Device.Services.Feedback;
@@ -27,6 +22,13 @@ namespace NvxEpi.Device.Entities.Streams
             StreamUrl = StreamUrlFeedback.GetFeedback(Hardware);
             IsStreamingVideo = IsStreamingVideoFeedback.GetFeedback(Hardware);
             VideoStreamStatus = VideoStreamStatusFeedback.GetFeedback(Hardware);
+
+            Feedbacks.AddRange(new Feedback[]
+            {
+                StreamUrl,
+                IsStreamingVideo,
+                VideoStreamStatus
+            });
         }
 
         public IntFeedback DeviceMode
@@ -59,6 +61,11 @@ namespace NvxEpi.Device.Entities.Streams
             get { return _device.DeviceId; }
         }
 
+        public void UpdateDeviceId(uint id)
+        {
+            _device.UpdateDeviceId(id);
+        }
+
         public StringFeedback MulticastAddress
         {
             get { return _device.MulticastAddress; }
@@ -71,6 +78,21 @@ namespace NvxEpi.Device.Entities.Streams
         public BoolFeedback IsOnline
         {
             get { return _device.IsOnline; }
+        }
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts
+        {
+            get { return _device.InputPorts; }
+        }
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { return _device.OutputPorts; }
+        }
+
+        public FeedbackCollection<Feedback> Feedbacks
+        {
+            get { return _device.Feedbacks; }
         }
     }
 }

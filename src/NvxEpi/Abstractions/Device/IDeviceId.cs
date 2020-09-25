@@ -2,6 +2,7 @@
 {
     public interface IDeviceId
     {
-        int DeviceId { get; }  
+        int DeviceId { get; }
+        void UpdateDeviceId(uint id);
     }
 }

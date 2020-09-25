@@ -1,6 +1,4 @@
-﻿using NvxEpi.Abstractions.Device;
-using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Hardware;
+﻿using NvxEpi.Abstractions.Hardware;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.HdmiOutput

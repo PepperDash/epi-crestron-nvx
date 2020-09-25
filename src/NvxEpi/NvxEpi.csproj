@@ -99,7 +99,7 @@
   <ItemGroup>
     <Compile Include="Abstractions\Device\IDeviceId.cs" />
     <Compile Include="Abstractions\Device\IDeviceMode.cs" />
-    <Compile Include="Abstractions\Device\INvxDevice.cs" />
+    <Compile Include="Abstractions\INvxDevice.cs" />
     <Compile Include="Abstractions\Device\ITransmitterReceiver.cs" />
     <Compile Include="Abstractions\Hardware\INvx35XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxHardware.cs" />
@@ -116,10 +116,10 @@
     <Compile Include="Abstractions\Stream\ICurrentStream.cs" />
     <Compile Include="Abstractions\Stream\IMulticastAddress.cs" />
     <Compile Include="Abstractions\Stream\IStream.cs" />
-    <Compile Include="Device\Entities\Aggregates\NvxBaseDevice.cs" />
     <Compile Include="Device\Entities\Hardware\Nvx35xHardware.cs" />
     <Compile Include="Device\Entities\Hardware\NvxBaseHardware.cs" />
     <Compile Include="Device\Entities\InputSwitching\AudioInputSwitcher.cs" />
+    <Compile Include="Device\Entities\Routing\NvxGlobalRouter.cs" />
     <Compile Include="Device\Entities\Streams\VideoStream.cs" />
     <Compile Include="Device\Enums\DeviceInputEnum.cs" />
     <Compile Include="Device\Factories\NvxBaseDeviceFactory.cs" />

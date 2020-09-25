@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Device;
-using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Device.Enums;
-using NvxEpi.Device.Services.InputPorts;
 using NvxEpi.Device.Services.InputSwitching;
 using NvxEpi.Device.Services.Utilities;
 using NvxEpi.Extensions;
@@ -164,7 +162,7 @@ namespace NvxEpi.Device.Entities.Routing
             if (String.IsNullOrEmpty(txName))
                 return;
 
-            if (txName.Equals(NvxDeviceRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
+            if (txName.Equals(NvxGlobalRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
             {
                 rx.ClearStream();
                 return;
@@ -212,7 +210,7 @@ namespace NvxEpi.Device.Entities.Routing
             }
             catch (Exception ex)
             {
-                Debug.Console(0, NvxDeviceRouter.Instance.PrimaryStreamRouter, "There was an error building the dictionaries: {1}\n{2}", ex.Message, ex.StackTrace);
+                Debug.Console(0, NvxGlobalRouter.Instance.PrimaryStreamRouter, "There was an error building the dictionaries: {1}\n{2}", ex.Message, ex.StackTrace);
             }
             finally
             {

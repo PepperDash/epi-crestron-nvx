@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Device;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.NaxAudio;
-using NvxEpi.Device.Services.Utilities;
 using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -127,7 +126,7 @@ namespace NvxEpi.Device.Entities.Routing
             if (String.IsNullOrEmpty(txName))
                 return;
 
-            if (txName.Equals(NvxDeviceRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
+            if (txName.Equals(NvxGlobalRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
             {
                 rx.StopAudioStream();
                 return;

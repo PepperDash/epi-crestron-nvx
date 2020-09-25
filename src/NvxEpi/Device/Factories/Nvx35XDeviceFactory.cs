@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Device.Factories
 {
-    public class Nvx35XDeviceFactory : NvxBaseDeviceFactory<Nvx35x>
+    public class Nvx35XDeviceFactory : NvxBaseDeviceFactory<Nvx35X>
     {
         private const string _minumumEssentialsVersion = "1.6.4";
         private static readonly List<string> _typeNames;
@@ -38,7 +38,7 @@ namespace NvxEpi.Device.Factories
             if (hardware == null)
                 throw new ArgumentException("type");
 
-            return new Nvx35x(dc, hardware);
+            return new Nvx35X(dc, hardware);
         }
     }
 }

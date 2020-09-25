@@ -1,14 +1,15 @@
 using System;
+using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.InputSwitching;
-using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Device.Entities.Config;
 using NvxEpi.Device.Entities.InputSwitching;
 using NvxEpi.Device.Entities.Streams;
 using NvxEpi.Device.Services.Feedback;
 using NvxEpi.Device.Services.Utilities;
-using NvxEpi.Extensions;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
@@ -32,7 +33,9 @@ namespace NvxEpi.Device.Entities.Hardware
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
             var props = NvxDeviceProperties.FromDeviceConfig(config);
-            DeviceId = props.DeviceId;
+            if ((uint)props.DeviceId != 0)
+                UpdateDeviceId((uint)props.DeviceId);
+
             IsTransmitter = props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
             _stream = new VideoStream(this);
@@ -65,20 +68,47 @@ namespace NvxEpi.Device.Entities.Hardware
             Feedbacks.AddRange(new Feedback[]
             {
                 DeviceNameFeedback.GetFeedback(Name),
-                DeviceMode,
-                MulticastAddress,
-                _stream.IsStreamingVideo,
-                _stream.StreamUrl,
-                _stream.VideoStreamStatus,
-                _videoSwitcher.CurrentVideoInput,
-                _videoSwitcher.CurrentVideoInputValue,
-                _audioSwitcher.CurrentAudioInput,
-                _audioSwitcher.CurrentAudioInputValue
+                DeviceMode
             });
         }
 
         public bool IsTransmitter { get; private set; }
         public int DeviceId { get; private set; }
+
+        public void UpdateDeviceId(uint id)
+        {
+            try
+            {
+                if (id == 0)
+                    throw new ArgumentException("id cannot be 0");
+
+                var result = DeviceManager
+                    .AllDevices
+                    .OfType<INvxDevice>()
+                    .Where(t => t.IsTransmitter == IsTransmitter)
+                    .FirstOrDefault(t => t.DeviceId == id);
+
+                if (result != null)
+                {
+                    var ex = String.Format("Device already exists at id {0}", id);
+                    throw new ArgumentException(ex);
+                }
+
+                Debug.Console(1, this, "Setting device id:{0}", id);
+                DeviceId = (int) id;
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.Console(0, this, "Cannot update device id! {0}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(0, this, "Cannot update device id! {0}", ex.Message);
+                throw;
+            }
+        }
+
         public IntFeedback DeviceMode { get; private set; }
         public StringFeedback MulticastAddress { get; private set; }
 

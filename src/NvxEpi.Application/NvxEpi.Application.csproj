@@ -95,6 +95,7 @@
     <Compile Include="JoinMap\DynRoutingJoinMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Router\DynRouter.cs" />
+    <Compile Include="Services\TieLineConnector.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>

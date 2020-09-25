@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using NvxEpi.Abstractions.Device;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Device.Enums;
 using NvxEpi.Device.Services.InputSwitching;
@@ -163,7 +163,7 @@ namespace NvxEpi.Device.Entities.Routing
             if (String.IsNullOrEmpty(txName))
                 return;
 
-            if (txName.Equals(NvxDeviceRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
+            if (txName.Equals(NvxGlobalRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
             {
                 rx.ClearSecondaryStream();
                 return;
@@ -211,7 +211,7 @@ namespace NvxEpi.Device.Entities.Routing
             }
             catch (Exception ex)
             {
-                Debug.Console(0, NvxDeviceRouter.Instance.SecondaryAudioRouter, "There was an error building the dictionaries: {1}\n{2}", ex.Message, ex.StackTrace);
+                Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "There was an error building the dictionaries: {1}\n{2}", ex.Message, ex.StackTrace);
             }
             finally
             {

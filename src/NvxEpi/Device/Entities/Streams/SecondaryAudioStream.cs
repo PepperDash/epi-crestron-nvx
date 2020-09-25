@@ -22,6 +22,10 @@ namespace NvxEpi.Device.Entities.Streams
             SecondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
             SecondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedback(Hardware);
             IsStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedback(Hardware);
+
+            Feedbacks.Add(SecondaryAudioAddress);
+            Feedbacks.Add(SecondaryAudioStreamStatus);
+            Feedbacks.Add(IsStreamingSecondaryAudio);
         }
 
         public IntFeedback DeviceMode
@@ -49,6 +53,11 @@ namespace NvxEpi.Device.Entities.Streams
             get { return _device.DeviceId; }
         }
 
+        public void UpdateDeviceId(uint id)
+        {
+            _device.UpdateDeviceId(id);
+        }
+
         public StringFeedback SecondaryAudioAddress { get; private set; }
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
         public StringFeedback SecondaryAudioStreamStatus { get; private set; }
@@ -64,5 +73,25 @@ namespace NvxEpi.Device.Entities.Streams
         }
 
         public BoolFeedback IsOnline { get; private set; }
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts
+        {
+            get { return _device.InputPorts; }
+        }
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { return _device.OutputPorts; }
+        }
+
+        public StringFeedback MulticastAddress
+        {
+            get { return _device.MulticastAddress; }
+        }
+
+        public FeedbackCollection<Feedback> Feedbacks
+        {
+            get { return _device.Feedbacks; }
+        }
     }
 }

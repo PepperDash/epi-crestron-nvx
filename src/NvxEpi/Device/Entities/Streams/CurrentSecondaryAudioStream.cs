@@ -33,7 +33,7 @@ namespace NvxEpi.Device.Entities.Streams
 
             CurrentSecondaryAudioStreamName = _stream.IsTransmitter
                 ? new StringFeedback(RouteNameKey, () => String.Empty)
-                : new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxDeviceRouter.NoSourceText);
+                : new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
 
             Hardware.BaseEvent += (@base, args) => // feedback.FireUpdate();
             {
@@ -56,6 +56,9 @@ namespace NvxEpi.Device.Entities.Streams
 
                 UpdateCurrentAudioRoute();
             };
+
+            Feedbacks.Add(CurrentSecondaryAudioStreamId);
+            Feedbacks.Add(CurrentSecondaryAudioStreamName);
         }
 
         private void UpdateCurrentAudioRoute()
@@ -102,6 +105,11 @@ namespace NvxEpi.Device.Entities.Streams
             get { return _stream.DeviceId; }
         }
 
+        public void UpdateDeviceId(uint id)
+        {
+            _stream.UpdateDeviceId(id);
+        }
+
         DmNvxBaseClass INvxHardware.Hardware
         {
             get { return _stream.Hardware; }
@@ -133,6 +141,26 @@ namespace NvxEpi.Device.Entities.Streams
         public BoolFeedback IsOnline
         {
             get { return _stream.IsOnline; }
+        }
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts
+        {
+            get { return _stream.InputPorts; }
+        }
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { return _stream.OutputPorts; }
+        }
+
+        public StringFeedback MulticastAddress
+        {
+            get { return _stream.MulticastAddress; }
+        }
+
+        public FeedbackCollection<Feedback> Feedbacks
+        {
+            get { return _stream.Feedbacks; }
         }
     }
 }

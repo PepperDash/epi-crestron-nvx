@@ -1,5 +1,5 @@
 ﻿using System;
-using NvxEpi.Abstractions.Device;
+using NvxEpi.Abstractions;
 using NvxEpi.Device.Enums;
 using PepperDash.Essentials.Core;
 
