@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
-using NvxEpi.Abstractions.Device;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
-using NvxEpi.Abstractions.SecondaryAudio;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Application.Builder;
 using NvxEpi.Device.Entities.Routing;
 using NvxEpi.Device.Entities.Streams;
-using NvxEpi.Device.Enums;
 using NvxEpi.Device.Services.Feedback;
-using NvxEpi.Device.Services.InputSwitching;
-using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
@@ -23,8 +19,8 @@ namespace NvxEpi.Application
 {
     public class DynNvx : EssentialsBridgeableDevice
     {
-        private Dictionary<int, INvxDevice> _transmitters;
-        private Dictionary<int, INvxDevice> _receivers;
+        private readonly Dictionary<int, INvxDevice> _transmitters = new Dictionary<int, INvxDevice>();
+        private readonly Dictionary<int, INvxDevice> _receivers = new Dictionary<int, INvxDevice>();
 
         private readonly Dictionary<int, MockDisplay> _videoDestinations = new Dictionary<int, MockDisplay>();
         private readonly Dictionary<int, Amplifier> _audioDestinations = new Dictionary<int, Amplifier>();
@@ -36,18 +32,46 @@ namespace NvxEpi.Application
         {
             AddPreActivationAction(() =>
             {
-                _transmitters = builder
-                    .Transmitters
-                    .Select(x => DeviceManager.GetDeviceForKey(x.Value) as INvxDevice)
-                    .ToDictionary(x => x.DeviceId);
+                foreach (var item in builder.Transmitters)
+                {
+                    var tx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
+                    if (tx == null)
+                    {
+                        Debug.Console(1, this, "Could not get TX : {0}", item.Value);
+                        continue;
+                    }
+
+                    if (!tx.IsTransmitter)
+                    {
+                        Debug.Console(1, this, "Device is not a TX : {0}", item.Value);
+                        continue;
+                    }
+
+                    tx.UpdateDeviceId((uint)item.Key);
+                    _transmitters.Add(tx.DeviceId, tx);
+                }
             });
 
             AddPreActivationAction(() =>
             {
-                _receivers = builder
-                    .Receivers
-                    .Select(x => DeviceManager.GetDeviceForKey(x.Value) as INvxDevice)
-                    .ToDictionary(x => x.DeviceId);
+                foreach (var item in builder.Receivers)
+                {
+                    var rx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
+                    if (rx == null)
+                    {
+                        Debug.Console(1, this, "Could not get RX : {0}", item.Value);
+                        continue;
+                    }
+
+                    if (rx.IsTransmitter)
+                    {
+                        Debug.Console(1, this, "Device is not a RX : {0}", item.Value);
+                        continue;
+                    }
+
+                    rx.UpdateDeviceId((uint)item.Key);
+                    _receivers.Add(rx.DeviceId, rx);
+                }
             });
 
             AddPreActivationAction(() =>
@@ -101,134 +125,25 @@ namespace NvxEpi.Application
                 }
             });
 
-            AddPostActivationAction(AddTieLinesForSourcesAndDestinations);
-            AddPostActivationAction(AddTieLinesForRouters);
+            AddPostActivationAction(() => TieLineConnector.AddTieLinesForTransmitters(_transmitters.Values));
+            AddPostActivationAction(() => TieLineConnector.AddTieLinesForReceivers(_receivers.Values));
+
+            AddPostActivationAction(() => TieLineConnector.AddTieLinesForVideoDestinations(
+                new ReadOnlyDictionary<int, MockDisplay>(_videoDestinations), 
+                new ReadOnlyDictionary<int, INvxDevice>(_receivers))
+                );
+
+            AddPostActivationAction(() => TieLineConnector.AddTieLinesForAudioDestinations(
+                new ReadOnlyDictionary<int, Amplifier>(_audioDestinations),
+                new ReadOnlyDictionary<int, INvxDevice>(_receivers))
+                );
+
+            AddPostActivationAction(() => TieLineConnector.AddTieLinesForSources(
+                new ReadOnlyDictionary<int, DummyRoutingInputsDevice>(_sources),
+                new ReadOnlyDictionary<int, INvxDevice>(_transmitters))
+                );
+
             AddPostActivationAction(AddNoneInputToRouters);
-        }
-
-        private void AddTieLinesForSourcesAndDestinations()
-        {
-            foreach (var source in _sources)
-            {
-                INvxDevice tx;
-                if (!_transmitters.TryGetValue(source.Key, out tx)) continue;
-
-                var inputPort = tx.InputPorts[DeviceInputEnum.Hdmi1.Name];
-                if (inputPort == null)
-                    throw new ArgumentNullException("inputPort");
-
-                TieLineCollection.Default.Add(new TieLine(source.Value.AudioVideoOutputPort, inputPort,
-                    eRoutingSignalType.AudioVideo));
-            }
-
-            foreach (var dest in _videoDestinations)
-            {
-                INvxDevice rx;
-                if (!_receivers.TryGetValue(dest.Key, out rx)) continue;
-
-                var outputPort = rx.OutputPorts[HdmiOutput.Key];
-                if (outputPort == null)
-                    throw new ArgumentNullException("outputPort");
-
-                TieLineCollection.Default.Add(new TieLine(outputPort, dest.Value.HdmiIn1, eRoutingSignalType.AudioVideo));
-            }
-
-            foreach (var dest in _audioDestinations)
-            {
-                INvxDevice rx;
-                if (!_receivers.TryGetValue(dest.Key, out rx)) continue;
-
-                var outputPort = rx.OutputPorts[AnalogAudioOutput.Key];
-                if (outputPort == null)
-                    continue;
-
-                TieLineCollection.Default.Add(new TieLine(outputPort, dest.Value.AudioIn, eRoutingSignalType.Audio));
-            }
-        }
-
-        private void AddTieLinesForRouters()
-        {
-            AddTieLinesForTransmitters();
-            AddTieLinesForReceivers();
-        }
-
-        private void AddTieLinesForTransmitters()
-        {
-            foreach (var item in _transmitters.Values)
-            {
-                var tx = item;
-                var outputPort = tx.OutputPorts[StreamOutput.Key];
-                if (outputPort == null)
-                    throw new NullReferenceException("outputPort");
-
-                var stream = tx as IStream;
-                if (tx is ISecondaryAudioStream)
-                {
-                    var streamInput = NvxDeviceRouter
-                        .Instance
-                        .PrimaryStreamRouter
-                        .InputPorts[PrimaryStreamRouter.GetInputPortKeyForTx(stream)];
-
-                    if (streamInput == null)
-                        throw new NullReferenceException("PrimaryRouterStreamInput");
-
-                    TieLineCollection.Default.Add(new TieLine(outputPort, streamInput, eRoutingSignalType.Video));
-
-                    var secondaryAudio = tx as ISecondaryAudioStream;
-                    var secondaryAudioPort = tx.OutputPorts[SecondaryAudioOutput.Key];
-                    if (secondaryAudioPort == null)
-                        throw new NullReferenceException("secondaryAudioOutput");
-
-                    var secondaryAudioInput = NvxDeviceRouter
-                        .Instance
-                        .SecondaryAudioRouter
-                        .InputPorts[SecondaryAudioRouter.GetInputPortKeyForTx(secondaryAudio)];
-
-                    if (secondaryAudioInput == null)
-                        throw new NullReferenceException("SecondaryRouterStreamInput");
-
-                    TieLineCollection.Default.Add(new TieLine(secondaryAudioPort, secondaryAudioInput, eRoutingSignalType.Audio));
-
-                    continue;
-                }
-
-                TieLineCollection.Default.Add(new TieLine(outputPort, NvxDeviceRouter
-                    .Instance
-                    .PrimaryStreamRouter
-                    .InputPorts[PrimaryStreamRouter.GetInputPortKeyForTx(stream)], eRoutingSignalType.AudioVideo));
-            }
-        }
-
-        private void AddTieLinesForReceivers()
-        {
-            foreach (var item in _receivers.Values)
-            {
-                var rx = item;
-                var inputPort = rx.InputPorts[DeviceInputEnum.Stream.Name];
-                var stream = rx as IStream;
-                if (rx is ISecondaryAudioStream)
-                {
-                    TieLineCollection.Default.Add(new TieLine(NvxDeviceRouter
-                        .Instance
-                        .PrimaryStreamRouter
-                        .OutputPorts[PrimaryStreamRouter.GetOutputPortKeyForRx(stream)], inputPort, eRoutingSignalType.Video));
-
-                    var secondaryAudio = rx as ISecondaryAudioStream;
-                    var secondaryAudioPort = rx.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
-                    TieLineCollection.Default.Add(new TieLine(NvxDeviceRouter
-                        .Instance
-                        .SecondaryAudioRouter
-                        .OutputPorts[SecondaryAudioRouter.GetOutputPortKeyForRx(secondaryAudio)], secondaryAudioPort,
-                        eRoutingSignalType.Audio));
-
-                    continue;
-                }
-
-                TieLineCollection.Default.Add(new TieLine(NvxDeviceRouter
-                    .Instance
-                    .PrimaryStreamRouter
-                    .OutputPorts[PrimaryStreamRouter.GetOutputPortKeyForRx(stream)], inputPort, eRoutingSignalType.AudioVideo));
-            }
         }
 
         private void AddNoneInputToRouters()
@@ -236,12 +151,12 @@ namespace NvxEpi.Application
             var none = new DummyRoutingInputsDevice("None");
             _sources.Add(0, none);
 
-            TieLineCollection.Default.Add(new TieLine(none.AudioVideoOutputPort, NvxDeviceRouter
+            TieLineCollection.Default.Add(new TieLine(none.AudioVideoOutputPort, NvxGlobalRouter
                 .Instance
                 .PrimaryStreamRouter
                 .Off, eRoutingSignalType.AudioVideo));
 
-            TieLineCollection.Default.Add(new TieLine(none.AudioVideoOutputPort, NvxDeviceRouter
+            TieLineCollection.Default.Add(new TieLine(none.AudioVideoOutputPort, NvxGlobalRouter
                 .Instance
                 .SecondaryAudioRouter
                 .Off, eRoutingSignalType.Audio));
