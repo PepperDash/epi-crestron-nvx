@@ -1,14 +1,15 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
-labels: ''
+title: "[FEATURE]-"
+labels: enhancement
 assignees: ''
 
 ---
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+If this is a request for support for a new device or type, be as specific as possible and include any pertinent manufacturer and model information.
 
 **Describe the solution you'd like**
 A clear and concise description of what you want to happen.

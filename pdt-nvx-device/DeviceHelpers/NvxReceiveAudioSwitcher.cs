@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.DeviceHelpers
 {
+    /* DO NOT USE/NOT TESTED
     public class NvxReceiveAudioSwitcher : NvxDeviceHelperBase, ISwitcher
     {
         private string _key;
@@ -163,5 +164,5 @@ namespace NvxEpi.DeviceHelpers
             if (handler == null) return;
             handler.Invoke(this, EventArgs.Empty);
         }
-    }
+    }*/
 }

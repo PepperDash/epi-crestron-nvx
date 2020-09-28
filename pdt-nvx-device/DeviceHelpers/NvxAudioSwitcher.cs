@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM;
@@ -15,7 +16,7 @@ namespace NvxEpi.DeviceHelpers
         private string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, this.GetType().GetCType().Name); }
+            get { return _key; }
         }
 
         private int _selectedInput;
@@ -24,10 +25,10 @@ namespace NvxEpi.DeviceHelpers
 
         public event EventHandler RouteUpdated;
 
-        public NvxAudioSwitcher(DeviceConfig config, DmNvxBaseClass device)
+        public NvxAudioSwitcher(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = config.Key;
+            _key = string.Format("{0} {1}", key, this.GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             if (device.SecondaryAudio != null)
@@ -90,7 +91,7 @@ namespace NvxEpi.DeviceHelpers
                 var result = "No Source";
                 if (_isTransmitter) return _device.Control.AudioSourceFeedback.ToString();
 
-                var device = NvxDeviceEpi.Transmitters
+                var device = _inputs
                     .FirstOrDefault(x => x.MulticastAudioAddress == _device.SecondaryAudio.MulticastAddressFeedback.StringValue);
 
                 if (device != null && !string.IsNullOrEmpty(_device.SecondaryAudio.MulticastAddressFeedback.StringValue))
@@ -109,7 +110,7 @@ namespace NvxEpi.DeviceHelpers
                 var result = 0;
                 if (_isTransmitter) return result;
 
-                var device = NvxDeviceEpi.Transmitters
+                var device = _inputs
                     .FirstOrDefault(x => x.MulticastAudioAddress == _device.SecondaryAudio.MulticastAddressFeedback.StringValue);
            
                 if (device != null && !string.IsNullOrEmpty(_device.SecondaryAudio.MulticastAddressFeedback.StringValue))
@@ -135,7 +136,7 @@ namespace NvxEpi.DeviceHelpers
                     return;
                 }
 
-                var result = NvxDeviceEpi.Transmitters
+                var result = _inputs
                     .FirstOrDefault(x => x.VirtualDevice == value);
 
                 if (result == null)
@@ -157,5 +158,15 @@ namespace NvxEpi.DeviceHelpers
             if (handler == null) return;
             handler.Invoke(this, EventArgs.Empty);
         }
+
+        #region ISwitcher Members
+
+
+        public void SetInputs(IEnumerable<INvxDevice> inputs)
+        {
+            _inputs = inputs;
+        }
+
+        #endregion
     }
 }

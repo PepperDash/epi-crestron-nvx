@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp.Reflection;
+using PepperDash.Core;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Interfaces;
-using PepperDash.Core;
+using Crestron.SimplSharp.Reflection;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using NvxEpi.Interfaces;
 
 namespace NvxEpi.DeviceHelpers
 {
@@ -14,20 +15,20 @@ namespace NvxEpi.DeviceHelpers
     {
         private int _selectedInput;
 
-        private string _key;
+        private readonly string _key;
         public override string Key
         {
-            get { return string.Format("{0} {1}", _key, this.GetType().GetCType().Name); }
+            get { return _key; }
         }
 
         public Feedback Feedback { get; set; }
 
         public event EventHandler RouteUpdated;
 
-        public NvxVideoSwitcher(DeviceConfig config, DmNvxBaseClass device)
+        public NvxVideoSwitcher(string key, DmNvxBaseClass device)
             : base(device)
         {
-            _key = config.Key;
+            _key = string.Format("{0}-{1}", key, GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
             _device.BaseEvent += (sender, args) =>
@@ -55,8 +56,6 @@ namespace NvxEpi.DeviceHelpers
                     case DMInputEventIds.MulticastAddressEventId:
                         OnRouteUpdated();
                         break;
-                    default:
-                        break;
                 }      
             };
 
@@ -81,7 +80,7 @@ namespace NvxEpi.DeviceHelpers
                     return result;
                 }
 
-                var device = NvxDeviceEpi.Transmitters
+                var device = _inputs
                     .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue);
                
                 if (device != null)
@@ -102,10 +101,11 @@ namespace NvxEpi.DeviceHelpers
                 if (_isTransmitter) return result;
                 if (!_device.Control.StartFeedback.BoolValue)
                 {
+                    Debug.Console(2, this, "Video input is Virtual ID: {0}", result);
                     return result;
                 }
 
-                var device = NvxDeviceEpi.Transmitters
+                var device = _inputs
                     .FirstOrDefault(x => x.StreamUrl == _device.Control.ServerUrlFeedback.StringValue);
                
                 if (device != null)
@@ -118,17 +118,19 @@ namespace NvxEpi.DeviceHelpers
             }
             set
             {
-                if (_selectedInput != value) _selectedInput = value;
+                _selectedInput = value;
+                Debug.Console(2, "Settings input for {0} to {1}", _device.ToString(), value);
                 if (_isTransmitter || !_device.IsOnline) return;
 
                 if (value == 0) 
                 {
                     Debug.Console(2, this, "Setting video source to Virtual Device = 0");
-                    _device.Control.ServerUrl.StringValue = "0.0.0.0";
+                    _device.Control.ServerUrl.StringValue = string.Empty;
+                    _device.UsbInput.RemovePairing();
                     return;
                 }
 
-                var result = NvxDeviceEpi.Transmitters
+                var result = _inputs
                     .FirstOrDefault(x => x.VirtualDevice == value);
                 
                 if (result == null) return;
@@ -138,7 +140,15 @@ namespace NvxEpi.DeviceHelpers
                 _device.Control.ServerUrl.StringValue = result.StreamUrl;
 
                 //set rx pairing
-                _device.UsbInput.RemoteDeviceId.StringValue = result.LocalUsbId;
+                try
+                {
+                    _device.UsbInput.RemoteDeviceId.StringValue = result.LocalUsbId;
+                }
+                catch (MissingMethodException ex)
+                {
+                    Debug.LogError(Debug.ErrorLogLevel.Error, String.Format("Error with NVX Base Class: {0}", ex));
+                    Debug.LogError(Debug.ErrorLogLevel.Error, ex.StackTrace);
+                }
                 _device.UsbInput.Pair();
 
                 //set tx pairing
@@ -155,5 +165,15 @@ namespace NvxEpi.DeviceHelpers
             if (handler == null) return;
             handler.Invoke(this, EventArgs.Empty);
         }
+
+        #region ISwitcher Members
+
+
+        public void SetInputs(System.Collections.Generic.IEnumerable<INvxDevice> inputs)
+        {
+            _inputs = inputs;
+        }
+
+        #endregion
     }
 }
