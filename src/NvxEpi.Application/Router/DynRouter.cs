@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using NvxEpi.Device.Services.Utilities;
+using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 

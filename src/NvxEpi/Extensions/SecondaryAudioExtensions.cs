@@ -32,29 +32,6 @@ namespace NvxEpi.Extensions
             device.Hardware.SecondaryAudio.MulticastAddress.StringValue = null;
         }
 
-        public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ushort txId)
-        {
-            if (device.IsTransmitter)
-                throw new ArgumentException("device");
-
-            if (txId == 0)
-            {
-                device.ClearSecondaryStream();
-                return;
-            }
-
-            var tx = DeviceManager
-                .AllDevices
-                .OfType<ISecondaryAudioStream>()
-                .Where(x => x.IsTransmitter)
-                .FirstOrDefault(x => x.DeviceId == txId);
-
-            if (tx == null)
-                return;
-
-            device.RouteSecondaryAudio(tx);
-        }
-
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ISecondaryAudioStream tx)
         {
             if (device.IsTransmitter)

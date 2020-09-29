@@ -10,7 +10,7 @@ namespace NvxEpi.Extensions
             if (device.IsTransmitter)
                 return;
 
-            Debug.Console(1, device, "Setting videowal mode to : '{0}'", value);
+            Debug.Console(1, device, "Setting videowall mode to : '{0}'", value);
             if (device.Hardware.HdmiOut != null) 
                 device.Hardware.HdmiOut.VideoWallMode.UShortValue = value;
         }

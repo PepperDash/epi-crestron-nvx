@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Stream;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Extensions
 {
@@ -27,24 +29,6 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Clearing stream");
             device.Hardware.Control.ServerUrl.StringValue = null;
-        }
-
-        public static void RouteStream(this IStream device, ushort txId)
-        {
-            if (device.IsTransmitter)
-                throw new ArgumentException("device");
-
-            if (txId == 0)
-            {
-                device.SetStreamUrl(String.Empty);
-                return;
-            }
-
-            var tx = StreamUtilities.GetTxById(txId);
-            if (tx == null)
-                return;
-
-            device.RouteStream(tx);
         }
 
         public static void RouteStream(this IStream device, IStream tx)
