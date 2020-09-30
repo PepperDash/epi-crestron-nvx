@@ -7,12 +7,11 @@ using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using NvxEpi.Enums;
 using NvxEpi.Services.InputSwitching;
-using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 
-namespace NvxEpi.Application
+namespace NvxEpi.Application.Services
 {
     public class TieLineConnector
     {
@@ -55,7 +54,7 @@ namespace NvxEpi.Application
             foreach (var dest in videoDestinations)
             {
                 INvxDevice rx;
-                if (receivers.TryGetValue(dest.Key, out rx)) continue;
+                if (!receivers.TryGetValue(dest.Key, out rx)) continue;
 
                 var outputPort = rx.OutputPorts[HdmiOutput.Key];
                 if (outputPort == null)
