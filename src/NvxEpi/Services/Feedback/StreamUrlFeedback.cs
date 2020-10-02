@@ -13,6 +13,8 @@ namespace NvxEpi.Services.Feedback
                 () => device.Control.ServerUrlFeedback.StringValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
+            device.SourceReceive.StreamChange += (stream, args) => feedback.FireUpdate();
+            device.SourceTransmit.StreamChange += (stream, args) => feedback.FireUpdate();
 
             return feedback;
         }

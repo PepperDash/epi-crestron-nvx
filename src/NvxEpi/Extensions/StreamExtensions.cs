@@ -46,6 +46,8 @@ namespace NvxEpi.Extensions
                 throw new ArgumentException("tx");
 
             Debug.Console(1, device, "Routing device stream : '{0}'", tx.Name);
+            tx.MulticastAddress.FireUpdate();
+            tx.StreamUrl.FireUpdate();
             device.SetStreamUrl(tx.StreamUrl.StringValue);
         }
     }

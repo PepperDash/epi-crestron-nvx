@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.SecondaryAudio;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Extensions
 {
@@ -47,6 +45,7 @@ namespace NvxEpi.Extensions
                 throw new ArgumentException("tx");
 
             Debug.Console(1, device, "Routing device secondary audio stream : '{0}'", tx.Name);
+            tx.SecondaryAudioAddress.FireUpdate();
             device.SetSecondaryAudioAddress(tx.SecondaryAudioAddress.StringValue);
         }
     }
