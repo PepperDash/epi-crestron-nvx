@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DM;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Application.Builder;
@@ -256,14 +257,24 @@ namespace NvxEpi.Application
         {
             foreach (var transmitter in _transmitters)
             {
+                var index = (uint)transmitter.Key - 1;
+                var fb = new IntFeedback(() => 99);
+
+                Debug.Console(1, transmitter.Value, "Linking Feedback:{0} to Join:{1}", "HdcpCapability", joinMap.HdcpSupportCapability.JoinNumber + index);
+                fb.LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + index]);
+                fb.FireUpdate();
+            }
+
+            foreach (var transmitter in _transmitters)
+            {
                 var feedback =
                     transmitter.Value.Feedbacks[Hdmi1HdcpCapabilityValueFeedback.Key] as IntFeedback;
                 if (feedback == null)
                     continue;
 
                 var index = (uint)transmitter.Key - 1;
-                Debug.Console(1, transmitter.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.HdcpSupportCapability.JoinNumber + index);
-                feedback.LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + index]);
+                Debug.Console(1, transmitter.Value, "Linking Feedback:{0} to Join:{1}", "HdcpState", joinMap.HdcpSupportState.JoinNumber + index);
+                feedback.LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + index]);
             }
 
             foreach (var transmitter in _transmitters)
@@ -275,7 +286,17 @@ namespace NvxEpi.Application
                 var device = transmitter.Value as IHdmiInput;
                 if (device == null) return;
 
-                trilist.SetUShortSigAction(joinMap.HdcpSupportCapability.JoinNumber + index, device.SetHdmi1HdcpCapability);
+                trilist.SetUShortSigAction(joinMap.HdcpSupportState.JoinNumber + index, state =>
+                {
+                    if (state == 99)
+                    {
+                        device.SetHdmi1HdcpCapability(eHdcpCapabilityType.HdcpAutoSupport);
+                    }
+                    else
+                    {
+                        device.SetHdmi1HdcpCapability(state);
+                    }
+                });
             }
         }
 
@@ -310,7 +331,7 @@ namespace NvxEpi.Application
                 var index = (uint) device.Key - 1;
                 var dest = _videoDestinations[device.Key];
 
-                Debug.Console(0, this, "Linking Video Route for Device:{0} to join {1}", device.Value.Name, joinMap.OutputVideo.JoinNumber + index);
+                Debug.Console(1, this, "Linking Video Route for Device:{0} to join {1}", device.Value.Name, joinMap.OutputVideo.JoinNumber + index);
                 trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + index, source =>
                 {
                     DummyRoutingInputsDevice sourceToRoute;

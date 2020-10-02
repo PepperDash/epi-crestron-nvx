@@ -162,6 +162,8 @@ namespace NvxEpi.Services.Bridge
 
         private void LinkVideowallMode(BasicTriList trilist, NvxDeviceJoinMap joinMap)
         {
+            if (_device.IsTransmitter) return;
+
             var videowallDevice = _device as IVideowallMode;
             var videowallMode = new BoolFeedback(() => videowallDevice == null);
             videowallMode.LinkInputSig(trilist.BooleanInput[joinMap.VideowallMode.JoinNumber]);

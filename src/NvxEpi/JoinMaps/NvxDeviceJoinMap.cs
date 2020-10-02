@@ -1,4 +1,5 @@
-﻿using PepperDash.Essentials.Core;
+﻿using Crestron.SimplSharp;
+using PepperDash.Essentials.Core;
 
 namespace NvxEpi.JoinMaps
 {
@@ -240,7 +241,7 @@ namespace NvxEpi.JoinMaps
             {
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.AnalogSerial,
-                Description = "Device Name"
+                Description = "Hdmi Output Resolution"
             });
 
         [JoinName("Videowall Mode")]
