@@ -1,4 +1,8 @@
-﻿using PepperDash.Essentials.Core;
+﻿using System.Linq;
+using NvxEpi.Abstractions;
+using NvxEpi.Services.TieLines;
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Routing
 {
@@ -24,5 +28,25 @@ namespace NvxEpi.Entities.Routing
         }
 
         public static NvxGlobalRouter Instance { get { return _instance; } }
+
+        public override bool CustomActivate()
+        {
+            Debug.Console(1, this, "Building tie lines...");
+            var transmitters = DeviceManager
+                .AllDevices
+                .OfType<INvxDevice>()
+                .Where(t => t.IsTransmitter);
+
+            TieLineConnector.AddTieLinesForTransmitters(transmitters);
+
+            var receivers = DeviceManager
+                .AllDevices
+                .OfType<INvxDevice>()
+                .Where(t => !t.IsTransmitter);
+
+            TieLineConnector.AddTieLinesForReceivers(receivers);
+
+            return base.CustomActivate();
+        }
     }
 }

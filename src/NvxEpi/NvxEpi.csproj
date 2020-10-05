@@ -144,6 +144,7 @@
     <Compile Include="Services\InputSwitching\StreamOutput.cs" />
     <Compile Include="Services\InputSwitching\HdmiOutput.cs" />
     <Compile Include="Services\InputSwitching\IHandleInputSwitch.cs" />
+    <Compile Include="Services\TieLines\TieLineConnector.cs" />
     <Compile Include="Services\Utilities\DeviceConsole.cs" />
     <Compile Include="Enums\Enumeration.cs" />
     <Compile Include="Factories\Nvx35XDeviceFactory.cs" />

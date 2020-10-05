@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using NvxEpi.Abstractions;
@@ -127,20 +128,17 @@ namespace NvxEpi.Application
                 }
             });
 
-            AddPostActivationAction(() => TieLineConnector.AddTieLinesForTransmitters(_transmitters.Values));
-            AddPostActivationAction(() => TieLineConnector.AddTieLinesForReceivers(_receivers.Values));
-
-            AddPostActivationAction(() => TieLineConnector.AddTieLinesForVideoDestinations(
+            AddPostActivationAction(() => ApplicationTieLineConnector.AddTieLinesForVideoDestinations(
                 new ReadOnlyDictionary<int, MockDisplay>(_videoDestinations), 
                 new ReadOnlyDictionary<int, INvxDevice>(_receivers))
                 );
 
-            AddPostActivationAction(() => TieLineConnector.AddTieLinesForAudioDestinations(
+            AddPostActivationAction(() => ApplicationTieLineConnector.AddTieLinesForAudioDestinations(
                 new ReadOnlyDictionary<int, Amplifier>(_audioDestinations),
                 new ReadOnlyDictionary<int, INvxDevice>(_receivers))
                 );
 
-            AddPostActivationAction(() => TieLineConnector.AddTieLinesForSources(
+            AddPostActivationAction(() => ApplicationTieLineConnector.AddTieLinesForSources(
                 new ReadOnlyDictionary<int, DummyRoutingInputsDevice>(_sources),
                 new ReadOnlyDictionary<int, INvxDevice>(_transmitters))
                 );
@@ -178,10 +176,11 @@ namespace NvxEpi.Application
             LinkDeviceNames(trilist, joinMap);
             LinkHdcpCapability(trilist, joinMap);
             LinkOutputDisabledFeedback(trilist, joinMap);
-            LinkHorizontalResolution(trilist);
+            LinkHorizontalResolution(trilist, joinMap);
+            LinkRxComPorts(trilist, joinMap);
         }
 
-        private void LinkHorizontalResolution(BasicTriList trilist)
+        private void LinkHorizontalResolution(BasicTriList trilist, DmChassisControllerJoinMap joinMap)
         {
             foreach (var device in _receivers)
             {
@@ -406,6 +405,40 @@ namespace NvxEpi.Application
                 var index = (uint)device.Key - 1;
                 Debug.Console(1, device.Value, "Linking Feedback:DeviceOnline to Join:{0}", joinMap.OutputEndpointOnline.JoinNumber + index);
                 device.Value.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + index]);
+            }
+        }
+
+        private void LinkRxComPorts(BasicTriList trilist, DmChassisControllerJoinMap joinMap)
+        {
+            foreach (var device in _receivers)
+            {
+                try
+                {
+                    var comDevice = device.Value;
+                    var comPortDevice = CommFactory.GetIComPortsDeviceFromManagedDevice(comDevice.Key);
+                    if (comPortDevice == null)
+                        continue;
+
+                    ComPort comPort;
+                    if (!comPortDevice.ComPorts.TryGetValue(1, out comPort))
+                        return;
+
+                    var index = (uint)device.Key - 1;
+                    Debug.Console(1, device.Value, "Linking Feedback:RX string transmit to Join:{0}", 3901 + index);
+
+                    comPort.SerialDataReceived +=
+                        (port, args) => trilist.StringInput[index + 3901].StringValue = args.SerialData;
+
+                    trilist.SetStringSigAction(index + 3901, tx => comPort.TransmitString = tx);
+                }
+                catch (NullReferenceException ex)
+                {
+                    Debug.Console(1, device.Value, "Error Linking Feedback:RX string transmit to Join:{0} | {1}", ex.Message, ex.InnerException);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Console(1, device.Value, "Error Linking Feedback:RX string transmit to Join:{0} | {1}", ex.Message, ex.InnerException);
+                }
             }
         }
     }
