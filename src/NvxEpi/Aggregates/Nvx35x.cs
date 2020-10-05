@@ -10,6 +10,7 @@ using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hardware;
 using NvxEpi.Entities.Routing;
@@ -26,12 +27,13 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Aggregates
 {
-    public class Nvx35X : CrestronGenericBridgeableBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, 
+    public class Nvx35X : CrestronGenericBridgeableBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, IUsbStream,
         ICurrentVideoInput, ICurrentAudioInput, ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting
     {
         private readonly Nvx35xHardware _device;
         private readonly ICurrentStream _currentVideoStream;
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
+        private readonly IUsbStream _usbStream;
         private readonly IRouting _router;
 
         private readonly Dictionary<uint, IntFeedback> _hdcpCapability = 
@@ -43,16 +45,16 @@ namespace NvxEpi.Aggregates
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
             : base(config.Key, config.Name, hardware)
         {
+            var props = NvxDeviceProperties.FromDeviceConfig(config);
             Hardware = hardware;
             _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
 
             _currentVideoStream = new CurrentVideoStream(_device);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(_device);
             _router = new NvxDeviceRouter(_device);
+            _usbStream = UsbStream.GetUsbStream(_device, props.Usb);
 
-            var props = NvxDeviceProperties.FromDeviceConfig(config);
             RegisterForOnlineFeedback(hardware, props);
-
             AddRoutingPorts();
             SetupFeedbacks();
         }
@@ -261,6 +263,21 @@ namespace NvxEpi.Aggregates
         public StringFeedback SecondaryAudioStreamStatus
         {
             get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
+        }
+
+        public bool IsRemote
+        {
+            get { return _usbStream.IsRemote; }
+        }
+
+        public StringFeedback UsbAddress
+        {
+            get { return _usbStream.UsbAddress; }
+        }
+
+        public int UsbId
+        {
+            get { return _usbStream.UsbId; }
         }
     }
 }

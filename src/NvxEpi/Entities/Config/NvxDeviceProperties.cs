@@ -17,8 +17,8 @@ namespace NvxEpi.Entities.Config
         [JsonProperty("control")]
         public ControlPropertiesConfig Control { get; set; }
 
-        [JsonProperty("usbMode")]
-        public string UsbMode { get; set; }
+        [JsonProperty("usb")]
+        public NvxUsbProperties Usb { get; set; }
 
         [JsonProperty("mode")]
         public string Mode { get; set; }
@@ -34,5 +34,11 @@ namespace NvxEpi.Entities.Config
 
         [JsonProperty("defaultAudioSource")]
         public string DefaultAudioSource { get; set; }   
+    }
+
+    public class NvxUsbProperties
+    {
+        public string UsbMode { get; set; }
+        public int UsbId { get; set; }
     }
 }

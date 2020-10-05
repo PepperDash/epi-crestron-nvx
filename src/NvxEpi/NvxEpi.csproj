@@ -116,13 +116,17 @@
     <Compile Include="Abstractions\Stream\ICurrentStream.cs" />
     <Compile Include="Abstractions\Stream\IMulticastAddress.cs" />
     <Compile Include="Abstractions\Stream\IStream.cs" />
+    <Compile Include="Abstractions\Usb\IUsbStream.cs" />
     <Compile Include="Entities\Hardware\Nvx35xHardware.cs" />
     <Compile Include="Entities\Hardware\NvxBaseHardware.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
     <Compile Include="Entities\Routing\NvxGlobalRouter.cs" />
+    <Compile Include="Entities\Streams\UsbStream.cs" />
     <Compile Include="Entities\Streams\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
+    <Compile Include="Services\Feedback\UsbModeFeedback.cs" />
+    <Compile Include="Services\Feedback\UsbRemoteAddressFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceNameFeedback.cs" />
     <Compile Include="Services\Feedback\Hdmi1HdcpCapabilityFeedback.cs" />
     <Compile Include="Services\Feedback\AudioInputFeedback.cs" />
@@ -132,6 +136,7 @@
     <Compile Include="Entities\Routing\NaxAudioRouter.cs" />
     <Compile Include="Entities\Routing\SecondaryAudioRouter.cs" />
     <Compile Include="Entities\Routing\PrimaryStreamRouter.cs" />
+    <Compile Include="Services\Feedback\UsbLocalAddressFeedback.cs" />
     <Compile Include="Services\Feedback\VideoInputFeedback.cs" />
     <Compile Include="Services\InputPorts\AnalogAudioInput.cs" />
     <Compile Include="Services\InputPorts\PrimaryAudioInput.cs" />
