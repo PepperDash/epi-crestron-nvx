@@ -117,6 +117,15 @@
     <Compile Include="Abstractions\Stream\IMulticastAddress.cs" />
     <Compile Include="Abstractions\Stream\IStream.cs" />
     <Compile Include="Abstractions\Usb\IUsbStream.cs" />
+    <Compile Include="Application\Builder\NvxApplicationBuilder.cs" />
+    <Compile Include="Application\Builder\INvxApplicationBuilder.cs" />
+    <Compile Include="Application\Config\NvxApplicationConfig.cs" />
+    <Compile Include="Application\Factories\NvxApplicationFactory.cs" />
+    <Compile Include="Application\JoinMap\NvxApplicationJoinMap.cs" />
+    <Compile Include="Application\NvxApplication.cs" />
+    <Compile Include="Application\Router\NvxRouter.cs" />
+    <Compile Include="Application\Services\ApplicationTieLineConnector.cs" />
+    <Compile Include="Application\Services\AudioFollowsVideo.cs" />
     <Compile Include="Entities\Hardware\Nvx35xHardware.cs" />
     <Compile Include="Entities\Hardware\NvxBaseHardware.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
@@ -160,7 +169,6 @@
     <Compile Include="Entities\InputSwitching\VideoInputSwitcher.cs" />
     <Compile Include="Entities\Streams\CurrentVideoStream.cs" />
     <Compile Include="Aggregates\Nvx35x.cs" />
-    <Compile Include="Entities\Routing\NvxDeviceRouter.cs" />
     <Compile Include="Services\Utilities\DeviceDefaults.cs" />
     <Compile Include="Services\Feedback\AudioInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\HdmiOutputDisabledFeedback.cs" />

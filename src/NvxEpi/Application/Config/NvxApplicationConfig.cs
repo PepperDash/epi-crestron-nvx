@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace NvxEpi.Application.Config
 {
-    public class DynNvxConfig
+    public class NvxApplicationConfig
     {
         [JsonProperty("transmitters")]
         public Dictionary<string, string> Transmitters { get; set; }

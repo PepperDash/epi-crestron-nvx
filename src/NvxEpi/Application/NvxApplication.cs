@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -9,6 +10,7 @@ using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Application.Builder;
 using NvxEpi.Application.JoinMap;
 using NvxEpi.Application.Services;
+using NvxEpi.Entities.Routing;
 using NvxEpi.Entities.Streams;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core;
@@ -27,14 +29,14 @@ namespace NvxEpi.Application
         private readonly Dictionary<int, IRoutingSink> _videoDestinations = new Dictionary<int, IRoutingSink>();
         private readonly Dictionary<int, IRoutingSink> _audioDestinations = new Dictionary<int, IRoutingSink>();
         private readonly Dictionary<int, IRoutingSource> _sources = new Dictionary<int, IRoutingSource>();
+        private readonly CCriticalSection _lock = new CCriticalSection();
+        public bool EnableAudioBreakaway { get; private set; }
 
-        public bool AudioFollowVideo { get; private set; }
-
-        public NvxApplication(IDynNvxBuilder builder) : base(builder.Key)
+        public NvxApplication(INvxApplicationBuilder applicationBuilder) : base(applicationBuilder.Key)
         {
             AddPreActivationAction(() =>
             {
-                foreach (var item in builder.Transmitters)
+                foreach (var item in applicationBuilder.Transmitters)
                 {
                     var tx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
                     if (tx == null)
@@ -55,7 +57,7 @@ namespace NvxEpi.Application
 
             AddPreActivationAction(() =>
             {
-                foreach (var item in builder.Receivers)
+                foreach (var item in applicationBuilder.Receivers)
                 {
                     var rx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
                     if (rx == null)
@@ -138,7 +140,29 @@ namespace NvxEpi.Application
             if (bridge != null)
                 bridge.AddJoinMap(Key, joinMap);
 
-            trilist.SetBoolSigAction(joinMap.EnableAudioBreakaway.JoinNumber, value => AudioFollowVideo = !value);
+            trilist.SetBoolSigAction(joinMap.EnableAudioBreakaway.JoinNumber, value =>
+            {
+                if (EnableAudioBreakaway == value)
+                    return;
+
+                try
+                {
+                    _lock.Enter();
+                    EnableAudioBreakaway = value;
+                    Debug.Console(1, this, "Setting EnableAudioBreakaway to : {0}", EnableAudioBreakaway);
+
+                    var audioFollowsVideoHandler = new AudioFollowsVideoHandler(_transmitters, _receivers);
+                    if (EnableAudioBreakaway)
+                        audioFollowsVideoHandler.SetAudioFollowsVideoFalse();
+                    else
+                        audioFollowsVideoHandler.SetAudioFollowsVideoTrue();
+                }
+                finally
+                {
+                    _lock.Leave();
+                }
+            });
+
             LinkOnlineStatus(trilist, joinMap);
             LinkVideoRoutes(trilist, joinMap);
             LinkAudioRoutes(trilist, joinMap);
@@ -152,61 +176,75 @@ namespace NvxEpi.Application
 
         private void LinkHorizontalResolution(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.OutputHorizontalResolution.JoinSpan; x++)
             {
+                INvxDevice device;
+                if (!_transmitters.TryGetValue(x, out device))
+                    continue;
+
                 var feedback =
-                    device.Value.Feedbacks[HorizontalResolutionFeedback.Key] as IntFeedback;
+                    device.Feedbacks[HorizontalResolutionFeedback.Key] as IntFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint) device.Key - 1;
-                Debug.Console(1, device.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputHorizontalResolution.JoinNumber + index);
+                var index = (uint)x - 1;
+                Debug.Console(1, device, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputHorizontalResolution.JoinNumber + index);
                 feedback.LinkInputSig(trilist.UShortInput[3301 + index]);
             }
         }
 
         private void LinkOutputDisabledFeedback(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.OutputDisabledByHdcp.JoinSpan; x++)
             {
+                INvxDevice device;
+                if (!_receivers.TryGetValue(x, out device))
+                    continue;
+
                 var feedback =
-                    device.Value.Feedbacks[HdmiOutputDisabledFeedback.Key] as BoolFeedback;
+                    device.Feedbacks[HdmiOutputDisabledFeedback.Key] as IntFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint)device.Key - 1;
-                Debug.Console(1, device.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputDisabledByHdcp.JoinNumber + index);
-                feedback.LinkInputSig(trilist.BooleanInput[joinMap.OutputDisabledByHdcp.JoinNumber + index]);
+                var index = (uint)x - 1;
+                Debug.Console(1, device, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputHorizontalResolution.JoinNumber + index);
+                feedback.LinkInputSig(trilist.UShortInput[joinMap.OutputHorizontalResolution.JoinNumber + index]);
             }
         }
 
         private void LinkDeviceNames(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var transmitter in _transmitters)
+            for (var x = 1; x <= joinMap.InputNames.JoinSpan; x++)
             {
-                var tx = transmitter.Value;
+                INvxDevice tx;
+                if (!_transmitters.TryGetValue(x, out tx))
+                    continue;
+
                 var feedback =
                     tx.Feedbacks[DeviceNameFeedback.Key] as StringFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint) transmitter.Key - 1;
-                Debug.Console(1, transmitter.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.InputNames.JoinNumber + index);
+                var index = (uint)x - 1;
+                Debug.Console(1, tx, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.InputNames.JoinNumber + index);
                 feedback.LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + index]);
                 tx.VideoName.LinkInputSig(trilist.StringInput[joinMap.InputVideoNames.JoinNumber + index]);
                 tx.AudioName.LinkInputSig(trilist.StringInput[joinMap.InputAudioNames.JoinNumber + index]);
             }
 
-            foreach (var receiver in _receivers)
+            for (var x = 1; x <= joinMap.OutputNames.JoinSpan; x++)
             {
-                var rx = receiver.Value;
+                INvxDevice rx;
+                if (!_receivers.TryGetValue(x, out rx))
+                    continue;
+
                 var feedback =
                     rx.Feedbacks[DeviceNameFeedback.Key] as StringFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint)receiver.Key - 1;
-                Debug.Console(1, receiver.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputNames.JoinNumber + index);
+                var index = (uint)x - 1;
+                Debug.Console(1, rx, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputNames.JoinNumber + index);
                 feedback.LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + index]);
                 rx.VideoName.LinkInputSig(trilist.StringInput[joinMap.OutputVideoNames.JoinNumber + index]);
                 rx.AudioName.LinkInputSig(trilist.StringInput[joinMap.OutputAudioNames.JoinNumber + index]);
@@ -215,53 +253,66 @@ namespace NvxEpi.Application
 
         private void LinkSyncDetectedStatus(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var transmitter in _transmitters)
+            for (var x = 1; x <= joinMap.VideoSyncStatus.JoinSpan; x++)
             {
+                INvxDevice transmitter;
+                if (!_transmitters.TryGetValue(x, out transmitter))
+                    continue;
+
                 var feedback =
-                    transmitter.Value.Feedbacks[Hdmi1SyncDetectedFeedback.Key] as BoolFeedback;
+                    transmitter.Feedbacks[Hdmi1SyncDetectedFeedback.Key] as BoolFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint) transmitter.Key - 1;
-                Debug.Console(1, transmitter.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.VideoSyncStatus.JoinNumber + index);
+                var index = (uint)x - 1;
+                Debug.Console(1, transmitter, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.VideoSyncStatus.JoinNumber + index);
                 feedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + index]);
             }
         }
 
         private void LinkHdcpCapability(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var transmitter in _transmitters)
+            for (var x = 1; x <= joinMap.HdcpSupportCapability.JoinSpan; x++)
             {
-                var index = (uint)transmitter.Key - 1;
+                INvxDevice transmitter;
+                if (!_transmitters.TryGetValue(x, out transmitter))
+                    continue;
+
+                var index = (uint)x - 1;
                 var fb = new IntFeedback(() => 99);
                 var advancedFb = new BoolFeedback(() => true);
 
-                Debug.Console(1, transmitter.Value, "Linking Feedback:{0} to Join:{1}", "HdcpCapability", joinMap.HdcpSupportCapability.JoinNumber + index);
+                Debug.Console(1, transmitter, "Linking Feedback:{0} to Join:{1}", "HdcpCapability", joinMap.HdcpSupportCapability.JoinNumber + index);
                 fb.LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + index]);
                 advancedFb.LinkInputSig(trilist.BooleanInput[joinMap.TxAdvancedIsPresent.JoinNumber + index]);
                 fb.FireUpdate();
                 advancedFb.FireUpdate();
             }
 
-            foreach (var transmitter in _transmitters)
+            for (var x = 1; x <= joinMap.HdcpSupportState.JoinSpan; x++)
             {
+                INvxDevice transmitter;
+                if (!_transmitters.TryGetValue(x, out transmitter))
+                    continue;
+
                 var feedback =
-                    transmitter.Value.Feedbacks[Hdmi1HdcpCapabilityValueFeedback.Key] as IntFeedback;
+                    transmitter.Feedbacks[Hdmi1HdcpCapabilityValueFeedback.Key] as IntFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint)transmitter.Key - 1;
-                Debug.Console(1, transmitter.Value, "Linking Feedback:{0} to Join:{1}", "HdcpState", joinMap.HdcpSupportState.JoinNumber + index);
+                var index = (uint)x - 1;
+                Debug.Console(1, transmitter, "Linking Feedback:{0} to Join:{1}", "HdcpState", joinMap.HdcpSupportState.JoinNumber + index);
                 feedback.LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + index]);
             }
 
-            foreach (var transmitter in _transmitters)
+            for (var x = 1; x <= joinMap.HdcpSupportState.JoinSpan; x++)
             {
-                if (transmitter.Value == null)
+                INvxDevice transmitter;
+                if (!_transmitters.TryGetValue(x, out transmitter))
                     continue;
 
-                var index = (uint)transmitter.Key - 1;
-                var device = transmitter.Value as IHdmiInput;
+                var index = (uint)x - 1;
+                var device = transmitter as IHdmiInput;
                 if (device == null) return;
 
                 trilist.SetUShortSigAction(joinMap.HdcpSupportState.JoinNumber + index, state =>
@@ -276,32 +327,52 @@ namespace NvxEpi.Application
 
         private void LinkVideoRoutes(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.OutputCurrentVideoInputNames.JoinSpan; x++)
             {
+                INvxDevice rx;
+                if (!_receivers.TryGetValue(x, out rx))
+                    continue;
+
                 var feedback =
-                    device.Value.Feedbacks[CurrentVideoStream.RouteNameKey] as StringFeedback;
+                    rx.Feedbacks[CurrentVideoStream.RouteNameKey] as StringFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint)device.Key - 1;
-                Debug.Console(1, device.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputCurrentVideoInputNames.JoinNumber + index);
+                var index = (uint)x - 1;
+                Debug.Console(1, rx, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputCurrentVideoInputNames.JoinNumber + index);
                 feedback.LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + index]);
 
-                var currentRouteFb = new IntFeedback("ApplicationOutputVideoNumber", 
-                    () => _transmitters.FirstOrDefault(x => x.Value.VideoName.StringValue.Equals(feedback.StringValue)).Key);
+                var currentRouteFb = new IntFeedback(() =>
+                {
+                    if (feedback.StringValue.Equals(NvxGlobalRouter.NoSourceText))
+                        return 0;
 
-                device.Value.Feedbacks.Add(currentRouteFb);
+                    return _transmitters
+                        .Where(
+                            t =>
+                                t.Value.VideoName.StringValue.Equals(feedback.StringValue,
+                                    StringComparison.OrdinalIgnoreCase))
+                        .Select(t => t.Key)
+                        .FirstOrDefault();
+                });
+
+                rx.Feedbacks.Add(currentRouteFb);
                 feedback.OutputChange += (sender, args) => currentRouteFb.FireUpdate();
-                Debug.Console(1, device.Value, "Linking Feedback:{0} to Join:{1}", currentRouteFb.Key, joinMap.OutputVideo.JoinNumber + index);
+
+                Debug.Console(1, rx, "Linking Feedback:{0} to Join:{1}", currentRouteFb.Key, joinMap.OutputVideo.JoinNumber + index);
                 currentRouteFb.LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + index]);
             }
 
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.OutputVideo.JoinSpan; x++)
             {
-                var index = (uint) device.Key - 1;
-                var dest = _videoDestinations[device.Key];
+                INvxDevice rx;
+                if (!_receivers.TryGetValue(x, out rx))
+                    continue;
 
-                Debug.Console(1, this, "Linking Video Route for Device:{0} to join {1}", device.Value.Name, joinMap.OutputVideo.JoinNumber + index);
+                var index = (uint)x - 1;
+                var dest = _videoDestinations[x];
+
+                Debug.Console(1, rx, "Linking Video Route for to join {0}", joinMap.OutputVideo.JoinNumber + index);
                 trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + index, source =>
                 {
                     if (source == 0)
@@ -309,44 +380,63 @@ namespace NvxEpi.Application
                         dest.ReleaseRoute();
                         return;
                     }
-                        
+
                     IRoutingSource sourceToRoute;
                     if (_sources.TryGetValue(source, out sourceToRoute))
-                        dest.ReleaseAndMakeRoute(sourceToRoute, AudioFollowVideo ? eRoutingSignalType.AudioVideo : eRoutingSignalType.Video);
+                        dest.ReleaseAndMakeRoute(sourceToRoute, EnableAudioBreakaway ? eRoutingSignalType.Video : eRoutingSignalType.AudioVideo);
                 });
             }
         }
 
         private void LinkAudioRoutes(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.OutputCurrentAudioInputNames.JoinSpan; x++)
             {
+                INvxDevice rx;
+                if (!_receivers.TryGetValue(x, out rx))
+                    continue;
+
                 var feedback =
-                    device.Value.Feedbacks[CurrentSecondaryAudioStream.RouteNameKey] as StringFeedback;
+                    rx.Feedbacks[CurrentSecondaryAudioStream.RouteNameKey] as StringFeedback;
                 if (feedback == null)
                     continue;
 
-                var index = (uint)device.Key - 1;
-                Debug.Console(1, device.Value, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputCurrentAudioInputNames.JoinNumber + index);
+                var index = (uint)x - 1;
+                Debug.Console(1, rx, "Linking Feedback:{0} to Join:{1}", feedback.Key, joinMap.OutputCurrentAudioInputNames.JoinNumber + index);
                 feedback.LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + index]);
 
-                var currentRouteFb = new IntFeedback("ApplicationOutputAudioNumber",
-                    () => _transmitters.FirstOrDefault(x => x.Value.AudioName.StringValue.Equals(feedback.StringValue)).Key);
+                var currentRouteFb = new IntFeedback(() =>
+                {
+                    if (feedback.StringValue.Equals(NvxGlobalRouter.NoSourceText))
+                        return 0;
 
-                device.Value.Feedbacks.Add(currentRouteFb);
+                    return _transmitters
+                        .Where(
+                            t =>
+                                t.Value.AudioName.StringValue.Equals(feedback.StringValue,
+                                    StringComparison.OrdinalIgnoreCase))
+                        .Select(t => t.Key)
+                        .FirstOrDefault();
+                });
+
+                rx.Feedbacks.Add(currentRouteFb);
                 feedback.OutputChange += (sender, args) => currentRouteFb.FireUpdate();
-                Debug.Console(1, device.Value, "Linking Feedback:{0} to Join:{1}", currentRouteFb.Key, joinMap.OutputAudio.JoinNumber + index);
-                currentRouteFb.LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + index]);
+                Debug.Console(1, rx, "Linking Feedback:{0} to Join:{1}", currentRouteFb.Key, joinMap.OutputAudio.JoinNumber + index);
+                currentRouteFb.LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + index]);
             }
 
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.OutputAudio.JoinSpan; x++)
             {
-                var index = (uint) device.Key - 1;
-                var dest = _audioDestinations[device.Key];
+                INvxDevice rx;
+                if (!_receivers.TryGetValue(x, out rx))
+                    continue;
+
+                var index = (uint)x - 1;
+                var dest = _audioDestinations[x];
 
                 trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + index, source =>
                 {
-                    if (AudioFollowVideo)
+                    if (!EnableAudioBreakaway)
                         return;
 
                     if (source == 0)
@@ -364,57 +454,52 @@ namespace NvxEpi.Application
 
         private void LinkOnlineStatus(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var device in _transmitters)
+            for (var x = 1; x <= joinMap.InputEndpointOnline.JoinSpan; x++)
             {
-                if (device.Value == null)
+                INvxDevice transmitter;
+                if (!_transmitters.TryGetValue(x, out transmitter))
                     continue;
 
-                var index = (uint)device.Key - 1;
-                Debug.Console(1, device.Value, "Linking Feedback:DeviceOnline to Join:{0}", joinMap.InputEndpointOnline.JoinNumber + index);
-                device.Value.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + index]);
+                var index = (uint)x - 1;
+                Debug.Console(1, transmitter, "Linking Feedback:DeviceOnline to Join:{0}", joinMap.InputEndpointOnline.JoinNumber + index);
+                transmitter.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + index]);
             }
 
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.OutputEndpointOnline.JoinSpan; x++)
             {
-                if (device.Value == null)
+                INvxDevice receiver;
+                if (!_receivers.TryGetValue(x, out receiver))
                     continue;
 
-                var index = (uint)device.Key - 1;
-                Debug.Console(1, device.Value, "Linking Feedback:DeviceOnline to Join:{0}", joinMap.OutputEndpointOnline.JoinNumber + index);
-                device.Value.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + index]);
+                var index = (uint)x - 1;
+                Debug.Console(1, receiver, "Linking Feedback:DeviceOnline to Join:{0}", joinMap.OutputEndpointOnline.JoinNumber + index);
+                receiver.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + index]);
             }
         }
 
         private void LinkRxComPorts(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
-            foreach (var device in _receivers)
+            for (var x = 1; x <= joinMap.ReceiverSerialPorts.JoinSpan; x++)
             {
-                try
-                {
-                    var comDevice = device.Value as IComPorts;
-                    if (comDevice == null || comDevice.ComPorts == null)
-                        continue;
+                INvxDevice receiver;
+                if (!_receivers.TryGetValue(x, out receiver))
+                    continue;
 
-                    ComPort comPort;
-                    if (!comDevice.ComPorts.TryGetValue(1, out comPort))
-                        return;
+                var comDevice = receiver as IComPorts;
+                if (comDevice == null || comDevice.ComPorts == null)
+                    continue;
 
-                    var index = (uint)device.Key - 1;
-                    Debug.Console(1, device.Value, "Linking Feedback:RX string transmit to Join:{0}", index + joinMap.ReceiverSerialPorts.JoinNumber);
+                ComPort comPort;
+                if (!comDevice.ComPorts.TryGetValue(1, out comPort))
+                    return;
 
-                    comPort.SerialDataReceived +=
-                        (port, args) => trilist.StringInput[index + joinMap.ReceiverSerialPorts.JoinNumber].StringValue = args.SerialData;
+                var index = (uint)x - 1;
+                Debug.Console(1, receiver, "Linking Feedback:RX string transmit to Join:{0}", index + joinMap.ReceiverSerialPorts.JoinNumber);
 
-                    trilist.SetStringSigAction(index + joinMap.ReceiverSerialPorts.JoinNumber, tx => comPort.TransmitString = tx);
-                }
-                catch (NullReferenceException ex)
-                {
-                    Debug.Console(1, device.Value, "Error Linking Feedback:RX string transmit to Join:{0} | {1}", ex.Message, ex.InnerException);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Console(1, device.Value, "Error Linking Feedback:RX string transmit to Join:{0} | {1}", ex.Message, ex.InnerException);
-                }
+                comPort.SerialDataReceived +=
+                    (port, args) => trilist.StringInput[index + joinMap.ReceiverSerialPorts.JoinNumber].StringValue = args.SerialData;
+
+                trilist.SetStringSigAction(index + joinMap.ReceiverSerialPorts.JoinNumber, tx => comPort.TransmitString = tx);
             }
         }
     }

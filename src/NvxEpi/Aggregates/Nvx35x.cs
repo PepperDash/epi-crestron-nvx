@@ -5,7 +5,6 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
@@ -15,13 +14,13 @@ using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hardware;
-using NvxEpi.Entities.Routing;
 using NvxEpi.Entities.Streams;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
@@ -36,7 +35,6 @@ namespace NvxEpi.Aggregates
         private readonly ICurrentStream _currentVideoStream;
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private readonly IUsbStream _usbStream;
-        private readonly IRouting _router;
 
         private readonly Dictionary<uint, IntFeedback> _hdcpCapability = 
             new Dictionary<uint, IntFeedback>();
@@ -53,10 +51,9 @@ namespace NvxEpi.Aggregates
             _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
             _currentVideoStream = new CurrentVideoStream(new VideoStream(_device));
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(new SecondaryAudioStream(_device));
-            _router = new NvxDeviceRouter(_device);
 
             RegisterForOnlineFeedback(hardware, props);
-            SetupFeedbacks(props);
+            SetupFeedbacks();
             AddRoutingPorts();
         }
 
@@ -76,7 +73,7 @@ namespace NvxEpi.Aggregates
             };
         }
 
-        private void SetupFeedbacks(NvxDeviceProperties props)
+        private void SetupFeedbacks()
         {
             _hdcpCapability.Add(1, Hdmi1HdcpCapabilityValueFeedback.GetFeedback(Hardware));
             _hdcpCapability.Add(2, Hdmi2HdcpCapabilityValueFeedback.GetFeedback(Hardware));
@@ -136,7 +133,19 @@ namespace NvxEpi.Aggregates
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            _router.ExecuteSwitch(inputSelector, outputSelector, signalType);
+            try
+            {
+                var switcher = outputSelector as IHandleInputSwitch;
+                if (switcher == null)
+                    throw new NullReferenceException("input selector");
+
+                Debug.Console(1, this, "Executing switch : '{0}' | '{1}' | '{2}'", inputSelector.ToString(), outputSelector.ToString(), signalType.ToString());
+                switcher.HandleSwitch(inputSelector, signalType);
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
+            }
         }
 
         public IntFeedback DeviceMode
