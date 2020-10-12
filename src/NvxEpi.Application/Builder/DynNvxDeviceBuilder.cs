@@ -18,7 +18,7 @@ namespace NvxEpi.Application.Builder
 
         public EssentialsDevice Build()
         {
-            return new DynNvx(this);
+            return new NvxApplication(this);
         }
 
         public DynNvxDeviceBuilder(DeviceConfig config)

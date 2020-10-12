@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using NvxEpi.Extensions;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams
@@ -16,7 +17,7 @@ namespace NvxEpi.Entities.Streams
 
         public const string RouteNameKey = "CurrentVideoRoute";
         public const string RouteValueKey = "CurrentVideoRouteValue";
-       
+
         public CurrentVideoStream(IStream stream)
         {
             _stream = stream;
@@ -31,22 +32,20 @@ namespace NvxEpi.Entities.Streams
 
             CurrentStreamName = _stream.IsTransmitter
                 ? new StringFeedback(RouteNameKey, () => String.Empty)
-                : new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
+                : new StringFeedback(RouteNameKey, () => _current != null ? _current.VideoName.StringValue : NvxGlobalRouter.NoSourceText);
 
-            _stream.IsOnline.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
-            _stream.IsStreamingVideo.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
-            _stream.StreamUrl.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
+            IsOnline.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
+            VideoStreamStatus.OutputChange += (sender, args) => UpdateCurrentRoute();
+            IsStreamingVideo.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
+            StreamUrl.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
 
-            if (!Feedbacks.Contains(CurrentStreamId))
-                Feedbacks.Add(CurrentStreamId);
-
-            if (!Feedbacks.Contains(CurrentStreamName))
-                Feedbacks.Add(CurrentStreamName);
+            Feedbacks.Add(CurrentStreamId);
+            Feedbacks.Add(CurrentStreamName);        
         }
 
         public void UpdateCurrentRoute()
         {
-            if (!_stream.IsOnline.BoolValue)
+            if (!_stream.IsOnline.BoolValue || IsTransmitter)
                 return;
 
             try
@@ -139,6 +138,16 @@ namespace NvxEpi.Entities.Streams
         public FeedbackCollection<Feedback> Feedbacks
         {
             get { return _stream.Feedbacks; }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _stream.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _stream.AudioName; }
         }
     }
 }

@@ -6,7 +6,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Application.Factories
 {
-    public class DynNvxFactory : EssentialsPluginDeviceFactory<DynNvx>
+    public class DynNvxFactory : EssentialsPluginDeviceFactory<NvxApplication>
     {
         private const string _minumumEssentialsVersion = "1.6.4";
         private static readonly IEnumerable<string> _typeNames;

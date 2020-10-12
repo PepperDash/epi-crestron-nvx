@@ -19,39 +19,23 @@ namespace NvxEpi.Extensions
         {
             try
             {
-                if (CheckIfDeviceIsNotStreaming(stream))
+                if (!stream.IsStreamingVideo.BoolValue)
                     return null;
 
-                var result = DeviceManager
+                if (stream.Hardware.Control.ActiveVideoSourceFeedback != eSfpVideoSourceTypes.Stream)
+                    return null;
+
+                return DeviceManager
                     .AllDevices
                     .OfType<IStream>()
-                    .Where(t => t.IsTransmitter && t.IsStreamingVideo.BoolValue)
-                    .FirstOrDefault(
-                        x =>
-                            x.StreamUrl.StringValue.Equals(stream.StreamUrl.StringValue,
-                                StringComparison.OrdinalIgnoreCase));
-
-                return result;
+                    .Where(t => t.IsTransmitter)
+                    .FirstOrDefault(tx => tx.StreamUrl.StringValue.Equals(stream.StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
             }
             catch (Exception ex)
             {
                 Debug.Console(1, stream, "Error getting current video route : {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
                 throw;
             }
-        }
-
-        private static bool CheckIfDeviceIsNotStreaming(IStream stream)
-        {
-            if (stream.IsTransmitter || stream.DeviceId == default(int) ||
-                !stream.IsStreamingVideo.BoolValue || !stream.IsOnline.BoolValue)
-                return true;
-
-            if (stream.Hardware.Control.VideoSourceFeedback != eSfpVideoSourceTypes.Hdmi1 &&
-                stream.Hardware.Control.VideoSourceFeedback != eSfpVideoSourceTypes.Hdmi2 &&
-                stream.Hardware.Control.VideoSourceFeedback != eSfpVideoSourceTypes.Disable) 
-                return false;
-
-            return true;
         }
     }
 }
