@@ -32,7 +32,7 @@ namespace NvxEpi.Services.TieLines
                     if (streamInput == null)
                         throw new NullReferenceException("PrimaryRouterStreamInput");
 
-                    TieLineCollection.Default.Add(new TieLine(outputPort, streamInput, eRoutingSignalType.Video));
+                    TieLineCollection.Default.Add(new TieLine(outputPort, streamInput, eRoutingSignalType.AudioVideo));
 
                     var secondaryAudio = tx as ISecondaryAudioStream;
                     var secondaryAudioPort = tx.OutputPorts[SecondaryAudioOutput.Key];
@@ -79,7 +79,7 @@ namespace NvxEpi.Services.TieLines
                     if (streamOutput == null)
                         throw new NullReferenceException("PrimaryRouterStreamOutput");
 
-                    TieLineCollection.Default.Add(new TieLine(streamOutput, inputPort, eRoutingSignalType.Video));
+                    TieLineCollection.Default.Add(new TieLine(streamOutput, inputPort, eRoutingSignalType.AudioVideo));
 
                     var secondaryAudio = rx as ISecondaryAudioStream;
                     var secondaryAudioPort = rx.InputPorts[DeviceInputEnum.SecondaryAudio.Name];

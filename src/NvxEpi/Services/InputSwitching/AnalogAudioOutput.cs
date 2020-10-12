@@ -28,7 +28,7 @@ namespace NvxEpi.Services.InputSwitching
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
 
-            Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
+            Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
 
             if (type.Has(eRoutingSignalType.Audio))
                 SwitchAudio(routingInput);
