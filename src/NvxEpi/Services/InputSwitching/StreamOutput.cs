@@ -75,6 +75,11 @@ namespace NvxEpi.Services.InputSwitching
                 throw new NotSupportedException(input.Name);
         }
 
+        public override string ToString()
+        {
+            return _device.Key + "-" + Key;
+        }
+
         public static void AddRoutingPort(ICurrentVideoInput parent)
         {
             parent.OutputPorts.Add(new RoutingOutputPort(
