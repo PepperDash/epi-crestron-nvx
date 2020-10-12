@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
@@ -47,16 +49,15 @@ namespace NvxEpi.Aggregates
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             Hardware = hardware;
-            _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
 
-            _currentVideoStream = new CurrentVideoStream(_device);
-            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(_device);
+            _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
+            _currentVideoStream = new CurrentVideoStream(new VideoStream(_device));
+            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(new SecondaryAudioStream(_device));
             _router = new NvxDeviceRouter(_device);
-            _usbStream = UsbStream.GetUsbStream(_device, props.Usb);
 
             RegisterForOnlineFeedback(hardware, props);
+            SetupFeedbacks(props);
             AddRoutingPorts();
-            SetupFeedbacks();
         }
 
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
@@ -72,12 +73,10 @@ namespace NvxEpi.Aggregates
                     Hardware.SetTxDefaults(props);
                 else
                     Hardware.SetRxDefaults(props);
-
-                Hardware.SetDefaultInputs(props);
             };
         }
 
-        private void SetupFeedbacks()
+        private void SetupFeedbacks(NvxDeviceProperties props)
         {
             _hdcpCapability.Add(1, Hdmi1HdcpCapabilityValueFeedback.GetFeedback(Hardware));
             _hdcpCapability.Add(2, Hdmi2HdcpCapabilityValueFeedback.GetFeedback(Hardware));
@@ -270,14 +269,34 @@ namespace NvxEpi.Aggregates
             get { return _usbStream.IsRemote; }
         }
 
-        public StringFeedback UsbAddress
+        public StringFeedback UsbLocalId
         {
-            get { return _usbStream.UsbAddress; }
+            get { return _usbStream.UsbLocalId; }
+        }
+
+        public StringFeedback UsbRemoteId
+        {
+            get { return _usbStream.UsbRemoteId; }
         }
 
         public int UsbId
         {
             get { return _usbStream.UsbId; }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _device.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _device.AudioName; }
+        }
+
+        public override string ToString()
+        {
+            return Key;
         }
     }
 }

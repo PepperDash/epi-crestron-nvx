@@ -3,21 +3,17 @@ using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.InputSwitching;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.InputSwitching;
-using NvxEpi.Entities.Streams;
 using NvxEpi.Services.Feedback;
-using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Entities.Hardware
 {
-    public abstract class NvxBaseHardware : IStream, ICurrentVideoInput, ICurrentAudioInput
+    public abstract class NvxBaseHardware : ICurrentVideoInput, ICurrentAudioInput
     {
-        protected readonly IStream _stream;
         protected readonly ICurrentVideoInput _videoSwitcher;
         protected readonly ICurrentAudioInput _audioSwitcher;
 
@@ -35,38 +31,31 @@ namespace NvxEpi.Entities.Hardware
             if ((uint)props.DeviceId != 0)
                 UpdateDeviceId((uint)props.DeviceId);
 
+            SetupFeedbacks(props);
             IsTransmitter = props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
-            _stream = new VideoStream(this);
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
-
-            hardware.OnlineStatusChange += (device, args) =>
-            {
-                if (!args.DeviceOnLine)
-                    return;
-
-                Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
-
-                if (IsTransmitter)
-                    Hardware.SetTxDefaults(props);
-                else
-                    Hardware.SetRxDefaults(props);
-
-                Hardware.SetDefaultInputs(props);
-            };
-
-            SetupFeedbacks();
         }
 
-        private void SetupFeedbacks()
+        private void SetupFeedbacks(NvxDeviceProperties props)
         {
+            VideoName = String.IsNullOrEmpty(props.VideoSourceName)
+                ? new StringFeedback("VideoName", () => Name)
+                : new StringFeedback("VideoName", () => props.VideoSourceName);
+ 
+            AudioName = String.IsNullOrEmpty(props.AudioSourceName)
+                ? new StringFeedback("AudioName", () => Name)
+                : new StringFeedback("AudioName", () => props.AudioSourceName);
+
             DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
             MulticastAddress = MulticastAddressFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[]
             {
                 DeviceNameFeedback.GetFeedback(Name),
+                VideoName,
+                AudioName,
                 DeviceMode
             });
         }
@@ -113,21 +102,6 @@ namespace NvxEpi.Entities.Hardware
 
         public DmNvxBaseClass Hardware { get; private set; }
 
-        public StringFeedback StreamUrl
-        {
-            get { return _stream.StreamUrl; }
-        }
-
-        public BoolFeedback IsStreamingVideo
-        {
-            get { return _stream.IsStreamingVideo; }
-        }
-
-        public StringFeedback VideoStreamStatus
-        {
-            get { return _stream.VideoStreamStatus; }
-        }
-
         public StringFeedback CurrentVideoInput
         {
             get { return _videoSwitcher.CurrentVideoInput; }
@@ -154,5 +128,7 @@ namespace NvxEpi.Entities.Hardware
         public BoolFeedback IsOnline { get; private set; }
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+        public StringFeedback VideoName { get; private set; }
+        public StringFeedback AudioName { get; private set; }
     }
 }

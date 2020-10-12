@@ -6,7 +6,8 @@ namespace NvxEpi.Abstractions.Usb
     public interface IUsbStream : INvx35XHardware
     {
         bool IsRemote { get; }
-        StringFeedback UsbAddress { get; }
+        StringFeedback UsbLocalId { get; }
+        StringFeedback UsbRemoteId { get; }
         int UsbId { get; }
     }
 }

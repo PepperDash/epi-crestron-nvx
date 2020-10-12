@@ -6,6 +6,7 @@ using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Entities.Routing;
 using NvxEpi.Extensions;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams
@@ -33,29 +34,12 @@ namespace NvxEpi.Entities.Streams
 
             CurrentSecondaryAudioStreamName = _stream.IsTransmitter
                 ? new StringFeedback(RouteNameKey, () => String.Empty)
-                : new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
+                : new StringFeedback(RouteNameKey, () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
 
-            Hardware.BaseEvent += (@base, args) => // feedback.FireUpdate();
-            {
-                if (args.EventId != DMInputEventIds.ServerUrlEventId && args.EventId != DMInputEventIds.StartEventId &&
-                    args.EventId != DMInputEventIds.StopEventId && args.EventId != DMInputEventIds.PauseEventId &&
-                    args.EventId != DMInputEventIds.AudioSourceEventId &&
-                    args.EventId != DMInputEventIds.ActiveAudioSourceEventId &&
-                    args.EventId != DMInputEventIds.StatusEventId) return;
-
-                UpdateCurrentAudioRoute();
-            };
-
-            Hardware.SecondaryAudio.SecondaryAudioChange += (@base, args) => //feedback.FireUpdate();
-            {
-                if (args.EventId != DMInputEventIds.MulticastAddressEventId &&
-                    args.EventId != DMInputEventIds.StartEventId && args.EventId != DMInputEventIds.StopEventId &&
-                    args.EventId != DMInputEventIds.PauseEventId && args.EventId != DMInputEventIds.AudioSourceEventId &&
-                    args.EventId != DMInputEventIds.ActiveAudioSourceEventId &&
-                    args.EventId != DMInputEventIds.StatusEventId) return;
-
-                UpdateCurrentAudioRoute();
-            };
+            IsOnline.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
+            IsStreamingSecondaryAudio.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
+            SecondaryAudioStreamStatus.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
+            SecondaryAudioAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
 
             Feedbacks.Add(CurrentSecondaryAudioStreamId);
             Feedbacks.Add(CurrentSecondaryAudioStreamName);
@@ -63,12 +47,12 @@ namespace NvxEpi.Entities.Streams
 
         private void UpdateCurrentAudioRoute()
         {
-            if (!IsOnline.BoolValue)
+            if (!IsOnline.BoolValue || IsTransmitter)
                 return;
 
             try
             {
-                _lock.Enter();    
+                _lock.Enter();   
                 _current = _stream.GetCurrentAudioRoute();
 
                 CurrentSecondaryAudioStreamId.FireUpdate();
@@ -161,6 +145,16 @@ namespace NvxEpi.Entities.Streams
         public FeedbackCollection<Feedback> Feedbacks
         {
             get { return _stream.Feedbacks; }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _stream.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _stream.AudioName; }
         }
     }
 }

@@ -17,9 +17,9 @@ namespace NvxEpi.Entities.Streams
             try
             {
                 if (props == null)
-                    return new UsbLocalStream(device, new NvxUsbProperties() { UsbId = 0, UsbMode = String.Empty });
+                    return new UsbLocalStream(device, new NvxUsbProperties() { UsbId = 0, Mode = String.Empty });
  
-                var mode = (DmNvxUsbInput.eUsbMode) Enum.Parse(typeof (DmNvxUsbInput.eUsbMode), props.UsbMode, true);
+                var mode = (DmNvxUsbInput.eUsbMode) Enum.Parse(typeof (DmNvxUsbInput.eUsbMode), props.Mode, true);
 
                 switch (mode)
                 {
@@ -45,7 +45,15 @@ namespace NvxEpi.Entities.Streams
             _device = device;
             UsbId = props.UsbId;
 
-            device.Feedbacks.Add(UsbModeFeedback.GetFeedback(Hardware));
+            UsbLocalId = UsbLocalAddressFeedback.GetFeedback(Hardware);
+            UsbRemoteId = UsbRemoteAddressFeedback.GetFeedback(Hardware);
+
+            device.Feedbacks.AddRange(new Feedback[]
+            {
+                UsbModeFeedback.GetFeedback(Hardware),
+                UsbLocalId,
+                UsbRemoteId
+            });
 
             Hardware.OnlineStatusChange += (currentDevice, args) =>
             {
@@ -122,47 +130,26 @@ namespace NvxEpi.Entities.Streams
         }
 
         public abstract bool IsRemote { get; }
-
-        public abstract StringFeedback UsbAddress { get; }
+        public StringFeedback UsbLocalId { get; private set; }
+        public StringFeedback UsbRemoteId { get; private set; }
         public int UsbId { get; private set; }
 
         class UsbLocalStream : UsbStream
         {
-            private readonly StringFeedback _usbAddress;
-
             public UsbLocalStream(INvx35XHardware device, NvxUsbProperties props)
                 : base(device, props)
             {
-                _usbAddress = UsbLocalAddressFeedback.GetFeedback(Hardware);
-                device.Feedbacks.Add(UsbAddress);
-
                 Hardware.OnlineStatusChange +=
-                    (currentDevice, args) => Hardware.UsbInput.Mode = DmNvxUsbInput.eUsbMode.Local;
-            }
+                    (currentDevice, args) =>
+                    {
+                        if (!args.DeviceOnLine)
+                            return;
 
-            public override bool IsRemote
-            {
-                get { return true; }
-            }
+                        Hardware.UsbInput.Mode = DmNvxUsbInput.eUsbMode.Local;
 
-            public override sealed StringFeedback UsbAddress
-            {
-                get { return _usbAddress; }
-            }
-        }
-
-        class UsbRemoteStream : UsbStream
-        {
-            private readonly StringFeedback _usbAddress;
-
-            public UsbRemoteStream(INvx35XHardware device, NvxUsbProperties props)
-                : base(device, props)
-            {
-                _usbAddress = UsbRemoteAddressFeedback.GetFeedback(Hardware);
-                device.Feedbacks.Add(UsbAddress);
-
-                Hardware.OnlineStatusChange +=
-                    (currentDevice, args) => Hardware.UsbInput.Mode = DmNvxUsbInput.eUsbMode.Remote;
+                        if (!String.IsNullOrEmpty(props.Default))
+                            PairUsb(props.Default);
+                    }; 
             }
 
             public override bool IsRemote
@@ -170,10 +157,58 @@ namespace NvxEpi.Entities.Streams
                 get { return false; }
             }
 
-            public override sealed StringFeedback UsbAddress
+            private void PairUsb(IUsbStream remote)
             {
-                get { return _usbAddress; }
+                if (!remote.IsRemote)
+                    throw new ArgumentException("remote");
+
+                Debug.Console(1, this, "Pairing usb to : {0}", remote.Key);
+                remote.UsbRemoteId.FireUpdate();
+                UsbLocalId.FireUpdate();
+                Hardware.UsbInput.RemoteDeviceId.StringValue = remote.UsbLocalId.StringValue;
+                remote.Hardware.UsbInput.RemoteDeviceId.StringValue = UsbLocalId.StringValue;
             }
+
+            private void PairUsb(string remote)
+            {
+                var remoteDevice = DeviceManager.GetDeviceForKey(remote) as IUsbStream;
+
+                if (remoteDevice == null || !remoteDevice.IsRemote)
+                    return;
+
+                PairUsb(remoteDevice);
+            }
+        }
+
+        class UsbRemoteStream : UsbStream
+        {
+            public UsbRemoteStream(INvx35XHardware device, NvxUsbProperties props)
+                : base(device, props)
+            {
+                Hardware.OnlineStatusChange +=
+                    (currentDevice, args) =>
+                    {
+                        if (!args.DeviceOnLine)
+                            return;
+
+                        Hardware.UsbInput.Mode = DmNvxUsbInput.eUsbMode.Remote;
+                    };
+            }
+
+            public override bool IsRemote
+            {
+                get { return true; }
+            }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _device.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _device.AudioName; }
         }
     }
 }

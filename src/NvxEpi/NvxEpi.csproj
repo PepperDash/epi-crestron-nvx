@@ -124,6 +124,7 @@
     <Compile Include="Entities\Streams\UsbStream.cs" />
     <Compile Include="Entities\Streams\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
+    <Compile Include="Extensions\UsbStreamExtensions.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Services\Feedback\UsbModeFeedback.cs" />
     <Compile Include="Services\Feedback\UsbRemoteAddressFeedback.cs" />

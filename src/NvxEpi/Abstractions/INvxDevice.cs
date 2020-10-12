@@ -7,6 +7,7 @@ namespace NvxEpi.Abstractions
     public interface INvxDevice : IRoutingInputsOutputs, INvxHardware, IMulticastAddress, 
         IHasFeedback, IOnline
     {
-          
+        StringFeedback VideoName { get; }
+        StringFeedback AudioName { get; }
     }
 }

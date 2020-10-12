@@ -14,8 +14,8 @@ namespace NvxEpi.Entities.Routing
         public const string RouteOff = "$off";
         public const string NoSourceText = "No Source";
 
-        public PrimaryStreamRouter PrimaryStreamRouter { get; private set; }
-        public SecondaryAudioRouter SecondaryAudioRouter { get; private set; }
+        public IRouting PrimaryStreamRouter { get; private set; }
+        public IRouting SecondaryAudioRouter { get; private set; }
 
         private NvxGlobalRouter()
             : base(InstanceKey)

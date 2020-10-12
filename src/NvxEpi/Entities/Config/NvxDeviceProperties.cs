@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -11,34 +12,20 @@ namespace NvxEpi.Entities.Config
             return JsonConvert.DeserializeObject<NvxDeviceProperties>(config.Properties.ToString());
         }
 
-        [JsonProperty("deviceId")]
         public int DeviceId { get; set; }
-
-        [JsonProperty("control")]
         public ControlPropertiesConfig Control { get; set; }
-
-        [JsonProperty("usb")]
         public NvxUsbProperties Usb { get; set; }
-
-        [JsonProperty("mode")]
         public string Mode { get; set; }
-
-        [JsonProperty("multicastVideoAddress")]
         public string MulticastVideoAddress { get; set; }
-
-        [JsonProperty("multicastAudioAddress")]
-        public string MulticastAudioAddress { get; set; }
-
-        [JsonProperty("defaultVideoSource")]
-        public string DefaultVideoSource { get; set; }
-
-        [JsonProperty("defaultAudioSource")]
-        public string DefaultAudioSource { get; set; }   
+        public string MulticastAudioAddress { get; set; } 
+        public string VideoSourceName { get; set; }
+        public string AudioSourceName { get; set; }
     }
 
     public class NvxUsbProperties
     {
-        public string UsbMode { get; set; }
+        public string Mode { get; set; }
         public int UsbId { get; set; }
+        public string Default { get; set; }
     }
 }

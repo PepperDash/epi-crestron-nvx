@@ -91,5 +91,15 @@ namespace NvxEpi.Entities.Routing
         {
             get { return _device.IsOnline; }
         }
+
+        public StringFeedback VideoName
+        {
+            get { return _device.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _device.AudioName; }
+        }
     }
 }

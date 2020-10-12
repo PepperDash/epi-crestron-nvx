@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.SecondaryAudio;
-using NvxEpi.Abstractions.Stream;
-using NvxEpi.Entities.Routing;
 using NvxEpi.Enums;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Essentials;
@@ -15,53 +10,31 @@ namespace NvxEpi.Application.Services
 {
     public class ApplicationTieLineConnector
     {
-        public static void AddTieLinesForSources(ReadOnlyDictionary<int, DummyRoutingInputsDevice> sources, 
-            ReadOnlyDictionary<int, INvxDevice> trasnmitters)
+        public static void AddTieLineForDummySource(DummyRoutingInputsDevice source, INvxDevice tx)
         {
-            foreach (var source in sources)
-            {
-                INvxDevice tx;
-                if (!trasnmitters.TryGetValue(source.Key, out tx)) continue;
+            var inputPort = tx.InputPorts[DeviceInputEnum.Hdmi1.Name];
+            if (inputPort == null)
+                throw new ArgumentNullException("inputPort");
 
-                var inputPort = tx.InputPorts[DeviceInputEnum.Hdmi1.Name];
-                if (inputPort == null)
-                    throw new ArgumentNullException("inputPort");
-
-                TieLineCollection.Default.Add(new TieLine(source.Value.AudioVideoOutputPort, inputPort,
-                    eRoutingSignalType.AudioVideo));
-            }
+            TieLineCollection.Default.Add(new TieLine(source.AudioVideoOutputPort, inputPort, eRoutingSignalType.AudioVideo));
         }
 
-        public static void AddTieLinesForAudioDestinations(ReadOnlyDictionary<int, Amplifier> audioDestinations,
-            ReadOnlyDictionary<int, INvxDevice> receivers)
+        public static void AddTieLineForAmp(Amplifier amp, INvxDevice rx)
         {
-            foreach (var dest in audioDestinations)
-            {
-                INvxDevice rx;
-                if (!receivers.TryGetValue(dest.Key, out rx)) continue;
+            var outputPort = rx.OutputPorts[AnalogAudioOutput.Key];
+            if (outputPort == null)
+                return;
 
-                var outputPort = rx.OutputPorts[AnalogAudioOutput.Key];
-                if (outputPort == null)
-                    continue;
-
-                TieLineCollection.Default.Add(new TieLine(outputPort, dest.Value.AudioIn, eRoutingSignalType.Audio));
-            }
+            TieLineCollection.Default.Add(new TieLine(outputPort, amp.AudioIn, eRoutingSignalType.Audio));
         }
 
-        public static void AddTieLinesForVideoDestinations(ReadOnlyDictionary<int, MockDisplay> videoDestinations,
-            ReadOnlyDictionary<int, INvxDevice> receivers)
+        public static void AddTieLineForMockDisplay(MockDisplay dest, INvxDevice rx)
         {
-            foreach (var dest in videoDestinations)
-            {
-                INvxDevice rx;
-                if (!receivers.TryGetValue(dest.Key, out rx)) continue;
+            var outputPort = rx.OutputPorts[HdmiOutput.Key];
+            if (outputPort == null)
+                throw new ArgumentNullException("outputPort");
 
-                var outputPort = rx.OutputPorts[HdmiOutput.Key];
-                if (outputPort == null)
-                    throw new ArgumentNullException("outputPort");
-
-                TieLineCollection.Default.Add(new TieLine(outputPort, dest.Value.HdmiIn1, eRoutingSignalType.AudioVideo));
-            }
+            TieLineCollection.Default.Add(new TieLine(outputPort, dest.HdmiIn1, eRoutingSignalType.AudioVideo));
         }
     }
 }
