@@ -7,11 +7,10 @@ using NvxEpi.Aggregates;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace NvxEpi.Device.Factories
+namespace NvxEpi.Factories
 {
     public class Nvx35XDeviceFactory : NvxBaseDeviceFactory<Nvx35X>
     {
-        private const string _minumumEssentialsVersion = "1.6.4";
         private static readonly List<string> _typeNames;
 
         static Nvx35XDeviceFactory()
@@ -21,13 +20,14 @@ namespace NvxEpi.Device.Factories
                 .Assembly
                 .GetTypes()
                 .Where(x => x.IsSubclassOf(typeof (DmNvx35x).GetCType()))
+                .Where(x => !x.IsAbstract)
                 .Select(x => x.Name)
                 .ToList();
         }
 
         public Nvx35XDeviceFactory()
         {
-            MinimumEssentialsFrameworkVersion = _minumumEssentialsVersion;
+            MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
             TypeNames = _typeNames.ToList();
         }
 
