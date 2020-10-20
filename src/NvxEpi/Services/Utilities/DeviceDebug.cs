@@ -16,12 +16,6 @@ namespace NvxEpi.Services.Utilities
                 device.Hardware.BaseEvent += (sender, args) =>
                     Debug.Console(2, device, "Received Base Event:{0}", args.EventId);
 
-                device.Hardware.SourceReceive.StreamChange += (stream, args) =>
-                    Debug.Console(2, device, "Received Source Receive Event:{0}", args.EventId);
-
-                device.Hardware.SourceTransmit.StreamChange += (stream, args) =>
-                    Debug.Console(2, device, "Received Source Transmiter Event:{0}", args.EventId);
-
                 RegisterForHdmiInputFeedback(device.Hardware, device);
                 RegisterForHdmiOutputFeedback(device.Hardware, device);
                 RegisterForSecondaryAudioFeedback(device.Hardware, device);
