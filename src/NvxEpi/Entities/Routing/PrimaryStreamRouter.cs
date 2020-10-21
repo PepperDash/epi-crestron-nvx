@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
@@ -16,20 +16,10 @@ namespace NvxEpi.Entities.Routing
 {
     public class PrimaryStreamRouter : EssentialsDevice, IRouting
     {
-        public RoutingInputPort Off
-        {
-            get
-            {
-                return new RoutingInputPort("$Off", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Streaming, null, this);
-            }
-        }
-
         public PrimaryStreamRouter(string key) : base(key)
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
-            InputPorts.Add(Off);
 
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
@@ -89,17 +79,29 @@ namespace NvxEpi.Entities.Routing
         {
             try
             {
-                Debug.Console(1, this, "Executing route : '{0}'", signalType.ToString());
                 if (signalType.Is(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include video");
 
                 var rx = outputSelector as IStream;
-                if (rx != null)
-                    rx.RouteStream(inputSelector as IStream);
+                if (rx == null)
+                    throw new ArgumentNullException("rx");
 
-                if (!signalType.Has(eRoutingSignalType.Audio)) return;
-                if (rx != null) 
-                    rx.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.PrimaryStreamAudio;
+                var tx = inputSelector as IStream;
+                if (tx == null)
+                {
+                    rx.ClearStream();
+                    return;
+                }
+                    
+                rx.RouteStream(tx);
+                if (!signalType.Has(eRoutingSignalType.Audio)) 
+                    return;
+
+                var audioInputSwitcher = rx as ICurrentAudioInput;
+                if (audioInputSwitcher == null)
+                    return;
+
+                audioInputSwitcher.SetAudioToPrimaryStreamAudio();
             }
             catch (Exception ex)
             {
@@ -109,14 +111,16 @@ namespace NvxEpi.Entities.Routing
 
         public override bool CustomActivate()
         {
-            foreach (var routingInputPort in InputPorts)
-            {
-                Debug.Console(1, this, "Routing Input Port : {0}", routingInputPort.Key);
-            }
-
             foreach (var routingOutputPort in OutputPorts)
             {
-                Debug.Console(1, this, "Routing Output Port : {0}", routingOutputPort.Key);
+                var port = routingOutputPort;
+                port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
+                {
+                    if (args.BoolValue)
+                        return;
+
+                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
+                };
             }
 
             CheckDictionaries();
@@ -195,8 +199,8 @@ namespace NvxEpi.Entities.Routing
         }
 
         private static readonly CCriticalSection _lock = new CCriticalSection();
-        private static Dictionary<string, IStream> _receivers = new Dictionary<string, IStream>();
-        private static Dictionary<string, IStream> _transmitters = new Dictionary<string, IStream>();
+        private static Dictionary<string, IStream> _receivers;
+        private static Dictionary<string, IStream> _transmitters;
 
         private static void CheckDictionaries()
         {

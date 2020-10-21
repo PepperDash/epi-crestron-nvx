@@ -8,10 +8,11 @@ using NvxEpi.Entities.Routing;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace NvxEpi.Device.Factories
+namespace NvxEpi.Factories
 {
     public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T> where T : EssentialsDevice
     {
+        public const string MinumumEssentialsVersion = "1.6.4";
         static NvxBaseDeviceFactory()
         {
             if (DeviceManager.GetDeviceForKey(NvxGlobalRouter.InstanceKey) == null)

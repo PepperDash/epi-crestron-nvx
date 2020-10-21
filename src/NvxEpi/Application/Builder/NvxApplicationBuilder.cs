@@ -10,7 +10,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Application.Builder
 {
-    public class DynNvxDeviceBuilder : IDynNvxBuilder
+    public class NvxApplicationApplicationBuilder : INvxApplicationBuilder
     {
         public string Key { get; private set; }
         public Dictionary<int, string> Transmitters { get; private set; }
@@ -18,13 +18,13 @@ namespace NvxEpi.Application.Builder
 
         public EssentialsDevice Build()
         {
-            return new DynNvx(this);
+            return new NvxApplication(this);
         }
 
-        public DynNvxDeviceBuilder(DeviceConfig config)
+        public NvxApplicationApplicationBuilder(DeviceConfig config)
         {
             Key = config.Key;
-            var props = JsonConvert.DeserializeObject<DynNvxConfig>(config.Properties.ToString());
+            var props = JsonConvert.DeserializeObject<NvxApplicationConfig>(config.Properties.ToString());
 
             Transmitters = props.Transmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
             Receivers = props.Receivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);

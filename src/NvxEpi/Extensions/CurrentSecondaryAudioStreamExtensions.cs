@@ -28,7 +28,7 @@ namespace NvxEpi.Extensions
                 if (device.Hardware.Control.ActiveAudioSourceFeedback != DmNvxControl.eAudioSource.SecondaryStreamAudio)
                     return null;
 
-                var result = DeviceManager
+                return DeviceManager
                     .AllDevices
                     .OfType<ISecondaryAudioStream>()
                     .Where(t => t.IsTransmitter && t.IsStreamingSecondaryAudio.BoolValue)
@@ -37,8 +37,6 @@ namespace NvxEpi.Extensions
                             x.SecondaryAudioAddress.StringValue.Equals(
                                 device.Hardware.SecondaryAudio.MulticastAddressFeedback.StringValue,
                                 StringComparison.OrdinalIgnoreCase));
-
-                return result;
             }
             catch (Exception ex)
             {

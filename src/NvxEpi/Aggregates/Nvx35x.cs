@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -10,15 +11,16 @@ using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hardware;
-using NvxEpi.Entities.Routing;
 using NvxEpi.Entities.Streams;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
@@ -26,13 +28,13 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Aggregates
 {
-    public class Nvx35X : CrestronGenericBridgeableBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, 
+    public class Nvx35X : CrestronGenericBridgeableBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, IUsbStream,
         ICurrentVideoInput, ICurrentAudioInput, ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting
     {
         private readonly Nvx35xHardware _device;
         private readonly ICurrentStream _currentVideoStream;
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
-        private readonly IRouting _router;
+        private readonly IUsbStream _usbStream;
 
         private readonly Dictionary<uint, IntFeedback> _hdcpCapability = 
             new Dictionary<uint, IntFeedback>();
@@ -43,18 +45,16 @@ namespace NvxEpi.Aggregates
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
             : base(config.Key, config.Name, hardware)
         {
-            Hardware = hardware;
-            _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
-
-            _currentVideoStream = new CurrentVideoStream(_device);
-            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(_device);
-            _router = new NvxDeviceRouter(_device);
-
             var props = NvxDeviceProperties.FromDeviceConfig(config);
-            RegisterForOnlineFeedback(hardware, props);
+            Hardware = hardware;
 
-            AddRoutingPorts();
+            _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
+            _currentVideoStream = new CurrentVideoStream(new VideoStream(_device));
+            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(new SecondaryAudioStream(_device));
+
+            RegisterForOnlineFeedback(hardware, props);
             SetupFeedbacks();
+            AddRoutingPorts();
         }
 
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
@@ -70,8 +70,6 @@ namespace NvxEpi.Aggregates
                     Hardware.SetTxDefaults(props);
                 else
                     Hardware.SetRxDefaults(props);
-
-                Hardware.SetDefaultInputs(props);
             };
         }
 
@@ -135,7 +133,19 @@ namespace NvxEpi.Aggregates
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            _router.ExecuteSwitch(inputSelector, outputSelector, signalType);
+            try
+            {
+                var switcher = outputSelector as IHandleInputSwitch;
+                if (switcher == null)
+                    throw new NullReferenceException("input selector");
+
+                Debug.Console(1, this, "Executing switch : '{0}' | '{1}' | '{2}'", inputSelector.ToString(), outputSelector.ToString(), signalType.ToString());
+                switcher.HandleSwitch(inputSelector, signalType);
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
+            }
         }
 
         public IntFeedback DeviceMode
@@ -261,6 +271,41 @@ namespace NvxEpi.Aggregates
         public StringFeedback SecondaryAudioStreamStatus
         {
             get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
+        }
+
+        public bool IsRemote
+        {
+            get { return _usbStream.IsRemote; }
+        }
+
+        public StringFeedback UsbLocalId
+        {
+            get { return _usbStream.UsbLocalId; }
+        }
+
+        public StringFeedback UsbRemoteId
+        {
+            get { return _usbStream.UsbRemoteId; }
+        }
+
+        public int UsbId
+        {
+            get { return _usbStream.UsbId; }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _device.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _device.AudioName; }
+        }
+
+        public override string ToString()
+        {
+            return Key;
         }
     }
 }

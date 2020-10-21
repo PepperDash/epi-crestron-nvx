@@ -5,7 +5,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Application.Router
 {
-    public static class DynRouter
+    /*public static class NvxRouter
     {
         public static TieLineCollection TieLines
         {
@@ -33,6 +33,11 @@ namespace NvxEpi.Application.Router
                         continue;
 
                     sink.ExecuteSwitch(route.InputPort);
+
+                    var power = sink as IPower;
+                    if (power != null)
+                        power.PowerOn();
+
                     continue;
                 }
 
@@ -52,13 +57,8 @@ namespace NvxEpi.Application.Router
                 return;
 
             Debug.Console(1, dest, "Releasing current route: {0}", current.Source.Key);
-            foreach (var route in current.Routes)
-            {
-                if (route.OutputPort == null)
-                    continue;
-
+            foreach (var route in current.Routes.Where(route => route.OutputPort != null))
                 route.OutputPort.InUseTracker.RemoveUser(dest, dest.Key);
-            }
         }
 
         private static RouteDescriptor GetRouteToSource(IRoutingInputs dest, IRoutingOutputs source, eRoutingSignalType signalType)
@@ -71,7 +71,7 @@ namespace NvxEpi.Application.Router
         {
             Debug.Console(1, port.ParentDevice, "Looking for a {0} route to {1} on {2}", signalType.ToString(), source.Key, port.Key);
 
-            var tie = DynRouter.TieLines.FirstOrDefault(t => t.DestinationPort.Key.Equals(port.Key) &&
+            var tie = TieLines.FirstOrDefault(t => t.DestinationPort.Key.Equals(port.Key) &&
                 (t.Type.Has(signalType)));
 
             if (tie == null)
@@ -111,12 +111,13 @@ namespace NvxEpi.Application.Router
 
         private static bool CheckTieLineUtil(IRoutingInputs dest, IRoutingOutputs source, TieLine lastTie, eRoutingSignalType signalType, RouteDescriptor descriptor)
         {
-            foreach (var input in dest.InputPorts)
+            foreach (var item in dest.InputPorts)
             {
-                Debug.Console(1, input.ParentDevice, "Looking for a {0} route to {1} on {2}", signalType.ToString(), source.Key, input.Key);
+                Debug.Console(1, item.ParentDevice, "Looking for a {0} route to {1} on {2}", signalType.ToString(), source.Key, item.Key);
 
-                var tie = DynRouter.TieLines.FirstOrDefault(t => t.DestinationPort.Key.Equals(input.Key) &&
-                    (t.Type == signalType || (t.Type & (eRoutingSignalType.Audio | eRoutingSignalType.Video)) == (eRoutingSignalType.Audio | eRoutingSignalType.Video)));
+                var input = item;
+                var tie = TieLines.FirstOrDefault(t => t.DestinationPort.Key.Equals(input.Key) &&
+                    (t.Type.Has(signalType)));
 
                 if (tie == null)
                 {
@@ -129,15 +130,14 @@ namespace NvxEpi.Application.Router
                 if (sourceDevice.Key.Equals(source.Key))
                 {
                     Debug.Console(1, input.ParentDevice, "Found the source! Rolling back up...");
-                    
-                    if (device != null)
-                    {
-                        Debug.Console(1, input.ParentDevice, "Adding route {0}|{1} : {2}|{3}",
+                    if (device == null) 
+                        return true;
+
+                    Debug.Console(1, input.ParentDevice, "Adding route {0}|{1} : {2}|{3}",
                         tie.DestinationPort.ParentDevice.Key, tie.DestinationPort.Key,
                         lastTie.SourcePort.ParentDevice.Key, lastTie.SourcePort.Key);
 
-                        descriptor.Routes.Add(new RouteSwitchDescriptor(lastTie.SourcePort, tie.DestinationPort));
-                    }
+                    descriptor.Routes.Add(new RouteSwitchDescriptor(lastTie.SourcePort, tie.DestinationPort));
 
                     return true;
                 }
@@ -149,26 +149,25 @@ namespace NvxEpi.Application.Router
                     continue;
                 }
 
-                if (CheckTieLineUtil(nextDestToCheck, source, tie, signalType, descriptor))
-                {
-                    if (device == null)
-                        return false;
+                if (!CheckTieLineUtil(nextDestToCheck, source, tie, signalType, descriptor)) 
+                    continue;
 
-                    var inputTie = tie;
-                    var outputTie = lastTie;
+                if (device == null)
+                    return false;
 
-                    Debug.Console(1, device, "Got it! adding route {0}|{1} : {2}|{3}",
+                var inputTie = tie;
+                var outputTie = lastTie;
+
+                Debug.Console(1, device, "Got it! adding route {0}|{1} : {2}|{3}",
                     inputTie.DestinationPort.ParentDevice.Key, inputTie.DestinationPort.Key,
                     outputTie.SourcePort.ParentDevice.Key, outputTie.SourcePort.Key);
-                    if (device != null)
-                        descriptor.Routes.Add(new RouteSwitchDescriptor(lastTie.SourcePort, tie.DestinationPort));
 
-                    return true;
-                }
+                descriptor.Routes.Add(new RouteSwitchDescriptor(lastTie.SourcePort, tie.DestinationPort));
+                return true;
             }
 
             Debug.Console(1, dest, "No route to source found!");
             return false;
         }
-    }
+    }*/
 }

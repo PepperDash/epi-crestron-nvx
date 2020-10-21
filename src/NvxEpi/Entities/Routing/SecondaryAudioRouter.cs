@@ -15,20 +15,10 @@ namespace NvxEpi.Entities.Routing
 {
     public class SecondaryAudioRouter : EssentialsDevice, IRouting
     {
-        public RoutingInputPort Off
-        {
-            get
-            {
-                return new RoutingInputPort("$Off", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, null, this);
-            }
-        }
-
         public SecondaryAudioRouter(string key) : base(key)
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
-            InputPorts.Add(Off);
 
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
@@ -83,14 +73,16 @@ namespace NvxEpi.Entities.Routing
 
         public override bool CustomActivate()
         {
-            foreach (var routingInputPort in InputPorts)
-            {
-                Debug.Console(1, this, "Routing Input Port : {0}", routingInputPort.Key);
-            }
-
             foreach (var routingOutputPort in OutputPorts)
             {
-                Debug.Console(1, this, "Routing Output Port : {0}", routingOutputPort.Key);
+                var port = routingOutputPort;
+                port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
+                {
+                    if (args.BoolValue)
+                        return;
+
+                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.Audio);
+                };
             }
 
             CheckDictionaries();
@@ -201,11 +193,8 @@ namespace NvxEpi.Entities.Routing
         }
 
         private static readonly CCriticalSection _lock = new CCriticalSection();
-        private static Dictionary<string, ISecondaryAudioStream> _transmitters
-            = new Dictionary<string, ISecondaryAudioStream>();
-
-        private static Dictionary<string, ISecondaryAudioStream> _receivers
-            = new Dictionary<string, ISecondaryAudioStream>();
+        private static Dictionary<string, ISecondaryAudioStream> _transmitters;
+        private static Dictionary<string, ISecondaryAudioStream> _receivers;
 
         private static void CheckDictionaries()
         {

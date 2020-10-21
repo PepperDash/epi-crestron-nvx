@@ -28,7 +28,7 @@ namespace NvxEpi.Services.InputSwitching
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
 
-            Debug.Console(1, _device, "Switching input on StreamOutput: '{0}'", routingInput.Name);
+            Debug.Console(1, _device, "Switching input on Stream Output: '{0}' : '{1}'", routingInput.Name, type.ToString());
 
             if (type.Is(eRoutingSignalType.AudioVideo))
             {
@@ -73,6 +73,11 @@ namespace NvxEpi.Services.InputSwitching
                 deviceWithAudioSwitching.SetAudioToHdmiInput2();
             else
                 throw new NotSupportedException(input.Name);
+        }
+
+        public override string ToString()
+        {
+            return _device.Key + "-" + Key;
         }
 
         public static void AddRoutingPort(ICurrentVideoInput parent)

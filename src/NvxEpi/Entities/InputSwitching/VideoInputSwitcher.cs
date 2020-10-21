@@ -21,8 +21,8 @@ namespace NvxEpi.Entities.InputSwitching
             CurrentVideoInput = VideoInputFeedback.GetFeedback(Hardware);
             CurrentVideoInputValue = VideoInputValueFeedback.GetFeedback(Hardware);
 
-            _device.Feedbacks.Add(CurrentVideoInput);
-            _device.Feedbacks.Add(CurrentVideoInputValue);
+            Feedbacks.Add(CurrentVideoInput);
+            Feedbacks.Add(CurrentVideoInputValue);
         }
 
         public string Key
@@ -86,6 +86,16 @@ namespace NvxEpi.Entities.InputSwitching
         public BoolFeedback IsOnline
         {
             get { return _device.IsOnline; }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _device.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _device.AudioName; }
         }
     }
 }
