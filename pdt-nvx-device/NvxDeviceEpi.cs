@@ -177,7 +177,7 @@ namespace NvxEpi
         {
             get 
             {
-                var result = eDeviceMode.Receiver;
+                eDeviceMode result;
                 if (_device is DmNvxE3x)
                 {
                     result = eDeviceMode.Transmitter;
@@ -187,7 +187,7 @@ namespace NvxEpi
                     result = _device.Control.DeviceMode;
                 }
                 Debug.Console(2, this, "Device Mode = {0}", _device.Control.DeviceMode);
-                return (int)_device.Control.DeviceMode; 
+                return (int)result; 
             }
         }
 
@@ -321,7 +321,13 @@ namespace NvxEpi
             { 
                 return _device.Control.ServerUrlFeedback.StringValue; 
             }
-            set { _device.Control.ServerUrl.StringValue = value; }
+            set
+            {
+                if (IsTransmitter)
+                    return;
+
+                _device.Control.ServerUrl.StringValue = value;
+            }
         }
 
         public Feedback MulticastVideoAddressFb { get; protected set; }
@@ -423,6 +429,9 @@ namespace NvxEpi
 
         public override bool CustomActivate()
         {
+            if (_device.SecondaryAudio == null)
+                Debug.Console(0, this, "This version of the plugin won't work with this version of Essentials!!!");
+
             DeviceNameFb = FeedbackFactory.GetFeedback(() => (String.IsNullOrEmpty(_propsConfig.FriendlyName)) ? DeviceName : _propsConfig.FriendlyName);
             DeviceModeFb = FeedbackFactory.GetFeedback(() => DeviceMode);
             StreamStartedFb = FeedbackFactory.GetFeedback(() => StreamStarted);
