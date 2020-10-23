@@ -20,7 +20,6 @@ namespace NvxEpi.Interfaces
         Feedback IsOnlineFb { get; }
 
         bool IsTransmitter { get; }
-        bool IsReceiver { get; }
         int AudioInputSource { get; set; }
         int AudioSource { get; set; }
         int DeviceMode { get; }

@@ -25,11 +25,6 @@ namespace NvxEpi.DeviceHelpers
             _key = string.Format("{0} {1}", key, this.GetType().GetCType().Name);
             Feedback = FeedbackFactory.GetFeedback(() => Source);
 
-            if (_device.Control.DeviceMode == eDeviceMode.Receiver)
-            {
-                _device.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
-            }
-
             _device.BaseEvent += (sender, args) =>
                 {
                     switch (args.EventId)

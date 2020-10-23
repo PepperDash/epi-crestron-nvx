@@ -86,6 +86,7 @@ namespace NvxEpi
             trilist.SetUShortSigAction(joinMap.AudioInputSource, input => device.AudioInputSource = input);
             trilist.SetUShortSigAction(joinMap.Hdmi01HdcpCapability, hdcp => device.HdmiInput1HdmiCapability = hdcp);
             trilist.SetUShortSigAction(joinMap.Hdmi02HdcpCapability, hdcp => device.HdmiInput2HdmiCapability = hdcp);
+            trilist.SetStringSigAction(joinMap.StreamUrl, s => device.StreamUrl = s);
         }
     }
 

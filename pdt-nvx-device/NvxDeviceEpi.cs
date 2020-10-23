@@ -27,10 +27,7 @@ namespace NvxEpi
 
         public static readonly string DefaultRouterKey = "Default";
 
-        public string ParentRouterKey
-        {
-            get { return _propsConfig.ParentDeviceKey ?? DefaultRouterKey; }
-        }
+        public string ParentRouterKey { get; private set; }
 
         protected DmNvxBaseClass _device;
         protected NvxDevicePropertiesConfig _propsConfig;
@@ -55,7 +52,7 @@ namespace NvxEpi
         }
         public IEnumerable<INvxDevice> Receivers
         {
-            get { return _devices.Where(x => x.IsReceiver); }
+            get { return _devices.Where(x => !x.IsTransmitter); }
         }
 
         public int VirtualDevice { get; protected set; }
@@ -66,14 +63,6 @@ namespace NvxEpi
             get 
             {
                 return _isTransmitter;
-            }
-        }
-    
-        public bool IsReceiver
-        {
-            get 
-            {
-                return !_isTransmitter;
             }
         }
 
@@ -189,7 +178,7 @@ namespace NvxEpi
             get 
             {
                 var result = eDeviceMode.Receiver;
-                if (_device.GetType().GetCType() == typeof(DmNvxE30).GetCType())
+                if (_device is DmNvxE3x)
                 {
                     result = eDeviceMode.Transmitter;
                 }
@@ -332,6 +321,7 @@ namespace NvxEpi
             { 
                 return _device.Control.ServerUrlFeedback.StringValue; 
             }
+            set { _device.Control.ServerUrl.StringValue = value; }
         }
 
         public Feedback MulticastVideoAddressFb { get; protected set; }
@@ -384,6 +374,7 @@ namespace NvxEpi
             _propsConfig = config;
 
             VirtualDevice = config.VirtualDevice;
+            ParentRouterKey = config.ParentDeviceKey ?? DefaultRouterKey;
 
             _videoSwitcher = videoSwitcher;
             _audioSwitcher = audioSwitcher;
@@ -415,15 +406,17 @@ namespace NvxEpi
                 {
                     _devices = DeviceManager
                         .AllDevices
-                        .Where(x => x.GetType().GetCType().IsAssignableFrom(typeof(INvxDevice).GetCType()))
-                        .Cast<INvxDevice>()
-                        .Where(x => x.ParentRouterKey.Equals(ParentRouterKey, StringComparison.OrdinalIgnoreCase));
+                        .OfType<INvxDevice>()
+                        .Where(x => x.ParentRouterKey.Equals(ParentRouterKey, StringComparison.OrdinalIgnoreCase))
+                        .Where(x => !x.Key.Equals(Key));
 
                     _videoSwitcher.SetInputs(Transmitters);
                     _audioSwitcher.SetInputs(Transmitters);
                     _videoInputSwitcher.SetInputs(Transmitters);
                     _audioInputSwitcher.SetInputs(Transmitters);
                 });
+
+            AddPostActivationAction(() => _devices.ToList().ForEach(dev => Debug.Console(1, this, "Found device : {0} | IsTransmitter:{1}", dev.Key, dev.IsTransmitter)));
 
             AddPostActivationAction(SetupRoutingPorts);
         }
@@ -547,18 +540,7 @@ namespace NvxEpi
             var mode = _propsConfig.Mode;
             var audioBreakaway = _propsConfig.EnableAudioBreakaway;
 
-            if (mode.Equals("rx", StringComparison.InvariantCultureIgnoreCase))
-            {
-                _device.Control.DeviceMode = eDeviceMode.Receiver;
-                _device.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
-
-                if (audioBreakaway) _device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
-                
-                _videoInputSwitcher.Source = 3;
-                _audioInputSwitcher.Source = 5;
-            }
-
-            if (mode.Equals("tx", StringComparison.InvariantCultureIgnoreCase))
+            if (mode.Equals("tx", StringComparison.OrdinalIgnoreCase))
             {
                 _isTransmitter = true;
                 _device.Control.DeviceMode = eDeviceMode.Transmitter;               
@@ -573,6 +555,18 @@ namespace NvxEpi
                 if (!String.IsNullOrEmpty(_propsConfig.MulticastAudioAddress))
                 {
                     _device.SecondaryAudio.MulticastAddress.StringValue = _propsConfig.MulticastAudioAddress;
+                }
+            }
+            else
+            {
+                _device.Control.DeviceMode = eDeviceMode.Receiver;
+                _device.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+                _device.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+
+                if (audioBreakaway)
+                {
+                    _device.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
+                    _device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
                 }
             }
     
