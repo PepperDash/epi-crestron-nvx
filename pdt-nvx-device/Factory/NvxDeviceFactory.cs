@@ -52,16 +52,16 @@ namespace NvxEpi.Factory
 
             var inputs = new List<INvxHdmiInputHelper>();
 
+            if (device.HdmiIn == null)
+                return new NvxDeviceEpi(_config.Key, _config.Name, device, props, videoSwitcher,
+                    audioSwitcher, videoInputSwitcher, audioInputSwitcher, videoWallHelper, inputs);
 
-            if (device.HdmiIn != null)
+            for (uint x = 1; x <= device.HdmiIn.Count; x++)
             {
-                for (uint x = 1; x <= device.HdmiIn.Count; x++)
-                {
-                    if (device.HdmiIn[x] == null)
-                        continue;
+                if (device.HdmiIn[x] == null)
+                    continue;
 
-                    inputs.Add(new NvxHdmiInputHelper(_config.Key + "-HdmiIn-" + x, device.HdmiIn[x], device));
-                }
+                inputs.Add(new NvxHdmiInputHelper(_config.Key + "-HdmiIn-" + x, device.HdmiIn[x], device));
             }
 
             return new NvxDeviceEpi(_config.Key, _config.Name, device, props, videoSwitcher,

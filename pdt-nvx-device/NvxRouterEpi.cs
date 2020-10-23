@@ -145,8 +145,7 @@ namespace NvxEpi
                 {
                     _transmitters = DeviceManager
                         .AllDevices
-                        .Where(x => x as INvxDevice != null)
-                        .Cast<INvxDevice>()
+                        .OfType<INvxDevice>()
                         .Where(x => (x.ParentRouterKey.Equals(Key, StringComparison.OrdinalIgnoreCase) 
                             || x.ParentRouterKey.Equals(NvxDeviceEpi.DefaultRouterKey)) 
                             && x.IsTransmitter)
@@ -154,11 +153,10 @@ namespace NvxEpi
 
                     _receivers = DeviceManager
                         .AllDevices
-                        .Where(x => x as INvxDevice != null)
-                        .Cast<INvxDevice>()
+                        .OfType<INvxDevice>()
                         .Where(x => (x.ParentRouterKey.Equals(Key, StringComparison.OrdinalIgnoreCase)
                             || x.ParentRouterKey.Equals(NvxDeviceEpi.DefaultRouterKey))
-                            && x.IsReceiver)
+                            && !x.IsTransmitter)
                         .ToDictionary(x => x.VirtualDevice);
                 });
 
