@@ -1,24 +1,23 @@
 ﻿using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Hardware;
-using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.NaxAudio;
 using NvxEpi.Entities.Routing;
 using NvxEpi.Extensions;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams
 {
-    public class CurrentSecondaryAudioStream : ICurrentSecondaryAudioStream
+    public class CurrentNaxAudioStream : ICurrentNaxAudioStream
     {
         private readonly CCriticalSection _lock = new CCriticalSection();
-        private readonly ISecondaryAudioStream _stream;
-        private ISecondaryAudioStream _current;
+        private readonly INaxAudioStream _stream;
+        private INaxAudioTx _current;
 
-        public const string RouteNameKey = "CurrentSecondaryAudioRoute";
-        public const string RouteValueKey = "CurrentSecondaryAudioRouteValue";
+        public const string RouteNameKey = "CurrentNaxAudioRoute";
+        public const string RouteValueKey = "CurrentNaxAudioRouteValue";
 
-        public CurrentSecondaryAudioStream(ISecondaryAudioStream stream)
+        public CurrentNaxAudioStream(INaxAudioStream stream)
         {
             _stream = stream;
             Initialize();
@@ -26,21 +25,20 @@ namespace NvxEpi.Entities.Streams
 
         private void Initialize()
         {
-            CurrentSecondaryAudioStreamId = _stream.IsTransmitter
+            CurrentNaxAudioStreamId = _stream.IsTransmitter
                 ? new IntFeedback(RouteValueKey, () => default(int))
                 : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default(int));
 
-            CurrentSecondaryAudioStreamName = _stream.IsTransmitter
+            CurrentNaxAudioStreamName = _stream.IsTransmitter
                 ? new StringFeedback(RouteNameKey, () => String.Empty)
                 : new StringFeedback(RouteNameKey, () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
 
             IsOnline.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
-            IsStreamingSecondaryAudio.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
-            SecondaryAudioStreamStatus.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
-            SecondaryAudioAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
+            IsStreamingNaxRx.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
+            NaxAudioRxAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
 
-            Feedbacks.Add(CurrentSecondaryAudioStreamId);
-            Feedbacks.Add(CurrentSecondaryAudioStreamName);
+            Feedbacks.Add(CurrentNaxAudioStreamId);
+            Feedbacks.Add(CurrentNaxAudioStreamName);
         }
 
         private void UpdateCurrentAudioRoute()
@@ -50,17 +48,20 @@ namespace NvxEpi.Entities.Streams
 
             try
             {
-                _lock.Enter();   
+                _lock.Enter();
                 _current = _stream.GetCurrentAudioRoute();
 
-                CurrentSecondaryAudioStreamId.FireUpdate();
-                CurrentSecondaryAudioStreamName.FireUpdate();
+                CurrentNaxAudioStreamId.FireUpdate();
+                CurrentNaxAudioStreamName.FireUpdate();
             }
             finally
             {
                 _lock.Leave();
             }
         }
+
+        public StringFeedback CurrentNaxAudioStreamName { get; private set; }
+        public IntFeedback CurrentNaxAudioStreamId { get; private set; }
 
         public IntFeedback DeviceMode
         {
@@ -87,37 +88,19 @@ namespace NvxEpi.Entities.Streams
             get { return _stream.DeviceId; }
         }
 
-        DmNvxBaseClass INvxHardware.Hardware
+        public DmNvxBaseClass Hardware
         {
             get { return _stream.Hardware; }
         }
 
-        public DmNvx35x Hardware
+        public StringFeedback NaxAudioRxAddress
         {
-            get { return _stream.Hardware; }
+            get { return _stream.NaxAudioRxAddress; }
         }
 
-        public StringFeedback SecondaryAudioAddress
+        public BoolFeedback IsStreamingNaxRx
         {
-            get { return _stream.SecondaryAudioAddress; }
-        }
-
-        public BoolFeedback IsStreamingSecondaryAudio
-        {
-            get { return _stream.IsStreamingSecondaryAudio; }
-        }
-
-        public StringFeedback SecondaryAudioStreamStatus
-        {
-            get { return _stream.SecondaryAudioStreamStatus; }
-        }
-
-        public StringFeedback CurrentSecondaryAudioStreamName { get; private set; }
-        public IntFeedback CurrentSecondaryAudioStreamId { get; private set; }
-
-        public BoolFeedback IsOnline
-        {
-            get { return _stream.IsOnline; }
+            get { return _stream.IsStreamingNaxRx; }
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts
@@ -140,6 +123,11 @@ namespace NvxEpi.Entities.Streams
             get { return _stream.Feedbacks; }
         }
 
+        public BoolFeedback IsOnline
+        {
+            get { return _stream.IsOnline; }
+        }
+
         public StringFeedback VideoName
         {
             get { return _stream.VideoName; }
@@ -148,6 +136,26 @@ namespace NvxEpi.Entities.Streams
         public StringFeedback AudioName
         {
             get { return _stream.AudioName; }
+        }
+
+        public StringFeedback NaxAudioTxAddress
+        {
+            get { return _stream.NaxAudioTxAddress; }
+        }
+
+        public BoolFeedback IsStreamingNaxTx
+        {
+            get { return _stream.IsStreamingNaxTx; }
+        }
+
+        public StringFeedback CurrentNaxInput
+        {
+            get { return _stream.CurrentNaxInput; }
+        }
+
+        public IntFeedback CurrentNaxInputValue
+        {
+            get { return _stream.CurrentNaxInputValue; }
         }
     }
 }

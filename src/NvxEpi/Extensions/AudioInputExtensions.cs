@@ -46,6 +46,12 @@ namespace NvxEpi.Extensions
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Input1;
         }
 
+        public static void SetAudioToDmNaxInput(this ICurrentAudioInput device)
+        {
+            Debug.Console(1, device, "Switching Audio Input to : 'DmNax'");
+            device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
+        }
+
         public static void SetAudioToHdmiInput2(this ICurrentAudioInput device)
         {
             if (!(device.Hardware is DmNvx35x))

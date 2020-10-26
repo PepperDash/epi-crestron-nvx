@@ -1,16 +1,16 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.InputSwitching;
+using NvxEpi.Abstractions.NaxAudio;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Entities.InputSwitching
+namespace NvxEpi.Entities.Streams
 {
-    public class AudioInputSwitcher : ICurrentAudioInput
+    public class NaxTxStream : INaxAudioTx
     {
         private readonly INvxDevice _device;
 
-        public AudioInputSwitcher(INvxDevice device)
+        public NaxTxStream(INvxDevice device)
         {
             _device = device;
             Initialize();
@@ -18,26 +18,23 @@ namespace NvxEpi.Entities.InputSwitching
 
         private void Initialize()
         {
-            CurrentAudioInput = AudioInputFeedback.GetFeedback(Hardware);
-            CurrentAudioInputValue = AudioInputValueFeedback.GetFeedback(Hardware);
+            NaxAudioTxAddress = NaxTxAddressFeedback.GetFeedback(_device.Hardware);
+            IsStreamingNaxTx = IsStreamingNaxTxAudioFeedback.GetFeedback(_device.Hardware);
 
-            _device.Feedbacks.Add(CurrentAudioInput);
-            _device.Feedbacks.Add(CurrentAudioInputValue);
-        }
+            _device.Feedbacks.AddRange(new Feedback[]
+            {
+                NaxTxStatusFeedback.GetFeedback(_device.Hardware),
+                NaxAudioTxAddress,
+                IsStreamingNaxTx
+            });
 
-        public string Key
-        {
-            get { return _device.Key; }
-        }
+            _device.IsOnline.OutputChange += (sender, args) =>
+            {
+                if (!args.BoolValue)
+                    return;
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts
-        {
-            get { return _device.InputPorts; }
-        }
-
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts
-        {
-            get { return _device.OutputPorts; }
+                _device.Hardware.DmNaxRouting.DmNaxTransmit.EnableAutomaticInitiation();
+            };
         }
 
         public IntFeedback DeviceMode
@@ -48,6 +45,11 @@ namespace NvxEpi.Entities.InputSwitching
         public bool IsTransmitter
         {
             get { return _device.IsTransmitter; }
+        }
+
+        public string Key
+        {
+            get { return _device.Key; }
         }
 
         public string Name
@@ -65,13 +67,23 @@ namespace NvxEpi.Entities.InputSwitching
             get { return _device.Hardware; }
         }
 
+        public StringFeedback NaxAudioTxAddress { get; private set; }
+        public BoolFeedback IsStreamingNaxTx { get; private set; }
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts
+        {
+            get { return _device.InputPorts; }
+        }
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { return _device.OutputPorts; }
+        }
+
         public StringFeedback MulticastAddress
         {
             get { return _device.MulticastAddress; }
         }
-
-        public StringFeedback CurrentAudioInput { get; private set; }
-        public IntFeedback CurrentAudioInputValue { get; private set; }
 
         public FeedbackCollection<Feedback> Feedbacks
         {

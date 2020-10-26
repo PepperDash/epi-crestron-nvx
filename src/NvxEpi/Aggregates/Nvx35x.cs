@@ -9,7 +9,7 @@ using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
-using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.NaxAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
@@ -29,17 +29,17 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 namespace NvxEpi.Aggregates
 {
     public class Nvx35X : CrestronGenericBridgeableBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, IUsbStream,
-        ICurrentVideoInput, ICurrentAudioInput, ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting
+        ICurrentVideoInput, ICurrentAudioInput, IHdmiInput, IVideowallMode, IRouting, ICurrentNaxAudioStream
     {
         private readonly Nvx35xHardware _device;
         private readonly ICurrentStream _currentVideoStream;
-        private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
+        private readonly ICurrentNaxAudioStream _currentAudioStream;
         private readonly IUsbStream _usbStream;
 
-        private readonly Dictionary<uint, IntFeedback> _hdcpCapability = 
+        private readonly Dictionary<uint, IntFeedback> _hdcpCapability =
             new Dictionary<uint, IntFeedback>();
 
-        private readonly Dictionary<uint, BoolFeedback> _syncDetected = 
+        private readonly Dictionary<uint, BoolFeedback> _syncDetected =
             new Dictionary<uint, BoolFeedback>();
 
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
@@ -50,7 +50,7 @@ namespace NvxEpi.Aggregates
 
             _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
             _currentVideoStream = new CurrentVideoStream(new VideoStream(_device));
-            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(new SecondaryAudioStream(_device));
+            _currentAudioStream = new CurrentNaxAudioStream(new NaxStream(_device));
 
             RegisterForOnlineFeedback(hardware, props);
             SetupFeedbacks();
@@ -108,28 +108,45 @@ namespace NvxEpi.Aggregates
             HdmiInput1.AddRoutingPort(this);
             HdmiInput2.AddRoutingPort(this);
             HdmiOutput.AddRoutingPort(this);
+            NaxAudioInput.AddRoutingPort(this);
+            NaxAudioOutput.AddRoutingPort(this);
 
             if (IsTransmitter)
             {
                 StreamOutput.AddRoutingPort(this);
-                SecondaryAudioOutput.AddRoutingPort(this);
                 AnalogAudioInput.AddRoutingPort(this);
             }
             else
             {
                 StreamInput.AddRoutingPort(this);
-                SecondaryAudioInput.AddRoutingPort(this);
                 AnalogAudioOutput.AddRoutingPort(this);
             }
         }
 
-        public CrestronCollection<ComPort> ComPorts { get { return Hardware.ComPorts; } }
-        public int NumberOfComPorts { get { return Hardware.NumberOfComPorts; } }
+        public CrestronCollection<ComPort> ComPorts
+        {
+            get { return Hardware.ComPorts; }
+        }
 
-        public CrestronCollection<IROutputPort> IROutputPorts { get { return Hardware.IROutputPorts; } }
-        public int NumberOfIROutputPorts { get { return Hardware.NumberOfIROutputPorts; } }
+        public int NumberOfComPorts
+        {
+            get { return Hardware.NumberOfComPorts; }
+        }
 
-        public Cec StreamCec { get { return Hardware.HdmiOut.StreamCec; } }
+        public CrestronCollection<IROutputPort> IROutputPorts
+        {
+            get { return Hardware.IROutputPorts; }
+        }
+
+        public int NumberOfIROutputPorts
+        {
+            get { return Hardware.NumberOfIROutputPorts; }
+        }
+
+        public Cec StreamCec
+        {
+            get { return Hardware.HdmiOut.StreamCec; }
+        }
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
@@ -139,7 +156,8 @@ namespace NvxEpi.Aggregates
                 if (switcher == null)
                     throw new NullReferenceException("input selector");
 
-                Debug.Console(1, this, "Executing switch : '{0}' | '{1}' | '{2}'", inputSelector.ToString(), outputSelector.ToString(), signalType.ToString());
+                Debug.Console(1, this, "Executing switch : '{0}' | '{1}' | '{2}'", inputSelector.ToString(),
+                    outputSelector.ToString(), signalType.ToString());
                 switcher.HandleSwitch(inputSelector, signalType);
             }
             catch (Exception ex)
@@ -163,11 +181,6 @@ namespace NvxEpi.Aggregates
             get { return _device.DeviceId; }
         }
 
-        public void UpdateDeviceId(uint id)
-        {
-            _device.UpdateDeviceId(id);
-        }
-
         public new DmNvx35x Hardware { get; private set; }
 
         public StringFeedback CurrentStreamName
@@ -178,16 +191,6 @@ namespace NvxEpi.Aggregates
         public IntFeedback CurrentStreamId
         {
             get { return _currentVideoStream.CurrentStreamId; }
-        }
-
-        public StringFeedback CurrentSecondaryAudioStreamName
-        {
-            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName; }
-        }
-
-        public IntFeedback CurrentSecondaryAudioStreamId
-        {
-            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId; }
         }
 
         public StringFeedback MulticastAddress
@@ -230,8 +233,15 @@ namespace NvxEpi.Aggregates
             get { return _device.CurrentAudioInputValue; }
         }
 
-        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability { get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); } }
-        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected { get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); } }
+        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
+        {
+            get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); }
+        }
+
+        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
+        {
+            get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); }
+        }
 
         public BoolFeedback DisabledByHdcp { get; private set; }
         public IntFeedback HorizontalResolution { get; private set; }
@@ -256,21 +266,6 @@ namespace NvxEpi.Aggregates
         {
             var deviceBridge = new NvxDeviceBridge(this);
             deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
-        }
-
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
-        }
-
-        public BoolFeedback IsStreamingSecondaryAudio
-        {
-            get { return _currentSecondaryAudioStream.IsStreamingSecondaryAudio; }
-        }
-
-        public StringFeedback SecondaryAudioStreamStatus
-        {
-            get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
         }
 
         public bool IsRemote
@@ -306,6 +301,46 @@ namespace NvxEpi.Aggregates
         public override string ToString()
         {
             return Key;
+        }
+
+        public StringFeedback NaxAudioTxAddress
+        {
+            get { return _currentAudioStream.NaxAudioTxAddress; }
+        }
+
+        public BoolFeedback IsStreamingNaxTx
+        {
+            get { return _currentAudioStream.IsStreamingNaxTx; }
+        }
+
+        public StringFeedback NaxAudioRxAddress
+        {
+            get { return _currentAudioStream.NaxAudioRxAddress; }
+        }
+
+        public BoolFeedback IsStreamingNaxRx
+        {
+            get { return _currentAudioStream.IsStreamingNaxRx; }
+        }
+
+        public StringFeedback CurrentNaxInput
+        {
+            get { return _currentAudioStream.CurrentNaxInput; }
+        }
+
+        public IntFeedback CurrentNaxInputValue
+        {
+            get { return _currentAudioStream.CurrentNaxInputValue; }
+        }
+
+        public StringFeedback CurrentNaxAudioStreamName
+        {
+            get { return _currentAudioStream.CurrentNaxAudioStreamName; }
+        }
+
+        public IntFeedback CurrentNaxAudioStreamId
+        {
+            get { return _currentAudioStream.CurrentNaxAudioStreamId; }
         }
     }
 }

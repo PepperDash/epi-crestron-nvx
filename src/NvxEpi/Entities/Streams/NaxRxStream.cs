@@ -1,16 +1,21 @@
-﻿using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Hardware;
-using NvxEpi.Abstractions.SecondaryAudio;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.NaxAudio;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams
 {
-    public class SecondaryAudioStream : ISecondaryAudioStream
+    public class NaxRxStream : INaxAudioRx
     {
-        private readonly INvx35XHardware _device;
+        private readonly INvxDevice _device;
 
-        public SecondaryAudioStream(INvx35XHardware device)
+        public NaxRxStream(INvxDevice device)
         {
             _device = device;
             Initialize();
@@ -18,13 +23,23 @@ namespace NvxEpi.Entities.Streams
 
         private void Initialize()
         {
-            SecondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
-            SecondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedback(Hardware);
-            IsStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedback(Hardware);
+            NaxAudioRxAddress = NaxRxAddressFeedback.GetFeedback(_device.Hardware);
+            IsStreamingNaxRx = IsStreamingNaxRxAudioFeedback.GetFeedback(_device.Hardware);
 
-            Feedbacks.Add(SecondaryAudioAddress);
-            Feedbacks.Add(SecondaryAudioStreamStatus);
-            Feedbacks.Add(IsStreamingSecondaryAudio);
+            _device.Feedbacks.AddRange(new Feedback[]
+            {
+                NaxTxStatusFeedback.GetFeedback(_device.Hardware),
+                NaxAudioRxAddress,
+                IsStreamingNaxRx
+            });
+
+            _device.IsOnline.OutputChange += (sender, args) =>
+            {
+                if (!args.BoolValue)
+                    return;
+
+                _device.Hardware.DmNaxRouting.DmNaxReceive.EnableAutomaticInitiation();
+            };
         }
 
         public IntFeedback DeviceMode
@@ -52,20 +67,13 @@ namespace NvxEpi.Entities.Streams
             get { return _device.DeviceId; }
         }
 
-        public StringFeedback SecondaryAudioAddress { get; private set; }
-        public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
-        public StringFeedback SecondaryAudioStreamStatus { get; private set; }
-
-        DmNvxBaseClass INvxHardware.Hardware
+        public DmNvxBaseClass Hardware
         {
             get { return _device.Hardware; }
         }
 
-        public DmNvx35x Hardware
-        {
-            get { return _device.Hardware; }
-        }
-
+        public StringFeedback NaxAudioRxAddress { get; private set; }
+        public BoolFeedback IsStreamingNaxRx { get; private set; }
         public RoutingPortCollection<RoutingInputPort> InputPorts
         {
             get { return _device.InputPorts; }
@@ -86,6 +94,11 @@ namespace NvxEpi.Entities.Streams
             get { return _device.Feedbacks; }
         }
 
+        public BoolFeedback IsOnline
+        {
+            get { return _device.IsOnline; }
+        }
+
         public StringFeedback VideoName
         {
             get { return _device.VideoName; }
@@ -94,11 +107,6 @@ namespace NvxEpi.Entities.Streams
         public StringFeedback AudioName
         {
             get { return _device.AudioName; }
-        }
-
-        public BoolFeedback IsOnline
-        {
-            get { return _device.IsOnline; }
         }
     }
 }

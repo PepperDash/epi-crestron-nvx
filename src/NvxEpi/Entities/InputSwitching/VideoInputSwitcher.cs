@@ -60,11 +60,6 @@ namespace NvxEpi.Entities.InputSwitching
             get { return _device.DeviceId; }
         }
 
-        public void UpdateDeviceId(uint id)
-        {
-            _device.UpdateDeviceId(id);
-        }
-
         public DmNvxBaseClass Hardware
         {
             get { return _device.Hardware; }

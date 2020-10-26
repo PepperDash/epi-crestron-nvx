@@ -28,6 +28,14 @@ namespace NvxEpi.Entities.Streams
                 IsStreamingVideo,
                 VideoStreamStatus
             });
+
+            _device.IsOnline.OutputChange += (sender, args) =>
+            {
+                if (!args.BoolValue)
+                    return;
+
+                _device.Hardware.Control.EnableAutomaticInitiation();
+            };
         }
 
         public IntFeedback DeviceMode
@@ -58,11 +66,6 @@ namespace NvxEpi.Entities.Streams
         public int DeviceId
         {
             get { return _device.DeviceId; }
-        }
-
-        public void UpdateDeviceId(uint id)
-        {
-            _device.UpdateDeviceId(id);
         }
 
         public StringFeedback MulticastAddress

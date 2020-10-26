@@ -1,5 +1,6 @@
 ﻿using System;
 using NvxEpi.Abstractions.InputSwitching;
+using NvxEpi.Abstractions.NaxAudio;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Services.Utilities;
@@ -8,27 +9,24 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputSwitching
 {
-    public class AnalogAudioOutput : IHandleInputSwitch
+    public class NaxAudioOutput : IHandleInputSwitch
     {
-        public const string Key = "AnalogAudioOutput";
+        public const string Key = "SecondaryAudioOutput";
 
-        private readonly ICurrentAudioInput _device;
+        private readonly INaxAudioStream _device;
 
-        public AnalogAudioOutput(ICurrentAudioInput device)
+        public NaxAudioOutput(INaxAudioStream device)
         {
             _device = device;
         }
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
-            if (_device.IsTransmitter)
-                throw new NotSupportedException("transmitter"); 
-
             var routingInput = input as DeviceInputEnum;
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
 
-            Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
+            Debug.Console(1, _device, "Switching input on NaxAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
 
             if (type.Has(eRoutingSignalType.Audio))
                 SwitchAudio(routingInput);
@@ -39,18 +37,16 @@ namespace NvxEpi.Services.InputSwitching
 
         private void SwitchAudio(Enumeration<DeviceInputEnum> input)
         {
-            if (input == DeviceInputEnum.PrimaryAudio)
-                _device.SetAudioToPrimaryStreamAudio();
-            else if (input == DeviceInputEnum.Stream)
-                _device.SetAudioToPrimaryStreamAudio();
-            else if (input == DeviceInputEnum.SecondaryAudio)
-                _device.SetAudioToSecondaryStreamAudio();
-            else if (input == DeviceInputEnum.Hdmi1)
+            if (input == DeviceInputEnum.Hdmi1)
                 _device.SetAudioToHdmiInput1();
             else if (input == DeviceInputEnum.Hdmi2)
                 _device.SetAudioToHdmiInput2();
-            else if (input == DeviceInputEnum.DmNaxAudio)
-                _device.SetAudioToDmNaxInput();
+            else if (input == DeviceInputEnum.AnalogAudio)
+                _device.SetAudioToInputAnalog();
+            else if (input == DeviceInputEnum.PrimaryAudio)
+                _device.SetAudioToPrimaryStreamAudio();
+            else if (input == DeviceInputEnum.SecondaryAudio)
+                _device.SetAudioToSecondaryStreamAudio();
             else
                 throw new NotSupportedException(input.Name);
         }
@@ -60,13 +56,13 @@ namespace NvxEpi.Services.InputSwitching
             return _device.Key + "-" + Key;
         }
 
-        public static void AddRoutingPort(ICurrentAudioInput parent)
+        public static void AddRoutingPort(INaxAudioStream parent)
         {
             parent.OutputPorts.Add(new RoutingOutputPort(
                 Key, 
                 eRoutingSignalType.Audio, 
                 eRoutingPortConnectionType.LineAudio,
-                new AnalogAudioOutput(parent), 
+                new NaxAudioOutput(parent), 
                 parent));
         }
     }
