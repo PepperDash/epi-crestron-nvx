@@ -1,8 +1,9 @@
-﻿using PepperDash.Essentials.Core;
+﻿using NvxEpi.Abstractions.Hardware;
+using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.Stream
 {
-    public interface IStream : INvxDevice
+    public interface IStream : INvxHardware
     {
         StringFeedback StreamUrl { get; }
         BoolFeedback IsStreamingVideo { get; }

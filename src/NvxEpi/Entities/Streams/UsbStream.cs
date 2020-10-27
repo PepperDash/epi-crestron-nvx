@@ -99,11 +99,6 @@ namespace NvxEpi.Entities.Streams
             get { return _device.DeviceId; }
         }
 
-        public void UpdateDeviceId(uint id)
-        {
-            _device.UpdateDeviceId(id);
-        }
-
         DmNvxBaseClass INvxHardware.Hardware
         {
             get { return _device.Hardware; }

@@ -1,5 +1,6 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
@@ -8,9 +9,9 @@ namespace NvxEpi.Entities.Streams
 {
     public class VideoStream : IStream
     {
-        private readonly INvxDevice _device;
+        private readonly INvxHardware _device;
 
-        public VideoStream(INvxDevice device)
+        public VideoStream(INvxHardware device)
         {
             _device = device;
             Initialize();
@@ -58,11 +59,6 @@ namespace NvxEpi.Entities.Streams
         public int DeviceId
         {
             get { return _device.DeviceId; }
-        }
-
-        public void UpdateDeviceId(uint id)
-        {
-            _device.UpdateDeviceId(id);
         }
 
         public StringFeedback MulticastAddress

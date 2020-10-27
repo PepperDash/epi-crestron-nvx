@@ -12,7 +12,7 @@ namespace NvxEpi.Extensions
         public static void ClearAudioStream(this INaxAudioRx device)
         {
             Debug.Console(1, device, "Stopping NAX stream...");
-            device.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = null;
+            device.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = String.Empty;
         }
 
         public static void SetAudioAddress(this INaxAudioRx device, string address)

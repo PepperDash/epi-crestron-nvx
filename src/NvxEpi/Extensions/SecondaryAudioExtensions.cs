@@ -27,7 +27,7 @@ namespace NvxEpi.Extensions
                 return;
 
             Debug.Console(1, device, "Clearing Secondary Audio Stream");
-            device.Hardware.SecondaryAudio.MulticastAddress.StringValue = null;
+            device.Hardware.SecondaryAudio.MulticastAddress.StringValue = String.Empty;
         }
 
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ISecondaryAudioStream tx)

@@ -9,22 +9,22 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Factories
 {
-    public class Nvx35XDeviceFactory : NvxBaseDeviceFactory<Nvx35X>
+    public class NvxE3XDeviceFactory : NvxBaseDeviceFactory<NvxE3X>
     {
         private static readonly List<string> _typeNames;
 
-        static Nvx35XDeviceFactory()
+        static NvxE3XDeviceFactory()
         {
             _typeNames = typeof (DmNvxBaseClass)
                 .GetCType()
                 .Assembly
                 .GetTypes()
-                .Where(x => x.IsSubclassOf(typeof (DmNvx35x).GetCType()) && !x.IsAbstract)
+                .Where(x => x.IsSubclassOf(typeof (DmNvxE3x).GetCType()) && !x.IsAbstract)
                 .Select(x => x.Name)
                 .ToList();
         }
 
-        public Nvx35XDeviceFactory()
+        public NvxE3XDeviceFactory()
         {
             MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
             TypeNames = _typeNames.ToList();
@@ -33,11 +33,11 @@ namespace NvxEpi.Factories
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             var device = BuildDeviceFromConfig(dc);
-            var hardware = device as DmNvx35x;
+            var hardware = device as DmNvxE3x;
             if (hardware == null)
                 throw new ArgumentException("type");
 
-            return new Nvx35X(dc, hardware);
+            return new NvxE3X(dc, hardware);
         }
     }
 }

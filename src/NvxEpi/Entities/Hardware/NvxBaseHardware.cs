@@ -28,9 +28,8 @@ namespace NvxEpi.Entities.Hardware
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
             var props = NvxDeviceProperties.FromDeviceConfig(config);
-            if ((uint)props.DeviceId != 0)
-                UpdateDeviceId((uint)props.DeviceId);
-
+            DeviceId = props.DeviceId;
+                
             SetupFeedbacks(props);
             IsTransmitter = props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
@@ -62,40 +61,6 @@ namespace NvxEpi.Entities.Hardware
 
         public bool IsTransmitter { get; private set; }
         public int DeviceId { get; private set; }
-
-        public void UpdateDeviceId(uint id)
-        {
-            try
-            {
-                if (id == 0)
-                    throw new ArgumentException("id cannot be 0");
-
-                var result = DeviceManager
-                    .AllDevices
-                    .OfType<INvxDevice>()
-                    .Where(t => t.IsTransmitter == IsTransmitter)
-                    .FirstOrDefault(t => t.DeviceId == id);
-
-                if (result != null)
-                {
-                    var ex = String.Format("Device already exists at id {0}", id);
-                    throw new ArgumentException(ex);
-                }
-
-                Debug.Console(1, this, "Setting device id:{0}", id);
-                DeviceId = (int) id;
-            }
-            catch (ArgumentException ex)
-            {
-                Debug.Console(0, this, "Cannot update device id! {0}", ex.Message);
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(0, this, "Cannot update device id! {0}", ex.Message);
-                throw;
-            }
-        }
 
         public IntFeedback DeviceMode { get; private set; }
         public StringFeedback MulticastAddress { get; private set; }
