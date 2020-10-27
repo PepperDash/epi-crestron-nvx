@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -73,17 +74,10 @@ namespace NvxEpi.Aggregates
             _hdcpCapability.Add(1, Hdmi1HdcpCapabilityValueFeedback.GetFeedback(Hardware));
             _syncDetected.Add(1, Hdmi1SyncDetectedFeedback.GetFeedback(Hardware));
 
-            HorizontalResolution = HorizontalResolutionFeedback.GetFeedback(Hardware);
-
             Feedbacks.AddRange(new Feedback[]
             {
-                DisabledByHdcp,
-                HorizontalResolution,
-                VideowallMode,
                 _syncDetected[1],
-                _syncDetected[2],
                 _hdcpCapability[1],
-                _hdcpCapability[2],
                 Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware)
             });
 
@@ -138,11 +132,6 @@ namespace NvxEpi.Aggregates
             get { return _device.DeviceId; }
         }
 
-        public void UpdateDeviceId(uint id)
-        {
-            throw new NotImplementedException();
-        }
-
         public StringFeedback CurrentStreamName
         {
             get { return _currentVideoStream.CurrentStreamName; }
@@ -195,10 +184,6 @@ namespace NvxEpi.Aggregates
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability { get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); } }
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected { get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); } }
-
-        public BoolFeedback DisabledByHdcp { get; private set; }
-        public IntFeedback HorizontalResolution { get; private set; }
-        public IntFeedback VideowallMode { get; private set; }
 
         DmNvxBaseClass INvxHardware.Hardware
         {
