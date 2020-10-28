@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
@@ -19,9 +20,9 @@ namespace NvxEpi.Services.Bridge
 {
     public class NvxDeviceBridge : IBridgeAdvanced
     {
-        private readonly INvxDevice _device;
+        private readonly INvxHardware _device;
 
-        public NvxDeviceBridge(INvxDevice device)
+        public NvxDeviceBridge(INvxHardware device)
         {
             _device = device;
         }

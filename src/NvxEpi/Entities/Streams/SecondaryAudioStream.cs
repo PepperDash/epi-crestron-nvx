@@ -52,11 +52,6 @@ namespace NvxEpi.Entities.Streams
             get { return _device.DeviceId; }
         }
 
-        public void UpdateDeviceId(uint id)
-        {
-            _device.UpdateDeviceId(id);
-        }
-
         public StringFeedback SecondaryAudioAddress { get; private set; }
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
         public StringFeedback SecondaryAudioStreamStatus { get; private set; }
