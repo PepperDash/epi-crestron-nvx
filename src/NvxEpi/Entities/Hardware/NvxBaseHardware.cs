@@ -59,7 +59,7 @@ namespace NvxEpi.Entities.Hardware
             });
         }
 
-        public bool IsTransmitter { get; private set; }
+        public bool IsTransmitter { get; protected set; }
         public int DeviceId { get; private set; }
 
         public IntFeedback DeviceMode { get; private set; }

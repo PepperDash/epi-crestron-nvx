@@ -11,6 +11,7 @@ namespace NvxEpi.Entities.Hardware
             : base(config, hardware, feedbacks, isOnline)
         {
             Hardware = hardware;
+            IsTransmitter = true;
         }
 
         public new DmNvxE3x Hardware { get; private set; }

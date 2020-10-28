@@ -61,11 +61,7 @@ namespace NvxEpi.Aggregates
                     return;
 
                 Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
-
-                if (IsTransmitter)
-                    Hardware.SetTxDefaults(props);
-                else
-                    Hardware.SetRxDefaults(props);
+                Hardware.SetDefaults(props);
             };
         }
 

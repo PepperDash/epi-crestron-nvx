@@ -19,7 +19,6 @@ namespace NvxEpi.Services.Utilities
                 RegisterForHdmiInputFeedback(device.Hardware, device);
                 RegisterForHdmiOutputFeedback(device.Hardware, device);
                 RegisterForSecondaryAudioFeedback(device.Hardware, device);
-                RegisterForNaxFeedback(device.Hardware, device);   
             }
             catch (MissingMethodException ex)
             {
@@ -94,6 +93,9 @@ namespace NvxEpi.Services.Utilities
         {
             try
             {
+                if (!(device is DmNvx35x))
+                    return;
+
                 if (device.SecondaryAudio == null)
                     return;
 
@@ -102,7 +104,7 @@ namespace NvxEpi.Services.Utilities
             }
             catch (MissingMethodException ex)
             {
-                Debug.Console(2, keyed, "This firmware doesn't support Secondary Audio Routing");
+                Debug.Console(2, keyed, "This device doesn't support Secondary Audio Routing");
                 throw;
             }
         }
