@@ -8,7 +8,7 @@ namespace NvxEpi.Extensions
     public static class SecondaryAudioExtensions
     {
         private const string _noRouteAddress = "0.0.0.0";
-
+      
         public static void SetSecondaryAudioAddress(this ISecondaryAudioStream device, string address)
         {
             if (device.IsTransmitter)

@@ -2,8 +2,8 @@
 
 namespace NvxEpi.Abstractions.Hardware
 {
-    public interface INvx35XHardware : INvxHardware
+    public interface INvxE3XHardware : INvxDevice
     {
-        new DmNvx35x Hardware { get; }
+        new DmNvxE3x Hardware { get; }
     }
 }

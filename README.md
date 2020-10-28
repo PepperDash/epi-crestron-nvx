@@ -24,20 +24,17 @@ See details section below for detailed description of device properties.
 | 2    | -                      | Audio Route              | Audio Route              |
 | 3    | HDMI01 Sync Detected   | Video Input              | Video Input              |
 | 4    | HDMI02 Sync Detected   | Audio Input              | Audio Input              |
-| 5    | -                      | Usb Route                | Usb Route                |
+| 5    | -                      | NAX Input                | NAX Input                |
 | 6    | Supports HDMI01        | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
 | 7    | Supports HDMI02        | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
 | 8    | Output Disabled by Hdcp| Output Horizontal Res.   | -                        |
 | 9    | Supports Videowall     | Videowall Mode           | -                        |
-| 10   | -                      | -                        | -                        |
-| 11   | Supports NAX           | NAX Input                | NAX Input                |
-| 12   | -                      | NAX Route                | NAX Route                |
-| 13   | -                      | -                        | Device Name              |
-| 14   | -                      | -                        | Stream URL               |
-| 15   | -                      | -                        | Multicast Address        |
-| 16   | -                      | -                        | Secondary Audio Address  |
-| 17   | -                      | -                        | NAX Tx Address           |
-| 18   | -                      | -                        | NAX Rx Address           |
+| 10   | -                      | USB Route                | USB Route                |
+| 11   | -                      | -                        | Device Name              |
+| 12   | -                      | -                        | Stream URL               |
+| 13   | -                      | -                        | Multicast Address        |
+| 14   | -                      | -                        | NAX Tx Address           |
+| 15   | -                      | -                        | NAX Rx Address           |
 
 ## Join Details
 

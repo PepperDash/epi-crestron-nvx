@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
-using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
-using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
@@ -28,12 +26,11 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Aggregates
 {
-    public class Nvx35X : CrestronGenericBridgeableBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, IUsbStream,
-        ICurrentVideoInput, ICurrentAudioInput, ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting, ICec
+    public class NvxE3X : CrestronGenericBridgeableBaseDevice, INvxE3XHardware, IComPorts, IIROutputPorts, ICurrentStream,
+        ICurrentVideoInput, ICurrentAudioInput, IHdmiInput, IRouting
     {
-        private readonly Nvx35xHardware _device;
+        private readonly NvxE3XHardware _device;
         private readonly ICurrentStream _currentVideoStream;
-        private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private readonly IUsbStream _usbStream;
 
         private readonly Dictionary<uint, IntFeedback> _hdcpCapability = 
@@ -42,15 +39,14 @@ namespace NvxEpi.Aggregates
         private readonly Dictionary<uint, BoolFeedback> _syncDetected = 
             new Dictionary<uint, BoolFeedback>();
 
-        public Nvx35X(DeviceConfig config, DmNvx35x hardware)
+        public NvxE3X(DeviceConfig config, DmNvxE3x hardware)
             : base(config.Key, config.Name, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             Hardware = hardware;
 
-            _device = new Nvx35xHardware(config, hardware, Feedbacks, IsOnline);
+            _device = new NvxE3XHardware(config, hardware, Feedbacks, IsOnline);
             _currentVideoStream = new CurrentVideoStream(new VideoStream(_device));
-            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(new SecondaryAudioStream(_device));
 
             RegisterForOnlineFeedback(hardware, props);
             SetupFeedbacks();
@@ -65,36 +61,20 @@ namespace NvxEpi.Aggregates
                     return;
 
                 Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
-
-                if (IsTransmitter)
-                    Hardware.SetTxDefaults(props);
-                else
-                    Hardware.SetRxDefaults(props);
+                Hardware.SetDefaults(props);
             };
         }
 
         private void SetupFeedbacks()
         {
             _hdcpCapability.Add(1, Hdmi1HdcpCapabilityValueFeedback.GetFeedback(Hardware));
-            _hdcpCapability.Add(2, Hdmi2HdcpCapabilityValueFeedback.GetFeedback(Hardware));
             _syncDetected.Add(1, Hdmi1SyncDetectedFeedback.GetFeedback(Hardware));
-            _syncDetected.Add(2, Hdmi2SyncDetectedFeedback.GetFeedback(Hardware));
-
-            DisabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(Hardware);
-            HorizontalResolution = HorizontalResolutionFeedback.GetFeedback(Hardware);
-            VideowallMode = VideowallModeFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[]
             {
-                DisabledByHdcp,
-                HorizontalResolution,
-                VideowallMode,
                 _syncDetected[1],
-                _syncDetected[2],
                 _hdcpCapability[1],
-                _hdcpCapability[2],
-                Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware),
-                Hdmi2HdcpCapabilityFeedback.GetFeedback(Hardware)
+                Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware)
             });
 
             DeviceDebug.RegisterForDeviceFeedback(this);
@@ -106,21 +86,8 @@ namespace NvxEpi.Aggregates
         private void AddRoutingPorts()
         {
             HdmiInput1.AddRoutingPort(this);
-            HdmiInput2.AddRoutingPort(this);
-            HdmiOutput.AddRoutingPort(this);
-
-            if (IsTransmitter)
-            {
-                StreamOutput.AddRoutingPort(this);
-                SecondaryAudioOutput.AddRoutingPort(this);
-                AnalogAudioInput.AddRoutingPort(this);
-            }
-            else
-            {
-                StreamInput.AddRoutingPort(this);
-                SecondaryAudioInput.AddRoutingPort(this);
-                AnalogAudioOutput.AddRoutingPort(this);
-            }
+            StreamOutput.AddRoutingPort(this);
+            AnalogAudioInput.AddRoutingPort(this);
         }
 
         public CrestronCollection<ComPort> ComPorts { get { return Hardware.ComPorts; } }
@@ -128,8 +95,6 @@ namespace NvxEpi.Aggregates
 
         public CrestronCollection<IROutputPort> IROutputPorts { get { return Hardware.IROutputPorts; } }
         public int NumberOfIROutputPorts { get { return Hardware.NumberOfIROutputPorts; } }
-
-        public Cec StreamCec { get { return Hardware.HdmiOut.StreamCec; } }
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
@@ -163,8 +128,6 @@ namespace NvxEpi.Aggregates
             get { return _device.DeviceId; }
         }
 
-        public new DmNvx35x Hardware { get; private set; }
-
         public StringFeedback CurrentStreamName
         {
             get { return _currentVideoStream.CurrentStreamName; }
@@ -173,16 +136,6 @@ namespace NvxEpi.Aggregates
         public IntFeedback CurrentStreamId
         {
             get { return _currentVideoStream.CurrentStreamId; }
-        }
-
-        public StringFeedback CurrentSecondaryAudioStreamName
-        {
-            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName; }
-        }
-
-        public IntFeedback CurrentSecondaryAudioStreamId
-        {
-            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId; }
         }
 
         public StringFeedback MulticastAddress
@@ -228,10 +181,6 @@ namespace NvxEpi.Aggregates
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability { get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); } }
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected { get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); } }
 
-        public BoolFeedback DisabledByHdcp { get; private set; }
-        public IntFeedback HorizontalResolution { get; private set; }
-        public IntFeedback VideowallMode { get; private set; }
-
         DmNvxBaseClass INvxHardware.Hardware
         {
             get { return _device.Hardware; }
@@ -251,21 +200,6 @@ namespace NvxEpi.Aggregates
         {
             var deviceBridge = new NvxDeviceBridge(this);
             deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
-        }
-
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
-        }
-
-        public BoolFeedback IsStreamingSecondaryAudio
-        {
-            get { return _currentSecondaryAudioStream.IsStreamingSecondaryAudio; }
-        }
-
-        public StringFeedback SecondaryAudioStreamStatus
-        {
-            get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
         }
 
         public bool IsRemote
@@ -302,5 +236,7 @@ namespace NvxEpi.Aggregates
         {
             return Key;
         }
+
+        public new DmNvxE3x Hardware { get; private set; }
     }
 }

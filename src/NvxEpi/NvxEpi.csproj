@@ -99,6 +99,7 @@
   <ItemGroup>
     <Compile Include="Abstractions\Device\IDeviceId.cs" />
     <Compile Include="Abstractions\Device\IDeviceMode.cs" />
+    <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
     <Compile Include="Abstractions\Device\ITransmitterReceiver.cs" />
     <Compile Include="Abstractions\Hardware\INvx35XHardware.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="Abstractions\Stream\IMulticastAddress.cs" />
     <Compile Include="Abstractions\Stream\IStream.cs" />
     <Compile Include="Abstractions\Usb\IUsbStream.cs" />
+    <Compile Include="Aggregates\NvxE3X.cs" />
     <Compile Include="Application\Builder\NvxApplicationBuilder.cs" />
     <Compile Include="Application\Builder\INvxApplicationBuilder.cs" />
     <Compile Include="Application\Config\NvxApplicationConfig.cs" />
@@ -126,6 +128,7 @@
     <Compile Include="Application\Router\NvxRouter.cs" />
     <Compile Include="Application\Services\ApplicationTieLineConnector.cs" />
     <Compile Include="Application\Services\AudioFollowsVideo.cs" />
+    <Compile Include="Entities\Hardware\NvxE3XHardware.cs" />
     <Compile Include="Entities\Hardware\Nvx35xHardware.cs" />
     <Compile Include="Entities\Hardware\NvxBaseHardware.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
@@ -134,6 +137,7 @@
     <Compile Include="Entities\Streams\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
     <Compile Include="Extensions\UsbStreamExtensions.cs" />
+    <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Services\Feedback\UsbModeFeedback.cs" />
     <Compile Include="Services\Feedback\UsbRemoteAddressFeedback.cs" />
