@@ -1,4 +1,5 @@
 ﻿using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions.InputSwitching;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.Stream
@@ -8,5 +9,8 @@ namespace NvxEpi.Abstractions.Stream
         StringFeedback StreamUrl { get; }
         BoolFeedback IsStreamingVideo { get; }
         StringFeedback VideoStreamStatus { get; }
+
+        void SetStreamUrl(string url);
+        void ClearStream();
     }
 }

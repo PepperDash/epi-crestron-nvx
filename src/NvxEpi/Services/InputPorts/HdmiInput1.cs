@@ -5,7 +5,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputPorts
 {
-    public class HdmiInput1
+    public class HdmiInput1Port
     {
         public static void AddRoutingPort(ICurrentVideoInput device)
         {

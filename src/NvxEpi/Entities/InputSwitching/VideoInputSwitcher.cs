@@ -1,7 +1,10 @@
-﻿using Crestron.SimplSharpPro.DM.Streaming;
+﻿using System;
+using System.Globalization;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Services.Feedback;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.InputSwitching
@@ -71,6 +74,7 @@ namespace NvxEpi.Entities.InputSwitching
         }
 
         public StringFeedback CurrentVideoInput { get; private set; }
+
         public IntFeedback CurrentVideoInputValue { get; private set; }
 
         public FeedbackCollection<Feedback> Feedbacks
@@ -91,6 +95,59 @@ namespace NvxEpi.Entities.InputSwitching
         public StringFeedback AudioName
         {
             get { return _device.AudioName; }
+        }
+
+        public void SetVideoInput(ushort input)
+        {
+            var inputToSwitch = (eSfpVideoSourceTypes)input;
+
+            switch (inputToSwitch)
+            {
+                case eSfpVideoSourceTypes.Disable:
+                    SetVideoToNone();
+                    break;
+                case eSfpVideoSourceTypes.Hdmi1:
+                    SetVideoToHdmiInput1();
+                    break;
+                case eSfpVideoSourceTypes.Hdmi2:
+                    SetVideoToHdmiInput2();
+                    break;
+                case eSfpVideoSourceTypes.Stream:
+                    SetVideoToStream();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(input.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        public void SetVideoToHdmiInput1()
+        {
+            if (Hardware is DmNvxD3x)
+                return;
+
+            Debug.Console(1, this, "Switching Video Input to : 'Hdmi1'");
+            Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
+        }
+
+        public void SetVideoToHdmiInput2()
+        {
+            if (!(Hardware is DmNvx35x))
+                return;
+
+            Debug.Console(1, this , "Switching Video Input to : 'Hdmi2'");
+            Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
+        }
+
+        public void SetVideoToNone()
+        {
+            Debug.Console(1, this, "Switching Video Input to : 'Disable'");
+            Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
+        }
+
+        public void SetVideoToStream()
+        {
+            Debug.Console(1, this, "Switching Video Input to : 'Stream'");
+            Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
         }
     }
 }

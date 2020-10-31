@@ -1,9 +1,8 @@
-﻿using NvxEpi.Abstractions.Hardware;
-using PepperDash.Essentials.Core;
+﻿using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.InputSwitching
 {
-    public interface ICurrentVideoInput : INvxHardware
+    public interface ICurrentVideoInput : IVideoInput
     {
         StringFeedback CurrentVideoInput { get; }
         IntFeedback CurrentVideoInputValue { get; }

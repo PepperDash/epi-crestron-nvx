@@ -9,6 +9,8 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using NvxEpi.Entities.Streams;
+using NvxEpi.Entities.Streams.Audio;
+using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Extensions;
 using NvxEpi.JoinMaps;
 using NvxEpi.Services.Feedback;
@@ -182,12 +184,13 @@ namespace NvxEpi.Services.Bridge
             var hdmi2Fb = new BoolFeedback(() => _device.Hardware.HdmiIn != null && _device.Hardware.HdmiIn.Count >= 2);
             hdmi2Fb.LinkInputSig(trilist.BooleanInput[joinMap.HdmiIn2Present.JoinNumber]);
 
-            var hdmiInputs = _device as IHdmiInput;
-            if (hdmiInputs != null && hdmiInputs.HdcpCapability.Count >= 1)
-                trilist.SetUShortSigAction(joinMap.Hdmi1Capability.JoinNumber, hdmiInputs.SetHdmi1HdcpCapability);
+            var hdmiInput1 = _device as IHdmiInput1;
+            if (hdmiInput1 != null)
+                trilist.SetUShortSigAction(joinMap.Hdmi1Capability.JoinNumber, s => hdmiInput1.SetHdmi1HdcpCapability(s));
 
-            if (hdmiInputs != null && hdmiInputs.HdcpCapability.Count >= 2)
-                trilist.SetUShortSigAction(joinMap.Hdmi2Capability.JoinNumber, hdmiInputs.SetHdmi2HdcpCapability);
+            var hdmiInput2 = _device as IHdmiInput2;
+            if (hdmiInput2 != null)
+                trilist.SetUShortSigAction(joinMap.Hdmi2Capability.JoinNumber, s => hdmiInput2.SetHdmi2HdcpCapability(s));
         }
     }
 }

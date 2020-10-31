@@ -136,7 +136,7 @@ namespace NvxEpi.Entities.Routing
 
             if (txId == 0)
             {
-                rx.ClearSecondaryStream();
+                rx.ClearSecondaryAudioStream();
                 return;
             }
 
@@ -150,7 +150,7 @@ namespace NvxEpi.Entities.Routing
 
             if (txId == 0)
             {
-                rx.ClearSecondaryStream();
+                rx.ClearSecondaryAudioStream();
                 return;
             }
 
@@ -171,11 +171,13 @@ namespace NvxEpi.Entities.Routing
 
             if (txName.Equals(NvxGlobalRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
             {
-                rx.ClearSecondaryStream();
+                rx.ClearSecondaryAudioStream();
                 return;
             }
 
             ISecondaryAudioStream txByName;
+
+            
             if (_transmitters.TryGetValue(txName, out txByName))
             {
                 rx.RouteSecondaryAudio(txByName);
