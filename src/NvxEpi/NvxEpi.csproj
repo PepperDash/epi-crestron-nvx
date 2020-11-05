@@ -102,6 +102,7 @@
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
     <Compile Include="Abstractions\HdmiInput\IHdmiInput1.cs" />
     <Compile Include="Abstractions\HdmiInput\IHdmiInput2.cs" />
+    <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
     <Compile Include="Abstractions\InputSwitching\IAudioInput.cs" />
     <Compile Include="Abstractions\InputSwitching\IVideoInput.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
@@ -134,6 +135,7 @@
     <Compile Include="Entities\HdmiInput\HdmiInput2.cs" />
     <Compile Include="Entities\HdmiInput\HdmiInput.cs" />
     <Compile Include="Entities\HdmiInput\HdmiInput1.cs" />
+    <Compile Include="Entities\HdmiOutput\HdmiOutput.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
     <Compile Include="Entities\Routing\NvxGlobalRouter.cs" />
     <Compile Include="Entities\Streams\Usb\UsbStream.cs" />
@@ -197,7 +199,6 @@
     <Compile Include="Extensions\NaxAudioStreamExtensions.cs" />
     <Compile Include="Extensions\SecondaryAudioExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
-    <Compile Include="Extensions\VideowallModeExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Feedback\DeviceModeFeedback.cs" />
     <Compile Include="Services\Feedback\StreamUrlFeedback.cs" />

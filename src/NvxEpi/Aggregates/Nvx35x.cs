@@ -14,6 +14,7 @@ using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hardware;
 using NvxEpi.Entities.HdmiInput;
+using NvxEpi.Entities.HdmiOutput;
 using NvxEpi.Entities.Streams.Audio;
 using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Bridge;
@@ -26,6 +27,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
+using HdmiOutput = NvxEpi.Services.InputSwitching.HdmiOutput;
 
 namespace NvxEpi.Aggregates
 {
@@ -37,6 +39,7 @@ namespace NvxEpi.Aggregates
         private readonly ICurrentStream _currentVideoStream;
         private readonly Nvx35xHardware _device;
         private readonly IHdmiInput2 _hdmiInput;
+        private readonly IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
 
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
@@ -49,6 +52,7 @@ namespace NvxEpi.Aggregates
             _currentVideoStream = new CurrentVideoStream(_device);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(_device);
             _hdmiInput = new HdmiInput2(_device);
+            _hdmiOutput = new VideowallHdmiOutput(_device);
 
             RegisterForOnlineFeedback(hardware, props);
             SetupFeedbacks();
@@ -115,16 +119,12 @@ namespace NvxEpi.Aggregates
             get { return _device.DeviceMode; }
         }
 
-        public BoolFeedback DisabledByHdcp { get; private set; }
-
         public new DmNvx35x Hardware { get; private set; }
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
             get { return _hdmiInput.HdcpCapability; }
         }
-
-        public IntFeedback HorizontalResolution { get; private set; }
 
         public CrestronCollection<IROutputPort> IROutputPorts
         {
@@ -228,6 +228,11 @@ namespace NvxEpi.Aggregates
 
         public IntFeedback VideowallMode { get; private set; }
 
+        public void SetVideowallMode(ushort value)
+        {
+            _hdmiOutput.SetVideowallMode(value);
+        }
+
         DmNvxBaseClass INvxHardware.Hardware
         {
             get { return _device.Hardware; }
@@ -273,37 +278,37 @@ namespace NvxEpi.Aggregates
 
         public void SetAudioInput(ushort input)
         {
-            ( (IAudioInput) _device ).SetAudioInput(input);
+            ((IAudioInput) _device).SetAudioInput(input);
         }
 
         public void SetAudioToHdmiInput1()
         {
-            ( (IAudioInput) _device ).SetAudioToHdmiInput1();
+            ((IAudioInput) _device).SetAudioToHdmiInput1();
         }
 
         public void SetAudioToHdmiInput2()
         {
-            ( (IAudioInput) _device ).SetAudioToHdmiInput2();
+            ((IAudioInput) _device).SetAudioToHdmiInput2();
         }
 
         public void SetAudioToInputAnalog()
         {
-            ( (IAudioInput) _device ).SetAudioToInputAnalog();
+            ((IAudioInput) _device).SetAudioToInputAnalog();
         }
 
         public void SetAudioToInputAutomatic()
         {
-            ( (IAudioInput) _device ).SetAudioToInputAutomatic();
+            ((IAudioInput) _device).SetAudioToInputAutomatic();
         }
 
         public void SetAudioToPrimaryStreamAudio()
         {
-            ( (IAudioInput) _device ).SetAudioToPrimaryStreamAudio();
+            ((IAudioInput) _device).SetAudioToPrimaryStreamAudio();
         }
 
         public void SetAudioToSecondaryStreamAudio()
         {
-            ( (IAudioInput) _device ).SetAudioToSecondaryStreamAudio();
+            ((IAudioInput) _device).SetAudioToSecondaryStreamAudio();
         }
 
         public void SetHdmi1HdcpCapability(int capability)
@@ -338,27 +343,27 @@ namespace NvxEpi.Aggregates
 
         public void SetVideoInput(ushort input)
         {
-            ( (IVideoInput) _device ).SetVideoInput(input);
+            ((IVideoInput) _device).SetVideoInput(input);
         }
 
         public void SetVideoToHdmiInput1()
         {
-            ( (IVideoInput) _device ).SetVideoToHdmiInput1();
+            ((IVideoInput) _device).SetVideoToHdmiInput1();
         }
 
         public void SetVideoToHdmiInput2()
         {
-            ( (IVideoInput) _device ).SetVideoToHdmiInput2();
+            ((IVideoInput) _device).SetVideoToHdmiInput2();
         }
 
         public void SetVideoToNone()
         {
-            ( (IVideoInput) _device ).SetVideoToNone();
+            ((IVideoInput) _device).SetVideoToNone();
         }
 
         public void SetVideoToStream()
         {
-            ( (IVideoInput) _device ).SetVideoToStream();
+            ((IVideoInput) _device).SetVideoToStream();
         }
 
         public override string ToString()
@@ -389,38 +394,46 @@ namespace NvxEpi.Aggregates
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
         {
             hardware.OnlineStatusChange += (device, args) =>
-                {
-                    if (!args.DeviceOnLine)
-                        return;
+            {
+                if (!args.DeviceOnLine)
+                    return;
 
-                    Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
+                Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
 
-                    if (IsTransmitter)
-                        Hardware.SetTxDefaults(props);
-                    else
-                        Hardware.SetRxDefaults(props);
-                };
+                if (IsTransmitter)
+                    Hardware.SetTxDefaults(props);
+                else
+                    Hardware.SetRxDefaults(props);
+            };
         }
 
         private void SetupFeedbacks()
         {
-            DisabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(Hardware);
-            HorizontalResolution = HorizontalResolutionFeedback.GetFeedback(Hardware);
             VideowallMode = VideowallModeFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[]
-                {
-                    DisabledByHdcp,
-                    HorizontalResolution,
-                    VideowallMode,
-                    Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware),
-                    Hdmi2HdcpCapabilityFeedback.GetFeedback(Hardware)
-                });
+            {
+                DisabledByHdcp,
+                HorizontalResolution,
+                VideowallMode,
+                Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware),
+                Hdmi2HdcpCapabilityFeedback.GetFeedback(Hardware)
+            });
 
             DeviceDebug.RegisterForDeviceFeedback(this);
             DeviceDebug.RegisterForPluginFeedback(this);
             DeviceDebug.RegisterForRoutingInputPortFeedback(this);
             DeviceDebug.RegisterForRoutingOutputFeedback(this);
+        }
+
+        public BoolFeedback DisabledByHdcp
+        {
+            get { return _hdmiOutput.DisabledByHdcp; }
+        }
+
+        public IntFeedback HorizontalResolution
+        {
+            get { return _hdmiOutput.HorizontalResolution; }
         }
     }
 }

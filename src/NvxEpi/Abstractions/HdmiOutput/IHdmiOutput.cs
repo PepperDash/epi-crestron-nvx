@@ -3,14 +3,9 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.HdmiOutput
 {
-    public interface IHdmiOutput : INvxHardware
+    public interface IHdmiOutput : INvxDevice
     {
         BoolFeedback DisabledByHdcp { get; }
         IntFeedback HorizontalResolution { get; }
-    }
-
-    public interface IVideowallMode : IHdmiOutput
-    {
-        IntFeedback VideowallMode { get; }
     }
 }
