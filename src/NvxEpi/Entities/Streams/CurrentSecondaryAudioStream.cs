@@ -89,16 +89,6 @@ namespace NvxEpi.Entities.Streams
             get { return _stream.DeviceId; }
         }
 
-        DmNvxBaseClass INvxHardware.Hardware
-        {
-            get { return _stream.Hardware; }
-        }
-
-        public DmNvx35x Hardware
-        {
-            get { return _stream.Hardware; }
-        }
-
         public StringFeedback SecondaryAudioAddress
         {
             get { return _stream.SecondaryAudioAddress; }
@@ -150,6 +140,16 @@ namespace NvxEpi.Entities.Streams
         public StringFeedback AudioName
         {
             get { return _stream.AudioName; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _stream.StreamUrl; }
+        }
+
+        public DmNvxBaseClass Hardware
+        {
+            get { return _stream.Hardware; }
         }
     }
 }

@@ -8,21 +8,15 @@ namespace NvxEpi.Entities.Streams
 {
     public class SecondaryAudioStream : ISecondaryAudioStream
     {
-        private readonly INvx35XHardware _device;
+        private readonly INvxHardware _device;
 
-        public SecondaryAudioStream(INvx35XHardware device)
+        public SecondaryAudioStream(INvxHardware device)
         {
             _device = device;
-            Initialize();
-        }
 
-        private void Initialize()
-        {
-            SecondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
             SecondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedback(Hardware);
             IsStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedback(Hardware);
 
-            Feedbacks.Add(SecondaryAudioAddress);
             Feedbacks.Add(SecondaryAudioStreamStatus);
             Feedbacks.Add(IsStreamingSecondaryAudio);
         }
@@ -52,19 +46,8 @@ namespace NvxEpi.Entities.Streams
             get { return _device.DeviceId; }
         }
 
-        public StringFeedback SecondaryAudioAddress { get; private set; }
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
         public StringFeedback SecondaryAudioStreamStatus { get; private set; }
-
-        DmNvxBaseClass INvxHardware.Hardware
-        {
-            get { return _device.Hardware; }
-        }
-
-        public DmNvx35x Hardware
-        {
-            get { return _device.Hardware; }
-        }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts
         {
@@ -99,6 +82,21 @@ namespace NvxEpi.Entities.Streams
         public BoolFeedback IsOnline
         {
             get { return _device.IsOnline; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _device.StreamUrl; }
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _device.SecondaryAudioAddress; }
+        }
+
+        public DmNvxBaseClass Hardware
+        {
+            get { return _device.Hardware; }
         }
     }
 }

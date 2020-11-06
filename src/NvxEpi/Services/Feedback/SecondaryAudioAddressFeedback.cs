@@ -21,5 +21,15 @@ namespace NvxEpi.Services.Feedback
 
             return feedback;
         }
+
+        public static StringFeedback GetFeedback(DmNvxE3x device)
+        {
+            var feedback = new StringFeedback(Key,
+                () => String.Empty);
+
+            device.BaseEvent += (@base, args) => feedback.FireUpdate();
+
+            return feedback;
+        }
     }
 }

@@ -3,9 +3,8 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.SecondaryAudio
 {
-    public interface ISecondaryAudioStream : INvx35XHardware, INvxDevice
-    {
-        StringFeedback SecondaryAudioAddress { get; }
+    public interface ISecondaryAudioStream : INvxHardware
+    {  
         BoolFeedback IsStreamingSecondaryAudio { get; }
         StringFeedback SecondaryAudioStreamStatus { get; }
     }

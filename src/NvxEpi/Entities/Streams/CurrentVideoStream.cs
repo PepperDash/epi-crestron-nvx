@@ -144,5 +144,10 @@ namespace NvxEpi.Entities.Streams
         {
             get { return _stream.AudioName; }
         }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _stream.SecondaryAudioAddress; }
+        }
     }
 }
