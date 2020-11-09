@@ -14,18 +14,12 @@ namespace NvxEpi.Entities.Streams
         public VideoStream(INvxHardware device)
         {
             _device = device;
-            Initialize();
-        }
 
-        private void Initialize()
-        {
-            StreamUrl = StreamUrlFeedback.GetFeedback(Hardware);
             IsStreamingVideo = IsStreamingVideoFeedback.GetFeedback(Hardware);
             VideoStreamStatus = VideoStreamStatusFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[]
             {
-                StreamUrl,
                 IsStreamingVideo,
                 VideoStreamStatus
             });
@@ -66,7 +60,6 @@ namespace NvxEpi.Entities.Streams
             get { return _device.MulticastAddress; }
         }
 
-        public StringFeedback StreamUrl { get; private set; }
         public BoolFeedback IsStreamingVideo { get; private set; }
         public StringFeedback VideoStreamStatus { get; private set; }
 
@@ -98,6 +91,16 @@ namespace NvxEpi.Entities.Streams
         public StringFeedback AudioName
         {
             get { return _device.AudioName; }
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _device.SecondaryAudioAddress; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _device.StreamUrl; }
         }
     }
 }

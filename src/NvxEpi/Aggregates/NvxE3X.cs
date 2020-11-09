@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -238,5 +237,10 @@ namespace NvxEpi.Aggregates
         }
 
         public new DmNvxE3x Hardware { get; private set; }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _device.SecondaryAudioAddress; }
+        }
     }
 }

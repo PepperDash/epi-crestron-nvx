@@ -205,5 +205,15 @@ namespace NvxEpi.Entities.Streams
         {
             get { return _device.AudioName; }
         }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _device.StreamUrl; }
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _device.SecondaryAudioAddress; }
+        }
     }
 }

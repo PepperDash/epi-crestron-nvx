@@ -100,6 +100,10 @@
     <Compile Include="Abstractions\Device\IDeviceId.cs" />
     <Compile Include="Abstractions\Device\IDeviceMode.cs" />
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
+    <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
+    <Compile Include="Abstractions\Device\ISecondaryAudioAddress.cs" />
+    <Compile Include="Abstractions\Device\IStreamUrl.cs" />
+    <Compile Include="Extensions\HdmiInputExtensions.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
     <Compile Include="Abstractions\Device\ITransmitterReceiver.cs" />
     <Compile Include="Abstractions\Hardware\INvx35XHardware.cs" />
@@ -115,7 +119,7 @@
     <Compile Include="Abstractions\SecondaryAudio\ICurrentSecondaryAudioStream.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioStream.cs" />
     <Compile Include="Abstractions\Stream\ICurrentStream.cs" />
-    <Compile Include="Abstractions\Stream\IMulticastAddress.cs" />
+    <Compile Include="Abstractions\Device\IMulticastAddress.cs" />
     <Compile Include="Abstractions\Stream\IStream.cs" />
     <Compile Include="Abstractions\Usb\IUsbStream.cs" />
     <Compile Include="Aggregates\NvxE3X.cs" />

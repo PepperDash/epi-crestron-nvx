@@ -48,11 +48,14 @@ namespace NvxEpi.Entities.Hardware
                 : new StringFeedback("AudioName", () => props.AudioSourceName);
 
             DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
+            StreamUrl = StreamUrlFeedback.GetFeedback(Hardware);
             MulticastAddress = MulticastAddressFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[]
             {
                 DeviceNameFeedback.GetFeedback(Name),
+                StreamUrl,
+                MulticastAddress,
                 VideoName,
                 AudioName,
                 DeviceMode
@@ -95,5 +98,7 @@ namespace NvxEpi.Entities.Hardware
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
         public StringFeedback VideoName { get; private set; }
         public StringFeedback AudioName { get; private set; }
+        public StringFeedback StreamUrl { get; private set; }
+        public abstract StringFeedback SecondaryAudioAddress { get; }
     }
 }

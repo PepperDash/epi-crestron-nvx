@@ -13,11 +13,7 @@ namespace NvxEpi.Entities.InputSwitching
         public VideoInputSwitcher(INvxHardware device)
         {
             _device = device;
-            Initialize();
-        }
 
-        private void Initialize()
-        {
             CurrentVideoInput = VideoInputFeedback.GetFeedback(Hardware);
             CurrentVideoInputValue = VideoInputValueFeedback.GetFeedback(Hardware);
 
@@ -91,6 +87,16 @@ namespace NvxEpi.Entities.InputSwitching
         public StringFeedback AudioName
         {
             get { return _device.AudioName; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _device.StreamUrl; }
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _device.SecondaryAudioAddress; }
         }
     }
 }
