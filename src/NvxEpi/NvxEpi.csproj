@@ -103,6 +103,7 @@
     <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
     <Compile Include="Abstractions\Device\ISecondaryAudioAddress.cs" />
     <Compile Include="Abstractions\Device\IStreamUrl.cs" />
+    <Compile Include="Aggregates\NvxBaseDevice.cs" />
     <Compile Include="Extensions\HdmiInputExtensions.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
     <Compile Include="Abstractions\Device\ITransmitterReceiver.cs" />
@@ -132,9 +133,6 @@
     <Compile Include="Application\Router\NvxRouter.cs" />
     <Compile Include="Application\Services\ApplicationTieLineConnector.cs" />
     <Compile Include="Application\Services\AudioFollowsVideo.cs" />
-    <Compile Include="Entities\Hardware\NvxE3XHardware.cs" />
-    <Compile Include="Entities\Hardware\Nvx35xHardware.cs" />
-    <Compile Include="Entities\Hardware\NvxBaseHardware.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
     <Compile Include="Entities\Routing\NvxGlobalRouter.cs" />
     <Compile Include="Entities\Streams\UsbStream.cs" />

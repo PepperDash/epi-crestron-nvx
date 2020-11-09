@@ -31,5 +31,18 @@ namespace NvxEpi.Services.Feedback
 
             return feedback;
         }
+
+        public static StringFeedback GetFeedback(DmNvxBaseClass device)
+        {
+            var dmNvx35x = device as DmNvx35x;
+            if (dmNvx35x != null)
+                return GetFeedback(dmNvx35x);
+
+            var dmNvxE3x = device as DmNvxE3x;
+            if (dmNvxE3x != null)
+                return GetFeedback(dmNvxE3x);
+
+            throw new Exception("device type");
+        }
     }
 }
