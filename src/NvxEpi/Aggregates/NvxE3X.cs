@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -9,9 +8,9 @@ using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
-using NvxEpi.Entities.Streams;
+using NvxEpi.Entities.Hdmi.Input;
+using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Bridge;
-using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
@@ -19,7 +18,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Aggregates
 {
@@ -27,13 +25,7 @@ namespace NvxEpi.Aggregates
         IRouting
     {
         private readonly ICurrentStream _currentVideoStream;
-
-        private readonly Dictionary<uint, IntFeedback> _hdcpCapability =
-            new Dictionary<uint, IntFeedback>();
-
-        private readonly Dictionary<uint, BoolFeedback> _syncDetected =
-            new Dictionary<uint, BoolFeedback>();
-
+        private readonly IHdmiInput _hdmiInput;
         private readonly IUsbStream _usbStream;
 
         public NvxE3X(DeviceConfig config, DmNvxE3x hardware)
@@ -42,10 +34,11 @@ namespace NvxEpi.Aggregates
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             Hardware = hardware;
 
-            _currentVideoStream = new CurrentVideoStream(new VideoStream(this));
+            _currentVideoStream = new CurrentVideoStream(this);
+            _hdmiInput = new HdmiInput1(this);
 
             RegisterForOnlineFeedback(hardware, props);
-            SetupFeedbacks();
+            RegisterForFeedback();
             AddRoutingPorts();
         }
 
@@ -68,7 +61,7 @@ namespace NvxEpi.Aggregates
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
-            get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); }
+            get { return _hdmiInput.HdcpCapability; }
         }
 
         public CrestronCollection<IROutputPort> IROutputPorts
@@ -98,7 +91,7 @@ namespace NvxEpi.Aggregates
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
         {
-            get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); }
+            get { return _hdmiInput.SyncDetected; }
         }
 
         public int UsbId
@@ -152,9 +145,17 @@ namespace NvxEpi.Aggregates
 
         private void AddRoutingPorts()
         {
-            HdmiInput1.AddRoutingPort(this);
+            HdmiInput1Port.AddRoutingPort(this);
             StreamOutput.AddRoutingPort(this);
             AnalogAudioInput.AddRoutingPort(this);
+        }
+
+        private void RegisterForFeedback()
+        {
+            DeviceDebug.RegisterForDeviceFeedback(this);
+            DeviceDebug.RegisterForPluginFeedback(this);
+            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
+            DeviceDebug.RegisterForRoutingOutputFeedback(this);
         }
 
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
@@ -167,24 +168,6 @@ namespace NvxEpi.Aggregates
                     Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
                     Hardware.SetDefaults(props);
                 };
-        }
-
-        private void SetupFeedbacks()
-        {
-            _hdcpCapability.Add(1, Hdmi1HdcpCapabilityValueFeedback.GetFeedback(Hardware));
-            _syncDetected.Add(1, Hdmi1SyncDetectedFeedback.GetFeedback(Hardware));
-
-            Feedbacks.AddRange(new Feedback[]
-                {
-                    _syncDetected[1],
-                    _hdcpCapability[1],
-                    Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware)
-                });
-
-            DeviceDebug.RegisterForDeviceFeedback(this);
-            DeviceDebug.RegisterForPluginFeedback(this);
-            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
-            DeviceDebug.RegisterForRoutingOutputFeedback(this);
         }
     }
 }

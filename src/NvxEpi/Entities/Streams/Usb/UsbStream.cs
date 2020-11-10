@@ -8,7 +8,7 @@ using NvxEpi.Services.Feedback;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Entities.Streams
+namespace NvxEpi.Entities.Streams.Usb
 {
     public abstract class UsbStream : IUsbStream
     {
