@@ -42,8 +42,8 @@ namespace NvxEpi.Aggregates
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             Hardware = hardware;
 
-            _currentVideoStream = new CurrentVideoStream(new VideoStream(this));
-            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(new SecondaryAudioStream(this));
+            _currentVideoStream = new CurrentVideoStream(this);
+            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
@@ -224,17 +224,12 @@ namespace NvxEpi.Aggregates
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
         {
             hardware.OnlineStatusChange += (device, args) =>
-                {
-                    if (!args.DeviceOnLine)
-                        return;
-
-                    Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
-
-                    if (IsTransmitter)
-                        Hardware.SetTxDefaults(props);
-                    else
-                        Hardware.SetRxDefaults(props);
-                };
+            {
+                if (IsTransmitter)
+                    Hardware.SetTxDefaults(props);
+                else
+                    Hardware.SetRxDefaults(props);
+            };
         }
     }
 }

@@ -9,7 +9,8 @@ namespace NvxEpi.Services.Feedback
 
         public static BoolFeedback GetFeedback(DmNvxBaseClass device)
         {
-            var feedback = new BoolFeedback(Key, () => device.Control.StartFeedback.BoolValue);
+            var feedback = new BoolFeedback(Key,
+                () => device.Control.ActiveVideoSourceFeedback == eSfpVideoSourceTypes.Stream && device.Control.StartFeedback.BoolValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
 

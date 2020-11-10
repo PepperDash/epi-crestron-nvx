@@ -1,4 +1,5 @@
 ﻿using System;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Entities.Config;
@@ -27,10 +28,11 @@ namespace NvxEpi.Aggregates
             IsTransmitter = !String.IsNullOrEmpty(props.Mode) &&
                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
-            SetupFeedbacks(props);
-
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
+
+            SetupFeedbacks(props);
+            RegisterForOnlineFeedback(Hardware, props);
         }
 
         public StringFeedback AudioName { get; private set; }
@@ -63,17 +65,32 @@ namespace NvxEpi.Aggregates
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
-
         public bool IsTransmitter { get; private set; }
 
         public StringFeedback MulticastAddress { get; private set; }
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
         public StringFeedback SecondaryAudioAddress { get; private set; }
 
         public StringFeedback StreamUrl { get; private set; }
 
         public StringFeedback VideoName { get; private set; }
+
+        public override string ToString()
+        {
+            return Key;
+        }
+
+        private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
+        {
+            hardware.OnlineStatusChange += (device, args) =>
+                {
+                    if (!args.DeviceOnLine)
+                        return;
+
+                    Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
+                };
+        }
 
         private void SetupFeedbacks(NvxDeviceProperties props)
         {
@@ -99,11 +116,6 @@ namespace NvxEpi.Aggregates
                     AudioName,
                     DeviceMode
                 });
-        }
-
-        public override string ToString()
-        {
-            return Key;
         }
     }
 }

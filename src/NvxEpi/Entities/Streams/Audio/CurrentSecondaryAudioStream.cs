@@ -14,6 +14,7 @@ namespace NvxEpi.Entities.Streams.Audio
     {
         public const string RouteNameKey = "CurrentSecondaryAudioRoute";
         public const string RouteValueKey = "CurrentSecondaryAudioRouteValue";
+
         private readonly CCriticalSection _lock = new CCriticalSection();
         private ISecondaryAudioStream _current;
 
@@ -27,17 +28,11 @@ namespace NvxEpi.Entities.Streams.Audio
 
         private ISecondaryAudioStream GetCurrentAudioStream()
         {
+            if (!IsStreamingSecondaryAudio.BoolValue)
+                return null;
+
             try
             {
-                if (!IsStreamingSecondaryAudio.BoolValue)
-                    return null;
-
-                if (Hardware.Control.ActiveVideoSourceFeedback == eSfpVideoSourceTypes.Disable)
-                    return null;
-
-                if (Hardware.Control.ActiveAudioSourceFeedback != DmNvxControl.eAudioSource.SecondaryStreamAudio)
-                    return null;
-
                 return DeviceManager
                     .AllDevices
                     .OfType<ISecondaryAudioStream>()
@@ -56,6 +51,7 @@ namespace NvxEpi.Entities.Streams.Audio
                     ex.Message,
                     ex.InnerException,
                     ex.StackTrace);
+
                 throw;
             }
         }
