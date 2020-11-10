@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -11,9 +10,12 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
+using NvxEpi.Entities.Hdmi.Input;
+using NvxEpi.Entities.Hdmi.Output;
 using NvxEpi.Entities.Streams;
+using NvxEpi.Entities.Streams.Audio;
+using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Bridge;
-using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
@@ -21,7 +23,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using Feedback = PepperDash.Essentials.Core.Feedback;
+using HdmiOutput = NvxEpi.Services.InputSwitching.HdmiOutput;
 
 namespace NvxEpi.Aggregates
 {
@@ -30,13 +32,8 @@ namespace NvxEpi.Aggregates
     {
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private readonly ICurrentStream _currentVideoStream;
-
-        private readonly Dictionary<uint, IntFeedback> _hdcpCapability =
-            new Dictionary<uint, IntFeedback>();
-
-        private readonly Dictionary<uint, BoolFeedback> _syncDetected =
-            new Dictionary<uint, BoolFeedback>();
-
+        private readonly IHdmiInput _hdmiInput;
+        private readonly IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
 
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
@@ -47,9 +44,11 @@ namespace NvxEpi.Aggregates
 
             _currentVideoStream = new CurrentVideoStream(new VideoStream(this));
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(new SecondaryAudioStream(this));
+            _hdmiInput = new HdmiInput2(this);
+            _hdmiOutput = new VideowallModeOutput(this);
 
             RegisterForOnlineFeedback(hardware, props);
-            SetupFeedbacks();
+            RegisterForDeviceFeedback();
             AddRoutingPorts();
         }
 
@@ -78,16 +77,22 @@ namespace NvxEpi.Aggregates
             get { return _currentVideoStream.CurrentStreamName; }
         }
 
-        public BoolFeedback DisabledByHdcp { get; private set; }
+        public BoolFeedback DisabledByHdcp
+        {
+            get { return _hdmiOutput.DisabledByHdcp; }
+        }
 
         public new DmNvx35x Hardware { get; private set; }
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
-            get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); }
+            get { return _hdmiInput.HdcpCapability; }
         }
 
-        public IntFeedback HorizontalResolution { get; private set; }
+        public IntFeedback HorizontalResolution
+        {
+            get { return _hdmiOutput.HorizontalResolution; }
+        }
 
         public CrestronCollection<IROutputPort> IROutputPorts
         {
@@ -131,7 +136,7 @@ namespace NvxEpi.Aggregates
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
         {
-            get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); }
+            get { return _hdmiInput.SyncDetected; }
         }
 
         public int UsbId
@@ -154,7 +159,10 @@ namespace NvxEpi.Aggregates
             get { return _currentVideoStream.VideoStreamStatus; }
         }
 
-        public IntFeedback VideowallMode { get; private set; }
+        public IntFeedback VideowallMode
+        {
+            get { return _hdmiOutput.VideowallMode; }
+        }
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
@@ -187,8 +195,8 @@ namespace NvxEpi.Aggregates
 
         private void AddRoutingPorts()
         {
-            HdmiInput1.AddRoutingPort(this);
-            HdmiInput2.AddRoutingPort(this);
+            HdmiInput1Port.AddRoutingPort(this);
+            HdmiInput2Port.AddRoutingPort(this);
             HdmiOutput.AddRoutingPort(this);
 
             if (IsTransmitter)
@@ -205,6 +213,14 @@ namespace NvxEpi.Aggregates
             }
         }
 
+        private void RegisterForDeviceFeedback()
+        {
+            DeviceDebug.RegisterForDeviceFeedback(this);
+            DeviceDebug.RegisterForPluginFeedback(this);
+            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
+            DeviceDebug.RegisterForRoutingOutputFeedback(this);
+        }
+
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
         {
             hardware.OnlineStatusChange += (device, args) =>
@@ -219,36 +235,6 @@ namespace NvxEpi.Aggregates
                     else
                         Hardware.SetRxDefaults(props);
                 };
-        }
-
-        private void SetupFeedbacks()
-        {
-            _hdcpCapability.Add(1, Hdmi1HdcpCapabilityValueFeedback.GetFeedback(Hardware));
-            _hdcpCapability.Add(2, Hdmi2HdcpCapabilityValueFeedback.GetFeedback(Hardware));
-            _syncDetected.Add(1, Hdmi1SyncDetectedFeedback.GetFeedback(Hardware));
-            _syncDetected.Add(2, Hdmi2SyncDetectedFeedback.GetFeedback(Hardware));
-
-            DisabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(Hardware);
-            HorizontalResolution = HorizontalResolutionFeedback.GetFeedback(Hardware);
-            VideowallMode = VideowallModeFeedback.GetFeedback(Hardware);
-
-            Feedbacks.AddRange(new Feedback[]
-                {
-                    DisabledByHdcp,
-                    HorizontalResolution,
-                    VideowallMode,
-                    _syncDetected[1],
-                    _syncDetected[2],
-                    _hdcpCapability[1],
-                    _hdcpCapability[2],
-                    Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware),
-                    Hdmi2HdcpCapabilityFeedback.GetFeedback(Hardware)
-                });
-
-            DeviceDebug.RegisterForDeviceFeedback(this);
-            DeviceDebug.RegisterForPluginFeedback(this);
-            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
-            DeviceDebug.RegisterForRoutingOutputFeedback(this);
         }
     }
 }

@@ -9,6 +9,8 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using NvxEpi.Entities.Streams;
+using NvxEpi.Entities.Streams.Audio;
+using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Extensions;
 using NvxEpi.JoinMaps;
 using NvxEpi.Services.Feedback;

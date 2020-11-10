@@ -104,6 +104,11 @@
     <Compile Include="Abstractions\Device\ISecondaryAudioAddress.cs" />
     <Compile Include="Abstractions\Device\IStreamUrl.cs" />
     <Compile Include="Aggregates\NvxBaseDevice.cs" />
+    <Compile Include="Entities\Hdmi\Input\HdmiInput2.cs" />
+    <Compile Include="Entities\Hdmi\Input\HdmiInputBase.cs" />
+    <Compile Include="Entities\Hdmi\Input\HdmiInput1.cs" />
+    <Compile Include="Entities\Hdmi\Output\HdmiOutput.cs" />
+    <Compile Include="Entities\Hdmi\Output\VideowallModeOutput.cs" />
     <Compile Include="Extensions\HdmiInputExtensions.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
     <Compile Include="Abstractions\Device\ITransmitterReceiver.cs" />
@@ -135,8 +140,8 @@
     <Compile Include="Application\Services\AudioFollowsVideo.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
     <Compile Include="Entities\Routing\NvxGlobalRouter.cs" />
-    <Compile Include="Entities\Streams\UsbStream.cs" />
-    <Compile Include="Entities\Streams\VideoStream.cs" />
+    <Compile Include="Entities\Streams\Usb\UsbStream.cs" />
+    <Compile Include="Entities\Streams\Video\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
     <Compile Include="Extensions\UsbStreamExtensions.cs" />
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
@@ -158,8 +163,8 @@
     <Compile Include="Services\InputPorts\PrimaryAudioInput.cs" />
     <Compile Include="Services\InputPorts\SecondaryAudioInput.cs" />
     <Compile Include="Services\InputPorts\StreamInput.cs" />
-    <Compile Include="Services\InputPorts\HdmiInput1.cs" />
-    <Compile Include="Services\InputPorts\HdmiInput2.cs" />
+    <Compile Include="Services\InputPorts\HdmiInput1Port.cs" />
+    <Compile Include="Services\InputPorts\HdmiInput2Port.cs" />
     <Compile Include="Services\InputSwitching\AnalogAudioOutput.cs" />
     <Compile Include="Services\InputSwitching\SecondaryAudioOutput.cs" />
     <Compile Include="Services\InputSwitching\StreamOutput.cs" />
@@ -170,10 +175,10 @@
     <Compile Include="Enums\Enumeration.cs" />
     <Compile Include="Factories\Nvx35XDeviceFactory.cs" />
     <Compile Include="JoinMaps\NvxDeviceJoinMap.cs" />
-    <Compile Include="Entities\Streams\SecondaryAudioStream.cs" />
-    <Compile Include="Entities\Streams\CurrentSecondaryAudioStream.cs" />
+    <Compile Include="Entities\Streams\Audio\SecondaryAudioStream.cs" />
+    <Compile Include="Entities\Streams\Audio\CurrentSecondaryAudioStream.cs" />
     <Compile Include="Entities\InputSwitching\VideoInputSwitcher.cs" />
-    <Compile Include="Entities\Streams\CurrentVideoStream.cs" />
+    <Compile Include="Entities\Streams\Video\CurrentVideoStream.cs" />
     <Compile Include="Aggregates\Nvx35x.cs" />
     <Compile Include="Services\Utilities\DeviceDefaults.cs" />
     <Compile Include="Services\Feedback\AudioInputValueFeedback.cs" />
@@ -194,8 +199,6 @@
     <Compile Include="Services\Bridge\NvxDeviceBridge.cs" />
     <Compile Include="Services\Utilities\EnumExtensions.cs" />
     <Compile Include="Extensions\AudioInputExtensions.cs" />
-    <Compile Include="Extensions\CurrentSecondaryAudioStreamExtensions.cs" />
-    <Compile Include="Extensions\CurrentStreamRouteExtensions.cs" />
     <Compile Include="Extensions\NaxAudioStreamExtensions.cs" />
     <Compile Include="Extensions\SecondaryAudioExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
