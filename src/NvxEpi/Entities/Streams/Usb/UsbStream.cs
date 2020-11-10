@@ -8,7 +8,7 @@ using NvxEpi.Services.Feedback;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Entities.Streams
+namespace NvxEpi.Entities.Streams.Usb
 {
     public abstract class UsbStream : IUsbStream
     {
@@ -204,6 +204,16 @@ namespace NvxEpi.Entities.Streams
         public StringFeedback AudioName
         {
             get { return _device.AudioName; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _device.StreamUrl; }
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _device.SecondaryAudioAddress; }
         }
     }
 }

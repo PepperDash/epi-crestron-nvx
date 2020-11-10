@@ -5,18 +5,18 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputPorts
 {
-    public class HdmiInput1
+    public class HdmiInput2Port
     {
         public static void AddRoutingPort(ICurrentVideoInput device)
         {
-            if (device.Hardware.HdmiIn == null || device.Hardware.HdmiIn[1] == null)
-                throw new NotSupportedException("hdmi 1");
+            if (device.Hardware.HdmiIn == null || device.Hardware.HdmiIn[2] == null)
+                throw new NotSupportedException("hdmi 2");
 
             var port = new RoutingInputPort(
-                DeviceInputEnum.Hdmi1.Name, 
-                eRoutingSignalType.AudioVideo, 
-                eRoutingPortConnectionType.Hdmi, 
-                DeviceInputEnum.Hdmi1, 
+                DeviceInputEnum.Hdmi2.Name,
+                eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi,
+                DeviceInputEnum.Hdmi2,
                 device);
 
             device.InputPorts.Add(port);

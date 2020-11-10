@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
-using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
-using NvxEpi.Entities.Hardware;
-using NvxEpi.Entities.Streams;
+using NvxEpi.Entities.Hdmi.Input;
+using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Bridge;
-using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
@@ -22,115 +18,33 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Aggregates
 {
-    public class NvxE3X : CrestronGenericBridgeableBaseDevice, INvxE3XHardware, IComPorts, IIROutputPorts, ICurrentStream,
-        ICurrentVideoInput, ICurrentAudioInput, IHdmiInput, IRouting
+    public class NvxE3X : NvxBaseDevice, INvxE3XHardware, IComPorts, IIROutputPorts, ICurrentStream, IHdmiInput,
+        IRouting
     {
-        private readonly NvxE3XHardware _device;
         private readonly ICurrentStream _currentVideoStream;
+        private readonly IHdmiInput _hdmiInput;
         private readonly IUsbStream _usbStream;
 
-        private readonly Dictionary<uint, IntFeedback> _hdcpCapability = 
-            new Dictionary<uint, IntFeedback>();
-
-        private readonly Dictionary<uint, BoolFeedback> _syncDetected = 
-            new Dictionary<uint, BoolFeedback>();
-
         public NvxE3X(DeviceConfig config, DmNvxE3x hardware)
-            : base(config.Key, config.Name, hardware)
+            : base(config, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             Hardware = hardware;
 
-            _device = new NvxE3XHardware(config, hardware, Feedbacks, IsOnline);
-            _currentVideoStream = new CurrentVideoStream(new VideoStream(_device));
+            _currentVideoStream = new CurrentVideoStream(this);
+            _hdmiInput = new HdmiInput1(this);
 
             RegisterForOnlineFeedback(hardware, props);
-            SetupFeedbacks();
+            RegisterForFeedback();
             AddRoutingPorts();
         }
 
-        private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
+        public CrestronCollection<ComPort> ComPorts
         {
-            hardware.OnlineStatusChange += (device, args) =>
-            {
-                if (!args.DeviceOnLine)
-                    return;
-
-                Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
-                Hardware.SetDefaults(props);
-            };
-        }
-
-        private void SetupFeedbacks()
-        {
-            _hdcpCapability.Add(1, Hdmi1HdcpCapabilityValueFeedback.GetFeedback(Hardware));
-            _syncDetected.Add(1, Hdmi1SyncDetectedFeedback.GetFeedback(Hardware));
-
-            Feedbacks.AddRange(new Feedback[]
-            {
-                _syncDetected[1],
-                _hdcpCapability[1],
-                Hdmi1HdcpCapabilityFeedback.GetFeedback(Hardware)
-            });
-
-            DeviceDebug.RegisterForDeviceFeedback(this);
-            DeviceDebug.RegisterForPluginFeedback(this);
-            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
-            DeviceDebug.RegisterForRoutingOutputFeedback(this);
-        }
-
-        private void AddRoutingPorts()
-        {
-            HdmiInput1.AddRoutingPort(this);
-            StreamOutput.AddRoutingPort(this);
-            AnalogAudioInput.AddRoutingPort(this);
-        }
-
-        public CrestronCollection<ComPort> ComPorts { get { return Hardware.ComPorts; } }
-        public int NumberOfComPorts { get { return Hardware.NumberOfComPorts; } }
-
-        public CrestronCollection<IROutputPort> IROutputPorts { get { return Hardware.IROutputPorts; } }
-        public int NumberOfIROutputPorts { get { return Hardware.NumberOfIROutputPorts; } }
-
-        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
-        {
-            try
-            {
-                var switcher = outputSelector as IHandleInputSwitch;
-                if (switcher == null)
-                    throw new NullReferenceException("input selector");
-
-                Debug.Console(1, this, "Executing switch : '{0}' | '{1}' | '{2}'", inputSelector.ToString(), outputSelector.ToString(), signalType.ToString());
-                switcher.HandleSwitch(inputSelector, signalType);
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
-            }
-        }
-
-        public IntFeedback DeviceMode
-        {
-            get { return _device.DeviceMode; }
-        }
-
-        public bool IsTransmitter
-        {
-            get { return _device.IsTransmitter; }
-        }
-
-        public int DeviceId
-        {
-            get { return _device.DeviceId; }
-        }
-
-        public StringFeedback CurrentStreamName
-        {
-            get { return _currentVideoStream.CurrentStreamName; }
+            get { return Hardware.ComPorts; }
         }
 
         public IntFeedback CurrentStreamId
@@ -138,14 +52,26 @@ namespace NvxEpi.Aggregates
             get { return _currentVideoStream.CurrentStreamId; }
         }
 
-        public StringFeedback MulticastAddress
+        public StringFeedback CurrentStreamName
         {
-            get { return _device.MulticastAddress; }
+            get { return _currentVideoStream.CurrentStreamName; }
         }
 
-        public StringFeedback StreamUrl
+        public new DmNvxE3x Hardware { get; private set; }
+
+        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
-            get { return _currentVideoStream.StreamUrl; }
+            get { return _hdmiInput.HdcpCapability; }
+        }
+
+        public CrestronCollection<IROutputPort> IROutputPorts
+        {
+            get { return Hardware.IROutputPorts; }
+        }
+
+        public bool IsRemote
+        {
+            get { return _usbStream.IsRemote; }
         }
 
         public BoolFeedback IsStreamingVideo
@@ -153,58 +79,24 @@ namespace NvxEpi.Aggregates
             get { return _currentVideoStream.IsStreamingVideo; }
         }
 
-        public StringFeedback VideoStreamStatus
+        public int NumberOfComPorts
         {
-            get { return _currentVideoStream.VideoStreamStatus; }
+            get { return Hardware.NumberOfComPorts; }
         }
 
-        public StringFeedback CurrentVideoInput
+        public int NumberOfIROutputPorts
         {
-            get { return _device.CurrentVideoInput; }
+            get { return Hardware.NumberOfIROutputPorts; }
         }
 
-        public IntFeedback CurrentVideoInputValue
+        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
         {
-            get { return _device.CurrentVideoInputValue; }
+            get { return _hdmiInput.SyncDetected; }
         }
 
-        public StringFeedback CurrentAudioInput
+        public int UsbId
         {
-            get { return _device.CurrentAudioInput; }
-        }
-
-        public IntFeedback CurrentAudioInputValue
-        {
-            get { return _device.CurrentAudioInputValue; }
-        }
-
-        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability { get { return new ReadOnlyDictionary<uint, IntFeedback>(_hdcpCapability); } }
-        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected { get { return new ReadOnlyDictionary<uint, BoolFeedback>(_syncDetected); } }
-
-        DmNvxBaseClass INvxHardware.Hardware
-        {
-            get { return _device.Hardware; }
-        }
-
-        public RoutingPortCollection<RoutingInputPort> InputPorts
-        {
-            get { return _device.InputPorts; }
-        }
-
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts
-        {
-            get { return _device.OutputPorts; }
-        }
-
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-        {
-            var deviceBridge = new NvxDeviceBridge(this);
-            deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
-        }
-
-        public bool IsRemote
-        {
-            get { return _usbStream.IsRemote; }
+            get { return _usbStream.UsbId; }
         }
 
         public StringFeedback UsbLocalId
@@ -217,26 +109,65 @@ namespace NvxEpi.Aggregates
             get { return _usbStream.UsbRemoteId; }
         }
 
-        public int UsbId
+        public StringFeedback VideoStreamStatus
         {
-            get { return _usbStream.UsbId; }
+            get { return _currentVideoStream.VideoStreamStatus; }
         }
 
-        public StringFeedback VideoName
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            get { return _device.VideoName; }
+            try
+            {
+                var switcher = outputSelector as IHandleInputSwitch;
+                if (switcher == null)
+                    throw new NullReferenceException("input selector");
+
+                Debug.Console(1,
+                    this,
+                    "Executing switch : '{0}' | '{1}' | '{2}'",
+                    inputSelector.ToString(),
+                    outputSelector.ToString(),
+                    signalType.ToString());
+
+                switcher.HandleSwitch(inputSelector, signalType);
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
+            }
         }
 
-        public StringFeedback AudioName
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            get { return _device.AudioName; }
+            var deviceBridge = new NvxDeviceBridge(this);
+            deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
         }
 
-        public override string ToString()
+        private void AddRoutingPorts()
         {
-            return Key;
+            HdmiInput1Port.AddRoutingPort(this);
+            StreamOutput.AddRoutingPort(this);
+            AnalogAudioInput.AddRoutingPort(this);
         }
 
-        public new DmNvxE3x Hardware { get; private set; }
+        private void RegisterForFeedback()
+        {
+            DeviceDebug.RegisterForDeviceFeedback(this);
+            DeviceDebug.RegisterForPluginFeedback(this);
+            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
+            DeviceDebug.RegisterForRoutingOutputFeedback(this);
+        }
+
+        private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
+        {
+            hardware.OnlineStatusChange += (device, args) =>
+                {
+                    if (!args.DeviceOnLine)
+                        return;
+
+                    Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
+                    Hardware.SetDefaults(props);
+                };
+        }
     }
 }

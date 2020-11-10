@@ -8,9 +8,4 @@ namespace NvxEpi.Abstractions.HdmiOutput
         BoolFeedback DisabledByHdcp { get; }
         IntFeedback HorizontalResolution { get; }
     }
-
-    public interface IVideowallMode : IHdmiOutput
-    {
-        IntFeedback VideowallMode { get; }
-    }
 }
