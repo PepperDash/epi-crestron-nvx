@@ -165,7 +165,6 @@ namespace NvxEpi.Aggregates
                     if (!args.DeviceOnLine)
                         return;
 
-                    Hardware.Control.Name.StringValue = Name.Replace(' ', '-');
                     Hardware.SetDefaults(props);
                 };
         }

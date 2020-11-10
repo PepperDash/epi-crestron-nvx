@@ -51,8 +51,7 @@ namespace NvxEpi.Entities.Streams.Video
                 if (!IsStreamingVideo.BoolValue)
                     return null;
 
-                if (Hardware.Control.ActiveVideoSourceFeedback != eSfpVideoSourceTypes.Stream)
-                    return null;
+                
 
                 return DeviceManager
                     .AllDevices

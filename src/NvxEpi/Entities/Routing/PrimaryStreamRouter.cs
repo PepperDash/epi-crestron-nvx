@@ -119,7 +119,7 @@ namespace NvxEpi.Entities.Routing
                     if (args.BoolValue)
                         return;
 
-                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
+                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.Video);
                 };
             }
 

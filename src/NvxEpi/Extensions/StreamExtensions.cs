@@ -1,28 +1,13 @@
 using System;
-using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Stream;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Extensions
 {
     public static class StreamExtensions
     {
-        private const string _noRouteAddress = "0.0.0.0";
-
-        public static void SetStreamUrl(this IStream device, string url)
-        {
-            if (device.IsTransmitter)
-                return;
-
-            if (String.IsNullOrEmpty(url))
-                return;
-
-            Debug.Console(1, device, "Setting stream: '{0}", url);
-            device.Hardware.Control.ServerUrl.StringValue = url;
-            device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
-        }
+        private static readonly string _noRouteAddress = String.Empty;
 
         public static void ClearStream(this IStream device)
         {
@@ -51,6 +36,19 @@ namespace NvxEpi.Extensions
             tx.MulticastAddress.FireUpdate();
             tx.StreamUrl.FireUpdate();
             device.SetStreamUrl(tx.StreamUrl.StringValue);
+        }
+
+        public static void SetStreamUrl(this IStream device, string url)
+        {
+            if (device.IsTransmitter)
+                return;
+
+            if (String.IsNullOrEmpty(url))
+                return;
+
+            Debug.Console(1, device, "Setting stream: '{0}", url);
+            device.Hardware.Control.ServerUrl.StringValue = url;
+            device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
         }
     }
 }
