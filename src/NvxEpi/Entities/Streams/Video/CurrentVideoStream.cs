@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
@@ -14,16 +13,37 @@ namespace NvxEpi.Entities.Streams.Video
     {
         public const string RouteNameKey = "CurrentVideoRoute";
         public const string RouteValueKey = "CurrentVideoRouteValue";
+        private readonly IntFeedback _currentStreamId;
+        private readonly StringFeedback _currentStreamName;
         private readonly CCriticalSection _lock = new CCriticalSection();
         private IStream _current;
 
         public CurrentVideoStream(INvxHardware device) : base(device)
         {
+            _currentStreamId = IsTransmitter
+                ? new IntFeedback(RouteValueKey, () => default( int ))
+                : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
+
+            _currentStreamName = IsTransmitter
+                ? new StringFeedback(RouteNameKey, () => String.Empty)
+                : new StringFeedback(RouteNameKey,
+                    () => _current != null ? _current.VideoName.StringValue : NvxGlobalRouter.NoSourceText);
+
+            Feedbacks.Add(_currentStreamId);
+            Feedbacks.Add(_currentStreamName);
+
             Initialize();
         }
 
-        public IntFeedback CurrentStreamId { get; private set; }
-        public StringFeedback CurrentStreamName { get; private set; }
+        public IntFeedback CurrentStreamId
+        {
+            get { return _currentStreamId; }
+        }
+
+        public StringFeedback CurrentStreamName
+        {
+            get { return _currentStreamName; }
+        }
 
         public void UpdateCurrentRoute()
         {
@@ -51,8 +71,6 @@ namespace NvxEpi.Entities.Streams.Video
                 if (!IsStreamingVideo.BoolValue)
                     return null;
 
-                
-
                 return DeviceManager
                     .AllDevices
                     .OfType<IStream>()
@@ -75,22 +93,10 @@ namespace NvxEpi.Entities.Streams.Video
 
         private void Initialize()
         {
-            CurrentStreamId = IsTransmitter
-                ? new IntFeedback(RouteValueKey, () => default( int ))
-                : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
-
-            CurrentStreamName = IsTransmitter
-                ? new StringFeedback(RouteNameKey, () => String.Empty)
-                : new StringFeedback(RouteNameKey,
-                    () => _current != null ? _current.VideoName.StringValue : NvxGlobalRouter.NoSourceText);
-
             IsOnline.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
             VideoStreamStatus.OutputChange += (sender, args) => UpdateCurrentRoute();
             IsStreamingVideo.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
             StreamUrl.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
-
-            Feedbacks.Add(CurrentStreamId);
-            Feedbacks.Add(CurrentStreamName);
         }
     }
 }

@@ -8,80 +8,19 @@ namespace NvxEpi.Entities.InputSwitching
 {
     public class VideoInputSwitcher : ICurrentVideoInput
     {
+        private readonly StringFeedback _currentVideoInput;
+        private readonly IntFeedback _currentVideoInputValue;
         private readonly INvxHardware _device;
 
         public VideoInputSwitcher(INvxHardware device)
         {
             _device = device;
 
-            CurrentVideoInput = VideoInputFeedback.GetFeedback(Hardware);
-            CurrentVideoInputValue = VideoInputValueFeedback.GetFeedback(Hardware);
+            _currentVideoInput = VideoInputFeedback.GetFeedback(Hardware);
+            _currentVideoInputValue = VideoInputValueFeedback.GetFeedback(Hardware);
 
-            Feedbacks.Add(CurrentVideoInput);
-            Feedbacks.Add(CurrentVideoInputValue);
-        }
-
-        public string Key
-        {
-            get { return _device.Key; }
-        }
-
-        public RoutingPortCollection<RoutingInputPort> InputPorts
-        {
-            get { return _device.InputPorts; }
-        }
-
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts
-        {
-            get { return _device.OutputPorts; }
-        }
-
-        public IntFeedback DeviceMode
-        {
-            get { return _device.DeviceMode; }
-        }
-
-        public bool IsTransmitter
-        {
-            get { return _device.IsTransmitter; }
-        }
-
-        public string Name
-        {
-            get { return _device.Name; }
-        }
-
-        public int DeviceId
-        {
-            get { return _device.DeviceId; }
-        }
-
-        public DmNvxBaseClass Hardware
-        {
-            get { return _device.Hardware; }
-        }
-
-        public StringFeedback MulticastAddress
-        {
-            get { return _device.MulticastAddress; }
-        }
-
-        public StringFeedback CurrentVideoInput { get; private set; }
-        public IntFeedback CurrentVideoInputValue { get; private set; }
-
-        public FeedbackCollection<Feedback> Feedbacks
-        {
-            get { return _device.Feedbacks; }
-        }
-
-        public BoolFeedback IsOnline
-        {
-            get { return _device.IsOnline; }
-        }
-
-        public StringFeedback VideoName
-        {
-            get { return _device.VideoName; }
+            Feedbacks.Add(_currentVideoInput);
+            Feedbacks.Add(_currentVideoInputValue);
         }
 
         public StringFeedback AudioName
@@ -89,14 +28,84 @@ namespace NvxEpi.Entities.InputSwitching
             get { return _device.AudioName; }
         }
 
-        public StringFeedback StreamUrl
+        public StringFeedback CurrentVideoInput
         {
-            get { return _device.StreamUrl; }
+            get { return _currentVideoInput; }
+        }
+
+        public IntFeedback CurrentVideoInputValue
+        {
+            get { return _currentVideoInputValue; }
+        }
+
+        public int DeviceId
+        {
+            get { return _device.DeviceId; }
+        }
+
+        public IntFeedback DeviceMode
+        {
+            get { return _device.DeviceMode; }
+        }
+
+        public FeedbackCollection<Feedback> Feedbacks
+        {
+            get { return _device.Feedbacks; }
+        }
+
+        public DmNvxBaseClass Hardware
+        {
+            get { return _device.Hardware; }
+        }
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts
+        {
+            get { return _device.InputPorts; }
+        }
+
+        public BoolFeedback IsOnline
+        {
+            get { return _device.IsOnline; }
+        }
+
+        public bool IsTransmitter
+        {
+            get { return _device.IsTransmitter; }
+        }
+
+        public string Key
+        {
+            get { return _device.Key; }
+        }
+
+        public StringFeedback MulticastAddress
+        {
+            get { return _device.MulticastAddress; }
+        }
+
+        public string Name
+        {
+            get { return _device.Name; }
+        }
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { return _device.OutputPorts; }
         }
 
         public StringFeedback SecondaryAudioAddress
         {
             get { return _device.SecondaryAudioAddress; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _device.StreamUrl; }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _device.VideoName; }
         }
     }
 }

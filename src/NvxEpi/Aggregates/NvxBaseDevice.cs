@@ -12,30 +12,71 @@ namespace NvxEpi.Aggregates
 {
     public abstract class NvxBaseDevice : CrestronGenericBridgeableBaseDevice, ICurrentVideoInput, ICurrentAudioInput
     {
-        private readonly ICurrentAudioInput _audioSwitcher;
+        private readonly bool _isTransmitter;
+        private readonly int _deviceId;
+
+        private readonly DmNvxBaseClass _hardware;
+
+        private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
+            new RoutingPortCollection<RoutingInputPort>();
+
+        private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
+            new RoutingPortCollection<RoutingOutputPort>();
+
+        private readonly IntFeedback _deviceMode;
+
+        private readonly StringFeedback _audioName;
+        private readonly StringFeedback _multicastAddress;
+        private readonly StringFeedback _secondaryAudioAddress;
+        private readonly StringFeedback _streamUrl;
+        private readonly StringFeedback _videoName;
+
         private readonly ICurrentVideoInput _videoSwitcher;
+        private readonly ICurrentAudioInput _audioSwitcher;
 
         protected NvxBaseDevice(DeviceConfig config, DmNvxBaseClass hardware)
             : base(config.Key, config.Name, hardware)
         {
-            Hardware = hardware;
-
-            InputPorts = new RoutingPortCollection<RoutingInputPort>();
-            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
+            _hardware = hardware;
 
             var props = NvxDeviceProperties.FromDeviceConfig(config);
-            DeviceId = props.DeviceId;
-            IsTransmitter = !String.IsNullOrEmpty(props.Mode) &&
-                            props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
+            _deviceId = props.DeviceId;
+            _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
+                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
 
-            SetupFeedbacks(props);
+            _videoName = String.IsNullOrEmpty(props.VideoSourceName)
+                ? new StringFeedback("VideoName", () => Name)
+                : new StringFeedback("VideoName", () => props.VideoSourceName);
+
+            _audioName = String.IsNullOrEmpty(props.AudioSourceName)
+                ? new StringFeedback("AudioName", () => Name)
+                : new StringFeedback("AudioName", () => props.AudioSourceName);
+
+            _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
+            _streamUrl = StreamUrlFeedback.GetFeedback(Hardware);
+            _multicastAddress = MulticastAddressFeedback.GetFeedback(Hardware);
+            _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
+
+            Feedbacks.AddRange(new Feedback[]
+                {
+                    DeviceNameFeedback.GetFeedback(Name),
+                    StreamUrl,
+                    MulticastAddress,
+                    VideoName,
+                    AudioName,
+                    DeviceMode
+                });
+
             RegisterForOnlineFeedback(Hardware, props);
         }
 
-        public StringFeedback AudioName { get; private set; }
+        public StringFeedback AudioName
+        {
+            get { return _audioName; }
+        }
 
         public StringFeedback CurrentAudioInput
         {
@@ -57,24 +98,55 @@ namespace NvxEpi.Aggregates
             get { return _videoSwitcher.CurrentVideoInputValue; }
         }
 
-        public int DeviceId { get; private set; }
+        public int DeviceId
+        {
+            get { return _deviceId; }
+        }
 
-        public IntFeedback DeviceMode { get; private set; }
+        public IntFeedback DeviceMode
+        {
+            get { return _deviceMode; }
+        }
 
-        public new DmNvxBaseClass Hardware { get; private set; }
+        public new DmNvxBaseClass Hardware
+        {
+            get { return _hardware; }
+        }
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
+        public RoutingPortCollection<RoutingInputPort> InputPorts
+        {
+            get { return _inputPorts; }
+        }
 
-        public bool IsTransmitter { get; private set; }
+        public bool IsTransmitter
+        {
+            get { return _isTransmitter; }
+        }
 
-        public StringFeedback MulticastAddress { get; private set; }
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+        public StringFeedback MulticastAddress
+        {
+            get { return _multicastAddress; }
+        }
 
-        public StringFeedback SecondaryAudioAddress { get; private set; }
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { return _outputPorts; }
+        }
 
-        public StringFeedback StreamUrl { get; private set; }
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _secondaryAudioAddress; }
+        }
 
-        public StringFeedback VideoName { get; private set; }
+        public StringFeedback StreamUrl
+        {
+            get { return _streamUrl; }
+        }
+
+        public StringFeedback VideoName
+        {
+            get { return _videoName; }
+        }
 
         public override string ToString()
         {
@@ -90,32 +162,6 @@ namespace NvxEpi.Aggregates
 
                     Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
                 };
-        }
-
-        private void SetupFeedbacks(NvxDeviceProperties props)
-        {
-            VideoName = String.IsNullOrEmpty(props.VideoSourceName)
-                ? new StringFeedback("VideoName", () => Name)
-                : new StringFeedback("VideoName", () => props.VideoSourceName);
-
-            AudioName = String.IsNullOrEmpty(props.AudioSourceName)
-                ? new StringFeedback("AudioName", () => Name)
-                : new StringFeedback("AudioName", () => props.AudioSourceName);
-
-            DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
-            StreamUrl = StreamUrlFeedback.GetFeedback(Hardware);
-            MulticastAddress = MulticastAddressFeedback.GetFeedback(Hardware);
-            SecondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
-
-            Feedbacks.AddRange(new Feedback[]
-                {
-                    DeviceNameFeedback.GetFeedback(Name),
-                    StreamUrl,
-                    MulticastAddress,
-                    VideoName,
-                    AudioName,
-                    DeviceMode
-                });
         }
     }
 }

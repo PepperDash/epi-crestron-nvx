@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Entities.Routing;
@@ -15,16 +14,40 @@ namespace NvxEpi.Entities.Streams.Audio
         public const string RouteNameKey = "CurrentSecondaryAudioRoute";
         public const string RouteValueKey = "CurrentSecondaryAudioRouteValue";
 
+        private readonly IntFeedback _currentSecondaryAudioStreamId;
+        private readonly StringFeedback _currentSecondaryAudioStreamName;
+
         private readonly CCriticalSection _lock = new CCriticalSection();
+
         private ISecondaryAudioStream _current;
 
         public CurrentSecondaryAudioStream(INvxHardware device) : base(device)
         {
+            _currentSecondaryAudioStreamId = IsTransmitter
+                ? new IntFeedback(RouteValueKey, () => default( int ))
+                : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
+
+            _currentSecondaryAudioStreamName = IsTransmitter
+                ? new StringFeedback(RouteNameKey, () => String.Empty)
+                : new StringFeedback(RouteNameKey,
+                    () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
+
+
+            Feedbacks.Add(CurrentSecondaryAudioStreamId);
+            Feedbacks.Add(CurrentSecondaryAudioStreamName);
+
             Initialize();
         }
 
-        public IntFeedback CurrentSecondaryAudioStreamId { get; private set; }
-        public StringFeedback CurrentSecondaryAudioStreamName { get; private set; }
+        public IntFeedback CurrentSecondaryAudioStreamId
+        {
+            get { return _currentSecondaryAudioStreamId; }
+        }
+
+        public StringFeedback CurrentSecondaryAudioStreamName
+        {
+            get { return _currentSecondaryAudioStreamName; }
+        }
 
         private ISecondaryAudioStream GetCurrentAudioStream()
         {
@@ -58,22 +81,10 @@ namespace NvxEpi.Entities.Streams.Audio
 
         private void Initialize()
         {
-            CurrentSecondaryAudioStreamId = IsTransmitter
-                ? new IntFeedback(RouteValueKey, () => default( int ))
-                : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
-
-            CurrentSecondaryAudioStreamName = IsTransmitter
-                ? new StringFeedback(RouteNameKey, () => String.Empty)
-                : new StringFeedback(RouteNameKey,
-                    () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
-
             IsOnline.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
             IsStreamingSecondaryAudio.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
             SecondaryAudioStreamStatus.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
             SecondaryAudioAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
-
-            Feedbacks.Add(CurrentSecondaryAudioStreamId);
-            Feedbacks.Add(CurrentSecondaryAudioStreamName);
         }
 
         private void UpdateCurrentAudioRoute()

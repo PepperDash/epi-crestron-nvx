@@ -12,7 +12,6 @@ using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hdmi.Input;
 using NvxEpi.Entities.Hdmi.Output;
-using NvxEpi.Entities.Streams;
 using NvxEpi.Entities.Streams.Audio;
 using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Bridge;
@@ -32,6 +31,7 @@ namespace NvxEpi.Aggregates
     {
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private readonly ICurrentStream _currentVideoStream;
+        private readonly DmNvx35x _hardware;
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
@@ -40,7 +40,7 @@ namespace NvxEpi.Aggregates
             : base(config, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
-            Hardware = hardware;
+            _hardware = hardware;
 
             _currentVideoStream = new CurrentVideoStream(this);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
@@ -82,7 +82,10 @@ namespace NvxEpi.Aggregates
             get { return _hdmiOutput.DisabledByHdcp; }
         }
 
-        public new DmNvx35x Hardware { get; private set; }
+        public new DmNvx35x Hardware
+        {
+            get { return _hardware; }
+        }
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
@@ -224,12 +227,12 @@ namespace NvxEpi.Aggregates
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
         {
             hardware.OnlineStatusChange += (device, args) =>
-            {
-                if (IsTransmitter)
-                    Hardware.SetTxDefaults(props);
-                else
-                    Hardware.SetRxDefaults(props);
-            };
+                {
+                    if (IsTransmitter)
+                        Hardware.SetTxDefaults(props);
+                    else
+                        Hardware.SetRxDefaults(props);
+                };
         }
     }
 }

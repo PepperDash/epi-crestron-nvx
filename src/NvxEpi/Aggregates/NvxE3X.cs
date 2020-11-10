@@ -27,12 +27,13 @@ namespace NvxEpi.Aggregates
         private readonly ICurrentStream _currentVideoStream;
         private readonly IHdmiInput _hdmiInput;
         private readonly IUsbStream _usbStream;
+        private readonly DmNvxE3x _hardware;
 
         public NvxE3X(DeviceConfig config, DmNvxE3x hardware)
             : base(config, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
-            Hardware = hardware;
+            _hardware = hardware;
 
             _currentVideoStream = new CurrentVideoStream(this);
             _hdmiInput = new HdmiInput1(this);
@@ -56,8 +57,6 @@ namespace NvxEpi.Aggregates
         {
             get { return _currentVideoStream.CurrentStreamName; }
         }
-
-        public new DmNvxE3x Hardware { get; private set; }
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
@@ -167,6 +166,11 @@ namespace NvxEpi.Aggregates
 
                     Hardware.SetDefaults(props);
                 };
+        }
+
+        public new DmNvxE3x Hardware
+        {
+            get { return _hardware; }
         }
     }
 }

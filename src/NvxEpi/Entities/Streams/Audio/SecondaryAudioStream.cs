@@ -9,13 +9,15 @@ namespace NvxEpi.Entities.Streams.Audio
     public class SecondaryAudioStream : ISecondaryAudioStream
     {
         private readonly INvxHardware _device;
+        private readonly BoolFeedback _isStreamingSecondaryAudio;
+        private readonly StringFeedback _secondaryAudioStreamStatus;
 
         public SecondaryAudioStream(INvxHardware device)
         {
             _device = device;
 
-            SecondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedback(Hardware);
-            IsStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedback(Hardware);
+            _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedback(Hardware);
+            _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedback(Hardware);
 
             Feedbacks.Add(SecondaryAudioStreamStatus);
             Feedbacks.Add(IsStreamingSecondaryAudio);
@@ -45,9 +47,6 @@ namespace NvxEpi.Entities.Streams.Audio
         {
             get { return _device.DeviceId; }
         }
-
-        public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
-        public StringFeedback SecondaryAudioStreamStatus { get; private set; }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts
         {
@@ -97,6 +96,16 @@ namespace NvxEpi.Entities.Streams.Audio
         public DmNvxBaseClass Hardware
         {
             get { return _device.Hardware; }
+        }
+
+        public BoolFeedback IsStreamingSecondaryAudio
+        {
+            get { return _isStreamingSecondaryAudio; }
+        }
+
+        public StringFeedback SecondaryAudioStreamStatus
+        {
+            get { return _secondaryAudioStreamStatus; }
         }
     }
 }
