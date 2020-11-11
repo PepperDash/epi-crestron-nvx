@@ -373,7 +373,7 @@ namespace NvxEpi.Application
             for (var x = 1; x <= joinMap.OutputHorizontalResolution.JoinSpan; x++)
             {
                 INvxDevice device;
-                if (!_transmitters.TryGetValue(x, out device))
+                if (!_receivers.TryGetValue(x, out device))
                     continue;
 
                 var feedback =
