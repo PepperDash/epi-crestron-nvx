@@ -5,7 +5,7 @@ namespace NvxEpi.Services.Feedback
 {
     public class DeviceModeFeedback
     {
-        public const string Key = "DeviceMode";
+        public const string Key = "DeviceModeValue";
 
         public static IntFeedback GetFeedback(DmNvxBaseClass device)
         {

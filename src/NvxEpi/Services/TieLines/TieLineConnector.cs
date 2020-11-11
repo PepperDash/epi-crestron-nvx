@@ -12,9 +12,9 @@ namespace NvxEpi.Services.TieLines
 {
     public class TieLineConnector
     {
-        public static void AddTieLinesForTransmitters(IEnumerable<INvxDevice> trasnmitters)
+        public static void AddTieLinesForTransmitters(IEnumerable<INvxDevice> transmitters)
         {
-            foreach (var item in trasnmitters)
+            foreach (var item in transmitters)
             {
                 var tx = item;
                 var outputPort = tx.OutputPorts[StreamOutput.Key];

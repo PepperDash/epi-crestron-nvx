@@ -12,24 +12,4 @@ namespace NvxEpi.Services.Feedback
             return new StringFeedback(Key, () => deviceName);
         }
     }
-
-    public class StreamNameFeedback
-    {
-        public const string Key = "StreamName";
-
-        public static StringFeedback GetFeedback(string streamName)
-        {
-            return new StringFeedback(Key, () => streamName);
-        }
-    }
-
-    public class SecondaryAudioNameFeedback
-    {
-        public const string Key = "SecondaryAudioName";
-
-        public static StringFeedback GetFeedback(string secondaryAudioName)
-        {
-            return new StringFeedback(Key, () => secondaryAudioName);
-        }
-    }
 }

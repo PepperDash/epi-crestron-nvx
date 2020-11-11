@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Enums;
 using PepperDash.Essentials.Core;
@@ -22,7 +23,6 @@ namespace NvxEpi.Services.InputPorts
                 new VideoStatusFuncsWrapper
                     {
                         HasVideoStatusFunc = () => true,
-                        HdcpActiveFeedbackFunc = () => hdmi.HdcpSupportOnFeedback.BoolValue,
                         HdcpStateFeedbackFunc = () => hdmi.HdcpCapabilityFeedback.ToString(),
                         VideoResolutionFeedbackFunc =
                             () =>
@@ -36,6 +36,9 @@ namespace NvxEpi.Services.InputPorts
             hdmi.VideoAttributes.AttributeChange += (sender, args) => port.VideoStatus.FireAll();
 
             device.InputPorts.Add(port);
+
+            foreach (var videoStatusOutput in port.VideoStatus.ToList().Where(x => x != null))
+                device.Feedbacks.Add(videoStatusOutput);
         }
     }
 }

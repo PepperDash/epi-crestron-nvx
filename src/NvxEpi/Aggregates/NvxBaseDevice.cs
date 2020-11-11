@@ -1,10 +1,12 @@
 ﻿using System;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.InputSwitching;
 using NvxEpi.Services.Feedback;
+using NvxEpi.Services.Utilities;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -33,6 +35,17 @@ namespace NvxEpi.Aggregates
 
         private readonly ICurrentVideoInput _videoSwitcher;
         private readonly ICurrentAudioInput _audioSwitcher;
+
+        private const string _showNvxCmd = "shownvxinfo";
+        private const string _showNvxCmdHelp = "Prints all keyed feedback status";
+
+        static NvxBaseDevice()
+        {
+            CrestronConsole.AddNewConsoleCommand(s => DeviceConsole.PrintInfoForAllDevices(),
+                _showNvxCmd,
+                _showNvxCmdHelp,
+                ConsoleAccessLevelEnum.AccessAdministrator);
+        }
 
         protected NvxBaseDevice(DeviceConfig config, DmNvxBaseClass hardware)
             : base(config.Key, config.Name, hardware)
@@ -63,6 +76,9 @@ namespace NvxEpi.Aggregates
             Feedbacks.AddRange(new Feedback[]
                 {
                     DeviceNameFeedback.GetFeedback(Name),
+                    DeviceIpFeedback.GetFeedback(Hardware),
+                    DeviceHostnameFeedback.GetFeedback(Hardware),
+                    DeviceModeNameFeedback.GetFeedback(Hardware),
                     StreamUrl,
                     MulticastAddress,
                     VideoName,

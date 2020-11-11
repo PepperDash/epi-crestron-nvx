@@ -56,51 +56,6 @@ namespace NvxEpi.Services.Utilities
             }
         }
 
-        public static void RegisterForRoutingInputPortFeedback(IRoutingInputs device)
-        {
-            foreach (var item in device.InputPorts.OfType<RoutingInputPortWithVideoStatuses>())
-            {
-                var keyed = item;
-                item.VideoStatus.HdcpActiveFeedback.OutputChange +=
-                    (sender, args) => PrintRoutingInputFeedbackInfo(keyed, sender, args);
-
-                item.VideoStatus.HdcpStateFeedback.OutputChange +=
-                    (sender, args) => PrintRoutingInputFeedbackInfo(keyed, sender, args);
-
-                item.VideoStatus.VideoSyncFeedback.OutputChange +=
-                    (sender, args) => PrintRoutingInputFeedbackInfo(keyed, sender, args);
-
-                item.VideoStatus.VideoResolutionFeedback.OutputChange +=
-                    (sender, args) => PrintRoutingInputFeedbackInfo(keyed, sender, args);
-            }
-        }
-
-        public static void RegisterForRoutingOutputFeedback(IRoutingOutputs device)
-        {
-            foreach (var item in device.OutputPorts)
-            {
-                var port = item;
-                item.InUseTracker.InUseFeedback.OutputChange +=
-                    (sender, args) => Debug.Console(1, device, "Ouput '{0}' in use: {1}", port.Key, args.BoolValue);
-            }
-        }
-
-        private static void PrintRoutingInputFeedbackInfo(IKeyed port, object sender, FeedbackEventArgs args)
-        {
-            var keyed = sender as IKeyed;
-            if (keyed == null || String.IsNullOrEmpty(keyed.Key))
-                return;
-
-            if (sender is BoolFeedback)
-                Debug.Console(1, port, "Received {0} Update : '{1}'", keyed.Key, args.BoolValue);
-
-            if (sender is IntFeedback)
-                Debug.Console(1, port, "Received {0} Update : '{1}'", keyed.Key, args.IntValue);
-
-            if (sender is StringFeedback)
-                Debug.Console(1, port, "Received {0} Update : '{1}'", keyed.Key, args.StringValue);
-        }
-
         private static void RegisterForHdmiInputFeedback(DmNvxBaseClass device, IKeyed keyed)
         {
             if (device.HdmiIn == null)

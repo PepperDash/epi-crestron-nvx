@@ -146,6 +146,11 @@
     <Compile Include="Extensions\UsbStreamExtensions.cs" />
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
+    <Compile Include="Services\Feedback\DeviceHostnameFeedback.cs" />
+    <Compile Include="Services\Feedback\DeviceIpFeedback.cs" />
+    <Compile Include="Services\Feedback\DeviceModeNameFeedback.cs" />
+    <Compile Include="Services\Feedback\SecondaryAudioNameFeedback.cs" />
+    <Compile Include="Services\Feedback\StreamNameFeedback.cs" />
     <Compile Include="Services\Feedback\UsbModeFeedback.cs" />
     <Compile Include="Services\Feedback\UsbRemoteAddressFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceNameFeedback.cs" />

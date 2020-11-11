@@ -153,8 +153,6 @@ namespace NvxEpi.Aggregates
         {
             DeviceDebug.RegisterForDeviceFeedback(this);
             DeviceDebug.RegisterForPluginFeedback(this);
-            DeviceDebug.RegisterForRoutingInputPortFeedback(this);
-            DeviceDebug.RegisterForRoutingOutputFeedback(this);
         }
 
         private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
