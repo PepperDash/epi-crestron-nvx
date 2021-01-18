@@ -28,9 +28,6 @@ namespace NvxEpi.Aggregates
         private readonly IntFeedback _deviceMode;
 
         private readonly StringFeedback _audioName;
-        private readonly StringFeedback _multicastAddress;
-        private readonly StringFeedback _secondaryAudioAddress;
-        private readonly StringFeedback _streamUrl;
         private readonly StringFeedback _videoName;
 
         private readonly ICurrentVideoInput _videoSwitcher;
@@ -69,9 +66,6 @@ namespace NvxEpi.Aggregates
                 : new StringFeedback("AudioName", () => props.AudioSourceName);
 
             _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
-            _streamUrl = StreamUrlFeedback.GetFeedback(Hardware);
-            _multicastAddress = MulticastAddressFeedback.GetFeedback(Hardware);
-            _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[]
                 {
@@ -79,8 +73,7 @@ namespace NvxEpi.Aggregates
                     DeviceIpFeedback.GetFeedback(Hardware),
                     DeviceHostnameFeedback.GetFeedback(Hardware),
                     DeviceModeNameFeedback.GetFeedback(Hardware),
-                    StreamUrl,
-                    MulticastAddress,
+                    MulticastAddressFeedback.GetFeedback(Hardware),
                     VideoName,
                     AudioName,
                     DeviceMode
@@ -139,24 +132,9 @@ namespace NvxEpi.Aggregates
             get { return _isTransmitter; }
         }
 
-        public StringFeedback MulticastAddress
-        {
-            get { return _multicastAddress; }
-        }
-
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _outputPorts; }
-        }
-
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _secondaryAudioAddress; }
-        }
-
-        public StringFeedback StreamUrl
-        {
-            get { return _streamUrl; }
         }
 
         public StringFeedback VideoName

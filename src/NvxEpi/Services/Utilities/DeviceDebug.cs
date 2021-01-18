@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Hardware;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -9,7 +10,7 @@ namespace NvxEpi.Services.Utilities
 {
     public class DeviceDebug
     {
-        public static void RegisterForDeviceFeedback(INvxHardware device)
+        public static void RegisterForDeviceFeedback(INvxDeviceWithHardware device)
         {
             try
             {

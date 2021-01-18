@@ -1,6 +1,6 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Stream
+namespace NvxEpi.Abstractions.Device
 {
     public interface IMulticastAddress
     {

@@ -7,22 +7,15 @@ namespace NvxEpi.Services.Feedback
     {
         public const string Key = "HdmiOutputResolution";
 
-        private static IntFeedback GetFeedback(DmNvxBaseClass device)
+        public static IntFeedback GetFeedback(DmNvxBaseClass device)
         {
+            if (device.HdmiOut == null)
+                return new IntFeedback(Key, () => 0);
+
             var feedback = new IntFeedback(Key, () => device.HdmiOut.VideoAttributes.HorizontalResolutionFeedback.UShortValue);
             device.HdmiOut.VideoAttributes.AttributeChange += (sender, args) => feedback.FireUpdate();
 
             return feedback;
-        }
-
-        public static IntFeedback GetFeedback(DmNvx35x device)
-        {
-            return GetFeedback(device as DmNvxBaseClass);
-        }
-
-        public static IntFeedback GetFeedback(DmNvxD3x device)
-        {
-            return GetFeedback(device as DmNvxBaseClass);
         }
     }
 }

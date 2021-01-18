@@ -4,7 +4,7 @@ using PepperDash.Core;
 
 namespace NvxEpi.Abstractions.Hardware
 {
-    public interface INvxHardware : INvxDevice
+    public interface INvxHardware 
     {
         DmNvxBaseClass Hardware { get; }
     }

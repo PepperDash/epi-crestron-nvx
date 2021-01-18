@@ -8,10 +8,10 @@ namespace NvxEpi.Services.Feedback
     {
         public const string Key = "Hdmi2HdcpCapability";
 
-        public static StringFeedback GetFeedback(DmNvx35x device)
+        public static StringFeedback GetFeedback(DmNvxBaseClass device)
         {
             if (device.HdmiIn == null || device.HdmiIn[2] == null)
-                throw new NotSupportedException("hdmi in 2");
+                return new StringFeedback(() => String.Empty);
 
             var feedback = new StringFeedback(Key,
                 () => device.HdmiIn[2].HdcpCapabilityFeedback.ToString());

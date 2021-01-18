@@ -1,4 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Services.Feedback;
@@ -8,44 +9,24 @@ namespace NvxEpi.Entities.Hdmi.Output
 {
     public class HdmiOutput : IHdmiOutput
     {
-        private readonly INvxHardware _device;
+        private readonly INvxDeviceWithHardware _device;
         private readonly BoolFeedback _disabledByHdcp;
         private readonly IntFeedback _horizontalResolution;
 
-        public HdmiOutput(INvx35XHardware device)
+        public HdmiOutput(INvxDeviceWithHardware device)
         {
             _device = device;
 
             _disabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(device.Hardware);
             _horizontalResolution = HorizontalResolutionFeedback.GetFeedback(device.Hardware);
 
-            Feedbacks.Add(DisabledByHdcp);
-            Feedbacks.Add(HorizontalResolution);
-        }
-
-        public StringFeedback AudioName
-        {
-            get { return _device.AudioName; }
-        }
-
-        public int DeviceId
-        {
-            get { return _device.DeviceId; }
-        }
-
-        public IntFeedback DeviceMode
-        {
-            get { return _device.DeviceMode; }
+            device.Feedbacks.Add(DisabledByHdcp);
+            device.Feedbacks.Add(HorizontalResolution);
         }
 
         public BoolFeedback DisabledByHdcp
         {
             get { return _disabledByHdcp; }
-        }
-
-        public FeedbackCollection<Feedback> Feedbacks
-        {
-            get { return _device.Feedbacks; }
         }
 
         public DmNvxBaseClass Hardware
@@ -58,34 +39,14 @@ namespace NvxEpi.Entities.Hdmi.Output
             get { return _horizontalResolution; }
         }
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts
-        {
-            get { return _device.InputPorts; }
-        }
-
-        public BoolFeedback IsOnline
-        {
-            get { return _device.IsOnline; }
-        }
-
-        public bool IsTransmitter
-        {
-            get { return _device.IsTransmitter; }
-        }
-
         public string Key
         {
             get { return _device.Key; }
         }
 
-        public StringFeedback MulticastAddress
+        public RoutingPortCollection<RoutingInputPort> InputPorts
         {
-            get { return _device.MulticastAddress; }
-        }
-
-        public string Name
-        {
-            get { return _device.Name; }
+            get { return _device.InputPorts; }
         }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
@@ -93,19 +54,44 @@ namespace NvxEpi.Entities.Hdmi.Output
             get { return _device.OutputPorts; }
         }
 
-        public StringFeedback SecondaryAudioAddress
+        public FeedbackCollection<Feedback> Feedbacks
         {
-            get { return _device.SecondaryAudioAddress; }
+            get { return _device.Feedbacks; }
         }
 
-        public StringFeedback StreamUrl
+        public BoolFeedback IsOnline
         {
-            get { return _device.StreamUrl; }
+            get { return _device.IsOnline; }
+        }
+
+        public IntFeedback DeviceMode
+        {
+            get { return _device.DeviceMode; }
+        }
+
+        public bool IsTransmitter
+        {
+            get { return _device.IsTransmitter; }
+        }
+
+        public string Name
+        {
+            get { return _device.Name; }
+        }
+
+        public int DeviceId
+        {
+            get { return _device.DeviceId; }
         }
 
         public StringFeedback VideoName
         {
             get { return _device.VideoName; }
+        }
+
+        public StringFeedback AudioName
+        {
+            get { return _device.AudioName; }
         }
     }
 }

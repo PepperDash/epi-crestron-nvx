@@ -8,26 +8,16 @@ namespace NvxEpi.Services.Feedback
     {
         public const string Key = "Hdmi1HdcpCapabilityValue";
 
-        private static IntFeedback GetFeedback(DmNvxBaseClass device)
+        public static IntFeedback GetFeedback(DmNvxBaseClass device)
         {
             if (device.HdmiIn == null || device.HdmiIn[1] == null)
-                throw new NotSupportedException("hdmi in 1");
+                return new IntFeedback(() => 0);
 
             var feedback = new IntFeedback(Key,
                 () => (int)device.HdmiIn[1].HdcpCapabilityFeedback);
 
             device.HdmiIn[1].StreamChange += (stream, args) => feedback.FireUpdate();
             return feedback;
-        }
-
-        public static IntFeedback GetFeedback(DmNvx35x device)
-        {
-            return GetFeedback(device as DmNvxBaseClass);
-        }
-
-        public static IntFeedback GetFeedback(DmNvxE3x device)
-        {
-            return GetFeedback(device as DmNvxBaseClass);
         }
     }
 }

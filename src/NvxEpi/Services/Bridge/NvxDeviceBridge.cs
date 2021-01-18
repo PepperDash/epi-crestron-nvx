@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
-using NvxEpi.Entities.Streams;
 using NvxEpi.Entities.Streams.Audio;
 using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Extensions;
@@ -22,9 +20,9 @@ namespace NvxEpi.Services.Bridge
 {
     public class NvxDeviceBridge : IBridgeAdvanced
     {
-        private readonly INvxHardware _device;
+        private readonly INvxDevice _device;
 
-        public NvxDeviceBridge(INvxHardware device)
+        public NvxDeviceBridge(INvxDevice device)
         {
             _device = device;
         }
@@ -178,18 +176,23 @@ namespace NvxEpi.Services.Bridge
 
         private void LinkHdmiInputs(BasicTriList trilist, NvxDeviceJoinMap joinMap)
         {
-            var hdmi1Fb = new BoolFeedback(() => _device.Hardware.HdmiIn != null && _device.Hardware.HdmiIn.Count >= 1);
+            var hdmiInput = _device as IHdmiInput;
+            if (hdmiInput == null)
+                return;
+
+            var hdmi1Fb = new BoolFeedback(() => hdmiInput.SyncDetected.ContainsKey(1));
             hdmi1Fb.LinkInputSig(trilist.BooleanInput[joinMap.HdmiIn1Present.JoinNumber]);
+            hdmi1Fb.FireUpdate();
 
-            var hdmi2Fb = new BoolFeedback(() => _device.Hardware.HdmiIn != null && _device.Hardware.HdmiIn.Count >= 2);
+            var hdmi2Fb = new BoolFeedback(() => hdmiInput.SyncDetected.ContainsKey(2));
             hdmi2Fb.LinkInputSig(trilist.BooleanInput[joinMap.HdmiIn2Present.JoinNumber]);
+            hdmi2Fb.FireUpdate();
 
-            var hdmiInputs = _device as IHdmiInput;
-            if (hdmiInputs != null && hdmiInputs.HdcpCapability.Count >= 1)
-                trilist.SetUShortSigAction(joinMap.Hdmi1Capability.JoinNumber, hdmiInputs.SetHdmi1HdcpCapability);
+            if (hdmiInput.HdcpCapability.ContainsKey(1))
+                trilist.SetUShortSigAction(joinMap.Hdmi1Capability.JoinNumber, hdmiInput.SetHdmi1HdcpCapability);
 
-            if (hdmiInputs != null && hdmiInputs.HdcpCapability.Count >= 2)
-                trilist.SetUShortSigAction(joinMap.Hdmi2Capability.JoinNumber, hdmiInputs.SetHdmi2HdcpCapability);
+            if (hdmiInput.HdcpCapability.ContainsKey(2))
+                trilist.SetUShortSigAction(joinMap.Hdmi2Capability.JoinNumber, hdmiInput.SetHdmi2HdcpCapability);
         }
     }
 }

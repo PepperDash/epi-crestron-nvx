@@ -3,7 +3,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
@@ -21,13 +21,14 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class NvxE3X : NvxBaseDevice, INvxE3XHardware, IComPorts, IIROutputPorts, ICurrentStream, IHdmiInput,
+    public class NvxE3X : NvxBaseDevice, INvxE3xDeviceWithHardware, IComPorts, IIROutputPorts, ICurrentStream,
+        IHdmiInput,
         IRouting
     {
         private readonly ICurrentStream _currentVideoStream;
+        private readonly DmNvxE3x _hardware;
         private readonly IHdmiInput _hdmiInput;
         private readonly IUsbStream _usbStream;
-        private readonly DmNvxE3x _hardware;
 
         public NvxE3X(DeviceConfig config, DmNvxE3x hardware)
             : base(config, hardware)
@@ -58,6 +59,11 @@ namespace NvxEpi.Aggregates
             get { return _currentVideoStream.CurrentStreamName; }
         }
 
+        public new DmNvxE3x Hardware
+        {
+            get { return _hardware; }
+        }
+
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
             get { return _hdmiInput.HdcpCapability; }
@@ -86,6 +92,11 @@ namespace NvxEpi.Aggregates
         public int NumberOfIROutputPorts
         {
             get { return Hardware.NumberOfIROutputPorts; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _currentVideoStream.StreamUrl; }
         }
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
@@ -164,11 +175,6 @@ namespace NvxEpi.Aggregates
 
                     Hardware.SetDefaults(props);
                 };
-        }
-
-        public new DmNvxE3x Hardware
-        {
-            get { return _hardware; }
         }
     }
 }
