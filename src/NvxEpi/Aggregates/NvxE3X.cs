@@ -5,11 +5,9 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hdmi.Input;
-using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -21,11 +19,10 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class NvxE3X : NvxBaseDevice, INvxE3xDeviceWithHardware, IComPorts, IIROutputPorts, ICurrentStream,
+    public class NvxE3X : NvxBaseDevice, INvxE3xDeviceWithHardware, IComPorts, IIROutputPorts,
         IHdmiInput,
         IRouting
     {
-        private readonly ICurrentStream _currentVideoStream;
         private readonly DmNvxE3x _hardware;
         private readonly IHdmiInput _hdmiInput;
         private readonly IUsbStream _usbStream;
@@ -35,8 +32,6 @@ namespace NvxEpi.Aggregates
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
-
-            _currentVideoStream = new CurrentVideoStream(this);
             _hdmiInput = new HdmiInput1(this);
 
             RegisterForOnlineFeedback(hardware, props);
@@ -47,16 +42,6 @@ namespace NvxEpi.Aggregates
         public CrestronCollection<ComPort> ComPorts
         {
             get { return Hardware.ComPorts; }
-        }
-
-        public IntFeedback CurrentStreamId
-        {
-            get { return _currentVideoStream.CurrentStreamId; }
-        }
-
-        public StringFeedback CurrentStreamName
-        {
-            get { return _currentVideoStream.CurrentStreamName; }
         }
 
         public new DmNvxE3x Hardware
@@ -79,11 +64,6 @@ namespace NvxEpi.Aggregates
             get { return _usbStream.IsRemote; }
         }
 
-        public BoolFeedback IsStreamingVideo
-        {
-            get { return _currentVideoStream.IsStreamingVideo; }
-        }
-
         public int NumberOfComPorts
         {
             get { return Hardware.NumberOfComPorts; }
@@ -92,11 +72,6 @@ namespace NvxEpi.Aggregates
         public int NumberOfIROutputPorts
         {
             get { return Hardware.NumberOfIROutputPorts; }
-        }
-
-        public StringFeedback StreamUrl
-        {
-            get { return _currentVideoStream.StreamUrl; }
         }
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
@@ -117,11 +92,6 @@ namespace NvxEpi.Aggregates
         public StringFeedback UsbRemoteId
         {
             get { return _usbStream.UsbRemoteId; }
-        }
-
-        public StringFeedback VideoStreamStatus
-        {
-            get { return _currentVideoStream.VideoStreamStatus; }
         }
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)

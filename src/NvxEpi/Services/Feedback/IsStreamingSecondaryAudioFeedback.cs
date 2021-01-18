@@ -7,20 +7,26 @@ namespace NvxEpi.Services.Feedback
     {
         public static readonly string Key = "IsStreamingSecondaryAudio";
 
-        public static BoolFeedback GetFeedback(DmNvxBaseClass device)
+        public static BoolFeedback GetFeedbackForTransmitter(DmNvxBaseClass device)
         {
             var feedback = new BoolFeedback(Key,
                 () =>
-                    {
-                        if (device.Control.ActiveAudioSourceFeedback != DmNvxControl.eAudioSource.SecondaryStreamAudio)
-                            return false;
+                    device.DmNaxRouting.DmNaxTransmit.StreamStatusFeedback ==
+                    DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
 
-                        return device.Control.ActiveVideoSourceFeedback != eSfpVideoSourceTypes.Disable &&
-                               device.SecondaryAudio.StartFeedback.BoolValue;
-                    });
+            device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
 
-            device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            device.SecondaryAudio.SecondaryAudioChange += (@base, args) => feedback.FireUpdate();
+            return feedback;
+        }
+
+        public static BoolFeedback GetFeedbackForReceiver(DmNvxBaseClass device)
+        {
+            var feedback = new BoolFeedback(Key,
+                () =>
+                    device.DmNaxRouting.DmNaxReceive.StreamStatusFeedback ==
+                    DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
+
+            device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
 
             return feedback;
         }

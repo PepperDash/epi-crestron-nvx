@@ -100,7 +100,6 @@ namespace NvxEpi.Application
                     {
                         Debug.Console(1, this, "Device at output {0} is not a receiver!", receiver.Key);
                         throw new ArgumentException(receiver.Value.Key);
-                        ;
                     }
                 });
 

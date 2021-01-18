@@ -1,13 +1,6 @@
-﻿using System;
-using System.Linq;
-using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.NaxAudio;
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
-
-namespace NvxEpi.Extensions
+﻿namespace NvxEpi.Extensions
 {
-    public static class NaxAudioStreamExtensions
+    /*public static class NaxAudioStreamExtensions
     {
         public static void ClearAudioStream(this INaxAudioRx device)
         {
@@ -62,5 +55,5 @@ namespace NvxEpi.Extensions
             Debug.Console(1, rx, "Making an awesome NAX Audio Route : '{0}'", tx.Name);
             rx.SetAudioAddress(tx.NaxAudioTxAddress.StringValue);
         }
-    }
+    }*/
 }

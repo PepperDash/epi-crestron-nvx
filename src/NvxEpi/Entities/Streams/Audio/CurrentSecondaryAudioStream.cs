@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Entities.Routing;
 using PepperDash.Core;
@@ -23,15 +21,14 @@ namespace NvxEpi.Entities.Streams.Audio
 
         private ISecondaryAudioStream _current;
 
-        public CurrentSecondaryAudioStream(INvx35xDeviceWithHardware device) : base(device)
+        public CurrentSecondaryAudioStream(INvxDeviceWithHardware device) : base(device)
         {
-            Hardware = device.Hardware;
             _currentSecondaryAudioStreamId = IsTransmitter
-                ? new IntFeedback(RouteValueKey, () => default( int ))
+                ? new IntFeedback(() => default( int ))
                 : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
 
             _currentSecondaryAudioStreamName = IsTransmitter
-                ? new StringFeedback(RouteNameKey, () => String.Empty)
+                ? new StringFeedback(() => String.Empty)
                 : new StringFeedback(RouteNameKey,
                     () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
 
@@ -108,7 +105,5 @@ namespace NvxEpi.Entities.Streams.Audio
                 _lock.Leave();
             }
         }
-
-        public new DmNvx35x Hardware { get; private set; }
     }
 }

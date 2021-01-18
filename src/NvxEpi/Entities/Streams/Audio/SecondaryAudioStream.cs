@@ -1,6 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
@@ -9,19 +8,28 @@ namespace NvxEpi.Entities.Streams.Audio
 {
     public class SecondaryAudioStream : ISecondardyAudioStreamWithHardware
     {
-        private readonly INvx35xDeviceWithHardware _device;
+        private readonly INvxDeviceWithHardware _device;
 
         private readonly StringFeedback _secondaryAudioAddress;
         private readonly BoolFeedback _isStreamingSecondaryAudio;
         private readonly StringFeedback _secondaryAudioStreamStatus;
 
-        public SecondaryAudioStream(INvx35xDeviceWithHardware device)
+        public SecondaryAudioStream(INvxDeviceWithHardware device)
         {
             _device = device;
 
-            _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedback(Hardware);
-            _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedback(Hardware);
-            _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
+            if (device.IsTransmitter)
+            {
+                _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedbackForTransmitter(Hardware);
+                _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedbackForTransmitter(Hardware);
+                _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedbackForTransmitter(Hardware);
+            }
+            else
+            {
+                _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedbackForReceiver(Hardware);
+                _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedbackForReceiver(Hardware);
+                _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedbackForReceiver(Hardware);
+            }
 
             Feedbacks.Add(SecondaryAudioStreamStatus);
             Feedbacks.Add(IsStreamingSecondaryAudio);
@@ -98,12 +106,7 @@ namespace NvxEpi.Entities.Streams.Audio
             get { return _secondaryAudioAddress; }
         }
 
-        DmNvxBaseClass INvxHardware.Hardware
-        {
-            get { return _device.Hardware; }
-        }
-
-        public DmNvx35x Hardware
+        public DmNvxBaseClass Hardware
         {
             get { return _device.Hardware; }
         }
