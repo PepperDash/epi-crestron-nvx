@@ -79,28 +79,13 @@ namespace NvxEpi.Aggregates
             get { return _hdmiInput.SyncDetected; }
         }
 
-        public int UsbId
-        {
-            get { return _usbStream.UsbId; }
-        }
-
-        public StringFeedback UsbLocalId
-        {
-            get { return _usbStream.UsbLocalId; }
-        }
-
-        public StringFeedback UsbRemoteId
-        {
-            get { return _usbStream.UsbRemoteId; }
-        }
-
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
             try
             {
                 var switcher = outputSelector as IHandleInputSwitch;
                 if (switcher == null)
-                    throw new NullReferenceException("input selector");
+                    throw new NullReferenceException("outputSelector");
 
                 Debug.Console(1,
                     this,

@@ -25,6 +25,8 @@ namespace NvxEpi.Aggregates
         private readonly DmNvxBaseClass _hardware;
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private readonly ICurrentStream _currentVideoStream;
+        private readonly ICurrentVideoInput _videoSwitcher;
+        private readonly ICurrentAudioInput _audioSwitcher;
 
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
             new RoutingPortCollection<RoutingInputPort>();
@@ -36,9 +38,6 @@ namespace NvxEpi.Aggregates
 
         private readonly StringFeedback _audioName;
         private readonly StringFeedback _videoName;
-
-        private readonly ICurrentVideoInput _videoSwitcher;
-        private readonly ICurrentAudioInput _audioSwitcher;
 
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";

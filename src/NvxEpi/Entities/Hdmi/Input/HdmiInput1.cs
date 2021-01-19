@@ -1,5 +1,4 @@
 ﻿using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Services.Feedback;
 
 namespace NvxEpi.Entities.Hdmi.Input
