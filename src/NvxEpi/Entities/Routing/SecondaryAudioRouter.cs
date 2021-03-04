@@ -96,9 +96,6 @@ namespace NvxEpi.Entities.Routing
         {
             try
             {
-                if (signalType.Has(eRoutingSignalType.Video))
-                    throw new ArgumentException("signal type cannot include video");
-
                 if (!signalType.Has(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include audio");
 

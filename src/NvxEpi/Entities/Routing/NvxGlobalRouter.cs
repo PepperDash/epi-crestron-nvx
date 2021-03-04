@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Services.TieLines;
@@ -18,9 +19,6 @@ namespace NvxEpi.Entities.Routing
 
         public IRouting PrimaryStreamRouter { get; private set; }
         public IRouting SecondaryAudioRouter { get; private set; }
-
-        private readonly Dictionary<int, INvxDevice> _transmitters = new Dictionary<int, INvxDevice>();
-        private readonly Dictionary<int, INvxDevice> _receivers = new Dictionary<int, INvxDevice>(); 
 
         private NvxGlobalRouter()
             : base(InstanceKey)
@@ -52,8 +50,6 @@ namespace NvxEpi.Entities.Routing
                 .ToList();
 
             TieLineConnector.AddTieLinesForTransmitters(transmitters);
-            foreach (var transmitter in transmitters)
-                _transmitters.Add(transmitter.DeviceId, transmitter);
 
             var receivers = DeviceManager
                 .AllDevices
@@ -62,8 +58,6 @@ namespace NvxEpi.Entities.Routing
                 .ToList();
 
             TieLineConnector.AddTieLinesForReceivers(receivers);
-            foreach (var receiver in receivers)
-                _receivers.Add(receiver.DeviceId, receiver);
 
             return base.CustomActivate();
         }
@@ -82,18 +76,13 @@ namespace NvxEpi.Entities.Routing
 
         public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
         {
-            INvxDevice rx;
-            if (!_receivers.TryGetValue(output, out rx))
-                return;
+            throw new NotImplementedException("Execute Numeric Switch");
 
-            INvxDevice tx;
-            _transmitters.TryGetValue(input, out tx);
-
-            if (type.Has(eRoutingSignalType.Video))
-                PrimaryStreamRouter.ExecuteSwitch(tx, rx, type);
+            /*if (type.Has(eRoutingSignalType.Video))
+                // PrimaryStreamRouter.ExecuteSwitch(tx, rx, type);
 
             if (type.Has(eRoutingSignalType.Audio))
-                SecondaryAudioRouter.ExecuteSwitch(tx, rx, type);
+                // SecondaryAudioRouter.ExecuteSwitch(tx, rx, type);*/
         }
     }
 }
