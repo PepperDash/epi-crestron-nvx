@@ -3,7 +3,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.Stream
 {
-    public interface IStream : INvxHardware
+    public interface IStream : INvxDevice, IStreamUrl
     {   
         BoolFeedback IsStreamingVideo { get; }
         StringFeedback VideoStreamStatus { get; }

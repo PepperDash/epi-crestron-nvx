@@ -1,4 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Services.Feedback;
@@ -6,21 +7,25 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams.Audio
 {
-    public class SecondaryAudioStream : ISecondaryAudioStream
+    public class SecondaryAudioStream : ISecondardyAudioStreamWithHardware
     {
-        private readonly INvxHardware _device;
+        private readonly INvx35xDeviceWithHardware _device;
+
+        private readonly StringFeedback _secondaryAudioAddress;
         private readonly BoolFeedback _isStreamingSecondaryAudio;
         private readonly StringFeedback _secondaryAudioStreamStatus;
 
-        public SecondaryAudioStream(INvxHardware device)
+        public SecondaryAudioStream(INvx35xDeviceWithHardware device)
         {
             _device = device;
 
             _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedback(Hardware);
             _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedback(Hardware);
+            _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedback(Hardware);
 
             Feedbacks.Add(SecondaryAudioStreamStatus);
             Feedbacks.Add(IsStreamingSecondaryAudio);
+            Feedbacks.Add(SecondaryAudioAddress);
         }
 
         public IntFeedback DeviceMode
@@ -58,11 +63,6 @@ namespace NvxEpi.Entities.Streams.Audio
             get { return _device.OutputPorts; }
         }
 
-        public StringFeedback MulticastAddress
-        {
-            get { return _device.MulticastAddress; }
-        }
-
         public FeedbackCollection<Feedback> Feedbacks
         {
             get { return _device.Feedbacks; }
@@ -83,21 +83,6 @@ namespace NvxEpi.Entities.Streams.Audio
             get { return _device.IsOnline; }
         }
 
-        public StringFeedback StreamUrl
-        {
-            get { return _device.StreamUrl; }
-        }
-
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _device.SecondaryAudioAddress; }
-        }
-
-        public DmNvxBaseClass Hardware
-        {
-            get { return _device.Hardware; }
-        }
-
         public BoolFeedback IsStreamingSecondaryAudio
         {
             get { return _isStreamingSecondaryAudio; }
@@ -106,6 +91,21 @@ namespace NvxEpi.Entities.Streams.Audio
         public StringFeedback SecondaryAudioStreamStatus
         {
             get { return _secondaryAudioStreamStatus; }
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _secondaryAudioAddress; }
+        }
+
+        DmNvxBaseClass INvxHardware.Hardware
+        {
+            get { return _device.Hardware; }
+        }
+
+        public DmNvx35x Hardware
+        {
+            get { return _device.Hardware; }
         }
     }
 }

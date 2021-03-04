@@ -1,5 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
@@ -10,9 +10,9 @@ namespace NvxEpi.Entities.InputSwitching
     {
         private readonly StringFeedback _currentVideoInput;
         private readonly IntFeedback _currentVideoInputValue;
-        private readonly INvxHardware _device;
+        private readonly INvxDeviceWithHardware _device;
 
-        public VideoInputSwitcher(INvxHardware device)
+        public VideoInputSwitcher(INvxDeviceWithHardware device)
         {
             _device = device;
 
@@ -78,11 +78,6 @@ namespace NvxEpi.Entities.InputSwitching
             get { return _device.Key; }
         }
 
-        public StringFeedback MulticastAddress
-        {
-            get { return _device.MulticastAddress; }
-        }
-
         public string Name
         {
             get { return _device.Name; }
@@ -91,16 +86,6 @@ namespace NvxEpi.Entities.InputSwitching
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _device.OutputPorts; }
-        }
-
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _device.SecondaryAudioAddress; }
-        }
-
-        public StringFeedback StreamUrl
-        {
-            get { return _device.StreamUrl; }
         }
 
         public StringFeedback VideoName

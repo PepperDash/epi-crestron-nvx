@@ -7,8 +7,11 @@ namespace NvxEpi.Services.Feedback
     {
         public const string Key = "Hdmi2SyncDetected";
 
-        public static BoolFeedback GetFeedback(DmNvx35x device)
+        public static BoolFeedback GetFeedback(DmNvxBaseClass device)
         {
+            if (device.HdmiIn == null || device.HdmiIn[2] == null)
+                return new BoolFeedback(() => false);
+
             var feedback = new BoolFeedback(Key,
                 () => device.HdmiIn[2].SyncDetectedFeedback.BoolValue);
 

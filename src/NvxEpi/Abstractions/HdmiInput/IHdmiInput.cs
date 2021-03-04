@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.HdmiInput
 {
-    public interface IHdmiInput : INvxHardware
+    public interface IHdmiInput : INvxDeviceWithHardware
     {
         ReadOnlyDictionary<uint, IntFeedback> HdcpCapability { get; }
         ReadOnlyDictionary<uint, BoolFeedback> SyncDetected { get; } 

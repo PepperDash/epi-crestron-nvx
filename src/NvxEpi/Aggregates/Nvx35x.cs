@@ -26,8 +26,8 @@ using HdmiOutput = NvxEpi.Services.InputSwitching.HdmiOutput;
 
 namespace NvxEpi.Aggregates
 {
-    public class Nvx35X : NvxBaseDevice, IComPorts, IIROutputPorts, ICurrentStream, IUsbStream,
-        ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting, ICec
+    public class Nvx35X : NvxBaseDevice, IComPorts, IIROutputPorts, ICurrentStream,
+        IUsbStream, ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting, ICec
     {
         private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private readonly ICurrentStream _currentVideoStream;
@@ -127,6 +127,11 @@ namespace NvxEpi.Aggregates
             get { return Hardware.NumberOfIROutputPorts; }
         }
 
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
+        }
+
         public StringFeedback SecondaryAudioStreamStatus
         {
             get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
@@ -135,6 +140,11 @@ namespace NvxEpi.Aggregates
         public Cec StreamCec
         {
             get { return Hardware.HdmiOut.StreamCec; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _currentVideoStream.StreamUrl; }
         }
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected

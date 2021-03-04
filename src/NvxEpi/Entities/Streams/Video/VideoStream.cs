@@ -1,26 +1,30 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams.Video
 {
-    public class VideoStream : IStream
+    public class VideoStream : IStreamWithHardware
     {
-        private readonly INvxHardware _device;
+        private readonly INvxDeviceWithHardware _device;
+
+        private readonly StringFeedback _streamUrl;
         private readonly BoolFeedback _isStreamingVideo;
         private readonly StringFeedback _videoStreamStatus;
 
-        public VideoStream(INvxHardware device)
+        public VideoStream(INvxDeviceWithHardware device)
         {
             _device = device;
 
+            _streamUrl = StreamUrlFeedback.GetFeedback(Hardware);
             _isStreamingVideo = IsStreamingVideoFeedback.GetFeedback(Hardware);
             _videoStreamStatus = VideoStreamStatusFeedback.GetFeedback(Hardware);
 
             Feedbacks.Add(_isStreamingVideo);
             Feedbacks.Add(_videoStreamStatus);
+            Feedbacks.Add(_streamUrl);
         }
 
         public StringFeedback AudioName
@@ -58,7 +62,6 @@ namespace NvxEpi.Entities.Streams.Video
             get { return _device.IsOnline; }
         }
 
-
         public bool IsTransmitter
         {
             get { return _device.IsTransmitter; }
@@ -69,11 +72,6 @@ namespace NvxEpi.Entities.Streams.Video
             get { return _device.Key; }
         }
 
-        public StringFeedback MulticastAddress
-        {
-            get { return _device.MulticastAddress; }
-        }
-
         public string Name
         {
             get { return _device.Name; }
@@ -82,16 +80,6 @@ namespace NvxEpi.Entities.Streams.Video
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _device.OutputPorts; }
-        }
-
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _device.SecondaryAudioAddress; }
-        }
-
-        public StringFeedback StreamUrl
-        {
-            get { return _device.StreamUrl; }
         }
 
         public StringFeedback VideoName
@@ -107,6 +95,11 @@ namespace NvxEpi.Entities.Streams.Video
         public StringFeedback VideoStreamStatus
         {
             get { return _videoStreamStatus; }
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _streamUrl; }
         }
     }
 }

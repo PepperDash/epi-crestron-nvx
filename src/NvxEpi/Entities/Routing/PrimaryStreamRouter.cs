@@ -82,11 +82,11 @@ namespace NvxEpi.Entities.Routing
                 if (signalType.Is(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include video");
 
-                var rx = outputSelector as IStream;
+                var rx = outputSelector as IStreamWithHardware;
                 if (rx == null)
                     throw new ArgumentNullException("rx");
 
-                var tx = inputSelector as IStream;
+                var tx = inputSelector as IStreamWithHardware;
                 if (tx == null)
                 {
                     rx.ClearStream();

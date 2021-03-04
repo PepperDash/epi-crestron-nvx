@@ -11,8 +11,12 @@ namespace NvxEpi.Extensions
     {
         public static void ClearAudioStream(this INaxAudioRx device)
         {
+            var deviceWithHardware = device as INaxAudioRxWithHardware;
+            if (deviceWithHardware == null)
+                return;
+
             Debug.Console(1, device, "Stopping NAX stream...");
-            device.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = String.Empty;
+            deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = String.Empty;
         }
 
         public static void SetAudioAddress(this INaxAudioRx device, string address)
@@ -20,9 +24,13 @@ namespace NvxEpi.Extensions
             if (String.IsNullOrEmpty(address))
                 device.ClearAudioStream();
 
+            var deviceWithHardware = device as INaxAudioRxWithHardware;
+            if (deviceWithHardware == null)
+                return;
+
             Debug.Console(1, device, "Setting NAX stream address : '{0}", address);
-            device.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
-            device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
+            deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
+            deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
         }
 
         public static void Route(this INaxAudioRx rx, int txVirtualId)

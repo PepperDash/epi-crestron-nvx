@@ -1,11 +1,12 @@
-﻿using NvxEpi.Abstractions.Hardware;
+﻿using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Services.Feedback;
 
 namespace NvxEpi.Entities.Hdmi.Input
 {
     public class HdmiInput2 : HdmiInput1
     {
-        public HdmiInput2(INvx35XHardware device) : base(device)
+        public HdmiInput2(INvxDeviceWithHardware device) : base(device)
         {
             var capability = Hdmi2HdcpCapabilityValueFeedback.GetFeedback(device.Hardware);
             _capability.Add(2, capability);

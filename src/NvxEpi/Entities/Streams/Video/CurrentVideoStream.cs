@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharp;
-using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using PepperDash.Core;
@@ -18,7 +18,7 @@ namespace NvxEpi.Entities.Streams.Video
         private readonly CCriticalSection _lock = new CCriticalSection();
         private IStream _current;
 
-        public CurrentVideoStream(INvxHardware device) : base(device)
+        public CurrentVideoStream(INvxDeviceWithHardware device) : base(device)
         {
             _currentStreamId = IsTransmitter
                 ? new IntFeedback(RouteValueKey, () => default( int ))

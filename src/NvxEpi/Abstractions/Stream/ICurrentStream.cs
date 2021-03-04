@@ -2,7 +2,7 @@
 
 namespace NvxEpi.Abstractions.Stream
 {
-    public interface ICurrentStream : IStream, IHasFeedback
+    public interface ICurrentStream : IStreamWithHardware
     {
         StringFeedback CurrentStreamName { get; }
         IntFeedback CurrentStreamId { get; }
