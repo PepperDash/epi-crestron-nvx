@@ -6,14 +6,10 @@ using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
-using NvxEpi.Abstractions.SecondaryAudio;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hdmi.Input;
 using NvxEpi.Entities.Hdmi.Output;
-using NvxEpi.Entities.Streams.Audio;
-using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -26,11 +22,9 @@ using HdmiOutput = NvxEpi.Services.InputSwitching.HdmiOutput;
 
 namespace NvxEpi.Aggregates
 {
-    public class Nvx35X : NvxBaseDevice, IComPorts, IIROutputPorts, ICurrentStream,
-        IUsbStream, ICurrentSecondaryAudioStream, IHdmiInput, IVideowallMode, IRouting, ICec
+    public class Nvx35X : NvxBaseDevice, IComPorts, IIROutputPorts,
+        IUsbStream, IHdmiInput, IVideowallMode, IRouting, ICec
     {
-        private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
-        private readonly ICurrentStream _currentVideoStream;
         private readonly DmNvx35x _hardware;
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
@@ -42,8 +36,6 @@ namespace NvxEpi.Aggregates
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
 
-            _currentVideoStream = new CurrentVideoStream(this);
-            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
@@ -55,26 +47,6 @@ namespace NvxEpi.Aggregates
         public CrestronCollection<ComPort> ComPorts
         {
             get { return Hardware.ComPorts; }
-        }
-
-        public IntFeedback CurrentSecondaryAudioStreamId
-        {
-            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId; }
-        }
-
-        public StringFeedback CurrentSecondaryAudioStreamName
-        {
-            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName; }
-        }
-
-        public IntFeedback CurrentStreamId
-        {
-            get { return _currentVideoStream.CurrentStreamId; }
-        }
-
-        public StringFeedback CurrentStreamName
-        {
-            get { return _currentVideoStream.CurrentStreamName; }
         }
 
         public BoolFeedback DisabledByHdcp
@@ -107,16 +79,6 @@ namespace NvxEpi.Aggregates
             get { return _usbStream.IsRemote; }
         }
 
-        public BoolFeedback IsStreamingSecondaryAudio
-        {
-            get { return _currentSecondaryAudioStream.IsStreamingSecondaryAudio; }
-        }
-
-        public BoolFeedback IsStreamingVideo
-        {
-            get { return _currentVideoStream.IsStreamingVideo; }
-        }
-
         public int NumberOfComPorts
         {
             get { return Hardware.NumberOfComPorts; }
@@ -127,24 +89,9 @@ namespace NvxEpi.Aggregates
             get { return Hardware.NumberOfIROutputPorts; }
         }
 
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
-        }
-
-        public StringFeedback SecondaryAudioStreamStatus
-        {
-            get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
-        }
-
         public Cec StreamCec
         {
             get { return Hardware.HdmiOut.StreamCec; }
-        }
-
-        public StringFeedback StreamUrl
-        {
-            get { return _currentVideoStream.StreamUrl; }
         }
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
@@ -167,11 +114,6 @@ namespace NvxEpi.Aggregates
             get { return _usbStream.UsbRemoteId; }
         }
 
-        public StringFeedback VideoStreamStatus
-        {
-            get { return _currentVideoStream.VideoStreamStatus; }
-        }
-
         public IntFeedback VideowallMode
         {
             get { return _hdmiOutput.VideowallMode; }
@@ -183,7 +125,7 @@ namespace NvxEpi.Aggregates
             {
                 var switcher = outputSelector as IHandleInputSwitch;
                 if (switcher == null)
-                    throw new NullReferenceException("input selector");
+                    throw new NullReferenceException("outputSelector");
 
                 Debug.Console(1,
                     this,

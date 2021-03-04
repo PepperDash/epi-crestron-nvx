@@ -21,11 +21,11 @@ namespace NvxEpi.Entities.Streams.Video
         public CurrentVideoStream(INvxDeviceWithHardware device) : base(device)
         {
             _currentStreamId = IsTransmitter
-                ? new IntFeedback(RouteValueKey, () => default( int ))
+                ? new IntFeedback(() => default( int ))
                 : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
 
             _currentStreamName = IsTransmitter
-                ? new StringFeedback(RouteNameKey, () => String.Empty)
+                ? new StringFeedback(() => String.Empty)
                 : new StringFeedback(RouteNameKey,
                     () => _current != null ? _current.VideoName.StringValue : NvxGlobalRouter.NoSourceText);
 

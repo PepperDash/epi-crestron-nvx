@@ -123,7 +123,12 @@ namespace NvxEpi.Entities.Routing
                 };
             }
 
-            CheckDictionaries();
+            if (_receivers == null)
+                _receivers = GetReceiverDictionary();
+
+            if (_transmitters == null)
+                _transmitters = GetTransmitterDictionary();
+
             return base.CustomActivate();
         }
 
@@ -202,31 +207,45 @@ namespace NvxEpi.Entities.Routing
         private static Dictionary<string, IStream> _receivers;
         private static Dictionary<string, IStream> _transmitters;
 
-        private static void CheckDictionaries()
+        private static Dictionary<string, IStream> GetTransmitterDictionary()
         {
             try
             {
                 _lock.Enter();
-                if (_transmitters == null)
+                var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var device in DeviceManager.AllDevices.OfType<IStream>())
                 {
-                    _transmitters = DeviceManager
-                        .AllDevices
-                        .OfType<IStream>()
-                        .Where(x => x.IsTransmitter)
-                        .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
+                    if (!device.IsTransmitter)
+                        continue;
+
+                    dict.Add(device.Name, device);
                 }
 
-                if (_receivers != null) return;
-
-                _receivers = DeviceManager
-                    .AllDevices
-                    .OfType<IStream>()
-                    .Where(x => !x.IsTransmitter)
-                    .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
+                return dict;
             }
-            catch (Exception ex)
+            finally
             {
-                Debug.Console(0, NvxGlobalRouter.Instance.PrimaryStreamRouter, "There was an error building the dictionaries: {1}\n{2}", ex.Message, ex.StackTrace);
+                _lock.Leave();
+            }
+        }
+
+        private static Dictionary<string, IStream> GetReceiverDictionary()
+        {
+            try
+            {
+                _lock.Enter();
+
+                var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
+                foreach (var device in DeviceManager.AllDevices.OfType<IStream>())
+                {
+                    if (device.IsTransmitter)
+                        continue;
+                    
+                    dict.Add(device.Name, device);
+                }
+
+                return dict;
             }
             finally
             {

@@ -3,8 +3,12 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
+using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.InputSwitching;
+using NvxEpi.Entities.Streams.Audio;
+using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.Utilities;
 using PepperDash.Essentials.Core;
@@ -12,12 +16,17 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public abstract class NvxBaseDevice : CrestronGenericBridgeableBaseDevice, ICurrentVideoInput, ICurrentAudioInput
+    public abstract class NvxBaseDevice : CrestronGenericBridgeableBaseDevice, ICurrentVideoInput, ICurrentAudioInput, ICurrentStream,
+        ICurrentSecondaryAudioStream
     {
         private readonly bool _isTransmitter;
         private readonly int _deviceId;
 
         private readonly DmNvxBaseClass _hardware;
+        private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
+        private readonly ICurrentStream _currentVideoStream;
+        private readonly ICurrentVideoInput _videoSwitcher;
+        private readonly ICurrentAudioInput _audioSwitcher;
 
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
             new RoutingPortCollection<RoutingInputPort>();
@@ -29,9 +38,6 @@ namespace NvxEpi.Aggregates
 
         private readonly StringFeedback _audioName;
         private readonly StringFeedback _videoName;
-
-        private readonly ICurrentVideoInput _videoSwitcher;
-        private readonly ICurrentAudioInput _audioSwitcher;
 
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
@@ -54,6 +60,9 @@ namespace NvxEpi.Aggregates
             _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
                              props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
+
+            _currentVideoStream = new CurrentVideoStream(this);
+            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
 
@@ -156,6 +165,56 @@ namespace NvxEpi.Aggregates
 
                     Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
                 };
+        }
+
+        public StringFeedback StreamUrl
+        {
+            get { return _currentVideoStream.StreamUrl; }
+        }
+
+        public BoolFeedback IsStreamingVideo
+        {
+            get { return _currentVideoStream.IsStreamingVideo; }
+        }
+
+        public StringFeedback VideoStreamStatus
+        {
+            get { return _currentVideoStream.VideoStreamStatus; }
+        }
+
+        public StringFeedback CurrentStreamName
+        {
+            get { return _currentVideoStream.CurrentStreamName; }
+        }
+
+        public IntFeedback CurrentStreamId
+        {
+            get { return _currentVideoStream.CurrentStreamId; }
+        }
+
+        public StringFeedback SecondaryAudioAddress
+        {
+            get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
+        }
+
+        public BoolFeedback IsStreamingSecondaryAudio
+        {
+            get { return _currentSecondaryAudioStream.IsStreamingSecondaryAudio; }
+        }
+
+        public StringFeedback SecondaryAudioStreamStatus
+        {
+            get { return _currentSecondaryAudioStream.SecondaryAudioStreamStatus; }
+        }
+
+        public StringFeedback CurrentSecondaryAudioStreamName
+        {
+            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamName; }
+        }
+
+        public IntFeedback CurrentSecondaryAudioStreamId
+        {
+            get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId; }
         }
     }
 }

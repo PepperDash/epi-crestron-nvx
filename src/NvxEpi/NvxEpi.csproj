@@ -104,11 +104,9 @@
     <Compile Include="Abstractions\INvx35xDeviceWithHarware.cs" />
     <Compile Include="Abstractions\INvxDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxE3xDeviceWithHardware.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioTxWithHardware.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondardyAudioStreamWithHardware.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioAddress.cs" />
     <Compile Include="Abstractions\Stream\IStreamUrl.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioRxWithHardware.cs" />
     <Compile Include="Abstractions\Stream\IStreamWithHardware.cs" />
     <Compile Include="Aggregates\NvxBaseDevice.cs" />
     <Compile Include="Aggregates\NvxMockDevice.cs" />
@@ -126,10 +124,6 @@
     <Compile Include="Abstractions\HdmiOutput\IHdmiOutput.cs" />
     <Compile Include="Abstractions\InputSwitching\ICurrentAudioInput.cs" />
     <Compile Include="Abstractions\InputSwitching\ICurrentVideoInput.cs" />
-    <Compile Include="Abstractions\NaxAudio\ICurrentNaxAudioStream.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioRx.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioStream.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioTx.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ICurrentSecondaryAudioStream.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioStream.cs" />
     <Compile Include="Abstractions\Stream\ICurrentStream.cs" />

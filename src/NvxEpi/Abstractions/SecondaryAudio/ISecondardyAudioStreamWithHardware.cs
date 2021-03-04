@@ -2,7 +2,7 @@
 
 namespace NvxEpi.Abstractions.SecondaryAudio
 {
-    public interface ISecondardyAudioStreamWithHardware : ISecondaryAudioStream, INvx35XHardware
+    public interface ISecondardyAudioStreamWithHardware : ISecondaryAudioStream, INvxHardware
     {
         
     }

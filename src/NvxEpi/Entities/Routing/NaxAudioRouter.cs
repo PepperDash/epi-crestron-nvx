@@ -1,15 +1,6 @@
-﻿using System;
-using System.Linq;
-using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.NaxAudio;
-using NvxEpi.Extensions;
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
-
-namespace NvxEpi.Entities.Routing
+﻿namespace NvxEpi.Entities.Routing
 {
-    public class NaxAudioRouter : EssentialsDevice, IRouting
+    /*public class NaxAudioRouter : EssentialsDevice, IRouting
     {
         public RoutingInputPort Off
         {
@@ -34,7 +25,7 @@ namespace NvxEpi.Entities.Routing
                     if (naxTx == null)
                         return;
 
-                    var streamRoutingPort = tx.OutputPorts[DmNvxControl.eAudioSource.SecondaryStreamAudio.ToString()];
+                    var streamRoutingPort = tx.OutputPorts[DmNvxControl.eAudioSource.DmNaxAudio.ToString()];
                     if (streamRoutingPort == null)
                         return;
 
@@ -58,7 +49,7 @@ namespace NvxEpi.Entities.Routing
                     if (naxTx == null)
                         return;
 
-                    var streamRoutingPort = rx.InputPorts[DmNvxControl.eAudioSource.SecondaryStreamAudio.ToString()];
+                    var streamRoutingPort = rx.InputPorts[DmNvxControl.eAudioSource.DmNaxAudio.ToString()];
                     if (streamRoutingPort == null)
                         return;
 
@@ -159,5 +150,5 @@ namespace NvxEpi.Entities.Routing
         {
             return rx.Key + "--" + "NaxAudio";
         }
-    }
+    }*/
 }
