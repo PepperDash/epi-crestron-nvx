@@ -13,7 +13,7 @@ env:
   # If Solution is in repo root, leave SOLUTION_PATH empty
   # solution name does not include extension. .sln is assumed
   SOLUTION_PATH: \
-  SOLUTION_FILE: pdt-nvx-epi
+  SOLUTION_FILE: NvxEpi
   # Do not edit this, we're just creating it here
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
