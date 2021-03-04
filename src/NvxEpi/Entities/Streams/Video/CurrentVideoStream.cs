@@ -74,7 +74,7 @@ namespace NvxEpi.Entities.Streams.Video
                 return DeviceManager
                     .AllDevices
                     .OfType<IStream>()
-                    .Where(t => t.IsTransmitter)
+                    .Where(t => t.IsTransmitter && t.IsStreamingVideo.BoolValue)
                     .FirstOrDefault(
                         tx => tx.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
             }

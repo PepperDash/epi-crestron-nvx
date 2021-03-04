@@ -62,7 +62,8 @@ namespace NvxEpi.Application.JoinMap
         [JoinName("TxAdvancedIsPresent")] public JoinDataComplete TxAdvancedIsPresent;
         [JoinName("VideoSyncStatus")] public JoinDataComplete VideoSyncStatus;
 
-        public NvxApplicationJoinMap(uint joinStart) : base(joinStart)
+        public NvxApplicationJoinMap(uint joinStart)
+            : base(joinStart, typeof (NvxApplicationJoinMap))
         {
             var dmJoinMap = new DmChassisControllerJoinMap(joinStart);
 

@@ -345,6 +345,6 @@ namespace NvxEpi.JoinMaps
                 });
 
         public NvxDeviceJoinMap(uint joinStart)
-            : base(joinStart) { }
+            : base(joinStart, typeof(NvxDeviceJoinMap)) { }
     }
 }
