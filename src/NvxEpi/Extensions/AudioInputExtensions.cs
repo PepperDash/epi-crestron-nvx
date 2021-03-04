@@ -33,8 +33,6 @@ namespace NvxEpi.Extensions
                     break;
                 case DmNvxControl.eAudioSource.DanteAes67Audio:
                     throw new NotImplementedException();
-                case DmNvxControl.eAudioSource.DmNaxAudio:
-                    throw new NotImplementedException();
                 default:
                     throw new ArgumentOutOfRangeException(input.ToString());
             }
