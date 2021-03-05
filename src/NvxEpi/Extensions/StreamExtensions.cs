@@ -17,7 +17,7 @@ namespace NvxEpi.Extensions
                 return;
             
             Debug.Console(1, device, "Clearing stream");
-            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = null;
+            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = string.Empty;
         }
 
         public static void RouteStream(this IStream device, IStream tx)
