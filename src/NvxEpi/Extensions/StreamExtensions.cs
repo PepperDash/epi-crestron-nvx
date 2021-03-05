@@ -7,8 +7,6 @@ namespace NvxEpi.Extensions
 {
     public static class StreamExtensions
     {
-        private static readonly string _noRouteAddress = String.Empty;
-
         public static void ClearStream(this IStream device)
         {
             if (device.IsTransmitter)
@@ -19,7 +17,7 @@ namespace NvxEpi.Extensions
                 return;
             
             Debug.Console(1, device, "Clearing stream");
-            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = _noRouteAddress;
+            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = null;
         }
 
         public static void RouteStream(this IStream device, IStream tx)

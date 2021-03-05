@@ -1,4 +1,5 @@
 ﻿using System;
+using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.SecondaryAudio;
 using PepperDash.Core;
@@ -7,8 +8,6 @@ namespace NvxEpi.Extensions
 {
     public static class SecondaryAudioExtensions
     {
-        private static readonly string _noRouteAddress = String.Empty;
-      
         public static void SetSecondaryAudioAddress(this ISecondaryAudioStream device, string address)
         {
             if (device.IsTransmitter)
@@ -23,7 +22,7 @@ namespace NvxEpi.Extensions
             Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
 
             deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
-            deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
+            deviceWithHardware.Hardware.SecondaryAudio.MulticastAddress.StringValue = address;
         }
 
         public static void ClearSecondaryStream(this ISecondaryAudioStream device)
@@ -35,7 +34,7 @@ namespace NvxEpi.Extensions
             if (deviceWithHardware == null) return;
 
             Debug.Console(1, device, "Clearing Secondary Audio Stream");
-            deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = _noRouteAddress;
+            deviceWithHardware.Hardware.SecondaryAudio.MulticastAddress.StringValue = null;
         }
 
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ISecondaryAudioStream tx)

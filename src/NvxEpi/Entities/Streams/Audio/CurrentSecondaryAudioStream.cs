@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -17,6 +19,7 @@ namespace NvxEpi.Entities.Streams.Audio
         private readonly IntFeedback _currentSecondaryAudioStreamId;
         private readonly StringFeedback _currentSecondaryAudioStreamName;
 
+        private readonly IList<ISecondaryAudioStream> _transmitters = new List<ISecondaryAudioStream>(); 
         private readonly CCriticalSection _lock = new CCriticalSection();
 
         private ISecondaryAudioStream _current;
@@ -31,7 +34,6 @@ namespace NvxEpi.Entities.Streams.Audio
                 ? new StringFeedback(() => String.Empty)
                 : new StringFeedback(RouteNameKey,
                     () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
-
 
             Feedbacks.Add(CurrentSecondaryAudioStreamId);
             Feedbacks.Add(CurrentSecondaryAudioStreamName);
@@ -54,29 +56,24 @@ namespace NvxEpi.Entities.Streams.Audio
             if (!IsStreamingSecondaryAudio.BoolValue)
                 return null;
 
-            try
-            {
-                return DeviceManager
-                    .AllDevices
-                    .OfType<ISecondaryAudioStream>()
-                    .Where(t => t.IsTransmitter && t.IsStreamingSecondaryAudio.BoolValue)
-                    .FirstOrDefault(
-                        x =>
-                            x.SecondaryAudioAddress.StringValue.Equals(
-                                SecondaryAudioAddress.StringValue,
-                                StringComparison.OrdinalIgnoreCase));
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(1,
-                    this,
-                    "Error getting current audio route : {0}\r{1}\r{2}",
-                    ex.Message,
-                    ex.InnerException,
-                    ex.StackTrace);
+            var result = _transmitters
+                .FirstOrDefault(
+                    x => x.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
 
-                throw;
-            }
+            if (result != null)
+                return result;
+
+            result = DeviceManager
+                .AllDevices
+                .OfType<ISecondaryAudioStream>()
+                .Where(t => t.IsTransmitter)
+                .FirstOrDefault(
+                    tx => tx.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
+
+            if (result != null)
+                _transmitters.Add(result);
+
+            return result;      
         }
 
         private void Initialize()
@@ -99,6 +96,15 @@ namespace NvxEpi.Entities.Streams.Audio
 
                 CurrentSecondaryAudioStreamId.FireUpdate();
                 CurrentSecondaryAudioStreamName.FireUpdate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(1,
+                    this,
+                    "Error getting current audio route : {0}\r{1}\r{2}",
+                    ex.Message,
+                    ex.InnerException,
+                    ex.StackTrace);
             }
             finally
             {

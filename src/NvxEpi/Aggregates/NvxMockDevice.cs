@@ -42,6 +42,9 @@ namespace NvxEpi.Aggregates
             StreamUrl = new StringFeedback(
                 () => !String.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : String.Empty);
 
+            MulticastAddress = new StringFeedback(
+                () => !String.IsNullOrEmpty(props.MulticastVideoAddress) ? props.MulticastVideoAddress : String.Empty);
+
             IsStreamingVideo = new BoolFeedback(
                 () => !String.IsNullOrEmpty(props.StreamUrl));
 
@@ -124,5 +127,6 @@ namespace NvxEpi.Aggregates
         public StringFeedback VideoStreamStatus { get; private set; }
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
         public StringFeedback SecondaryAudioStreamStatus { get; private set; }
+        public StringFeedback MulticastAddress { get; private set; }
     }
 }

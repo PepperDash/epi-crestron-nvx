@@ -13,6 +13,7 @@ namespace NvxEpi.Entities.Streams.Video
         private readonly StringFeedback _streamUrl;
         private readonly BoolFeedback _isStreamingVideo;
         private readonly StringFeedback _videoStreamStatus;
+        private readonly StringFeedback _multicastVideoAddress;
 
         public VideoStream(INvxDeviceWithHardware device)
         {
@@ -21,7 +22,9 @@ namespace NvxEpi.Entities.Streams.Video
             _streamUrl = StreamUrlFeedback.GetFeedback(Hardware);
             _isStreamingVideo = IsStreamingVideoFeedback.GetFeedback(Hardware);
             _videoStreamStatus = VideoStreamStatusFeedback.GetFeedback(Hardware);
+            _multicastVideoAddress = MulticastAddressFeedback.GetFeedback(Hardware);
 
+            Feedbacks.Add(_multicastVideoAddress);
             Feedbacks.Add(_isStreamingVideo);
             Feedbacks.Add(_videoStreamStatus);
             Feedbacks.Add(_streamUrl);
@@ -100,6 +103,11 @@ namespace NvxEpi.Entities.Streams.Video
         public StringFeedback StreamUrl
         {
             get { return _streamUrl; }
+        }
+
+        public StringFeedback MulticastAddress
+        {
+            get { return _multicastVideoAddress; }
         }
     }
 }

@@ -60,7 +60,6 @@ namespace NvxEpi.Aggregates
             _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
                              props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
-
             _currentVideoStream = new CurrentVideoStream(this);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _videoSwitcher = new VideoInputSwitcher(this);
@@ -82,7 +81,6 @@ namespace NvxEpi.Aggregates
                     DeviceIpFeedback.GetFeedback(Hardware),
                     DeviceHostnameFeedback.GetFeedback(Hardware),
                     DeviceModeNameFeedback.GetFeedback(Hardware),
-                    MulticastAddressFeedback.GetFeedback(Hardware),
                     VideoName,
                     AudioName,
                     DeviceMode
@@ -160,6 +158,7 @@ namespace NvxEpi.Aggregates
         {
             hardware.OnlineStatusChange += (device, args) =>
                 {
+                    Feedbacks.ForEach(f => f.FireUpdate());
                     if (!args.DeviceOnLine)
                         return;
 
@@ -215,6 +214,11 @@ namespace NvxEpi.Aggregates
         public IntFeedback CurrentSecondaryAudioStreamId
         {
             get { return _currentSecondaryAudioStream.CurrentSecondaryAudioStreamId; }
+        }
+
+        public StringFeedback MulticastAddress
+        {
+            get { return _currentVideoStream.MulticastAddress; }
         }
     }
 }
