@@ -1,5 +1,4 @@
 ﻿using System;
-using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.SecondaryAudio;
 using PepperDash.Core;
@@ -34,7 +33,7 @@ namespace NvxEpi.Extensions
             if (deviceWithHardware == null) return;
 
             Debug.Console(1, device, "Clearing Secondary Audio Stream");
-            deviceWithHardware.Hardware.SecondaryAudio.MulticastAddress.StringValue = string.Empty;
+            deviceWithHardware.Hardware.SecondaryAudio.MulticastAddress.StringValue = "0.0.0.0";
         }
 
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ISecondaryAudioStream tx)
