@@ -6,4 +6,9 @@ namespace NvxEpi.Abstractions
     {
 
     }
+
+    public interface INvxD3xDeviceWithHardware : INvxDeviceWithHardware, INvxD3XHardware
+    {
+
+    }
 }

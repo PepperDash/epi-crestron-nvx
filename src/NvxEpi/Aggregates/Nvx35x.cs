@@ -29,12 +29,16 @@ namespace NvxEpi.Aggregates
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
+        private readonly bool _isTransmitter;
 
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
             : base(config, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
+
+            _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
+                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
@@ -183,6 +187,11 @@ namespace NvxEpi.Aggregates
                     else
                         Hardware.SetRxDefaults(props);
                 };
+        }
+
+        public override bool IsTransmitter
+        {
+            get { return _isTransmitter; }
         }
     }
 }

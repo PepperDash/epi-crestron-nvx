@@ -68,7 +68,6 @@ namespace NvxEpi.Aggregates
                     DeviceMode
                 });
 
-
             InputPorts.Add(
                 new RoutingInputPort(
                     DeviceInputEnum.Hdmi1.Name,
