@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Hardware;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -9,7 +10,7 @@ namespace NvxEpi.Services.Utilities
 {
     public class DeviceDebug
     {
-        public static void RegisterForDeviceFeedback(INvxHardware device)
+        public static void RegisterForDeviceFeedback(INvxDeviceWithHardware device)
         {
             try
             {
@@ -19,6 +20,7 @@ namespace NvxEpi.Services.Utilities
                 RegisterForHdmiInputFeedback(device.Hardware, device);
                 RegisterForHdmiOutputFeedback(device.Hardware, device);
                 RegisterForSecondaryAudioFeedback(device.Hardware, device);
+                RegisterForNaxFeedback(device.Hardware, device);
             }
             catch (MissingMethodException ex)
             {
@@ -103,18 +105,16 @@ namespace NvxEpi.Services.Utilities
                 device.DmNaxRouting.DmNaxRoutingChange += (stream, args) =>
                     Debug.Console(2,
                         keyed,
-                        "Received NAX Routing Change Event ID:{0} from {1}",
-                        args.EventId,
-                        device.HdmiOut.NameFeedback.StringValue);
+                        "Received NAX Routing Change Event ID:{0}",
+                        args.EventId);
 
                 if (device.DmNaxRouting.DmNaxReceive != null)
                 {
                     device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (sender, args) =>
                         Debug.Console(2,
                             keyed,
-                            "Recieved NAX Routing Receive Change:{0} from {1}",
-                            args.EventId,
-                            device.HdmiOut.NameFeedback.StringValue);
+                            "Recieved NAX Routing Receive Change:{0}",
+                            args.EventId);
                 }
 
                 if (device.DmNaxRouting.DmNaxTransmit != null)

@@ -28,7 +28,7 @@ namespace NvxEpi.Extensions
                 case DmNvxControl.eAudioSource.PrimaryStreamAudio:
                     device.SetAudioToPrimaryStreamAudio();
                     break;
-                case DmNvxControl.eAudioSource.SecondaryStreamAudio:
+                case DmNvxControl.eAudioSource.DmNaxAudio:
                     device.SetAudioToSecondaryStreamAudio();
                     break;
                 case DmNvxControl.eAudioSource.DanteAes67Audio:
@@ -83,7 +83,7 @@ namespace NvxEpi.Extensions
                 return;
 
             Debug.Console(1, device, "Switching Audio Input to : 'SecondaryStream'");
-            device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
+            device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
         }
 
         public static void SetAudioToInputAutomatic(this ICurrentAudioInput device)

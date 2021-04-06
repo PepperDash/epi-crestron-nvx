@@ -101,9 +101,15 @@
     <Compile Include="Abstractions\Device\IDeviceMode.cs" />
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
     <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
-    <Compile Include="Abstractions\Device\ISecondaryAudioAddress.cs" />
-    <Compile Include="Abstractions\Device\IStreamUrl.cs" />
+    <Compile Include="Abstractions\INvx35xDeviceWithHarware.cs" />
+    <Compile Include="Abstractions\INvxDeviceWithHardware.cs" />
+    <Compile Include="Abstractions\INvxE3xDeviceWithHardware.cs" />
+    <Compile Include="Abstractions\SecondaryAudio\ISecondardyAudioStreamWithHardware.cs" />
+    <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioAddress.cs" />
+    <Compile Include="Abstractions\Stream\IStreamUrl.cs" />
+    <Compile Include="Abstractions\Stream\IStreamWithHardware.cs" />
     <Compile Include="Aggregates\NvxBaseDevice.cs" />
+    <Compile Include="Aggregates\NvxMockDevice.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInput2.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInputBase.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInput1.cs" />
@@ -118,10 +124,6 @@
     <Compile Include="Abstractions\HdmiOutput\IHdmiOutput.cs" />
     <Compile Include="Abstractions\InputSwitching\ICurrentAudioInput.cs" />
     <Compile Include="Abstractions\InputSwitching\ICurrentVideoInput.cs" />
-    <Compile Include="Abstractions\NaxAudio\ICurrentNaxAudioStream.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioRx.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioStream.cs" />
-    <Compile Include="Abstractions\NaxAudio\INaxAudioTx.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ICurrentSecondaryAudioStream.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioStream.cs" />
     <Compile Include="Abstractions\Stream\ICurrentStream.cs" />
@@ -146,6 +148,7 @@
     <Compile Include="Extensions\UsbStreamExtensions.cs" />
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
+    <Compile Include="Factories\NvxMockDeviceFactory.cs" />
     <Compile Include="Services\Feedback\DeviceHostnameFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceIpFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceModeNameFeedback.cs" />

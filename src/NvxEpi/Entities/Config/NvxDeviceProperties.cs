@@ -16,10 +16,12 @@ namespace NvxEpi.Entities.Config
         public ControlPropertiesConfig Control { get; set; }
         public NvxUsbProperties Usb { get; set; }
         public string Mode { get; set; }
+        public string StreamUrl { get; set; }
         public string MulticastVideoAddress { get; set; }
         public string MulticastAudioAddress { get; set; } 
         public string VideoSourceName { get; set; }
         public string AudioSourceName { get; set; }
+        public string DomainKey { get; set; }
     }
 
     public class NvxUsbProperties

@@ -7,15 +7,17 @@ namespace NvxEpi.Extensions
 {
     public static class StreamExtensions
     {
-        private static readonly string _noRouteAddress = String.Empty;
-
         public static void ClearStream(this IStream device)
         {
             if (device.IsTransmitter)
                 return;
 
+            var deviceWithHardware = device as IStreamWithHardware;
+            if (deviceWithHardware == null)
+                return;
+            
             Debug.Console(1, device, "Clearing stream");
-            device.Hardware.Control.ServerUrl.StringValue = _noRouteAddress;
+            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = string.Empty;
         }
 
         public static void RouteStream(this IStream device, IStream tx)
@@ -33,7 +35,6 @@ namespace NvxEpi.Extensions
                 throw new ArgumentException("tx");
 
             Debug.Console(1, device, "Routing device stream : '{0}'", tx.Name);
-            tx.MulticastAddress.FireUpdate();
             tx.StreamUrl.FireUpdate();
             device.SetStreamUrl(tx.StreamUrl.StringValue);
         }
@@ -46,9 +47,13 @@ namespace NvxEpi.Extensions
             if (String.IsNullOrEmpty(url))
                 return;
 
+            var deviceWithHardware = device as IStreamWithHardware;
+            if (deviceWithHardware == null)
+                return;
+
             Debug.Console(1, device, "Setting stream: '{0}", url);
-            device.Hardware.Control.ServerUrl.StringValue = url;
-            device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = url;
+            deviceWithHardware.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
         }
     }
 }

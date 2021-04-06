@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using PepperDash.Essentials.Core;
 
@@ -11,9 +11,10 @@ namespace NvxEpi.Entities.Hdmi.Input
     {
         protected readonly Dictionary<uint, IntFeedback> _capability = new Dictionary<uint, IntFeedback>();
         protected readonly Dictionary<uint, BoolFeedback> _sync = new Dictionary<uint, BoolFeedback>();
-        private readonly INvxHardware _device;
 
-        protected HdmiInputBase(INvxHardware device)
+        private readonly INvxDeviceWithHardware _device;
+
+        protected HdmiInputBase(INvxDeviceWithHardware device)
         {
             _device = device;
         }
@@ -68,11 +69,6 @@ namespace NvxEpi.Entities.Hdmi.Input
             get { return _device.Key; }
         }
 
-        public StringFeedback MulticastAddress
-        {
-            get { return _device.MulticastAddress; }
-        }
-
         public string Name
         {
             get { return _device.Name; }
@@ -81,16 +77,6 @@ namespace NvxEpi.Entities.Hdmi.Input
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _device.OutputPorts; }
-        }
-
-        public StringFeedback SecondaryAudioAddress
-        {
-            get { return _device.SecondaryAudioAddress; }
-        }
-
-        public StringFeedback StreamUrl
-        {
-            get { return _device.StreamUrl; }
         }
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected

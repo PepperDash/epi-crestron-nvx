@@ -10,7 +10,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams.Usb
 {
-    public abstract class UsbStream : IUsbStream
+    /*public abstract class UsbStream : IUsbStream
     {
         public static IUsbStream GetUsbStream(INvx35XHardware device, NvxUsbProperties props)
         {
@@ -215,5 +215,5 @@ namespace NvxEpi.Entities.Streams.Usb
         {
             get { return _device.SecondaryAudioAddress; }
         }
-    }
+    }*/
 }

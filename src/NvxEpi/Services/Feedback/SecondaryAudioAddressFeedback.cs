@@ -8,41 +8,32 @@ namespace NvxEpi.Services.Feedback
     {
         public const string Key = "SecondaryAudioAddress";
 
-        public static StringFeedback GetFeedback(DmNvx35x device)
+        public static StringFeedback GetFeedbackForTransmitter(DmNvxBaseClass device)
         {
-            if (device.SecondaryAudio == null)
+            if (device.DmNaxRouting.DmNaxTransmit == null)
                 throw new NotSupportedException("Secondary Audio");
 
             var feedback = new StringFeedback(Key,
-                () => device.SecondaryAudio.MulticastAddressFeedback.StringValue);
+                () => device.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
+            device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
 
             return feedback;
         }
 
-        public static StringFeedback GetFeedback(DmNvxE3x device)
+        public static StringFeedback GetFeedbackForReceiver(DmNvxBaseClass device)
         {
+            if (device.DmNaxRouting.DmNaxTransmit == null)
+                throw new NotSupportedException("Secondary Audio");
+
             var feedback = new StringFeedback(Key,
-                () => String.Empty);
+                () => device.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
+            device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
 
             return feedback;
-        }
-
-        public static StringFeedback GetFeedback(DmNvxBaseClass device)
-        {
-            var dmNvx35x = device as DmNvx35x;
-            if (dmNvx35x != null)
-                return GetFeedback(dmNvx35x);
-
-            var dmNvxE3x = device as DmNvxE3x;
-            if (dmNvxE3x != null)
-                return GetFeedback(dmNvxE3x);
-
-            throw new Exception("device type");
         }
     }
 }

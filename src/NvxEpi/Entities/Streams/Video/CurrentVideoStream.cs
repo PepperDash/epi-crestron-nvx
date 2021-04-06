@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using PepperDash.Core;
@@ -18,14 +19,16 @@ namespace NvxEpi.Entities.Streams.Video
         private readonly CCriticalSection _lock = new CCriticalSection();
         private IStream _current;
 
-        public CurrentVideoStream(INvxHardware device) : base(device)
+        private readonly IList<IStream> _transmitters = new List<IStream>(); 
+
+        public CurrentVideoStream(INvxDeviceWithHardware device) : base(device)
         {
             _currentStreamId = IsTransmitter
-                ? new IntFeedback(RouteValueKey, () => default( int ))
+                ? new IntFeedback(() => default( int ))
                 : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
 
             _currentStreamName = IsTransmitter
-                ? new StringFeedback(RouteNameKey, () => String.Empty)
+                ? new StringFeedback(() => String.Empty)
                 : new StringFeedback(RouteNameKey,
                     () => _current != null ? _current.VideoName.StringValue : NvxGlobalRouter.NoSourceText);
 
@@ -58,26 +61,6 @@ namespace NvxEpi.Entities.Streams.Video
                 CurrentStreamId.FireUpdate();
                 CurrentStreamName.FireUpdate();
             }
-            finally
-            {
-                _lock.Leave();
-            }
-        }
-
-        private IStream GetCurrentStream()
-        {
-            try
-            {
-                if (!IsStreamingVideo.BoolValue)
-                    return null;
-
-                return DeviceManager
-                    .AllDevices
-                    .OfType<IStream>()
-                    .Where(t => t.IsTransmitter && t.IsStreamingVideo.BoolValue)
-                    .FirstOrDefault(
-                        tx => tx.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
-            }
             catch (Exception ex)
             {
                 Debug.Console(1,
@@ -86,9 +69,36 @@ namespace NvxEpi.Entities.Streams.Video
                     ex.Message,
                     ex.InnerException,
                     ex.StackTrace);
-
-                throw;
             }
+            finally
+            {
+                _lock.Leave();
+            }
+        }
+
+        private IStream GetCurrentStream()
+        {
+            if (!IsStreamingVideo.BoolValue)
+                return null;
+
+            var result = _transmitters
+                .FirstOrDefault(
+                    x => x.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
+
+            if (result != null)
+                return result;
+
+            result = DeviceManager
+                .AllDevices
+                .OfType<IStream>()
+                .Where(t => t.IsTransmitter)
+                .FirstOrDefault(
+                    tx => tx.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
+
+            if (result != null)
+                _transmitters.Add(result);
+
+            return result;
         }
 
         private void Initialize()
@@ -96,6 +106,7 @@ namespace NvxEpi.Entities.Streams.Video
             IsOnline.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
             VideoStreamStatus.OutputChange += (sender, args) => UpdateCurrentRoute();
             IsStreamingVideo.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
+            MulticastAddress.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
             StreamUrl.OutputChange += (currentDevice, args) => UpdateCurrentRoute();
         }
     }

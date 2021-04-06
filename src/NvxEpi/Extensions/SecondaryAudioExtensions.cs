@@ -7,8 +7,6 @@ namespace NvxEpi.Extensions
 {
     public static class SecondaryAudioExtensions
     {
-        private static readonly string _noRouteAddress = String.Empty;
-      
         public static void SetSecondaryAudioAddress(this ISecondaryAudioStream device, string address)
         {
             if (device.IsTransmitter)
@@ -17,10 +15,13 @@ namespace NvxEpi.Extensions
             if (String.IsNullOrEmpty(address))
                 return;
 
+            var deviceWithHardware = device as ISecondardyAudioStreamWithHardware;
+            if (deviceWithHardware == null) return;
+
             Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
 
-            device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.SecondaryStreamAudio;
-            device.Hardware.SecondaryAudio.MulticastAddress.StringValue = address;
+            deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
+            deviceWithHardware.Hardware.SecondaryAudio.MulticastAddress.StringValue = address;
         }
 
         public static void ClearSecondaryStream(this ISecondaryAudioStream device)
@@ -28,8 +29,11 @@ namespace NvxEpi.Extensions
             if (device.IsTransmitter)
                 return;
 
+            var deviceWithHardware = device as ISecondardyAudioStreamWithHardware;
+            if (deviceWithHardware == null) return;
+
             Debug.Console(1, device, "Clearing Secondary Audio Stream");
-            device.Hardware.SecondaryAudio.MulticastAddress.StringValue = _noRouteAddress;
+            deviceWithHardware.Hardware.SecondaryAudio.MulticastAddress.StringValue = "0.0.0.0";
         }
 
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ISecondaryAudioStream tx)
