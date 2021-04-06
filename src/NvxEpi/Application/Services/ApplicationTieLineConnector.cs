@@ -21,7 +21,7 @@ namespace NvxEpi.Application.Services
 
         public static void AddTieLineForAmp(Amplifier amp, INvxDevice rx)
         {
-            var outputPort = rx.OutputPorts[AnalogAudioOutput.Key];
+            var outputPort = rx.OutputPorts[SwitcherForAnalogAudioOutput.Key];
             if (outputPort == null)
                 return;
 
@@ -30,7 +30,7 @@ namespace NvxEpi.Application.Services
 
         public static void AddTieLineForMockDisplay(MockDisplay dest, INvxDevice rx)
         {
-            var outputPort = rx.OutputPorts[HdmiOutput.Key];
+            var outputPort = rx.OutputPorts[SwitcherForHdmiOutput.Key];
             if (outputPort == null)
                 throw new ArgumentNullException("outputPort");
 

@@ -34,5 +34,12 @@ namespace NvxEpi.Services.Utilities
             if (!String.IsNullOrEmpty(props.MulticastVideoAddress))
                 device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
         }
+
+        public static void SetDefaults(this DmNvxD3x device, NvxDeviceProperties props)
+        {
+            device.Control.EnableAutomaticInitiation();
+            device.SecondaryAudio.EnableAutomaticInitiation();
+            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+        }
     }
 }

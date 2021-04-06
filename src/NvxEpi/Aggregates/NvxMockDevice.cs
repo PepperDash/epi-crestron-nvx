@@ -78,7 +78,7 @@ namespace NvxEpi.Aggregates
 
             OutputPorts.Add(
                 new RoutingOutputPort(
-                StreamOutput.Key,
+                SwitcherForStreamOutput.Key,
                 eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Streaming,
                 null,
@@ -86,7 +86,7 @@ namespace NvxEpi.Aggregates
 
             OutputPorts.Add(
                 new RoutingOutputPort(
-                SecondaryAudioOutput.Key,
+                SwitcherForSecondaryAudioOutput.Key,
                 eRoutingSignalType.Audio,
                 eRoutingPortConnectionType.LineAudio,
                 null,

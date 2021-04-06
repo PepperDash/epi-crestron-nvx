@@ -2,7 +2,7 @@
 
 namespace NvxEpi.Abstractions
 {
-    public interface INvx35xDeviceWithHardware : INvxDeviceWithHardware, INvx35XHardware
+    public interface INvx35XDeviceWithHardware : INvxDeviceWithHardware, INvx35XHardware
     {
         
     }

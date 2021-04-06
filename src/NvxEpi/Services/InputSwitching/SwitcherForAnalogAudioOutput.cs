@@ -8,13 +8,13 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputSwitching
 {
-    public class AnalogAudioOutput : IHandleInputSwitch
+    public class SwitcherForAnalogAudioOutput : IHandleInputSwitch
     {
         public const string Key = "AnalogAudioOutput";
 
         private readonly ICurrentAudioInput _device;
 
-        public AnalogAudioOutput(ICurrentAudioInput device)
+        public SwitcherForAnalogAudioOutput(ICurrentAudioInput device)
         {
             _device = device;
         }
@@ -64,7 +64,7 @@ namespace NvxEpi.Services.InputSwitching
                 Key, 
                 eRoutingSignalType.Audio, 
                 eRoutingPortConnectionType.LineAudio,
-                new AnalogAudioOutput(parent), 
+                new SwitcherForAnalogAudioOutput(parent), 
                 parent));
         }
     }

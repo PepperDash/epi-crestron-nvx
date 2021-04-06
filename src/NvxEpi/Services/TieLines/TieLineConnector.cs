@@ -17,7 +17,7 @@ namespace NvxEpi.Services.TieLines
             foreach (var item in transmitters)
             {
                 var tx = item;
-                var outputPort = tx.OutputPorts[StreamOutput.Key];
+                var outputPort = tx.OutputPorts[SwitcherForStreamOutput.Key];
                 if (outputPort == null)
                     throw new NullReferenceException("outputPort");
 
@@ -35,7 +35,7 @@ namespace NvxEpi.Services.TieLines
                     TieLineCollection.Default.Add(new TieLine(outputPort, streamInput, eRoutingSignalType.AudioVideo));
 
                     var secondaryAudio = tx as ISecondaryAudioStream;
-                    var secondaryAudioPort = tx.OutputPorts[SecondaryAudioOutput.Key];
+                    var secondaryAudioPort = tx.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
                     if (secondaryAudioPort == null)
                         throw new NullReferenceException("secondaryAudioOutput");
 

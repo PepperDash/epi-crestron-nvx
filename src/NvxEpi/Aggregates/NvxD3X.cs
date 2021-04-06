@@ -1,14 +1,11 @@
-﻿using System;
-using Crestron.SimplSharp;
+using System;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
-using NvxEpi.Entities.Hdmi.Input;
-using NvxEpi.Entities.Hdmi.Output;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -20,20 +17,20 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class NvxE3X : NvxBaseDevice, INvxE3XDeviceWithHardware, IComPorts, IIROutputPorts,
-        IHdmiInput,
+    public class NvxD3X : NvxBaseDevice, INvxD3XDeviceWithHardware, IComPorts, IIROutputPorts,
+        IHdmiOutput,
         IRouting
     {
-        private readonly DmNvxE3x _hardware;
-        private readonly IHdmiInput _hdmiInput;
+        private readonly DmNvxD3x _hardware;
+        private readonly IHdmiOutput _hdmiOutput;
         private readonly IUsbStream _usbStream;
 
-        public NvxE3X(DeviceConfig config, DmNvxE3x hardware)
+        public NvxD3X(DeviceConfig config, DmNvxD3x hardware)
             : base(config, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
-            _hdmiInput = new HdmiInput1(this);
+            _hdmiOutput = new NvxEpi.Entities.Hdmi.Output.HdmiOutput(this);
 
             RegisterForOnlineFeedback(hardware, props);
             RegisterForFeedback();
@@ -45,14 +42,9 @@ namespace NvxEpi.Aggregates
             get { return Hardware.ComPorts; }
         }
 
-        public new DmNvxE3x Hardware
+        public new DmNvxD3x Hardware
         {
             get { return _hardware; }
-        }
-
-        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
-        {
-            get { return _hdmiInput.HdcpCapability; }
         }
 
         public CrestronCollection<IROutputPort> IROutputPorts
@@ -73,11 +65,6 @@ namespace NvxEpi.Aggregates
         public int NumberOfIROutputPorts
         {
             get { return Hardware.NumberOfIROutputPorts; }
-        }
-
-        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
-        {
-            get { return _hdmiInput.SyncDetected; }
         }
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
@@ -111,9 +98,10 @@ namespace NvxEpi.Aggregates
 
         private void AddRoutingPorts()
         {
-            HdmiInput1Port.AddRoutingPort(this);
-            SwitcherForStreamOutput.AddRoutingPort(this);
-            AnalogAudioInput.AddRoutingPort(this);
+            SwitcherForHdmiOutput.AddRoutingPort(this);
+            StreamInput.AddRoutingPort(this);
+            SecondaryAudioInput.AddRoutingPort(this);
+            SwitcherForAnalogAudioOutput.AddRoutingPort(this);
         }
 
         private void RegisterForFeedback()
@@ -136,6 +124,16 @@ namespace NvxEpi.Aggregates
         public override bool IsTransmitter
         {
             get { return true; }
+        }
+
+        public BoolFeedback DisabledByHdcp
+        {
+            get { return _hdmiOutput.DisabledByHdcp; }
+        }
+
+        public IntFeedback HorizontalResolution
+        {
+            get { return _hdmiOutput.HorizontalResolution; }
         }
     }
 }

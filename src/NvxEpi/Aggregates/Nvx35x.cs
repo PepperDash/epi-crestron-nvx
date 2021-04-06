@@ -18,7 +18,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using HdmiOutput = NvxEpi.Services.InputSwitching.HdmiOutput;
 
 namespace NvxEpi.Aggregates
 {
@@ -156,19 +155,19 @@ namespace NvxEpi.Aggregates
         {
             HdmiInput1Port.AddRoutingPort(this);
             HdmiInput2Port.AddRoutingPort(this);
-            HdmiOutput.AddRoutingPort(this);
+            SwitcherForHdmiOutput.AddRoutingPort(this);
 
             if (IsTransmitter)
             {
-                StreamOutput.AddRoutingPort(this);
-                SecondaryAudioOutput.AddRoutingPort(this);
+                SwitcherForStreamOutput.AddRoutingPort(this);
+                SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
                 AnalogAudioInput.AddRoutingPort(this);
             }
             else
             {
                 StreamInput.AddRoutingPort(this);
                 SecondaryAudioInput.AddRoutingPort(this);
-                AnalogAudioOutput.AddRoutingPort(this);
+                SwitcherForAnalogAudioOutput.AddRoutingPort(this);
             }
         }
 

@@ -15,11 +15,9 @@ namespace NvxEpi.Factories
 
         static NvxE3XDeviceFactory()
         {
-            _typeNames = typeof (DmNvxBaseClass)
-                .GetCType()
-                .Assembly
-                .GetTypes()
-                .Where(x => x.IsSubclassOf(typeof (DmNvxE3x).GetCType()) && !x.IsAbstract)
+            _typeNames = _types
+                .Values
+                .Where(x => x.IsSubclassOf(typeof(DmNvxE3x).GetCType()))
                 .Select(x => x.Name)
                 .ToList();
         }

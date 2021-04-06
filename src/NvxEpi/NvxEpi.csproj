@@ -97,11 +97,16 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Abstractions\Dante\IDanteAudio.cs" />
     <Compile Include="Abstractions\Device\IDeviceId.cs" />
     <Compile Include="Abstractions\Device\IDeviceMode.cs" />
+    <Compile Include="Abstractions\Hardware\INvxD3XHardware.cs" />
+    <Compile Include="Abstractions\Hardware\INvxD8XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
+    <Compile Include="Abstractions\Hardware\INvxE76XHardware.cs" />
     <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
     <Compile Include="Abstractions\INvx35xDeviceWithHarware.cs" />
+    <Compile Include="Abstractions\INvxD3XDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxE3xDeviceWithHardware.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondardyAudioStreamWithHardware.cs" />
@@ -109,6 +114,7 @@
     <Compile Include="Abstractions\Stream\IStreamUrl.cs" />
     <Compile Include="Abstractions\Stream\IStreamWithHardware.cs" />
     <Compile Include="Aggregates\NvxBaseDevice.cs" />
+    <Compile Include="Aggregates\NvxD3X.cs" />
     <Compile Include="Aggregates\NvxMockDevice.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInput2.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInputBase.cs" />
@@ -146,6 +152,7 @@
     <Compile Include="Entities\Streams\Video\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
     <Compile Include="Extensions\UsbStreamExtensions.cs" />
+    <Compile Include="Factories\NvxD3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Factories\NvxMockDeviceFactory.cs" />
@@ -173,10 +180,10 @@
     <Compile Include="Services\InputPorts\StreamInput.cs" />
     <Compile Include="Services\InputPorts\HdmiInput1Port.cs" />
     <Compile Include="Services\InputPorts\HdmiInput2Port.cs" />
-    <Compile Include="Services\InputSwitching\AnalogAudioOutput.cs" />
-    <Compile Include="Services\InputSwitching\SecondaryAudioOutput.cs" />
-    <Compile Include="Services\InputSwitching\StreamOutput.cs" />
-    <Compile Include="Services\InputSwitching\HdmiOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForAnalogAudioOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForSecondaryAudioOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForStreamOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForHdmiOutput.cs" />
     <Compile Include="Services\InputSwitching\IHandleInputSwitch.cs" />
     <Compile Include="Services\TieLines\TieLineConnector.cs" />
     <Compile Include="Services\Utilities\DeviceConsole.cs" />

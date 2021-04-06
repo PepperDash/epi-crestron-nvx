@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
@@ -13,10 +14,20 @@ namespace NvxEpi.Factories
     public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T> where T : EssentialsDevice
     {
         public const string MinumumEssentialsVersion = "1.6.4";
+
+        protected static readonly IDictionary<string, CType> _types;
+
         static NvxBaseDeviceFactory()
         {
             if (DeviceManager.GetDeviceForKey(NvxGlobalRouter.InstanceKey) == null)
                 DeviceManager.AddDevice(NvxGlobalRouter.Instance);
+
+            _types = typeof (DmNvxBaseClass)
+                .GetCType()
+                .Assembly
+                .GetTypes()
+                .Where(t => !t.IsAbstract)
+                .ToDictionary(x => x.Name, x => x);
         }
 
         public static DmNvxBaseClass BuildDeviceFromConfig(DeviceConfig config)
@@ -24,13 +35,8 @@ namespace NvxEpi.Factories
             var type = config.Type;
             var props = NvxDeviceProperties.FromDeviceConfig(config);
 
-            var nvxDeviceType = typeof(DmNvxBaseClass)
-                .GetCType()
-                .Assembly
-                .GetTypes()
-                .FirstOrDefault(x => x.Name.Equals(type, StringComparison.OrdinalIgnoreCase));
-
-            if (nvxDeviceType == null)
+            CType nvxDeviceType;
+            if (!_types.TryGetValue(type, out nvxDeviceType))
                 throw new NullReferenceException("The type specified in the config file wasn't found");
 
             if (props.Control.IpId == null)

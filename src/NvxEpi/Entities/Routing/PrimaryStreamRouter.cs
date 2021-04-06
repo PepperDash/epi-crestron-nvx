@@ -32,7 +32,7 @@ namespace NvxEpi.Entities.Routing
                     if (stream == null)
                         return;
                     
-                    var streamRoutingPort = tx.OutputPorts[StreamOutput.Key];
+                    var streamRoutingPort = tx.OutputPorts[SwitcherForStreamOutput.Key];
                     if (streamRoutingPort == null)
                         return;
 
