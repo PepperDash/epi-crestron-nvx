@@ -100,12 +100,14 @@
     <Compile Include="Abstractions\Dante\IDanteAudio.cs" />
     <Compile Include="Abstractions\Device\IDeviceId.cs" />
     <Compile Include="Abstractions\Device\IDeviceMode.cs" />
+    <Compile Include="Abstractions\Hardware\INvx36XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxD3XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxD8XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxE76XHardware.cs" />
     <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
     <Compile Include="Abstractions\INvx35xDeviceWithHarware.cs" />
+    <Compile Include="Abstractions\INvx36XDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxD3XDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxE3xDeviceWithHardware.cs" />
@@ -113,6 +115,7 @@
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioAddress.cs" />
     <Compile Include="Abstractions\Stream\IStreamUrl.cs" />
     <Compile Include="Abstractions\Stream\IStreamWithHardware.cs" />
+    <Compile Include="Aggregates\Nvx36X.cs" />
     <Compile Include="Aggregates\NvxBaseDevice.cs" />
     <Compile Include="Aggregates\NvxD3X.cs" />
     <Compile Include="Aggregates\NvxMockDevice.cs" />
@@ -152,6 +155,7 @@
     <Compile Include="Entities\Streams\Video\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
     <Compile Include="Extensions\UsbStreamExtensions.cs" />
+    <Compile Include="Factories\Nvx36XDeviceFactory.cs" />
     <Compile Include="Factories\NvxD3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />

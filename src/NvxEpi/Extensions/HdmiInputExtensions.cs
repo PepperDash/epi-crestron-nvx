@@ -16,23 +16,7 @@ namespace NvxEpi.Extensions
 
                 var capabilityToSet = (eHdcpCapabilityType) capability;
                 Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}", capabilityToSet.ToString());
-                switch (capabilityToSet)
-                {
-                    case eHdcpCapabilityType.HdcpSupportOff:
-                        device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
-                        break;
-                    case eHdcpCapabilityType.HdcpAutoSupport:
-                        device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
-                        break;
-                    case eHdcpCapabilityType.Hdcp1xSupport:
-                        device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
-                        break;
-                    case eHdcpCapabilityType.Hdcp2_2Support:
-                        device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
             }
             catch (ArgumentOutOfRangeException ex)
             {
