@@ -19,7 +19,6 @@ namespace NvxEpi.Aggregates
     public abstract class NvxBaseDevice : CrestronGenericBridgeableBaseDevice, ICurrentVideoInput, ICurrentAudioInput, ICurrentStream,
         ICurrentSecondaryAudioStream
     {
-        private readonly bool _isTransmitter;
         private readonly int _deviceId;
 
         private readonly DmNvxBaseClass _hardware;
@@ -57,8 +56,6 @@ namespace NvxEpi.Aggregates
 
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _deviceId = props.DeviceId;
-            _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
-                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
             _currentVideoStream = new CurrentVideoStream(this);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
@@ -134,10 +131,7 @@ namespace NvxEpi.Aggregates
             get { return _inputPorts; }
         }
 
-        public bool IsTransmitter
-        {
-            get { return _isTransmitter; }
-        }
+        public abstract bool IsTransmitter { get; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {

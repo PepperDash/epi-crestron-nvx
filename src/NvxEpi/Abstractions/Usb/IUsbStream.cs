@@ -3,7 +3,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.Usb
 {
-    public interface IUsbStream : INvx35XHardware, INvxDevice
+    public interface IUsbStream : INvxDevice
     {
         bool IsRemote { get; }
         StringFeedback UsbLocalId { get; }

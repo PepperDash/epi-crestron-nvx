@@ -68,7 +68,6 @@ namespace NvxEpi.Aggregates
                     DeviceMode
                 });
 
-
             InputPorts.Add(
                 new RoutingInputPort(
                     DeviceInputEnum.Hdmi1.Name,
@@ -79,7 +78,7 @@ namespace NvxEpi.Aggregates
 
             OutputPorts.Add(
                 new RoutingOutputPort(
-                StreamOutput.Key,
+                SwitcherForStreamOutput.Key,
                 eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Streaming,
                 null,
@@ -87,7 +86,7 @@ namespace NvxEpi.Aggregates
 
             OutputPorts.Add(
                 new RoutingOutputPort(
-                SecondaryAudioOutput.Key,
+                SwitcherForSecondaryAudioOutput.Key,
                 eRoutingSignalType.Audio,
                 eRoutingPortConnectionType.LineAudio,
                 null,

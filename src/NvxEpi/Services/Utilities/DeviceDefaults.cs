@@ -26,6 +26,25 @@ namespace NvxEpi.Services.Utilities
             device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
         }
 
+        public static void SetTxDefaults(this DmNvx36x device, NvxDeviceProperties props)
+        {
+            device.Control.DeviceMode = eDeviceMode.Transmitter;
+            device.Control.EnableAutomaticInitiation();
+            device.SecondaryAudio.EnableAutomaticInitiation();
+            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+
+            if (!String.IsNullOrEmpty(props.MulticastVideoAddress))
+                device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
+        }
+
+        public static void SetRxDefaults(this DmNvx36x device, NvxDeviceProperties props)
+        {
+            device.Control.DeviceMode = eDeviceMode.Receiver;
+            device.Control.EnableAutomaticInitiation();
+            device.SecondaryAudio.EnableAutomaticInitiation();
+            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+        }
+
         public static void SetDefaults(this DmNvxE3x device, NvxDeviceProperties props)
         {
             device.Control.EnableAutomaticInitiation();
@@ -33,6 +52,13 @@ namespace NvxEpi.Services.Utilities
 
             if (!String.IsNullOrEmpty(props.MulticastVideoAddress))
                 device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
+        }
+
+        public static void SetDefaults(this DmNvxD3x device, NvxDeviceProperties props)
+        {
+            device.Control.EnableAutomaticInitiation();
+            device.SecondaryAudio.EnableAutomaticInitiation();
+            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
         }
     }
 }

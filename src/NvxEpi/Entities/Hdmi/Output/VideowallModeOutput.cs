@@ -8,20 +8,12 @@ namespace NvxEpi.Entities.Hdmi.Output
 {
     public class VideowallModeOutput : HdmiOutput, IVideowallMode
     {
-        private readonly INvx35xDeviceWithHardware _hardware;
         private readonly IntFeedback _videowallMode;
 
-        public VideowallModeOutput(INvx35xDeviceWithHardware device) : base(device)
+        public VideowallModeOutput(INvxDeviceWithHardware device) : base(device)
         {
-            _hardware = device;
-
-            _videowallMode = VideowallModeFeedback.GetFeedback(Hardware);
-            _hardware.Feedbacks.Add(_videowallMode);
-        }
-
-        public new DmNvx35x Hardware
-        {
-            get { return _hardware.Hardware; }
+            _videowallMode = VideowallModeFeedback.GetFeedback(device.Hardware);
+            device.Feedbacks.Add(_videowallMode);
         }
 
         public IntFeedback VideowallMode { get { return _videowallMode; } }

@@ -18,7 +18,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using HdmiOutput = NvxEpi.Services.InputSwitching.HdmiOutput;
 
 namespace NvxEpi.Aggregates
 {
@@ -29,12 +28,16 @@ namespace NvxEpi.Aggregates
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
+        private readonly bool _isTransmitter;
 
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
             : base(config, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
+
+            _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
+                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
@@ -152,19 +155,19 @@ namespace NvxEpi.Aggregates
         {
             HdmiInput1Port.AddRoutingPort(this);
             HdmiInput2Port.AddRoutingPort(this);
-            HdmiOutput.AddRoutingPort(this);
+            SwitcherForHdmiOutput.AddRoutingPort(this);
 
             if (IsTransmitter)
             {
-                StreamOutput.AddRoutingPort(this);
-                SecondaryAudioOutput.AddRoutingPort(this);
+                SwitcherForStreamOutput.AddRoutingPort(this);
+                SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
                 AnalogAudioInput.AddRoutingPort(this);
             }
             else
             {
                 StreamInput.AddRoutingPort(this);
                 SecondaryAudioInput.AddRoutingPort(this);
-                AnalogAudioOutput.AddRoutingPort(this);
+                SwitcherForAnalogAudioOutput.AddRoutingPort(this);
             }
         }
 
@@ -183,6 +186,11 @@ namespace NvxEpi.Aggregates
                     else
                         Hardware.SetRxDefaults(props);
                 };
+        }
+
+        public override bool IsTransmitter
+        {
+            get { return _isTransmitter; }
         }
     }
 }

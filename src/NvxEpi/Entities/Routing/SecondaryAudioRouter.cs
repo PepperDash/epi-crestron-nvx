@@ -31,7 +31,7 @@ namespace NvxEpi.Entities.Routing
                     if (stream == null)
                         return;
         
-                    var streamRoutingPort = tx.OutputPorts[SecondaryAudioOutput.Key];
+                    var streamRoutingPort = tx.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
                     if (streamRoutingPort == null)
                         return;
 
