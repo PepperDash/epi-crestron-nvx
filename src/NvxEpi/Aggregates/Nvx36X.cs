@@ -5,13 +5,14 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
+using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hdmi.Input;
 using NvxEpi.Entities.Hdmi.Output;
+using NvxEpi.Entities.InputSwitching;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -23,12 +24,13 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class Nvx36X : NvxBaseDevice, IComPorts, IIROutputPorts,
+    public class Nvx36X : NvxBaseDevice, IComPorts, IIROutputPorts, ICurrentDanteInput,
         IUsbStream, IHdmiInput, IVideowallMode, IRouting, ICec, INvx36XDeviceWithHardware
     {
         private readonly DmNvx36x _hardware;
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
+        private readonly ICurrentDanteInput _danteInput;
         private readonly IUsbStream _usbStream;
         private readonly bool _isTransmitter;
 
@@ -43,6 +45,7 @@ namespace NvxEpi.Aggregates
 
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
+            _danteInput = new DanteInputSwitcher(this);
 
             RegisterForOnlineFeedback(hardware, props);
             RegisterForDeviceFeedback();
@@ -193,6 +196,16 @@ namespace NvxEpi.Aggregates
         public override bool IsTransmitter
         {
             get { return _isTransmitter; }
+        }
+
+        public StringFeedback CurrentDanteInput
+        {
+            get { return _danteInput.CurrentDanteInput; }
+        }
+
+        public IntFeedback CurrentDanteInputValue
+        {
+            get { return _danteInput.CurrentDanteInputValue; }
         }
     }
 }

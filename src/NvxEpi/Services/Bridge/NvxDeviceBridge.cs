@@ -93,6 +93,12 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == SecondaryAudioAddressFeedback.Key)
                     joinNumber = joinMap.MulticastAudioAddress.JoinNumber;
 
+                if (feedback.Key == DanteInputFeedback.Key)
+                    joinNumber = joinMap.DanteInput.JoinNumber;
+
+                if (feedback.Key == DanteInputValueFeedback.Key)
+                    joinNumber = joinMap.DanteInput.JoinNumber;
+
                 if (feedback.Key == HorizontalResolutionFeedback.Key) { }
 
                 if (joinNumber > 0)
@@ -137,6 +143,10 @@ namespace NvxEpi.Services.Bridge
             var audioInput = _device as ICurrentAudioInput;
             if (audioInput != null)
                 trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, audioInput.SetAudioInput);
+
+            var danteInput = _device as ICurrentDanteInput;
+            if (audioInput != null)
+                trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, danteInput.SetDanteInput);
 
             var stream = _device as IStream;
             if (stream != null)

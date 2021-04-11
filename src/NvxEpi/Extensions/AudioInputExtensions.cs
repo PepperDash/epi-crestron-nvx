@@ -92,11 +92,5 @@ namespace NvxEpi.Extensions
             Debug.Console(1, device, "Switching Audio Input to : 'Automatic'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
         }
-
-        public static void SetDanteInputToAutomatic(this IDanteAudio device)
-        {
-            Debug.Console(1, device, "Switching Dante Audio Input to : 'Automatic'");
-            device.Hardware.Control.DanteAudioSource = DmNvxControl.eAudioSource.Automatic;
-        }
     }
 }
