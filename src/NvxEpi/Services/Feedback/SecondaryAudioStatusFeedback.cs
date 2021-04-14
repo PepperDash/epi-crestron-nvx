@@ -17,7 +17,8 @@ namespace NvxEpi.Services.Feedback
                 () => device.SecondaryAudio.StatusFeedback.ToString());
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
+            if(device.SecondaryAudio != null)
+                device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
             device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
 
             return feedback;
@@ -25,14 +26,15 @@ namespace NvxEpi.Services.Feedback
 
         public static StringFeedback GetFeedbackForReceiver(DmNvxBaseClass device)
         {
-            if (device.DmNaxRouting.DmNaxTransmit == null)
+            if (device.DmNaxRouting.DmNaxReceive == null)
                 throw new NotSupportedException("Secondary Audio");
 
             var feedback = new StringFeedback(Key,
                 () => device.SecondaryAudio.StatusFeedback.ToString());
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
+            if (device.SecondaryAudio != null)
+                device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
             device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
 
             return feedback;

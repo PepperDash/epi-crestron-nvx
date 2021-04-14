@@ -43,7 +43,7 @@ namespace NvxEpi.Aggregates
             _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
                              props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
-            _hdmiInput = new HdmiInput2(this);
+            _hdmiInput = new HdmiInput1(this);
             _hdmiOutput = new VideowallModeOutput(this);
             _danteInput = new DanteInputSwitcher(this);
 
@@ -159,7 +159,6 @@ namespace NvxEpi.Aggregates
         private void AddRoutingPorts()
         {
             HdmiInput1Port.AddRoutingPort(this);
-            HdmiInput2Port.AddRoutingPort(this);
             SwitcherForHdmiOutput.AddRoutingPort(this);
 
             if (IsTransmitter)

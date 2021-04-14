@@ -17,7 +17,8 @@ namespace NvxEpi.Services.Feedback
                     device.SecondaryAudio.StartFeedback.BoolValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
+            if (device.SecondaryAudio != null)
+                device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
             device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
             device.DmNaxRouting.DmNaxRoutingChange += (@base, args) => feedback.FireUpdate();
 
@@ -31,7 +32,8 @@ namespace NvxEpi.Services.Feedback
                     device.SecondaryAudio.StartFeedback.BoolValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
+            if(device.SecondaryAudio != null)
+                device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
             device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
             device.DmNaxRouting.DmNaxRoutingChange += (@base, args) => feedback.FireUpdate();
 
