@@ -13,25 +13,28 @@ namespace NvxEpi.Factories
 {
     public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T> where T : EssentialsDevice
     {
-        public const string MinumumEssentialsVersion = "1.6.4";
+        public const string MinumumEssentialsVersion = "1.8.0";
 
-        protected static readonly IDictionary<string, CType> _types;
+        protected static IDictionary<string, CType> _types;
 
         static NvxBaseDeviceFactory()
         {
             if (DeviceManager.GetDeviceForKey(NvxGlobalRouter.InstanceKey) == null)
-                DeviceManager.AddDevice(NvxGlobalRouter.Instance);
-
-            _types = typeof (DmNvxBaseClass)
-                .GetCType()
-                .Assembly
-                .GetTypes()
-                .Where(t => !t.IsAbstract)
-                .ToDictionary(x => x.Name, x => x);
+                DeviceManager.AddDevice(NvxGlobalRouter.Instance); 
         }
 
         public static DmNvxBaseClass BuildDeviceFromConfig(DeviceConfig config)
         {
+            if (_types == null)
+            {
+                _types = typeof(DmNvxBaseClass)
+                    .GetCType()
+                    .Assembly
+                    .GetTypes()
+                    .Where(x => x.IsSubclassOf(typeof(DmNvxBaseClass).GetCType()) && !x.IsAbstract)
+                    .ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+            }
+
             var type = config.Type;
             var props = NvxDeviceProperties.FromDeviceConfig(config);
 
