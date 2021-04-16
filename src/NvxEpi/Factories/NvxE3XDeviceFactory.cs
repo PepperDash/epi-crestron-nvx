@@ -11,22 +11,23 @@ namespace NvxEpi.Factories
 {
     public class NvxE3XDeviceFactory : NvxBaseDeviceFactory<NvxE3X>
     {
-        private static readonly List<string> _typeNames;
-
-        static NvxE3XDeviceFactory()
-        {
-            _typeNames = typeof(DmNvxBaseClass)
-                .GetCType()
-                .Assembly
-                .GetTypes()
-                .Where(x => x.IsSubclassOf(typeof(DmNvxE3x).GetCType()) && !x.IsAbstract)
-                .Select(x => x.Name)
-                .ToList();
-        }
+        private static List<string> _typeNames;
 
         public NvxE3XDeviceFactory()
         {
             MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
+
+            if (_typeNames == null)
+            {
+                _typeNames = typeof(DmNvxBaseClass)
+                    .GetCType()
+                    .Assembly
+                    .GetTypes()
+                    .Where(x => x.IsSubclassOf(typeof(DmNvxE3x).GetCType()) && !x.IsAbstract)
+                    .Select(x => x.Name)
+                    .ToList();
+            }
+
             TypeNames = _typeNames.ToList();
         }
 

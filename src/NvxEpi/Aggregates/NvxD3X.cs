@@ -17,7 +17,11 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class NvxD3X : NvxBaseDevice, INvxD3XDeviceWithHardware, IComPorts, IIROutputPorts,
+    public class NvxD3X : 
+        NvxBaseDevice, 
+        INvxD3XDeviceWithHardware, 
+        IComPorts, 
+        IIROutputPorts,
         IHdmiOutput,
         IRouting
     {
@@ -42,9 +46,24 @@ namespace NvxEpi.Aggregates
             get { return Hardware.ComPorts; }
         }
 
+        public BoolFeedback DisabledByHdcp
+        {
+            get { return _hdmiOutput.DisabledByHdcp; }
+        }
+
         public new DmNvxD3x Hardware
         {
             get { return _hardware; }
+        }
+
+        public IntFeedback HorizontalResolution
+        {
+            get { return _hdmiOutput.HorizontalResolution; }
+        }
+
+        public StringFeedback EdidManufacturer
+        {
+            get { return _hdmiOutput.EdidManufacturer; }
         }
 
         public CrestronCollection<IROutputPort> IROutputPorts
@@ -119,21 +138,6 @@ namespace NvxEpi.Aggregates
 
                     Hardware.SetDefaults(props);
                 };
-        }
-
-        public override bool IsTransmitter
-        {
-            get { return true; }
-        }
-
-        public BoolFeedback DisabledByHdcp
-        {
-            get { return _hdmiOutput.DisabledByHdcp; }
-        }
-
-        public IntFeedback HorizontalResolution
-        {
-            get { return _hdmiOutput.HorizontalResolution; }
         }
     }
 }

@@ -19,7 +19,11 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class NvxE3X : NvxBaseDevice, INvxE3XDeviceWithHardware, IComPorts, IIROutputPorts,
+    public class NvxE3X : 
+        NvxBaseDevice, 
+        INvxE3XDeviceWithHardware, 
+        IComPorts, 
+        IIROutputPorts,
         IHdmiInput,
         IRouting
     {
@@ -130,11 +134,6 @@ namespace NvxEpi.Aggregates
 
                     Hardware.SetDefaults(props);
                 };
-        }
-
-        public override bool IsTransmitter
-        {
-            get { return true; }
         }
     }
 }
