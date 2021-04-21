@@ -7,12 +7,10 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
-using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Entities.Config;
 using NvxEpi.Entities.Hdmi.Input;
 using NvxEpi.Entities.Hdmi.Output;
-using NvxEpi.Entities.InputSwitching;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -24,15 +22,13 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class Nvx36X : NvxBaseDevice, IComPorts, IIROutputPorts, ICurrentDanteInput,
+    public class Nvx36X : NvxBaseDevice, IComPorts, IIROutputPorts,
         IUsbStream, IHdmiInput, IVideowallMode, IRouting, ICec, INvx36XDeviceWithHardware
     {
         private readonly DmNvx36x _hardware;
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
-        private readonly ICurrentDanteInput _danteInput;
         private readonly IUsbStream _usbStream;
-        private readonly bool _isTransmitter;
 
         public Nvx36X(DeviceConfig config, DmNvx36x hardware)
             : base(config, hardware)
@@ -40,12 +36,8 @@ namespace NvxEpi.Aggregates
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
 
-            _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
-                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
-
             _hdmiInput = new HdmiInput1(this);
             _hdmiOutput = new VideowallModeOutput(this);
-            _danteInput = new DanteInputSwitcher(this);
 
             RegisterForOnlineFeedback(hardware, props);
             RegisterForDeviceFeedback();
@@ -75,6 +67,11 @@ namespace NvxEpi.Aggregates
         public IntFeedback HorizontalResolution
         {
             get { return _hdmiOutput.HorizontalResolution; }
+        }
+
+        public StringFeedback EdidManufacturer
+        {
+            get { return _hdmiOutput.EdidManufacturer; }
         }
 
         public CrestronCollection<IROutputPort> IROutputPorts
@@ -190,21 +187,6 @@ namespace NvxEpi.Aggregates
                     else
                         Hardware.SetRxDefaults(props);
                 };
-        }
-
-        public override bool IsTransmitter
-        {
-            get { return _isTransmitter; }
-        }
-
-        public StringFeedback CurrentDanteInput
-        {
-            get { return _danteInput.CurrentDanteInput; }
-        }
-
-        public IntFeedback CurrentDanteInputValue
-        {
-            get { return _danteInput.CurrentDanteInputValue; }
         }
     }
 }

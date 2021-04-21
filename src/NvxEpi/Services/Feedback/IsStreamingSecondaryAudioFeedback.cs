@@ -1,4 +1,5 @@
-﻿using Crestron.SimplSharpPro.DM;
+﻿using System;
+using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -11,16 +12,23 @@ namespace NvxEpi.Services.Feedback
 
         public static BoolFeedback GetFeedbackForTransmitter(DmNvxBaseClass device)
         {
-            // TODO - investigate if this actually works with a source connected
             var feedback = new BoolFeedback(Key,
                 () =>
-                    device.SecondaryAudio.StartFeedback.BoolValue);
-
+                    device.DmNaxRouting.DmNaxTransmit.StreamStatusFeedback == DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
+            
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
             if (device.SecondaryAudio != null)
                 device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
-            device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
-            device.DmNaxRouting.DmNaxRoutingChange += (@base, args) => feedback.FireUpdate();
+
+            if (device.DmNaxRouting.DmNaxTransmit != null)
+            {
+                device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
+                device.DmNaxRouting.DmNaxRoutingChange += (sender, args) => feedback.FireUpdate();
+            }
+            else
+            {
+                throw new NotSupportedException("NAX/Secondary Audio");
+            }
 
             return feedback;
         }
@@ -29,13 +37,21 @@ namespace NvxEpi.Services.Feedback
         {
             var feedback = new BoolFeedback(Key,
                 () =>
-                    device.SecondaryAudio.StartFeedback.BoolValue);
-
+                    device.DmNaxRouting.DmNaxReceive.StreamStatusFeedback == DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
+            
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            if(device.SecondaryAudio != null)
+            if (device.SecondaryAudio != null)
                 device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
-            device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
-            device.DmNaxRouting.DmNaxRoutingChange += (@base, args) => feedback.FireUpdate();
+
+            if (device.DmNaxRouting.DmNaxTransmit != null)
+            {
+                device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
+                device.DmNaxRouting.DmNaxRoutingChange += (@base, args) => feedback.FireUpdate();
+            }
+            else
+            {
+                throw new NotSupportedException("NAX/Secondary Audio");
+            }
 
             return feedback;
         }

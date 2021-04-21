@@ -10,34 +10,29 @@ namespace NvxEpi.Entities.Hdmi.Output
     public class HdmiOutput : IHdmiOutput
     {
         private readonly INvxDeviceWithHardware _device;
-        private readonly BoolFeedback _disabledByHdcp;
-        private readonly IntFeedback _horizontalResolution;
 
         public HdmiOutput(INvxDeviceWithHardware device)
         {
             _device = device;
 
-            _disabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(device.Hardware);
-            _horizontalResolution = HorizontalResolutionFeedback.GetFeedback(device.Hardware);
+            DisabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(device.Hardware);
+            HorizontalResolution = HorizontalResolutionFeedback.GetFeedback(device.Hardware);
+            EdidManufacturer = new StringFeedback(() => string.Empty);
 
             device.Feedbacks.Add(DisabledByHdcp);
             device.Feedbacks.Add(HorizontalResolution);
         }
 
-        public BoolFeedback DisabledByHdcp
-        {
-            get { return _disabledByHdcp; }
-        }
+        public BoolFeedback DisabledByHdcp { get; private set; }
 
         public DmNvxBaseClass Hardware
         {
             get { return _device.Hardware; }
         }
 
-        public IntFeedback HorizontalResolution
-        {
-            get { return _horizontalResolution; }
-        }
+        public IntFeedback HorizontalResolution { get; private set; }
+
+        public StringFeedback EdidManufacturer { get; private set; }
 
         public string Key
         {

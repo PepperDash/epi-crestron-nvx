@@ -58,6 +58,24 @@ namespace NvxEpi.Aggregates
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _deviceId = props.DeviceId;
 
+            if (hardware is DmNvx35x || hardware is DmNvx36x)
+            {
+                IsTransmitter = !String.IsNullOrEmpty(props.Mode) &&
+                                props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
+            }
+            else if (hardware is DmNvxD3x)
+            {
+                IsTransmitter = false;
+            }
+            else if (hardware is DmNvxE3x || hardware is DmNvxE760x)
+            {
+                IsTransmitter = true;
+            }
+            else
+            {
+                throw new Exception(string.Format("Type is not yet accounted for : {0}", hardware.GetType().Name));
+            }
+
             _currentVideoStream = new CurrentVideoStream(this);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _videoSwitcher = new VideoInputSwitcher(this);
@@ -142,7 +160,7 @@ namespace NvxEpi.Aggregates
             get { return _inputPorts; }
         }
 
-        public abstract bool IsTransmitter { get; }
+        public bool IsTransmitter { get; private set; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
