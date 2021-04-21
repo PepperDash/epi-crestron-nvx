@@ -8,6 +8,8 @@ namespace NvxEpi.Application.Builder
     {
         Dictionary<int, string> Transmitters { get; }
         Dictionary<int, string> Receivers { get; }
+        Dictionary<int, string> AudioTransmitters { get; }
+        Dictionary<int, string> AudioReceivers { get; }
 
         EssentialsDevice Build();
     }

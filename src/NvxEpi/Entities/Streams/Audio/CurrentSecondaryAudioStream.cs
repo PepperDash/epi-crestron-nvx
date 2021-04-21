@@ -19,21 +19,16 @@ namespace NvxEpi.Entities.Streams.Audio
         private readonly IntFeedback _currentSecondaryAudioStreamId;
         private readonly StringFeedback _currentSecondaryAudioStreamName;
 
-        private readonly IList<ISecondaryAudioStream> _transmitters = new List<ISecondaryAudioStream>(); 
+        private readonly IList<ISecondaryAudioStream> _audioTransmitters = new List<ISecondaryAudioStream>(); 
         private readonly CCriticalSection _lock = new CCriticalSection();
 
         private ISecondaryAudioStream _current;
 
         public CurrentSecondaryAudioStream(INvxDeviceWithHardware device) : base(device)
         {
-            _currentSecondaryAudioStreamId = IsTransmitter
-                ? new IntFeedback(() => default( int ))
-                : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
+            _currentSecondaryAudioStreamId = new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
 
-            _currentSecondaryAudioStreamName = IsTransmitter
-                ? new StringFeedback(() => String.Empty)
-                : new StringFeedback(RouteNameKey,
-                    () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
+            _currentSecondaryAudioStreamName = new StringFeedback(RouteNameKey, () => _current != null ? _current.AudioSourceName.StringValue : NvxGlobalRouter.NoSourceText);
 
             Feedbacks.Add(CurrentSecondaryAudioStreamId);
             Feedbacks.Add(CurrentSecondaryAudioStreamName);
@@ -56,7 +51,7 @@ namespace NvxEpi.Entities.Streams.Audio
             if (!IsStreamingSecondaryAudio.BoolValue)
                 return null;
 
-            var result = _transmitters
+            var result = _audioTransmitters
                 .FirstOrDefault(
                     x => x.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
 
@@ -66,12 +61,11 @@ namespace NvxEpi.Entities.Streams.Audio
             result = DeviceManager
                 .AllDevices
                 .OfType<ISecondaryAudioStream>()
-                .Where(t => t.IsTransmitter)
                 .FirstOrDefault(
                     tx => tx.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
 
             if (result != null)
-                _transmitters.Add(result);
+                _audioTransmitters.Add(result);
 
             return result;      
         }
@@ -86,7 +80,7 @@ namespace NvxEpi.Entities.Streams.Audio
 
         private void UpdateCurrentAudioRoute()
         {
-            if (!IsOnline.BoolValue || IsTransmitter)
+            if (!IsOnline.BoolValue)
                 return;
 
             try

@@ -35,7 +35,8 @@ namespace NvxEpi.Aggregates
 
         private readonly IntFeedback _deviceMode;
 
-        private readonly StringFeedback _audioName;
+        private readonly StringFeedback _audioSourceName;
+        private readonly StringFeedback _audioDestinationName;
         private readonly StringFeedback _videoName;
 
         private const string _showNvxCmd = "shownvxinfo";
@@ -66,9 +67,13 @@ namespace NvxEpi.Aggregates
                 ? new StringFeedback("VideoName", () => Name)
                 : new StringFeedback("VideoName", () => props.VideoSourceName);
 
-            _audioName = String.IsNullOrEmpty(props.AudioSourceName)
-                ? new StringFeedback("AudioName", () => Name)
-                : new StringFeedback("AudioName", () => props.AudioSourceName);
+            _audioSourceName = String.IsNullOrEmpty(props.AudioSourceName)
+                ? new StringFeedback("AudioSourceName", () => Name)
+                : new StringFeedback("AudioSourceName", () => props.AudioSourceName);
+
+            _audioDestinationName = String.IsNullOrEmpty(props.AudioDestinationName)
+                ? new StringFeedback("AudioDestinationName", () => Name)
+                : new StringFeedback("AudioDestinationName", () => props.AudioDestinationName);
 
             _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
@@ -79,16 +84,22 @@ namespace NvxEpi.Aggregates
                     DeviceHostnameFeedback.GetFeedback(Hardware),
                     DeviceModeNameFeedback.GetFeedback(Hardware),
                     VideoName,
-                    AudioName,
+                    AudioSourceName,
+                    AudioDestinationName,
                     DeviceMode
                 });
 
             RegisterForOnlineFeedback(Hardware, props);
         }
 
-        public StringFeedback AudioName
+        public StringFeedback AudioSourceName
         {
-            get { return _audioName; }
+            get { return _audioSourceName; }
+        }
+
+        public StringFeedback AudioDestinationName
+        {
+            get { return _audioDestinationName; }
         }
 
         public StringFeedback CurrentAudioInput

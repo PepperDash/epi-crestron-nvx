@@ -19,9 +19,14 @@ namespace NvxEpi.Entities.Hdmi.Input
             _device = device;
         }
 
-        public StringFeedback AudioName
+        public StringFeedback AudioSourceName
         {
-            get { return _device.AudioName; }
+            get { return _device.AudioSourceName; }
+        }
+
+        public StringFeedback AudioDestinationName
+        {
+            get { return _device.AudioDestinationName; }
         }
 
         public int DeviceId

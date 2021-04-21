@@ -89,9 +89,14 @@ namespace NvxEpi.Entities.Hdmi.Output
             get { return _device.VideoName; }
         }
 
-        public StringFeedback AudioName
+        public StringFeedback AudioSourceName
         {
-            get { return _device.AudioName; }
+            get { return _device.AudioSourceName; }
+        }
+
+        public StringFeedback AudioDestinationName
+        {
+            get { return _device.AudioDestinationName; }
         }
     }
 }

@@ -9,6 +9,7 @@ namespace NvxEpi.Abstractions
         IHasFeedback, IOnline, ITransmitterReceiver, IKeyName, IDeviceId
     {
         StringFeedback VideoName { get; }
-        StringFeedback AudioName { get; }
+        StringFeedback AudioSourceName { get; }
+        StringFeedback AudioDestinationName { get; }
     }
 }

@@ -35,9 +35,13 @@ namespace NvxEpi.Aggregates
                 ? new StringFeedback("VideoName", () => Name)
                 : new StringFeedback("VideoName", () => props.VideoSourceName);
 
-            AudioName = String.IsNullOrEmpty(props.AudioSourceName)
-                ? new StringFeedback("AudioName", () => Name)
-                : new StringFeedback("AudioName", () => props.AudioSourceName);
+            AudioSourceName = String.IsNullOrEmpty(props.AudioSourceName)
+                ? new StringFeedback("AudioSourceName", () => Name)
+                : new StringFeedback("AudioSourceName", () => props.AudioSourceName);
+
+            AudioDestinationName = String.IsNullOrEmpty(props.AudioDestinationName)
+                ? new StringFeedback("AudioDestinationName", () => Name)
+                : new StringFeedback("AudioDestinationName", () => props.AudioDestinationName);
 
             StreamUrl = new StringFeedback(
                 () => !String.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : String.Empty);
@@ -64,7 +68,7 @@ namespace NvxEpi.Aggregates
                 {
                     DeviceNameFeedback.GetFeedback(Name),
                     VideoName,
-                    AudioName,
+                    AudioSourceName,
                     DeviceMode
                 });
 
@@ -121,7 +125,8 @@ namespace NvxEpi.Aggregates
         public StringFeedback StreamUrl { get; private set; }
         public StringFeedback SecondaryAudioAddress { get; private set; }
         public StringFeedback VideoName { get; private set; }
-        public StringFeedback AudioName { get; private set; }
+        public StringFeedback AudioSourceName { get; private set; }
+        public StringFeedback AudioDestinationName { get; private set; }
         public BoolFeedback IsStreamingVideo { get; private set; }
         public StringFeedback VideoStreamStatus { get; private set; }
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }

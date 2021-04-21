@@ -23,9 +23,14 @@ namespace NvxEpi.Entities.InputSwitching
             _device.Feedbacks.Add(CurrentAudioInputValue);
         }
 
-        public StringFeedback AudioName
+        public StringFeedback AudioSourceName
         {
-            get { return _device.AudioName; }
+            get { return _device.AudioSourceName; }
+        }
+
+        public StringFeedback AudioDestinationName
+        {
+            get { return _device.AudioDestinationName; }
         }
 
         public StringFeedback CurrentAudioInput

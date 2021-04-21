@@ -28,7 +28,10 @@ namespace NvxEpi.Application
         private readonly Dictionary<int, IRoutingSink> _audioDestinations = new Dictionary<int, IRoutingSink>();
         private readonly CCriticalSection _lock = new CCriticalSection();
         private readonly Dictionary<int, INvxDevice> _receivers = new Dictionary<int, INvxDevice>();
-        private readonly Dictionary<int, IRoutingSource> _sources = new Dictionary<int, IRoutingSource>();
+        private readonly Dictionary<int, INvxDevice> _audioTransmitters = new Dictionary<int, INvxDevice>();
+        private readonly Dictionary<int, INvxDevice> _audioReceivers = new Dictionary<int, INvxDevice>();
+        private readonly Dictionary<int, IRoutingSource> _videoSources = new Dictionary<int, IRoutingSource>();
+        private readonly Dictionary<int, IRoutingSource> _audioSources = new Dictionary<int, IRoutingSource>();
         private readonly Dictionary<int, INvxDevice> _transmitters = new Dictionary<int, INvxDevice>();
         private readonly Dictionary<int, IRoutingSink> _videoDestinations = new Dictionary<int, IRoutingSink>();
 
@@ -77,6 +80,36 @@ namespace NvxEpi.Application
                 });
 
             AddPreActivationAction(() =>
+            {
+                foreach (var item in applicationBuilder.AudioTransmitters)
+                {
+                    var tx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
+                    if (tx == null)
+                    {
+                        Debug.Console(1, this, "Could not get audio TX : {0}", item.Value);
+                        continue;
+                    }
+
+                    _audioTransmitters.Add(item.Key, tx);
+                }
+            });
+
+            AddPreActivationAction(() =>
+            {
+                foreach (var item in applicationBuilder.AudioReceivers)
+                {
+                    var rx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
+                    if (rx == null)
+                    {
+                        Debug.Console(1, this, "Could not get audio RX : {0}", item.Value);
+                        continue;
+                    }
+
+                    _audioReceivers.Add(item.Key, rx);
+                }
+            });
+
+            AddPreActivationAction(() =>
                 {
                     foreach (var transmitter in _transmitters.Where(transmitter => transmitter.Value == null))
                     {
@@ -101,6 +134,18 @@ namespace NvxEpi.Application
                         Debug.Console(1, this, "Device at output {0} is not a receiver!", receiver.Key);
                         throw new ArgumentException(receiver.Value.Key);
                     }
+
+                    foreach (var transmitter in _audioTransmitters.Where(transmitter => transmitter.Value == null))
+                    {
+                        Debug.Console(1, this, "Audio transmitter at input {0} is null!", transmitter.Key);
+                        throw new NullReferenceException(transmitter.Key + " Is Null");
+                    }
+
+                    foreach (var receiver in _audioReceivers.Where(receiver => receiver.Value == null))
+                    {
+                        Debug.Console(1, this, "Audio receiver at output {0} is null!", receiver.Key);
+                        throw new NullReferenceException(receiver.Key + " Is Null");
+                    }
                 });
 
             AddPreActivationAction(() =>
@@ -114,7 +159,7 @@ namespace NvxEpi.Application
                         ApplicationTieLineConnector.AddTieLineForMockDisplay(dest, rx);
                     }
 
-                    foreach (var item in _receivers)
+                    foreach (var item in _audioReceivers)
                     {
                         var id = item.Key;
                         var rx = item.Value;
@@ -128,7 +173,16 @@ namespace NvxEpi.Application
                         var id = item.Key;
                         var tx = item.Value;
                         var source = new DummyRoutingInputsDevice(tx.Key + "--Source");
-                        _sources.Add(id, source);
+                        _videoSources.Add(id, source);
+                        ApplicationTieLineConnector.AddTieLineForDummySource(source, tx);
+                    }
+
+                    foreach (var item in _audioTransmitters)
+                    {
+                        var id = item.Key;
+                        var tx = item.Value;
+                        var source = new DummyRoutingInputsDevice(tx.Key + "--AudioSource");
+                        _audioSources.Add(id, source);
                         ApplicationTieLineConnector.AddTieLineForDummySource(source, tx);
                     }
                 });
@@ -182,7 +236,7 @@ namespace NvxEpi.Application
             for (var x = 1; x <= joinMap.OutputCurrentAudioInputNames.JoinSpan; x++)
             {
                 INvxDevice rx;
-                if (!_receivers.TryGetValue(x, out rx))
+                if (!_audioReceivers.TryGetValue(x, out rx))
                     continue;
 
                 var feedback =
@@ -204,10 +258,10 @@ namespace NvxEpi.Application
                         if (feedback.StringValue.Equals(NvxGlobalRouter.NoSourceText))
                             return 0;
 
-                        return _transmitters
+                        return _audioTransmitters
                             .Where(
                                 t =>
-                                    t.Value.AudioName.StringValue.Equals(feedback.StringValue,
+                                    t.Value.AudioSourceName.StringValue.Equals(feedback.StringValue,
                                         StringComparison.OrdinalIgnoreCase))
                             .Select(t => t.Key)
                             .FirstOrDefault();
@@ -227,7 +281,7 @@ namespace NvxEpi.Application
             for (var x = 1; x <= joinMap.OutputAudio.JoinSpan; x++)
             {
                 INvxDevice rx;
-                if (!_receivers.TryGetValue(x, out rx))
+                if (!_audioReceivers.TryGetValue(x, out rx))
                     continue;
 
                 var index = (uint) x - 1;
@@ -246,7 +300,7 @@ namespace NvxEpi.Application
                             }
 
                             IRoutingSource sourceToRoute;
-                            if (_sources.TryGetValue(source, out sourceToRoute))
+                            if (_audioSources.TryGetValue(source, out sourceToRoute))
                                 dest.ReleaseAndMakeRoute(sourceToRoute, eRoutingSignalType.Audio);
                         });
             }
@@ -274,7 +328,27 @@ namespace NvxEpi.Application
 
                 feedback.LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + index]);
                 tx.VideoName.LinkInputSig(trilist.StringInput[joinMap.InputVideoNames.JoinNumber + index]);
-                tx.AudioName.LinkInputSig(trilist.StringInput[joinMap.InputAudioNames.JoinNumber + index]);
+            }
+
+            for (var x = 1; x <= joinMap.InputAudioNames.JoinSpan; x++)
+            {
+                INvxDevice tx;
+                if (!_audioTransmitters.TryGetValue(x, out tx))
+                    continue;
+
+                var feedback =
+                    tx.Feedbacks[DeviceNameFeedback.Key] as StringFeedback;
+                if (feedback == null)
+                    continue;
+
+                var index = (uint)x - 1;
+                Debug.Console(1,
+                    tx,
+                    "Linking Feedback:{0} to Join:{1}",
+                    feedback.Key,
+                    joinMap.InputNames.JoinNumber + index);
+
+                tx.AudioSourceName.LinkInputSig(trilist.StringInput[joinMap.InputAudioNames.JoinNumber + index]);
             }
 
             for (var x = 1; x <= joinMap.OutputNames.JoinSpan; x++)
@@ -297,7 +371,28 @@ namespace NvxEpi.Application
 
                 feedback.LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + index]);
                 rx.VideoName.LinkInputSig(trilist.StringInput[joinMap.OutputVideoNames.JoinNumber + index]);
-                rx.AudioName.LinkInputSig(trilist.StringInput[joinMap.OutputAudioNames.JoinNumber + index]);
+                rx.AudioSourceName.LinkInputSig(trilist.StringInput[joinMap.OutputAudioNames.JoinNumber + index]);
+            }
+
+            for (var x = 1; x <= joinMap.OutputAudioNames.JoinSpan; x++)
+            {
+                INvxDevice rx;
+                if (!_audioReceivers.TryGetValue(x, out rx))
+                    continue;
+
+                var feedback =
+                    rx.Feedbacks[DeviceNameFeedback.Key] as StringFeedback;
+                if (feedback == null)
+                    continue;
+
+                var index = (uint)x - 1;
+                Debug.Console(1,
+                    rx,
+                    "Linking Feedback:{0} to Join:{1}",
+                    feedback.Key,
+                    joinMap.OutputNames.JoinNumber + index);
+
+                rx.AudioSourceName.LinkInputSig(trilist.StringInput[joinMap.OutputAudioNames.JoinNumber + index]);
             }
         }
 
@@ -567,7 +662,7 @@ namespace NvxEpi.Application
                             }
 
                             IRoutingSource sourceToRoute;
-                            if (_sources.TryGetValue(source, out sourceToRoute))
+                            if (_videoSources.TryGetValue(source, out sourceToRoute))
                             {
                                 dest.ReleaseAndMakeRoute(sourceToRoute,
                                     EnableAudioBreakaway ? eRoutingSignalType.Video : eRoutingSignalType.AudioVideo);

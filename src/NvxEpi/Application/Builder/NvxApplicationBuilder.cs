@@ -15,6 +15,8 @@ namespace NvxEpi.Application.Builder
         public string Key { get; private set; }
         public Dictionary<int, string> Transmitters { get; private set; }
         public Dictionary<int, string> Receivers { get; private set; }
+        public Dictionary<int, string> AudioTransmitters { get; private set; }
+        public Dictionary<int, string> AudioReceivers { get; private set; }
 
         public EssentialsDevice Build()
         {
@@ -28,6 +30,8 @@ namespace NvxEpi.Application.Builder
 
             Transmitters = props.Transmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
             Receivers = props.Receivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
+            AudioTransmitters = props.AudioTransmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
+            AudioReceivers = props.AudioReceivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
         }
     }
 }

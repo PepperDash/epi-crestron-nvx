@@ -23,7 +23,6 @@ namespace NvxEpi.Entities.Routing
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
                 .OfType<INvxDevice>()
-                .Where(x => x.IsTransmitter)
                 .ToList()
                 .ForEach(tx =>
                 {
@@ -48,7 +47,6 @@ namespace NvxEpi.Entities.Routing
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
                 .OfType<INvxDevice>()
-                .Where(x => !x.IsTransmitter)
                 .ToList()
                 .ForEach(rx =>
                 {
@@ -142,9 +140,6 @@ namespace NvxEpi.Entities.Routing
 
         public static void Route(int txId, ISecondaryAudioStream rx)
         {
-            if (rx.IsTransmitter)
-                throw new ArgumentException("rx device is transmitter");
-
             if (txId == 0)
             {
                 rx.ClearSecondaryStream();
@@ -160,9 +155,6 @@ namespace NvxEpi.Entities.Routing
 
         public static void Route(string txName, ISecondaryAudioStream rx)
         {
-            if (rx.IsTransmitter)
-                throw new ArgumentException("rx device is transmitter");
-
             if (String.IsNullOrEmpty(txName))
                 return;
 
@@ -203,7 +195,6 @@ namespace NvxEpi.Entities.Routing
                     _transmitters = DeviceManager
                         .AllDevices
                         .OfType<ISecondaryAudioStream>()
-                        .Where(x => x.IsTransmitter)
                         .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
                 }
 
@@ -212,7 +203,6 @@ namespace NvxEpi.Entities.Routing
                 _receivers = DeviceManager
                     .AllDevices
                     .OfType<ISecondaryAudioStream>()
-                    .Where(x => x.IsTransmitter)
                     .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
             }
             catch (Exception ex)
