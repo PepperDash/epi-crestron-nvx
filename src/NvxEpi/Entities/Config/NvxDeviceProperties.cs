@@ -19,7 +19,7 @@ namespace NvxEpi.Entities.Config
         public string StreamUrl { get; set; }
         public string MulticastVideoAddress { get; set; }
         public string MulticastAudioAddress { get; set; } 
-        public string VideoSourceName { get; set; }
+        public string VideoName { get; set; }
         public string AudioSourceName { get; set; }
         public string AudioDestinationName { get; set; }
         public string DomainKey { get; set; }

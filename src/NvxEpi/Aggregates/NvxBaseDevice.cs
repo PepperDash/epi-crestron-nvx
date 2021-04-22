@@ -81,9 +81,9 @@ namespace NvxEpi.Aggregates
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
 
-            _videoName = String.IsNullOrEmpty(props.VideoSourceName)
+            _videoName = String.IsNullOrEmpty(props.VideoName)
                 ? new StringFeedback("VideoName", () => Name)
-                : new StringFeedback("VideoName", () => props.VideoSourceName);
+                : new StringFeedback("VideoName", () => props.VideoName);
 
             _audioSourceName = String.IsNullOrEmpty(props.AudioSourceName)
                 ? new StringFeedback("AudioSourceName", () => Name)

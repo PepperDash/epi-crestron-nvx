@@ -144,12 +144,12 @@ namespace NvxEpi.JoinMaps
             new JoinMetadata
                 {
                     JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Analog,
+                    JoinType = eJoinType.Digital,
                     Description = "Hdmi Output Disabled By Hdcp"
                 });
 
 
-        [JoinName("Device Name")] public JoinDataComplete HdmiOutputResolution = new JoinDataComplete(
+        [JoinName("Hdmi Output Resolution")] public JoinDataComplete HdmiOutputResolution = new JoinDataComplete(
             new JoinData
                 {
                     JoinNumber = 8,
@@ -270,7 +270,7 @@ namespace NvxEpi.JoinMaps
         public JoinDataComplete DanteInput = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 15,
+                JoinNumber = 10,
                 JoinSpan = 1,
             },
             new JoinMetadata
@@ -283,7 +283,7 @@ namespace NvxEpi.JoinMaps
         [JoinName("Supports NAX")] public JoinDataComplete SupportsNax = new JoinDataComplete(
             new JoinData
                 {
-                    JoinNumber = 9,
+                    JoinNumber = 12,
                     JoinSpan = 1
                 },
             new JoinMetadata

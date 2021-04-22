@@ -346,7 +346,7 @@ namespace NvxEpi.Application
                     tx,
                     "Linking Feedback:{0} to Join:{1}",
                     feedback.Key,
-                    joinMap.InputNames.JoinNumber + index);
+                    joinMap.InputAudioNames.JoinNumber + index);
 
                 tx.AudioSourceName.LinkInputSig(trilist.StringInput[joinMap.InputAudioNames.JoinNumber + index]);
             }
@@ -371,7 +371,6 @@ namespace NvxEpi.Application
 
                 feedback.LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + index]);
                 rx.VideoName.LinkInputSig(trilist.StringInput[joinMap.OutputVideoNames.JoinNumber + index]);
-                rx.AudioSourceName.LinkInputSig(trilist.StringInput[joinMap.OutputAudioNames.JoinNumber + index]);
             }
 
             for (var x = 1; x <= joinMap.OutputAudioNames.JoinSpan; x++)
@@ -390,7 +389,7 @@ namespace NvxEpi.Application
                     rx,
                     "Linking Feedback:{0} to Join:{1}",
                     feedback.Key,
-                    joinMap.OutputNames.JoinNumber + index);
+                    joinMap.OutputAudioNames.JoinNumber + index);
 
                 rx.AudioSourceName.LinkInputSig(trilist.StringInput[joinMap.OutputAudioNames.JoinNumber + index]);
             }

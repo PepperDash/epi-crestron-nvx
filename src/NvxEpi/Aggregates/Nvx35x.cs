@@ -158,18 +158,19 @@ namespace NvxEpi.Aggregates
             HdmiInput1Port.AddRoutingPort(this);
             HdmiInput2Port.AddRoutingPort(this);
             SwitcherForHdmiOutput.AddRoutingPort(this);
+            SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
+            SecondaryAudioInput.AddRoutingPort(this);
+            AnalogAudioInput.AddRoutingPort(this);
+            SwitcherForAnalogAudioOutput.AddRoutingPort(this);
 
             if (IsTransmitter)
             {
                 SwitcherForStreamOutput.AddRoutingPort(this);
-                SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
-                AnalogAudioInput.AddRoutingPort(this);
+
             }
             else
             {
                 StreamInput.AddRoutingPort(this);
-                SecondaryAudioInput.AddRoutingPort(this);
-                SwitcherForAnalogAudioOutput.AddRoutingPort(this);
             }
         }
 

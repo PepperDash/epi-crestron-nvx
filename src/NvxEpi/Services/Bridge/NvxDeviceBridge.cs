@@ -155,14 +155,15 @@ namespace NvxEpi.Services.Bridge
 
         private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
         {
-            if (_device.IsTransmitter) return;
-
-            var stream = _device as IStream;
-            if (stream != null)
+            if (!_device.IsTransmitter)
             {
-                trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, source => PrimaryStreamRouter.Route(source, stream));
-                trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber,
-                    name => PrimaryStreamRouter.Route(name, stream));
+                var stream = _device as IStream;
+                if (stream != null)
+                {
+                    trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, source => PrimaryStreamRouter.Route(source, stream));
+                    trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber,
+                        name => PrimaryStreamRouter.Route(name, stream));
+                }
             }
             var secondaryAudio = _device as ISecondaryAudioStream;
             if (secondaryAudio == null) return;

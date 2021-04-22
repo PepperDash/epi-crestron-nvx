@@ -31,9 +31,9 @@ namespace NvxEpi.Aggregates
             DeviceMode = new IntFeedback(DeviceModeFeedback.Key, () => (int)eDeviceMode.Transmitter);
             IsTransmitter = true;
 
-            VideoName = String.IsNullOrEmpty(props.VideoSourceName)
+            VideoName = String.IsNullOrEmpty(props.VideoName)
                 ? new StringFeedback("VideoName", () => Name)
-                : new StringFeedback("VideoName", () => props.VideoSourceName);
+                : new StringFeedback("VideoName", () => props.VideoName);
 
             AudioSourceName = String.IsNullOrEmpty(props.AudioSourceName)
                 ? new StringFeedback("AudioSourceName", () => Name)
@@ -69,6 +69,7 @@ namespace NvxEpi.Aggregates
                     DeviceNameFeedback.GetFeedback(Name),
                     VideoName,
                     AudioSourceName,
+                    AudioDestinationName,
                     DeviceMode
                 });
 
