@@ -17,8 +17,16 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
 
-            deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
-            deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
+            if (deviceWithHardware.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue == address)
+            {
+                Debug.Console(1, device, "Secondary Audio Address is same as this unit's Tx address: '{0}'", address);
+                deviceWithHardware.Hardware.Control.AudioSource = deviceWithHardware.Hardware.Control.DmNaxAudioSourceFeedback;
+            }
+            else
+            {
+                deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
+                deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
+            }
         }
 
         public static void ClearSecondaryStream(this ISecondaryAudioStream device)

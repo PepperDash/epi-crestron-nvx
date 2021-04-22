@@ -183,7 +183,6 @@ namespace NvxEpi.Application
                         var tx = item.Value;
                         var source = new DummyRoutingInputsDevice(tx.Key + "--AudioSource");
                         _audioSources.Add(id, source);
-                        ApplicationTieLineConnector.AddTieLineForDummySource(source, tx);
                     }
                 });
         }
