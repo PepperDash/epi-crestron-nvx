@@ -106,6 +106,7 @@
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxE76XHardware.cs" />
     <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
+    <Compile Include="Abstractions\InputSwitching\ICurrentNaxInput.cs" />
     <Compile Include="Abstractions\InputSwitching\ICurrentDanteInput.cs" />
     <Compile Include="Abstractions\INvx35xDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvx36XDeviceWithHardware.cs" />
@@ -125,7 +126,9 @@
     <Compile Include="Entities\Hdmi\Input\HdmiInput1.cs" />
     <Compile Include="Entities\Hdmi\Output\HdmiOutput.cs" />
     <Compile Include="Entities\Hdmi\Output\VideowallModeOutput.cs" />
+    <Compile Include="Entities\InputSwitching\NaxInputSwitcher.cs" />
     <Compile Include="Entities\InputSwitching\DanteInputSwitcher.cs" />
+    <Compile Include="Extensions\NaxInputExtensions.cs" />
     <Compile Include="Extensions\DanteInputExtensions.cs" />
     <Compile Include="Extensions\HdmiInputExtensions.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
@@ -163,6 +166,7 @@
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Factories\NvxMockDeviceFactory.cs" />
+    <Compile Include="Services\Feedback\NaxInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceHostnameFeedback.cs" />
@@ -213,7 +217,7 @@
     <Compile Include="Services\Feedback\IsStreamingSecondaryAudioFeedback.cs" />
     <Compile Include="Services\Feedback\VideowallModeFeedback.cs" />
     <Compile Include="Services\Utilities\DeviceDebug.cs" />
-    <Compile Include="Services\Feedback\NaxInput.cs" />
+    <Compile Include="Services\Feedback\NaxInputFeedback.cs" />
     <Compile Include="Services\Feedback\VideoStreamStatusFeedback.cs" />
     <Compile Include="Services\Feedback\NaxTxStatus.cs" />
     <Compile Include="Services\Feedback\Hdmi1SyncDetectedFeedback.cs" />

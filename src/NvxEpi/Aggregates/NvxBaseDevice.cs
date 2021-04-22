@@ -17,7 +17,7 @@ using PepperDash.Essentials.Core.Config;
 namespace NvxEpi.Aggregates
 {
     public abstract class NvxBaseDevice : CrestronGenericBridgeableBaseDevice, ICurrentVideoInput, ICurrentAudioInput, ICurrentStream,
-        ICurrentSecondaryAudioStream
+        ICurrentSecondaryAudioStream, ICurrentNaxInput
     {
         private readonly int _deviceId;
 
@@ -26,6 +26,7 @@ namespace NvxEpi.Aggregates
         private readonly ICurrentStream _currentVideoStream;
         private readonly ICurrentVideoInput _videoSwitcher;
         private readonly ICurrentAudioInput _audioSwitcher;
+        private readonly ICurrentNaxInput _naxSwitcher;
 
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
             new RoutingPortCollection<RoutingInputPort>();
@@ -80,6 +81,7 @@ namespace NvxEpi.Aggregates
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
+            _naxSwitcher = new NaxInputSwitcher(this);
 
             _videoName = String.IsNullOrEmpty(props.VideoName)
                 ? new StringFeedback("VideoName", () => Name)
@@ -125,9 +127,19 @@ namespace NvxEpi.Aggregates
             get { return _audioSwitcher.CurrentAudioInput; }
         }
 
+        public StringFeedback CurrentNaxInput
+        {
+            get { return _naxSwitcher.CurrentNaxInput; }
+        }
+
         public IntFeedback CurrentAudioInputValue
         {
             get { return _audioSwitcher.CurrentAudioInputValue; }
+        }
+
+        public IntFeedback CurrentNaxInputValue
+        {
+            get { return _naxSwitcher.CurrentNaxInputValue; }
         }
 
         public StringFeedback CurrentVideoInput

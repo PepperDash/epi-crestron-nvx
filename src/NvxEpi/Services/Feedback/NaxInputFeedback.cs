@@ -3,7 +3,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback
 {
-    public class NaxInput
+    public class NaxInputFeedback
     {
         public const string Key = "NaxInput";
 

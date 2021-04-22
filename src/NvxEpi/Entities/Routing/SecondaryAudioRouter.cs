@@ -112,12 +112,12 @@ namespace NvxEpi.Entities.Routing
 
         public static string GetInputPortKeyForTx(ISecondaryAudioStream tx)
         {
-            return "SecondaryAudio" + "--" + tx.Key;
+            return "SecondaryAudioTx" + "--" + tx.Key;
         }
 
         public static string GetOutputPortKeyForRx(ISecondaryAudioStream rx)
         {
-            return "SecondaryAudio" + "--" + rx.Key;
+            return "SecondaryAudioRx" + "--" + rx.Key;
         }
 
         public static void Route(int txId, int rxId)
@@ -195,7 +195,7 @@ namespace NvxEpi.Entities.Routing
                     _transmitters = DeviceManager
                         .AllDevices
                         .OfType<ISecondaryAudioStream>()
-                        .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
+                        .ToDictionary(x => x.Key, StringComparer.OrdinalIgnoreCase);
                 }
 
                 if (_receivers != null) return;
@@ -203,11 +203,11 @@ namespace NvxEpi.Entities.Routing
                 _receivers = DeviceManager
                     .AllDevices
                     .OfType<ISecondaryAudioStream>()
-                    .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
+                    .ToDictionary(x => x.Key, StringComparer.OrdinalIgnoreCase);
             }
             catch (Exception ex)
             {
-                Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "There was an error building the dictionaries: {1}\n{2}", ex.Message, ex.StackTrace);
+                Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "There was an error building the dictionaries: {0} {1}", ex.Message, ex.StackTrace);
             }
             finally
             {
