@@ -10,9 +10,12 @@ namespace NvxEpi.Extensions
         public static void SetSecondaryAudioAddress(this ISecondaryAudioStream device, string address)
         {
             if (String.IsNullOrEmpty(address))
+            {
+                Debug.Console(1, device, "Secondary Audio Address null or empty");
                 return;
+            }
 
-            var deviceWithHardware = device as ISecondardyAudioStreamWithHardware;
+            var deviceWithHardware = device as ISecondaryAudioStreamWithHardware;
             if (deviceWithHardware == null) return;
 
             Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
@@ -31,7 +34,7 @@ namespace NvxEpi.Extensions
 
         public static void ClearSecondaryStream(this ISecondaryAudioStream device)
         {
-            var deviceWithHardware = device as ISecondardyAudioStreamWithHardware;
+            var deviceWithHardware = device as ISecondaryAudioStreamWithHardware;
             if (deviceWithHardware == null) return;
 
             Debug.Console(1, device, "Clearing Secondary Audio Stream");
@@ -47,8 +50,8 @@ namespace NvxEpi.Extensions
             }
 
             Debug.Console(1, device, "Routing device secondary audio stream : '{0}'", tx.Name);
-            tx.SecondaryAudioAddress.FireUpdate();
-            device.SetSecondaryAudioAddress(tx.SecondaryAudioAddress.StringValue);
+            tx.TxAudioAddress.FireUpdate();
+            device.SetSecondaryAudioAddress(tx.TxAudioAddress.StringValue);
         }
     }
 }

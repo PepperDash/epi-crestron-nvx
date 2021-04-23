@@ -53,7 +53,7 @@ namespace NvxEpi.Entities.Streams.Audio
 
             var result = _audioTransmitters
                 .FirstOrDefault(
-                    x => x.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
+                    x => x.TxAudioAddress.StringValue.Equals(RxAudioAddress.StringValue));
 
             if (result != null)
                 return result;
@@ -62,7 +62,7 @@ namespace NvxEpi.Entities.Streams.Audio
                 .AllDevices
                 .OfType<ISecondaryAudioStream>()
                 .FirstOrDefault(
-                    tx => tx.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
+                    tx => tx.TxAudioAddress.StringValue.Equals(TxAudioAddress.StringValue));
 
             if (result != null)
                 _audioTransmitters.Add(result);
@@ -75,7 +75,7 @@ namespace NvxEpi.Entities.Streams.Audio
             IsOnline.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
             IsStreamingSecondaryAudio.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
             SecondaryAudioStreamStatus.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
-            SecondaryAudioAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
+            RxAudioAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
         }
 
         private void UpdateCurrentAudioRoute()

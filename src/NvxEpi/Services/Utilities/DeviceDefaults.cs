@@ -11,59 +11,30 @@ namespace NvxEpi.Services.Utilities
         {
             device.Control.DeviceMode = eDeviceMode.Transmitter;
             device.Control.EnableAutomaticInitiation();
-            device.SecondaryAudio.EnableAutomaticInitiation();
-            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
 
             if (!String.IsNullOrEmpty(props.MulticastVideoAddress))
                 device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
-            if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
-            {
-                device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
-                device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
-                device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
-            }
         }
 
         public static void SetRxDefaults(this DmNvx35x device, NvxDeviceProperties props)
         {
             device.Control.DeviceMode = eDeviceMode.Receiver;
             device.Control.EnableAutomaticInitiation();
-            device.SecondaryAudio.EnableAutomaticInitiation();
-            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
-            {
-                device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
-                device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
-                device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
-            }
         }
 
         public static void SetTxDefaults(this DmNvx36x device, NvxDeviceProperties props)
         {
             device.Control.DeviceMode = eDeviceMode.Transmitter;
             device.Control.EnableAutomaticInitiation();
-            device.SecondaryAudio.EnableAutomaticInitiation();
-            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
 
             if (!String.IsNullOrEmpty(props.MulticastVideoAddress))
                 device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
-            {
-                device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
-                device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
-                device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
-            }
         }
 
         public static void SetRxDefaults(this DmNvx36x device, NvxDeviceProperties props)
         {
             device.Control.DeviceMode = eDeviceMode.Receiver;
             device.Control.EnableAutomaticInitiation();
-            device.SecondaryAudio.EnableAutomaticInitiation();
-            device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
-            {
-                device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
-                device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
-                device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
-            }
         }
 
         public static void SetDefaults(this DmNvxE3x device, NvxDeviceProperties props)
@@ -80,6 +51,54 @@ namespace NvxEpi.Services.Utilities
             device.Control.EnableAutomaticInitiation();
             device.SecondaryAudio.EnableAutomaticInitiation();
             device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+        }
+
+        public static void SetAudioDefaults(this DmNvx35x device, NvxDeviceProperties props)
+        {
+            if (device.SecondaryAudio != null)
+            {
+                device.SecondaryAudio.EnableAutomaticInitiation();
+                device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+                if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
+                {
+                    device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+                    device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
+                }
+            }
+            if (device.DmNaxRouting != null)
+            {
+                device.DmNaxRouting.DmNaxReceive.EnableAutomaticInitiation();
+                device.DmNaxRouting.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+                if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
+                {
+                    device.DmNaxRouting.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+                    device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
+                }
+            }
+        }
+
+        public static void SetAudioDefaults(this DmNvx36x device, NvxDeviceProperties props)
+        {
+            if (device.SecondaryAudio != null)
+            {
+                device.SecondaryAudio.EnableAutomaticInitiation();
+                device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+                if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
+                {
+                    device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+                    device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
+                }
+            }
+            if (device.DmNaxRouting != null)
+            {
+                device.DmNaxRouting.DmNaxReceive.EnableAutomaticInitiation();
+                device.DmNaxRouting.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+                if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
+                {
+                    device.DmNaxRouting.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+                    device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
+                }
+            }
         }
     }
 }

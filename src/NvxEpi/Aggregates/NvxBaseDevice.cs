@@ -231,6 +231,16 @@ namespace NvxEpi.Aggregates
             get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
         }
 
+        public StringFeedback TxAudioAddress
+        {
+            get { return _currentSecondaryAudioStream.TxAudioAddress; }
+        }
+
+        public StringFeedback RxAudioAddress
+        {
+            get { return _currentSecondaryAudioStream.RxAudioAddress; }
+        }
+
         public BoolFeedback IsStreamingSecondaryAudio
         {
             get { return _currentSecondaryAudioStream.IsStreamingSecondaryAudio; }

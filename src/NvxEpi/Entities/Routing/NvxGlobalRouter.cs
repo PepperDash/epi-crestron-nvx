@@ -59,6 +59,20 @@ namespace NvxEpi.Entities.Routing
 
             TieLineConnector.AddTieLinesForReceivers(receivers);
 
+            var audioTransmitters = DeviceManager
+                .AllDevices
+                .OfType<INvxDevice>()
+                .ToList();
+
+            TieLineConnector.AddTieLinesForAudioTransmitters(audioTransmitters);
+
+            var audioReceivers = DeviceManager
+                .AllDevices
+                .OfType<INvxDevice>()
+                .ToList();
+
+            TieLineConnector.AddTieLinesForAudioReceivers(audioReceivers);
+
             return base.CustomActivate();
         }
 
@@ -77,12 +91,6 @@ namespace NvxEpi.Entities.Routing
         public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
         {
             throw new NotImplementedException("Execute Numeric Switch");
-
-            /*if (type.Has(eRoutingSignalType.Video))
-                // PrimaryStreamRouter.ExecuteSwitch(tx, rx, type);
-
-            if (type.Has(eRoutingSignalType.Audio))
-                // SecondaryAudioRouter.ExecuteSwitch(tx, rx, type);*/
         }
     }
 }

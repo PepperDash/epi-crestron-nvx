@@ -186,6 +186,7 @@ namespace NvxEpi.Aggregates
                         Hardware.SetTxDefaults(props);
                     else
                         Hardware.SetRxDefaults(props);
+                    Hardware.SetAudioDefaults(props);
                 };
         }
     }

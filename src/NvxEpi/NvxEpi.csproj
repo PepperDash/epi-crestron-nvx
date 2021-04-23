@@ -113,7 +113,7 @@
     <Compile Include="Abstractions\INvxD3XDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxE3xDeviceWithHardware.cs" />
-    <Compile Include="Abstractions\SecondaryAudio\ISecondardyAudioStreamWithHardware.cs" />
+    <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioStreamWithHardware.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioAddress.cs" />
     <Compile Include="Abstractions\Stream\IStreamUrl.cs" />
     <Compile Include="Abstractions\Stream\IStreamWithHardware.cs" />
@@ -152,7 +152,6 @@
     <Compile Include="Application\Factories\NvxApplicationFactory.cs" />
     <Compile Include="Application\JoinMap\NvxApplicationJoinMap.cs" />
     <Compile Include="Application\NvxApplication.cs" />
-    <Compile Include="Application\Router\NvxRouter.cs" />
     <Compile Include="Application\Services\ApplicationTieLineConnector.cs" />
     <Compile Include="Application\Services\AudioFollowsVideo.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
@@ -166,6 +165,8 @@
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Factories\NvxMockDeviceFactory.cs" />
+    <Compile Include="Services\Feedback\AudioRxAddressFeedback.cs" />
+    <Compile Include="Services\Feedback\AudioTxAddressFeedback.cs" />
     <Compile Include="Services\Feedback\NaxInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputValueFeedback.cs" />
@@ -182,7 +183,6 @@
     <Compile Include="Services\Feedback\Hdmi1HdcpCapabilityValueFeedback.cs" />
     <Compile Include="Services\Feedback\Hdmi2HdcpCapabilityFeedback.cs" />
     <Compile Include="Services\Feedback\Hdmi2SyncDetectedFeedback.cs" />
-    <Compile Include="Entities\Routing\NaxAudioRouter.cs" />
     <Compile Include="Entities\Routing\SecondaryAudioRouter.cs" />
     <Compile Include="Entities\Routing\PrimaryStreamRouter.cs" />
     <Compile Include="Services\Feedback\UsbLocalAddressFeedback.cs" />
@@ -212,14 +212,12 @@
     <Compile Include="Services\Feedback\AudioInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\HdmiOutputDisabledFeedback.cs" />
     <Compile Include="Services\Feedback\IsStreamingVideoFeedback.cs" />
-    <Compile Include="Services\Feedback\NaxRxStatus.cs" />
     <Compile Include="Services\Feedback\SecondaryAudioAddressFeedback.cs" />
     <Compile Include="Services\Feedback\IsStreamingSecondaryAudioFeedback.cs" />
     <Compile Include="Services\Feedback\VideowallModeFeedback.cs" />
     <Compile Include="Services\Utilities\DeviceDebug.cs" />
     <Compile Include="Services\Feedback\NaxInputFeedback.cs" />
     <Compile Include="Services\Feedback\VideoStreamStatusFeedback.cs" />
-    <Compile Include="Services\Feedback\NaxTxStatus.cs" />
     <Compile Include="Services\Feedback\Hdmi1SyncDetectedFeedback.cs" />
     <Compile Include="Services\Feedback\HorizontalResolutionFeedback.cs" />
     <Compile Include="Services\Feedback\MulticastAddressFeedback.cs" />
@@ -227,7 +225,6 @@
     <Compile Include="Services\Bridge\NvxDeviceBridge.cs" />
     <Compile Include="Services\Utilities\EnumExtensions.cs" />
     <Compile Include="Extensions\AudioInputExtensions.cs" />
-    <Compile Include="Extensions\NaxAudioStreamExtensions.cs" />
     <Compile Include="Extensions\SecondaryAudioExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\VideoInputExtensions.cs" />

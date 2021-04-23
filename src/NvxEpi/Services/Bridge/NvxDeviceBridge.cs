@@ -93,6 +93,12 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == SecondaryAudioAddressFeedback.Key)
                     joinNumber = joinMap.MulticastAudioAddress.JoinNumber;
 
+                if (feedback.Key == AudioTxAddressFeedback.Key)
+                    joinNumber = joinMap.NaxTxAddress.JoinNumber;
+
+                if (feedback.Key == AudioRxAddressFeedback.Key)
+                    joinNumber = joinMap.NaxRxAddress.JoinNumber;
+
                 if (feedback.Key == DanteInputFeedback.Key)
                     joinNumber = joinMap.DanteInput.JoinNumber;
 
@@ -175,7 +181,7 @@ namespace NvxEpi.Services.Bridge
                         name => PrimaryStreamRouter.Route(name, stream));
                 }
             }
-            var secondaryAudio = _device as ISecondaryAudioStream;
+            var secondaryAudio = _device as ISecondaryAudioStreamWithHardware;
             if (secondaryAudio == null) return;
             trilist.SetUShortSigAction(joinMap.AudioRoute.JoinNumber, source => SecondaryAudioRouter.Route(source, secondaryAudio));
             trilist.SetStringSigAction(joinMap.AudioRoute.JoinNumber,

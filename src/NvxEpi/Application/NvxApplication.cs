@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using NvxEpi.Abstractions;
+using NvxEpi.Aggregates;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Application.Builder;
 using NvxEpi.Application.JoinMap;
@@ -171,17 +172,13 @@ namespace NvxEpi.Application
                     foreach (var item in _transmitters)
                     {
                         var id = item.Key;
-                        var tx = item.Value;
-                        var source = new DummyRoutingInputsDevice(tx.Key + "--Source");
+                        var source = new DummyRoutingInputsDevice(item.Value.Key);
                         _videoSources.Add(id, source);
-                        ApplicationTieLineConnector.AddTieLineForDummySource(source, tx);
                     }
-
                     foreach (var item in _audioTransmitters)
                     {
                         var id = item.Key;
-                        var tx = item.Value;
-                        var source = new DummyRoutingInputsDevice(tx.Key + "--AudioSource");
+                        var source = new DummyRoutingInputsDevice(item.Value.Key);
                         _audioSources.Add(id, source);
                     }
                 });
@@ -207,7 +204,7 @@ namespace NvxEpi.Application
                             EnableAudioBreakaway = value;
                             Debug.Console(1, this, "Setting EnableAudioBreakaway to : {0}", EnableAudioBreakaway);
 
-                            var audioFollowsVideoHandler = new AudioFollowsVideoHandler(_transmitters, _receivers);
+                            var audioFollowsVideoHandler = new AudioFollowsVideoHandler(_transmitters, _receivers, _audioTransmitters, _audioReceivers);
                             if (EnableAudioBreakaway)
                                 audioFollowsVideoHandler.SetAudioFollowsVideoFalse();
                             else

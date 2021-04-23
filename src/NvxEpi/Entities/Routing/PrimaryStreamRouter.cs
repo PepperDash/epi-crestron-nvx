@@ -119,7 +119,7 @@ namespace NvxEpi.Entities.Routing
                     if (args.BoolValue)
                         return;
 
-                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.Video);
+                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
                 };
             }
 
@@ -134,12 +134,12 @@ namespace NvxEpi.Entities.Routing
 
         public static string GetInputPortKeyForTx(IStream tx)
         {
-            return "Stream" + "--" + tx.Key;
+            return tx.Key + "-Stream";
         }
 
         public static string GetOutputPortKeyForRx(IStream rx)
         {
-            return "Stream" + "--" + rx.Key;
+            return rx.Key + "-StreamOutput";
         }
 
         public static void Route(int txId, int rxId)

@@ -58,6 +58,12 @@ namespace NvxEpi.Aggregates
             SecondaryAudioAddress = new StringFeedback(
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
 
+            TxAudioAddress = new StringFeedback(
+                () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
+
+            RxAudioAddress = new StringFeedback(
+                () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
+
             IsStreamingSecondaryAudio = new BoolFeedback(
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress));
 
@@ -125,6 +131,8 @@ namespace NvxEpi.Aggregates
         public int DeviceId { get; private set; }
         public StringFeedback StreamUrl { get; private set; }
         public StringFeedback SecondaryAudioAddress { get; private set; }
+        public StringFeedback TxAudioAddress { get; private set; }
+        public StringFeedback RxAudioAddress { get; private set; }
         public StringFeedback VideoName { get; private set; }
         public StringFeedback AudioSourceName { get; private set; }
         public StringFeedback AudioDestinationName { get; private set; }
