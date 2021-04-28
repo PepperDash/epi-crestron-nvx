@@ -23,16 +23,6 @@ namespace NvxEpi.Entities.InputSwitching
             Feedbacks.Add(_currentVideoInputValue);
         }
 
-        public StringFeedback AudioSourceName
-        {
-            get { return _device.AudioSourceName; }
-        }
-
-        public StringFeedback AudioDestinationName
-        {
-            get { return _device.AudioDestinationName; }
-        }
-
         public StringFeedback CurrentVideoInput
         {
             get { return _currentVideoInput; }
@@ -91,11 +81,6 @@ namespace NvxEpi.Entities.InputSwitching
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _device.OutputPorts; }
-        }
-
-        public StringFeedback VideoName
-        {
-            get { return _device.VideoName; }
         }
     }
 }

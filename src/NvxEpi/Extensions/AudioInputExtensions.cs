@@ -47,9 +47,6 @@ namespace NvxEpi.Extensions
 
         public static void SetAudioToHdmiInput2(this ICurrentAudioInput device)
         {
-            if (!(device.Hardware is DmNvx35x))
-                return;
-
             Debug.Console(1, device, "Switching Audio Input to : 'Hdmi2'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Input2;
         }
@@ -77,13 +74,10 @@ namespace NvxEpi.Extensions
 
         public static void SetAudioToSecondaryStreamAudio(this ICurrentAudioInput device)
         {
-            if (!(device.Hardware is DmNvx35x))
-                return;
-
             if (!device.IsTransmitter)
                 return;
 
-            Debug.Console(1, device, "Switching Audio Input to : 'SecondaryStream'");
+            Debug.Console(1, device, "Switching Audio Input to : 'SecondaryStream/DM NAX'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
         }
 

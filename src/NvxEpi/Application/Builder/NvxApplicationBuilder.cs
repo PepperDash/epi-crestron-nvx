@@ -13,10 +13,10 @@ namespace NvxEpi.Application.Builder
     public class NvxApplicationApplicationBuilder : INvxApplicationBuilder
     {
         public string Key { get; private set; }
-        public Dictionary<int, string> Transmitters { get; private set; }
-        public Dictionary<int, string> Receivers { get; private set; }
-        public Dictionary<int, string> AudioTransmitters { get; private set; }
-        public Dictionary<int, string> AudioReceivers { get; private set; }
+        public Dictionary<int, NvxApplicationDeviceVideoConfig> Transmitters { get; private set; }
+        public Dictionary<int, NvxApplicationDeviceVideoConfig> Receivers { get; private set; }
+        public Dictionary<int, NvxApplicationDeviceAudioConfig> AudioTransmitters { get; private set; }
+        public Dictionary<int, NvxApplicationDeviceAudioConfig> AudioReceivers { get; private set; }
 
         public EssentialsDevice Build()
         {

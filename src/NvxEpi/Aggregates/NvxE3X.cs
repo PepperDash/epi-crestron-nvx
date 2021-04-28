@@ -83,6 +83,11 @@ namespace NvxEpi.Aggregates
             get { return _hdmiInput.SyncDetected; }
         }
 
+        public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
+        {
+            get { return _hdmiInput.CurrentResolution; }
+        }
+
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
             try

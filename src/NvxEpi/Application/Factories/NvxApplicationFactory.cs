@@ -8,7 +8,7 @@ namespace NvxEpi.Application.Factories
 {
     public class NvxApplicationFactory : EssentialsPluginDeviceFactory<NvxApplication>
     {
-        private const string _minumumEssentialsVersion = "1.8.4";
+        private const string _minumumEssentialsVersion = "1.8.0";
         private static readonly IEnumerable<string> _typeNames;
 
         static NvxApplicationFactory()

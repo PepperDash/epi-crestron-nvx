@@ -12,7 +12,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Aggregates
 {
-    public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, IRouting, IRoutingNumeric
+    public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, IRoutingNumeric
     {
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
             new RoutingPortCollection<RoutingInputPort>();
@@ -30,18 +30,6 @@ namespace NvxEpi.Aggregates
             IsOnline = new BoolFeedback(() => true);
             DeviceMode = new IntFeedback(DeviceModeFeedback.Key, () => (int)eDeviceMode.Transmitter);
             IsTransmitter = true;
-
-            VideoName = String.IsNullOrEmpty(props.VideoName)
-                ? new StringFeedback("VideoName", () => Name)
-                : new StringFeedback("VideoName", () => props.VideoName);
-
-            AudioSourceName = String.IsNullOrEmpty(props.AudioSourceName)
-                ? new StringFeedback("AudioSourceName", () => Name)
-                : new StringFeedback("AudioSourceName", () => props.AudioSourceName);
-
-            AudioDestinationName = String.IsNullOrEmpty(props.AudioDestinationName)
-                ? new StringFeedback("AudioDestinationName", () => Name)
-                : new StringFeedback("AudioDestinationName", () => props.AudioDestinationName);
 
             StreamUrl = new StringFeedback(
                 () => !String.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : String.Empty);

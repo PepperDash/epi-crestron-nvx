@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Services.TieLines;
 using NvxEpi.Services.Utilities;
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Routing
@@ -28,12 +26,6 @@ namespace NvxEpi.Entities.Routing
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
-            InputPorts.AddRange(PrimaryStreamRouter.InputPorts);
-            InputPorts.AddRange(SecondaryAudioRouter.InputPorts);
-
-            OutputPorts.AddRange(PrimaryStreamRouter.OutputPorts);
-            OutputPorts.AddRange(SecondaryAudioRouter.OutputPorts);
 
             DeviceManager.AddDevice(PrimaryStreamRouter);
             DeviceManager.AddDevice(SecondaryAudioRouter);

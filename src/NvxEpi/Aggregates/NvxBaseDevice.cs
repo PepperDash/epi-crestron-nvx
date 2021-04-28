@@ -10,6 +10,7 @@ using NvxEpi.Entities.InputSwitching;
 using NvxEpi.Entities.Streams.Audio;
 using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Feedback;
+using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.Utilities;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -35,10 +36,6 @@ namespace NvxEpi.Aggregates
             new RoutingPortCollection<RoutingOutputPort>();
 
         private readonly IntFeedback _deviceMode;
-
-        private readonly StringFeedback _audioSourceName;
-        private readonly StringFeedback _audioDestinationName;
-        private readonly StringFeedback _videoName;
 
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
@@ -83,17 +80,8 @@ namespace NvxEpi.Aggregates
             _audioSwitcher = new AudioInputSwitcher(this);
             _naxSwitcher = new NaxInputSwitcher(this);
 
-            _videoName = String.IsNullOrEmpty(props.VideoName)
-                ? new StringFeedback("VideoName", () => Name)
-                : new StringFeedback("VideoName", () => props.VideoName);
-
-            _audioSourceName = String.IsNullOrEmpty(props.AudioSourceName)
-                ? new StringFeedback("AudioSourceName", () => Name)
-                : new StringFeedback("AudioSourceName", () => props.AudioSourceName);
-
-            _audioDestinationName = String.IsNullOrEmpty(props.AudioDestinationName)
-                ? new StringFeedback("AudioDestinationName", () => Name)
-                : new StringFeedback("AudioDestinationName", () => props.AudioDestinationName);
+            AutomaticInput.AddRoutingPort(this);
+            NoSwitchInput.AddRoutingPort(this);
 
             _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
@@ -103,23 +91,10 @@ namespace NvxEpi.Aggregates
                     DeviceIpFeedback.GetFeedback(Hardware),
                     DeviceHostnameFeedback.GetFeedback(Hardware),
                     DeviceModeNameFeedback.GetFeedback(Hardware),
-                    VideoName,
-                    AudioSourceName,
-                    AudioDestinationName,
                     DeviceMode
                 });
 
             RegisterForOnlineFeedback(Hardware, props);
-        }
-
-        public StringFeedback AudioSourceName
-        {
-            get { return _audioSourceName; }
-        }
-
-        public StringFeedback AudioDestinationName
-        {
-            get { return _audioDestinationName; }
         }
 
         public StringFeedback CurrentAudioInput
@@ -177,11 +152,6 @@ namespace NvxEpi.Aggregates
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _outputPorts; }
-        }
-
-        public StringFeedback VideoName
-        {
-            get { return _videoName; }
         }
 
         public override string ToString()

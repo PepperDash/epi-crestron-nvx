@@ -1,187 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Crestron.SimplSharpPro.DM;
 using NvxEpi.Abstractions;
-using NvxEpi.Aggregates;
-using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Application.Builder;
+using NvxEpi.Application.Entities;
 using NvxEpi.Application.JoinMap;
 using NvxEpi.Application.Services;
-using NvxEpi.Entities.Routing;
-using NvxEpi.Entities.Streams.Audio;
-using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Extensions;
-using NvxEpi.Services.Feedback;
 using PepperDash.Core;
-using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Application
 {
     public class NvxApplication : EssentialsBridgeableDevice
     {
-        private readonly Dictionary<int, IRoutingSink> _audioDestinations = new Dictionary<int, IRoutingSink>();
         private readonly CCriticalSection _lock = new CCriticalSection();
-        private readonly Dictionary<int, INvxDevice> _receivers = new Dictionary<int, INvxDevice>();
-        private readonly Dictionary<int, INvxDevice> _audioTransmitters = new Dictionary<int, INvxDevice>();
-        private readonly Dictionary<int, INvxDevice> _audioReceivers = new Dictionary<int, INvxDevice>();
-        private readonly Dictionary<int, IRoutingSource> _videoSources = new Dictionary<int, IRoutingSource>();
-        private readonly Dictionary<int, IRoutingSource> _audioSources = new Dictionary<int, IRoutingSource>();
-        private readonly Dictionary<int, INvxDevice> _transmitters = new Dictionary<int, INvxDevice>();
-        private readonly Dictionary<int, IRoutingSink> _videoDestinations = new Dictionary<int, IRoutingSink>();
+        private readonly Dictionary<int, NvxApplicationVideoTransmitter> _transmitters;
+        private readonly Dictionary<int, NvxApplicationVideoReceiver> _receivers;
 
         public NvxApplication(INvxApplicationBuilder applicationBuilder) : base(applicationBuilder.Key)
         {
-            AddPreActivationAction(() =>
-                {
-                    foreach (var item in applicationBuilder.Transmitters)
-                    {
-                        var tx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
-                        if (tx == null)
-                        {
-                            Debug.Console(1, this, "Could not get TX : {0}", item.Value);
-                            continue;
-                        }
+            _transmitters =
+                applicationBuilder.Transmitters.Select(
+                    x => new NvxApplicationVideoTransmitter(x.Value.DeviceKey + "--device", x.Value, x.Key))
+                                  .ToDictionary(x => x.DeviceId);
 
-                        if (!tx.IsTransmitter)
-                        {
-                            Debug.Console(1, this, "Device is not a TX : {0}", item.Value);
-                            continue;
-                        }
+            _transmitters
+                .Values
+                .ToList()
+                .ForEach(DeviceManager.AddDevice);
 
-                        _transmitters.Add(item.Key, tx);
-                    }
-                });
+            _receivers =
+                applicationBuilder.Receivers.Select(
+                    x => new NvxApplicationVideoReceiver(x.Value.DeviceKey + "--device", x.Value, x.Key, _transmitters.Values))
+                                  .ToDictionary(x => x.DeviceId);
 
-            AddPreActivationAction(() =>
-                {
-                    foreach (var item in applicationBuilder.Receivers)
-                    {
-                        var rx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
-                        if (rx == null)
-                        {
-                            Debug.Console(1, this, "Could not get RX : {0}", item.Value);
-                            continue;
-                        }
-
-                        if (rx.IsTransmitter)
-                        {
-                            Debug.Console(1, this, "Device is not a RX : {0}", item.Value);
-                            continue;
-                        }
-
-                        _receivers.Add(item.Key, rx);
-                    }
-                });
-
-            AddPreActivationAction(() =>
-            {
-                foreach (var item in applicationBuilder.AudioTransmitters)
-                {
-                    var tx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
-                    if (tx == null)
-                    {
-                        Debug.Console(1, this, "Could not get audio TX : {0}", item.Value);
-                        continue;
-                    }
-
-                    _audioTransmitters.Add(item.Key, tx);
-                }
-            });
-
-            AddPreActivationAction(() =>
-            {
-                foreach (var item in applicationBuilder.AudioReceivers)
-                {
-                    var rx = DeviceManager.GetDeviceForKey(item.Value) as INvxDevice;
-                    if (rx == null)
-                    {
-                        Debug.Console(1, this, "Could not get audio RX : {0}", item.Value);
-                        continue;
-                    }
-
-                    _audioReceivers.Add(item.Key, rx);
-                }
-            });
-
-            AddPreActivationAction(() =>
-                {
-                    foreach (var transmitter in _transmitters.Where(transmitter => transmitter.Value == null))
-                    {
-                        Debug.Console(1, this, "Transmitter at input {0} is null!", transmitter.Key);
-                        throw new NullReferenceException(transmitter.Key + " Is Null");
-                    }
-
-                    foreach (var transmitter in _transmitters.Where(transmitter => !transmitter.Value.IsTransmitter))
-                    {
-                        Debug.Console(1, this, "Device at input {0} is not a transmitter!", transmitter.Key);
-                        throw new ArgumentException(transmitter.Value.Key);
-                    }
-
-                    foreach (var receiver in _receivers.Where(receiver => receiver.Value == null))
-                    {
-                        Debug.Console(1, this, "Receiver at output {0} is null!", receiver.Key);
-                        throw new NullReferenceException(receiver.Key + " Is Null");
-                    }
-
-                    foreach (var receiver in _receivers.Where(receiver => receiver.Value.IsTransmitter))
-                    {
-                        Debug.Console(1, this, "Device at output {0} is not a receiver!", receiver.Key);
-                        throw new ArgumentException(receiver.Value.Key);
-                    }
-
-                    foreach (var transmitter in _audioTransmitters.Where(transmitter => transmitter.Value == null))
-                    {
-                        Debug.Console(1, this, "Audio transmitter at input {0} is null!", transmitter.Key);
-                        throw new NullReferenceException(transmitter.Key + " Is Null");
-                    }
-
-                    foreach (var receiver in _audioReceivers.Where(receiver => receiver.Value == null))
-                    {
-                        Debug.Console(1, this, "Audio receiver at output {0} is null!", receiver.Key);
-                        throw new NullReferenceException(receiver.Key + " Is Null");
-                    }
-                });
-
-            AddPreActivationAction(() =>
-                {
-                    foreach (var item in _receivers)
-                    {
-                        var id = item.Key;
-                        var rx = item.Value;
-                        var dest = new MockDisplay(rx.Key + "--Display", rx.Key + "--Display");
-                        _videoDestinations.Add(id, dest);
-                        ApplicationTieLineConnector.AddTieLineForMockDisplay(dest, rx);
-                    }
-
-                    foreach (var item in _audioReceivers)
-                    {
-                        var id = item.Key;
-                        var rx = item.Value;
-                        var amp = new Amplifier(rx.Key + "--Amplifier", rx.Key + "--Amplifier");
-                        _audioDestinations.Add(id, amp);
-                        ApplicationTieLineConnector.AddTieLineForAmp(amp, rx);
-                    }
-
-                    foreach (var item in _transmitters)
-                    {
-                        var id = item.Key;
-                        var source = new DummyRoutingInputsDevice(item.Value.Key);
-                        _videoSources.Add(id, source);
-                    }
-                    foreach (var item in _audioTransmitters)
-                    {
-                        var id = item.Key;
-                        var source = new DummyRoutingInputsDevice(item.Value.Key);
-                        _audioSources.Add(id, source);
-                    }
-                });
+            _receivers
+                .Values.
+                ToList()
+                .ForEach(DeviceManager.AddDevice);
         }
 
         public bool EnableAudioBreakaway { get; private set; }
@@ -204,7 +64,9 @@ namespace NvxEpi.Application
                             EnableAudioBreakaway = value;
                             Debug.Console(1, this, "Setting EnableAudioBreakaway to : {0}", EnableAudioBreakaway);
 
-                            var audioFollowsVideoHandler = new AudioFollowsVideoHandler(_transmitters, _receivers, _audioTransmitters, _audioReceivers);
+                            var audioFollowsVideoHandler = new AudioFollowsVideoHandler(
+                                _transmitters.ToDictionary(x => x.Key, x => x.Value.Device), _receivers.ToDictionary(x => x.Key, x => x.Value.Device));
+
                             if (EnableAudioBreakaway)
                                 audioFollowsVideoHandler.SetAudioFollowsVideoFalse();
                             else
@@ -216,18 +78,83 @@ namespace NvxEpi.Application
                         }
                     });
 
-            LinkOnlineStatus(trilist, joinMap);
-            LinkVideoRoutes(trilist, joinMap);
-            LinkAudioRoutes(trilist, joinMap);
-            LinkSyncDetectedStatus(trilist, joinMap);
-            LinkDeviceNames(trilist, joinMap);
-            LinkHdcpCapability(trilist, joinMap);
-            LinkOutputDisabledFeedback(trilist, joinMap);
-            LinkHorizontalResolution(trilist, joinMap);
-            LinkRxComPorts(trilist, joinMap);
+            LinkTransmitters(trilist, joinMap);
+            LinkReceivers(trilist, joinMap);
         }
 
-        private void LinkAudioRoutes(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+        private void LinkReceivers(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+        {
+            foreach (var item in _receivers.Select(x => new {DeviceId = x.Key, DeviceActual = x.Value}))
+            {
+                item.DeviceActual.IsOnline.LinkInputSig(
+                    trilist.BooleanInput[(uint) ( joinMap.OutputEndpointOnline.JoinNumber + item.DeviceId - 1 )]);
+                item.DeviceActual.NameFeedback.LinkInputSig(
+                    trilist.StringInput[(uint) ( joinMap.OutputNames.JoinNumber + item.DeviceId - 1 )]);
+                item.DeviceActual.VideoName.LinkInputSig(
+                    trilist.StringInput[(uint) ( joinMap.OutputVideoNames.JoinNumber + item.DeviceId - 1 )]);
+                item.DeviceActual.DisabledByHdcp.LinkInputSig(
+                    trilist.BooleanInput[(uint) ( joinMap.OutputDisabledByHdcp.JoinNumber + item.DeviceId - 1 )]);
+                item.DeviceActual.HorizontalResolution.LinkInputSig(
+                    trilist.UShortInput[(uint) ( joinMap.OutputHorizontalResolution.JoinNumber + item.DeviceId - 1 )]);
+                item.DeviceActual.EdidManufacturer.LinkInputSig(
+                    trilist.StringInput[(uint) ( joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1 )]);
+                item.DeviceActual.CurrentVideoRouteId.LinkInputSig(
+                    trilist.UShortInput[(uint) ( joinMap.OutputVideo.JoinNumber + item.DeviceId - 1 )]);
+                item.DeviceActual.CurrentVideoRouteName.LinkInputSig(
+                    trilist.StringInput[(uint) ( joinMap.OutputCurrentVideoInputNames.JoinNumber + item.DeviceId - 1 )]);
+
+                var rx = item.DeviceActual;
+                trilist.SetUShortSigAction((uint) ( joinMap.OutputVideo.JoinNumber + item.DeviceId - 1 ),
+                    s =>
+                        {
+                            if (s == 0)
+                                rx.Display.ReleaseRoute();
+                            else
+                            {
+                                NvxApplicationVideoTransmitter device;
+                                if (!_transmitters.TryGetValue(s, out device))
+                                    return;
+
+                                rx.Display.ReleaseAndMakeRoute(device.Source, EnableAudioBreakaway ? eRoutingSignalType.Video : eRoutingSignalType.AudioVideo);   
+                            }
+                        });
+            }
+        }
+
+        private void LinkTransmitters(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+        {
+            foreach (var item in _transmitters.Select(x => new {DeviceId = x.Key, DeviceActual = x.Value}))
+            {
+                Debug.Console(1, this, "Linking {0} Online to join {1}", item.DeviceActual.Key, joinMap.InputEndpointOnline.JoinNumber + item.DeviceId - 1 );
+                item.DeviceActual.IsOnline.LinkInputSig(
+                    trilist.BooleanInput[(uint) ( joinMap.InputEndpointOnline.JoinNumber + item.DeviceId - 1 )]);
+
+                Debug.Console(1, this, "Linking {0} Name to join {1}", item.DeviceActual.Key, joinMap.InputNames.JoinNumber + item.DeviceId - 1);
+                item.DeviceActual.NameFeedback.LinkInputSig(
+                    trilist.StringInput[(uint) ( joinMap.InputNames.JoinNumber + item.DeviceId - 1 )]);
+
+                Debug.Console(1, this, "Linking {0} Video Name to join {1}", item.DeviceActual.Key, joinMap.InputVideoNames.JoinNumber + item.DeviceId - 1);
+                item.DeviceActual.VideoName.LinkInputSig(
+                    trilist.StringInput[(uint) ( joinMap.InputVideoNames.JoinNumber + item.DeviceId - 1 )]);
+
+                Debug.Console(1, this, "Linking {0} Input Resolution to join {1}", item.DeviceActual.Key, joinMap.InputCurrentResolution.JoinNumber + item.DeviceId - 1);
+                item.DeviceActual.InputResolution.LinkInputSig(
+                    trilist.StringInput[(uint) ( joinMap.InputCurrentResolution.JoinNumber + item.DeviceId - 1 )]);
+
+                Debug.Console(1, this, "Linking {0} VideoSyncStatus to join {1}", item.DeviceActual.Key, joinMap.VideoSyncStatus.JoinNumber + item.DeviceId - 1);
+                item.DeviceActual.HdmiSyncDetected.LinkInputSig(
+                    trilist.BooleanInput[(uint) ( joinMap.VideoSyncStatus.JoinNumber + item.DeviceId - 1 )]);
+
+                Debug.Console(1, this, "Linking {0} HdcpSupportCapability to join {1}", item.DeviceActual.Key, joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1);
+                item.DeviceActual.HdcpCapability.LinkInputSig(
+                    trilist.UShortInput[(uint) ( joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1 )]);
+
+                trilist.SetUShortSigAction((uint) ( joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1 ),
+                    item.DeviceActual.SetHdcpCapability);
+            }
+        }
+
+        /*private void LinkAudioRoutes(BasicTriList trilist, NvxApplicationJoinMap joinMap)
         {
             for (var x = 1; x <= joinMap.OutputCurrentAudioInputNames.JoinSpan; x++)
             {
@@ -664,6 +591,6 @@ namespace NvxEpi.Application
                             }
                         });
             }
-        }
+        }*/
     }
 }

@@ -104,6 +104,11 @@ namespace NvxEpi.Aggregates
             get { return _hdmiInput.SyncDetected; }
         }
 
+        public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
+        {
+            get { return _hdmiInput.CurrentResolution; }
+        }
+
         public int UsbId
         {
             get { return _usbStream.UsbId; }

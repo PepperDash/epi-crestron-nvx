@@ -4,7 +4,6 @@ using System.Linq;
 using Crestron.SimplSharp;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -27,8 +26,7 @@ namespace NvxEpi.Entities.Streams.Audio
         public CurrentSecondaryAudioStream(INvxDeviceWithHardware device) : base(device)
         {
             _currentSecondaryAudioStreamId = new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
-
-            _currentSecondaryAudioStreamName = new StringFeedback(RouteNameKey, () => _current != null ? _current.AudioSourceName.StringValue : NvxGlobalRouter.NoSourceText);
+            _currentSecondaryAudioStreamName = new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
 
             Feedbacks.Add(CurrentSecondaryAudioStreamId);
             Feedbacks.Add(CurrentSecondaryAudioStreamName);

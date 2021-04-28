@@ -46,6 +46,8 @@ namespace NvxEpi.Services.InputSwitching
                 _device.SetAudioToHdmiInput1();
             else if (input == DeviceInputEnum.Hdmi2)
                 _device.SetAudioToHdmiInput2();
+            else if (input == DeviceInputEnum.DmNaxAudio)
+                _device.SetAudioToSecondaryStreamAudio();
             else
                 throw new NotSupportedException(input.Name);
         }

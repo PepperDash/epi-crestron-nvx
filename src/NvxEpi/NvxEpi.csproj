@@ -115,12 +115,13 @@
     <Compile Include="Abstractions\INvxE3xDeviceWithHardware.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioStreamWithHardware.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioAddress.cs" />
-    <Compile Include="Abstractions\Stream\IStreamUrl.cs" />
     <Compile Include="Abstractions\Stream\IStreamWithHardware.cs" />
     <Compile Include="Aggregates\Nvx36X.cs" />
     <Compile Include="Aggregates\NvxBaseDevice.cs" />
     <Compile Include="Aggregates\NvxD3X.cs" />
     <Compile Include="Aggregates\NvxMockDevice.cs" />
+    <Compile Include="Application\Entities\NvxApplicationVideoReceiver.cs" />
+    <Compile Include="Application\Entities\NvxApplicationVideoTransmitter.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInput2.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInputBase.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInput1.cs" />
@@ -153,7 +154,7 @@
     <Compile Include="Application\JoinMap\NvxApplicationJoinMap.cs" />
     <Compile Include="Application\NvxApplication.cs" />
     <Compile Include="Application\Services\ApplicationTieLineConnector.cs" />
-    <Compile Include="Application\Services\AudioFollowsVideo.cs" />
+    <Compile Include="Application\Services\AudioFollowsVideoHandler.cs" />
     <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
     <Compile Include="Entities\Routing\NvxGlobalRouter.cs" />
     <Compile Include="Entities\Streams\Usb\UsbStream.cs" />
@@ -188,6 +189,8 @@
     <Compile Include="Services\Feedback\UsbLocalAddressFeedback.cs" />
     <Compile Include="Services\Feedback\VideoInputFeedback.cs" />
     <Compile Include="Services\InputPorts\AnalogAudioInput.cs" />
+    <Compile Include="Services\InputPorts\AutomaticInput.cs" />
+    <Compile Include="Services\InputPorts\NoSwitchInput.cs" />
     <Compile Include="Services\InputPorts\PrimaryAudioInput.cs" />
     <Compile Include="Services\InputPorts\SecondaryAudioInput.cs" />
     <Compile Include="Services\InputPorts\StreamInput.cs" />

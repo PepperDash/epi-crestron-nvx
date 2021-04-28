@@ -30,7 +30,7 @@ namespace NvxEpi.Entities.Streams.Video
             _currentStreamName = IsTransmitter
                 ? new StringFeedback(() => String.Empty)
                 : new StringFeedback(RouteNameKey,
-                    () => _current != null ? _current.VideoName.StringValue : NvxGlobalRouter.NoSourceText);
+                    () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
 
             Feedbacks.Add(_currentStreamId);
             Feedbacks.Add(_currentStreamName);

@@ -25,6 +25,9 @@ namespace NvxEpi.Services.InputSwitching
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
 
+            if (routingInput == DeviceInputEnum.NoSwitch)
+                return;
+
             Debug.Console(1, _device, "Switching input on SecondaryAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
 
             if (type.Has(eRoutingSignalType.Audio))
@@ -42,6 +45,8 @@ namespace NvxEpi.Services.InputSwitching
                 _device.SetAudioToHdmiInput2();
             else if (input == DeviceInputEnum.AnalogAudio)
                 _device.SetAudioToInputAnalog();
+            else if (input == DeviceInputEnum.Automatic)
+                _device.SetAudioToInputAutomatic();
             else
                 throw new NotSupportedException(input.Name);
         }
