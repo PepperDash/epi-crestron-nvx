@@ -29,7 +29,7 @@ namespace NvxEpi.Application.Entities
         {
             _transmitters = transmitters;
             DeviceId = deviceId;
-            var sink = new MockDisplay(key + "--sink", key + "--sink");
+            var sink = new MockDisplay(key + "--sink", key + "--videoSink");
             Display = sink;
 
             AddPreActivationAction(() =>

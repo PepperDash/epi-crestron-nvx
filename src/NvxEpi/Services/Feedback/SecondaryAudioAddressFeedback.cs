@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback
 {
-    public class SecondaryAudioAddressFeedback
+    /*public class SecondaryAudioAddressFeedback
     {
         public const string Key = "SecondaryAudioAddress";
 
@@ -54,5 +54,5 @@ namespace NvxEpi.Services.Feedback
 
             return feedback;
         }
-    }
+    }*/
 }

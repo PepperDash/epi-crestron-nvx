@@ -53,18 +53,12 @@ namespace NvxEpi.Extensions
 
         public static void SetAudioToInputAnalog(this ICurrentAudioInput device)
         {
-            if (!device.IsTransmitter)
-                return;
-
             Debug.Console(1, device, "Switching Audio Input to : 'Analog'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.AnalogAudio;
         }
 
         public static void SetAudioToPrimaryStreamAudio(this ICurrentAudioInput device)
         {
-            if (!(device.Hardware is DmNvx35x))
-                return;
-
             if (!device.IsTransmitter)
                 return;
 

@@ -91,6 +91,8 @@ namespace NvxEpi.Aggregates
                     DeviceIpFeedback.GetFeedback(Hardware),
                     DeviceHostnameFeedback.GetFeedback(Hardware),
                     DeviceModeNameFeedback.GetFeedback(Hardware),
+                    DanteInputFeedback.GetFeedback(Hardware),
+                    DanteInputValueFeedback.GetFeedback(Hardware),
                     DeviceMode
                 });
 

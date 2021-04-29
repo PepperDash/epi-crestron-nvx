@@ -27,6 +27,9 @@ namespace NvxEpi.Services.InputSwitching
 
             Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
 
+            if (routingInput == DeviceInputEnum.NoSwitch)
+                return;
+
             if (type.Has(eRoutingSignalType.Audio))
                 SwitchAudio(routingInput);
 

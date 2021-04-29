@@ -46,7 +46,7 @@ namespace NvxEpi.Entities.Streams.Audio
 
         private ISecondaryAudioStream GetCurrentAudioStream()
         {
-            if (!IsStreamingSecondaryAudio.BoolValue)
+            if (string.IsNullOrEmpty(RxAudioAddress.StringValue) || RxAudioAddress.StringValue.Equals("0.0.0.0"))
                 return null;
 
             var result = _audioTransmitters
@@ -60,7 +60,7 @@ namespace NvxEpi.Entities.Streams.Audio
                 .AllDevices
                 .OfType<ISecondaryAudioStream>()
                 .FirstOrDefault(
-                    tx => tx.TxAudioAddress.StringValue.Equals(TxAudioAddress.StringValue));
+                    tx => tx.TxAudioAddress.StringValue.Equals(RxAudioAddress.StringValue));
 
             if (result != null)
                 _audioTransmitters.Add(result);

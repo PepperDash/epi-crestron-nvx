@@ -219,6 +219,7 @@ namespace NvxEpi.Entities.Routing
                     if (!device.IsTransmitter)
                         continue;
 
+                    Debug.Console(1, "Adding device as tx {0}", device.Key);
                     dict.Add(device.Name, device);
                 }
 
@@ -241,7 +242,8 @@ namespace NvxEpi.Entities.Routing
                 {
                     if (device.IsTransmitter)
                         continue;
-                    
+
+                    Debug.Console(1, "Adding device as rx {0}", device.Key);
                     dict.Add(device.Name, device);
                 }
 

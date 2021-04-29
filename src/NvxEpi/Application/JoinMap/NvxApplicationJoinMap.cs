@@ -32,6 +32,15 @@ namespace NvxEpi.Application.JoinMap
                         JoinType = eJoinType.Analog
                     });
 
+        [JoinName("InputAudioNames")] public JoinDataComplete InputAudioNames =
+            new JoinDataComplete(new JoinData {JoinNumber = 701, JoinSpan = 200},
+                new JoinMetadata
+                    {
+                        Description = "Audio Input Name",
+                        JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                        JoinType = eJoinType.Serial
+                    });
+
 
         [JoinName("InputCurrentResolution")] public JoinDataComplete InputCurrentResolution =
             new JoinDataComplete(new JoinData {JoinNumber = 2401, JoinSpan = 32},
@@ -69,29 +78,33 @@ namespace NvxEpi.Application.JoinMap
                         JoinType = eJoinType.Serial
                     });
 
-        [JoinName("TxAdvancedIsPresent")] public JoinDataComplete TxAdvancedIsPresent =
-            new JoinDataComplete(new JoinData {JoinNumber = 1001, JoinSpan = 32},
+        [JoinName("OutputAudio")] public JoinDataComplete OutputAudio =
+            new JoinDataComplete(new JoinData {JoinNumber = 301, JoinSpan = 32},
                 new JoinMetadata
                     {
-                        Description = "Tx Advanced Is Present",
-                        JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                        JoinType = eJoinType.Digital
+                        Description = "DM Chassis Output Audio Set / Get",
+                        JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                        JoinType = eJoinType.Analog
                     });
 
-        [JoinName("VideoSyncStatus")] public JoinDataComplete VideoSyncStatus =
-            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 32},
+        [JoinName("OutputAudioNames")] public JoinDataComplete OutputAudioNames =
+            new JoinDataComplete(new JoinData {JoinNumber = 1101, JoinSpan = 200},
                 new JoinMetadata
                     {
-                        Description = "Input Video Sync",
-                        JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                        JoinType = eJoinType.Digital
+                        Description = "Video Input Name",
+                        JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                        JoinType = eJoinType.Serial
                     });
 
+        [JoinName("OutputCurrentAudioInputNames")] public JoinDataComplete OutputCurrentAudioInputNames =
+            new JoinDataComplete(new JoinData {JoinNumber = 2201, JoinSpan = 32},
+                new JoinMetadata
+                    {
+                        Description = "DM Chassis Audio Output Currently Routed Video Input Name",
+                        JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                        JoinType = eJoinType.Serial
+                    });
 
-        //[JoinName("InputAudioNames")] public JoinDataComplete InputAudioNames;
-        //[JoinName("OutputAudio")] public JoinDataComplete OutputAudio;
-        //[JoinName("OutputAudioNames")] public JoinDataComplete OutputAudioNames;
-        //[JoinName("OutputCurrentAudioInputNames")] public JoinDataComplete OutputCurrentAudioInputNames;
 
         [JoinName("OutputCurrentVideoInputNames")] public JoinDataComplete OutputCurrentVideoInputNames =
             new JoinDataComplete(new JoinData {JoinNumber = 2001, JoinSpan = 32},
@@ -112,6 +125,20 @@ namespace NvxEpi.Application.JoinMap
                         JoinType = eJoinType.Digital
                     });
 
+        [JoinName("OutputEdidManufacturer")] public JoinDataComplete OutputEdidManufacturer = new JoinDataComplete
+            (
+            new JoinData
+                {
+                    JoinNumber = 3501,
+                    JoinSpan = 32
+                },
+            new JoinMetadata
+                {
+                    Description = "Analog value of horizontal resolution on HDMI output",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Analog
+                });
+
         [JoinName("OutputEndpointOnline")] public JoinDataComplete OutputEndpointOnline =
             new JoinDataComplete(new JoinData {JoinNumber = 701, JoinSpan = 32},
                 new JoinMetadata
@@ -126,20 +153,6 @@ namespace NvxEpi.Application.JoinMap
             new JoinData
                 {
                     JoinNumber = 3301,
-                    JoinSpan = 32
-                },
-            new JoinMetadata
-                {
-                    Description = "Analog value of horizontal resolution on HDMI output",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Analog
-                });
-
-        [JoinName("OutputEdidManufacturer")] public JoinDataComplete OutputEdidManufacturer = new JoinDataComplete
-            (
-            new JoinData
-                {
-                    JoinNumber = 3501,
                     JoinSpan = 32
                 },
             new JoinMetadata
@@ -190,6 +203,24 @@ namespace NvxEpi.Application.JoinMap
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                     JoinType = eJoinType.Serial
                 });
+
+        [JoinName("TxAdvancedIsPresent")] public JoinDataComplete TxAdvancedIsPresent =
+            new JoinDataComplete(new JoinData {JoinNumber = 1001, JoinSpan = 32},
+                new JoinMetadata
+                    {
+                        Description = "Tx Advanced Is Present",
+                        JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                        JoinType = eJoinType.Digital
+                    });
+
+        [JoinName("VideoSyncStatus")] public JoinDataComplete VideoSyncStatus =
+            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 32},
+                new JoinMetadata
+                    {
+                        Description = "Input Video Sync",
+                        JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                        JoinType = eJoinType.Digital
+                    });
 
 
         public NvxApplicationJoinMap(uint joinStart)

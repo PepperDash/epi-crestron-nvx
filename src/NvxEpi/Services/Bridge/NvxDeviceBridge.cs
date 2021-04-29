@@ -90,9 +90,6 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == MulticastAddressFeedback.Key)
                     joinNumber = joinMap.MulticastVideoAddress.JoinNumber;
 
-                if (feedback.Key == SecondaryAudioAddressFeedback.Key)
-                    joinNumber = joinMap.MulticastAudioAddress.JoinNumber;
-
                 if (feedback.Key == AudioTxAddressFeedback.Key)
                     joinNumber = joinMap.NaxTxAddress.JoinNumber;
 

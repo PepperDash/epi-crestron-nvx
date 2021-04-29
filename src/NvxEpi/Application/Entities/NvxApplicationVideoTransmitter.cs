@@ -35,7 +35,7 @@ namespace NvxEpi.Application.Entities
             : base(key)
         {
             DeviceId = deviceId;
-            _source = new DummyRoutingInputsDevice(config.DeviceKey + "--source");
+            _source = new DummyRoutingInputsDevice(config.DeviceKey + "--videoSource");
 
             AddPreActivationAction(() =>
                 {

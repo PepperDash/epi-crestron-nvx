@@ -9,9 +9,14 @@ namespace NvxEpi.Services.Feedback
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device)
         {
-            var feedback = new StringFeedback(Key, () => device.Control.DanteAudioSourceFeedback.ToString());
+            var feedback = new StringFeedback(() => string.Empty);
 
-            device.BaseEvent += (@base, args) => feedback.FireUpdate();
+            if (device.Control.DanteAes67Name != null)
+            {
+                feedback = new StringFeedback(Key, () => device.Control.ActiveDanteAudioSourceFeedback.ToString());
+                device.BaseEvent += (@base, args) => feedback.FireUpdate();
+            }
+            
             return feedback;
         }
     }

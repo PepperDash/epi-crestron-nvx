@@ -120,6 +120,8 @@
     <Compile Include="Aggregates\NvxBaseDevice.cs" />
     <Compile Include="Aggregates\NvxD3X.cs" />
     <Compile Include="Aggregates\NvxMockDevice.cs" />
+    <Compile Include="Application\Entities\NvxApplicationAudioReceiver.cs" />
+    <Compile Include="Application\Entities\NvxApplicationAudioTransmitter.cs" />
     <Compile Include="Application\Entities\NvxApplicationVideoReceiver.cs" />
     <Compile Include="Application\Entities\NvxApplicationVideoTransmitter.cs" />
     <Compile Include="Entities\Hdmi\Input\HdmiInput2.cs" />

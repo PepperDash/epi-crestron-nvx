@@ -29,5 +29,6 @@ namespace NvxEpi.Application.Config
     {
         public string DeviceKey { get; set; }
         public string AudioName { get; set; }
+        public string NvxRoutingPort { get; set; }
     }
 }

@@ -78,7 +78,7 @@ namespace NvxEpi.Entities.Streams.Video
 
         private IStream GetCurrentStream()
         {
-            if (!IsStreamingVideo.BoolValue)
+            if (string.IsNullOrEmpty(MulticastAddress.StringValue) || MulticastAddress.StringValue.Equals("0.0.0.0"))
                 return null;
 
             var result = _transmitters
