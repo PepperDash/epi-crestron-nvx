@@ -18,6 +18,8 @@ env:
 jobs:
   Build_Project:
     runs-on: windows-latest
+    outputs:
+      version: ${{steps.setVersionNumber.outputs.version}}
     steps:
       # First we checkout the source repo
       - name: Checkout repo
@@ -29,6 +31,7 @@ jobs:
         run: git fetch --tags
       # Generate the appropriate version number
       - name: Set Version Number
+        id: setVersionNumber
         shell: powershell
         run: |
           $latestVersions = $(git tag --merged origin/main)
@@ -74,6 +77,7 @@ jobs:
             }
           }      
           echo "VERSION=$newVersionString" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "::set-output name=version::$newVersionString"
       # Use the version number to set the version of the assemblies
       - name: Update AssemblyInfo.cs
         shell: powershell
@@ -82,7 +86,7 @@ jobs:
           Param ([string]$Version)
           #$fullVersion = $Version
           $baseVersion = [regex]::Match($Version, "(\d+.\d+.\d+).*").captures.groups[1].value
-          $NewAssemblyVersion = 'AssemblyVersion("‘ + $baseVersion + ‘.*")'
+          $NewAssemblyVersion = 'AssemblyVersion("' + $baseVersion + '.*")'
           Write-Output "AssemblyVersion = $NewAssemblyVersion"
           $NewAssemblyInformationalVersion = 'AssemblyInformationalVersion("' + $Version + '")'
           Write-Output "AssemblyInformationalVersion = $NewAssemblyInformationalVersion"
@@ -100,28 +104,30 @@ jobs:
             }
           }
 
-          function Update-AllAssemblyInfoFiles ( $Env:VERSION ) {
+          function Update-AllAssemblyInfoFiles ( $version ) {
               foreach ($file in "AssemblyInfo.cs", "AssemblyInfo.vb" ) {
                   get-childitem -Path $Env:GITHUB_WORKSPACE -recurse | Where-Object { $_.Name -eq $file } | Update-SourceVersion $version ;
               }
           }
 
           # validate arguments
-          $r = [System.Text.RegularExpressions.Regex]::Match($args[0], "\d+\.\d+\.\d+.*");
+          $r = [System.Text.RegularExpressions.Regex]::Match($Env:VERSION, "\d+\.\d+\.\d+.*");
           if ($r.Success) {
-              Write-Output "Updating Assembly Version to $args ...";
-              Update-AllAssemblyInfoFiles $args[0];
+              Write-Output "Updating Assembly Version to $Env:VERSION ...";
+              Update-AllAssemblyInfoFiles $Env:VERSION;
           }
           else {
               Write-Output " ";
-              Write-Output "Error: Input version does not match x.y.z format!"
+              Write-Output "Error: Input version $Env:VERSION does not match x.y.z format!"
               Write-Output " ";
               Write-Output "Unable to apply version to AssemblyInfo.cs files";
           }
+      - name: add PepperDash Eng Feed 
+        run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash-engineering/index.json -username ${{ secrets.GH_PACKAGE_USER }} -password ${{ secrets.GH_PACKAGE_PASSWORD  }}
       - name: restore Nuget Packages
         run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
       # Set the SOLUTION_PATH
-      - name: Get SLN Path 
+      - name: Get SLN Path
         shell: powershell
         run: |
           $solution_path = Get-ChildItem *.sln -recurse 
@@ -130,7 +136,7 @@ jobs:
           Write-Output $solution_path
           echo "SOLUTION_PATH=$($solution_path)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         # Set the SOLUTION_FILE
-      - name: Get SLN File 
+      - name: Get SLN File
         shell: powershell
         run: |
           $solution_file = Get-ChildItem .\*.sln -recurse -Path "$($Env:GITHUB_WORKSPACE)" 
@@ -144,7 +150,7 @@ jobs:
       # Build the solutions in the docker image
       - name: Build Solution
         shell: powershell
-        run: | 
+        run: |
           Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_PATH)"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
       # Zip up the output files as needed
       - name: Zip Build Output
@@ -186,21 +192,12 @@ jobs:
           Compress-Archive -Path $destination -DestinationPath "$($Env:GITHUB_WORKSPACE)\$($Env:SOLUTION_FILE)-$($Env:VERSION).zip" -Force
           Write-Host "Output Contents post Zip"
           Get-ChildItem -Path $destination
-      # Write the version to a file to be consumed by the push jobs
-      - name: Write Version
-        run: Write-Output "$($Env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
       # Upload output files
       - name: Upload Build Output
         uses: actions/upload-artifact@v1
         with:
           name: Build
           path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
-      # Upload the Version file as an artifact
-      - name: Upload version.txt
-        uses: actions/upload-artifact@v1
-        with:
-          name: Version
-          path: ${{env.GITHUB_HOME}}\output\version.txt
       # Create the release on the source repo
       - name: Create Release
         id: create_release
@@ -226,19 +223,6 @@ jobs:
     needs: Build_Project
     runs-on: windows-latest
     steps:
-      - name: Download Build Version Info
-        uses: actions/download-artifact@v1
-        with:
-          name: Version
-      - name: Set Version Number
-        shell: powershell
-        run: |
-          Get-ChildItem "./Version"
-          $version = Get-Content -Path ./Version/version.txt
-          Write-Host "Version: $version"
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Remove-Item -Path ./Version/version.txt
-          Remove-Item -Path ./Version
       - name: Download Build output
         uses: actions/download-artifact@v1
         with:
@@ -253,7 +237,7 @@ jobs:
           Remove-Item -Path .\* -Include @("*.cpz","*.md","*.cplz","*.json","*.dll","*.clz")  
           Get-ChildItem -Path .\output\* | Copy-Item -Destination .\
           Remove-Item -Path .\output -Recurse
-      - name: Get nuget File 
+      - name: Get nuget File
         shell: powershell
         run: |
           $nuspec_file = Get-ChildItem *.nuspec -recurse 
@@ -266,7 +250,7 @@ jobs:
       #- name: Add nuget.org API Key
       #  run: nuget setApiKey ${{ secrets.NUGET_API_KEY }}
       - name: Create nuget package
-        run: nuget pack "./${{ env.NUSPEC_FILE}}.nuspec" -version ${{ env.VERSION }}
+        run: nuget pack "./${{ env.NUSPEC_FILE}}.nuspec" -version ${{ needs.Build_Project.outputs.version }}
       - name: Publish nuget package to Github registry
         run: nuget push **/*.nupkg -source github
       # Pushes to nuget, not needed unless publishing publicly >> this pushes package to nuget.org
