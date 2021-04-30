@@ -100,7 +100,7 @@ namespace NvxEpi.Entities.Routing
         {
             try
             {
-                Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", inputSelector, outputSelector);
+                Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", inputSelector, outputSelector);
                 if (!signalType.Has(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include audio");
 
@@ -129,7 +129,7 @@ namespace NvxEpi.Entities.Routing
 
         public static void Route(int txId, int rxId)
         {
-            Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txId, rxId);
+            Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txId, rxId);
             if (rxId == 0)
                 return;
 
@@ -148,7 +148,7 @@ namespace NvxEpi.Entities.Routing
 
         public static void Route(int txId, ISecondaryAudioStreamWithHardware rx)
         {
-            Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txId, rx.RxAudioAddress);
+            Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txId, rx.RxAudioAddress);
             if (txId == 0)
             {
                 rx.ClearSecondaryStream();
@@ -164,7 +164,7 @@ namespace NvxEpi.Entities.Routing
 
         public static void Route(string txName, ISecondaryAudioStreamWithHardware rx)
         {
-            Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txName, rx.RxAudioAddress);
+            Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txName, rx.RxAudioAddress);
             if (String.IsNullOrEmpty(txName))
                 return;
 

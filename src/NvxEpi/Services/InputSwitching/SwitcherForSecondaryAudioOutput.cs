@@ -12,9 +12,9 @@ namespace NvxEpi.Services.InputSwitching
     {
         public const string Key = "SecondaryAudioOutput";
 
-        private readonly ICurrentAudioInput _device;
+        private readonly ICurrentNaxInput _device;
 
-        public SwitcherForSecondaryAudioOutput(ICurrentAudioInput device)
+        public SwitcherForSecondaryAudioOutput(ICurrentNaxInput device)
         {
             _device = device;
         }
@@ -40,13 +40,13 @@ namespace NvxEpi.Services.InputSwitching
         private void SwitchAudio(Enumeration<DeviceInputEnum> input)
         {
             if (input == DeviceInputEnum.Hdmi1)
-                _device.SetAudioToHdmiInput1();
+                _device.SetNaxAudioToHdmiInput1();
             else if (input == DeviceInputEnum.Hdmi2)
-                _device.SetAudioToHdmiInput2();
+                _device.SetNaxAudioToHdmiInput2();
             else if (input == DeviceInputEnum.AnalogAudio)
-                _device.SetAudioToInputAnalog();
+                _device.SetNaxAudioToInputAnalog();
             else if (input == DeviceInputEnum.Automatic)
-                _device.SetAudioToInputAutomatic();
+                _device.SetNaxAudioToInputAutomatic();
             else
                 throw new NotSupportedException(input.Name);
         }
@@ -56,7 +56,7 @@ namespace NvxEpi.Services.InputSwitching
             return _device.Key + "-" + Key;
         }
 
-        public static void AddRoutingPort(ICurrentAudioInput parent)
+        public static void AddRoutingPort(ICurrentNaxInput parent)
         {
             parent.OutputPorts.Add(new RoutingOutputPort(
                 Key, 

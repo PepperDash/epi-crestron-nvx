@@ -38,11 +38,13 @@ namespace NvxEpi.Services.Feedback
             {
                 return device.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue;
             }
-            else
+            else if (device.DmNaxRouting.DmNaxTransmit != null)
             {
                 //Audio feedback for this receiver is itself, since it isn't using DmNaxAudio as the source
                 return device.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue;
             }
+            else
+                return "0.0.0.0";
         }
     }
 }

@@ -75,9 +75,9 @@ namespace NvxEpi.Application.Entities
             }
             else if (routingPortKey.Equals(DeviceInputEnum.AnalogAudio.Name, StringComparison.OrdinalIgnoreCase))
             {
-                var routingPort = Device.InputPorts[DeviceInputEnum.Hdmi2.Name];
+                var routingPort = Device.InputPorts[DeviceInputEnum.AnalogAudio.Name];
                 if (routingPort == null)
-                    throw new NullReferenceException(DeviceInputEnum.Hdmi2.Name);
+                    throw new NullReferenceException(DeviceInputEnum.AnalogAudio.Name);
 
                 TieLineCollection.Default.Add(new TieLine(_source.AudioVideoOutputPort, routingPort));
             }

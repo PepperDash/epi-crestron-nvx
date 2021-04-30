@@ -14,22 +14,22 @@ namespace NvxEpi.Extensions
             switch (inputToSwitch)
             {
                 case DmNvxControl.eAudioSource.Automatic:
-                    device.SetAudioToInputAutomatic();
+                    device.SetNaxAudioToInputAutomatic();
                     break;
                 case DmNvxControl.eAudioSource.Input1:
-                    device.SetAudioToHdmiInput1();
+                    device.SetNaxAudioToHdmiInput1();
                     break;
                 case DmNvxControl.eAudioSource.Input2:
-                    device.SetAudioToHdmiInput2();
+                    device.SetNaxAudioToHdmiInput2();
                     break;
                 case DmNvxControl.eAudioSource.AnalogAudio:
-                    device.SetAudioToInputAnalog();
+                    device.SetNaxAudioToInputAnalog();
                     break;
                 case DmNvxControl.eAudioSource.PrimaryStreamAudio:
-                    device.SetAudioToPrimaryStreamAudio();
+                    device.SetNaxAudioToPrimaryStreamAudio();
                     break;
                 case DmNvxControl.eAudioSource.DmNaxAudio:
-                    device.SetAudioToSecondaryStreamAudio();
+                    device.SetNaxAudioToSecondaryStreamAudio();
                     break;
                 case DmNvxControl.eAudioSource.DanteAes67Audio:
                     throw new NotImplementedException();
@@ -38,37 +38,37 @@ namespace NvxEpi.Extensions
             }
         }
 
-        public static void SetAudioToHdmiInput1(this ICurrentNaxInput device)
+        public static void SetNaxAudioToHdmiInput1(this ICurrentNaxInput device)
         {
             Debug.Console(1, device, "Switching Nax Input to : 'Hdmi1'");
             device.Hardware.Control.DmNaxAudioSource = DmNvxControl.eAudioSource.Input1;
         }
 
-        public static void SetAudioToHdmiInput2(this ICurrentNaxInput device)
+        public static void SetNaxAudioToHdmiInput2(this ICurrentNaxInput device)
         {
             Debug.Console(1, device, "Switching Nax Input to : 'Hdmi2'");
             device.Hardware.Control.DmNaxAudioSource = DmNvxControl.eAudioSource.Input2;
         }
 
-        public static void SetAudioToInputAnalog(this ICurrentNaxInput device)
+        public static void SetNaxAudioToInputAnalog(this ICurrentNaxInput device)
         {
             Debug.Console(1, device, "Switching Nax Input to : 'Analog'");
             device.Hardware.Control.DmNaxAudioSource = DmNvxControl.eAudioSource.AnalogAudio;
         }
 
-        public static void SetAudioToPrimaryStreamAudio(this ICurrentNaxInput device)
+        public static void SetNaxAudioToPrimaryStreamAudio(this ICurrentNaxInput device)
         {
             Debug.Console(1, device, "Switching Nax Input to : 'PrimaryStream'");
             device.Hardware.Control.DmNaxAudioSource = DmNvxControl.eAudioSource.PrimaryStreamAudio;
         }
 
-        public static void SetAudioToSecondaryStreamAudio(this ICurrentNaxInput device)
+        public static void SetNaxAudioToSecondaryStreamAudio(this ICurrentNaxInput device)
         {
             Debug.Console(1, device, "Switching Nax Input to : 'SecondaryStream'");
             device.Hardware.Control.DmNaxAudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
         }
 
-        public static void SetAudioToInputAutomatic(this ICurrentNaxInput device)
+        public static void SetNaxAudioToInputAutomatic(this ICurrentNaxInput device)
         {
             Debug.Console(1, device, "Switching Nax Input to : 'Automatic'");
             device.Hardware.Control.DmNaxAudioSource = DmNvxControl.eAudioSource.Automatic;
