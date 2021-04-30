@@ -1,6 +1,7 @@
 ﻿using System;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
+using NvxEpi.Abstractions;
 
 namespace NvxEpi.Services.Feedback
 {
@@ -8,21 +9,22 @@ namespace NvxEpi.Services.Feedback
     {
         public const string Key = "RxAudioAddress";
 
-        public static StringFeedback GetFeedback(DmNvxBaseClass device)
+        public static StringFeedback GetFeedback(INvxDeviceWithHardware device)
         {
+            var hardware = device.Hardware;
             var feedback = new StringFeedback(Key,
-                () => device.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue);
+                () => GetSecondaryAudioFeedbackHelper(device));
 
-            device.BaseEvent += (@base, args) => feedback.FireUpdate();
+            hardware.BaseEvent += (@base, args) => feedback.FireUpdate();
 
-            if (device.SecondaryAudio != null)
+            if (hardware.SecondaryAudio != null)
             {
-                device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
+                hardware.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
             }
-            else if (device.DmNaxRouting.DmNaxReceive != null)
+            else if (hardware.DmNaxRouting.DmNaxReceive != null)
             {
-                device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
-                device.DmNaxRouting.DmNaxRoutingChange += (sender, args) => feedback.FireUpdate();
+                hardware.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
+                hardware.DmNaxRouting.DmNaxRoutingChange += (sender, args) => feedback.FireUpdate();
             }
             else
             {
@@ -30,6 +32,18 @@ namespace NvxEpi.Services.Feedback
             }
 
             return feedback;
+        }
+
+        public static string GetSecondaryAudioFeedbackHelper(INvxDeviceWithHardware device)
+        {
+            if (device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.DmNaxAudio)
+            {
+                return device.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue;
+            }
+            else
+            {
+                return device.AudioSourceName.StringValue;
+            }
         }
     }
 }
