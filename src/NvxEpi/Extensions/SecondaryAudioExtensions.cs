@@ -20,7 +20,7 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
 
-            if (deviceWithHardware.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue == address)
+            if (deviceWithHardware.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue == address && address != "0.0.0.0")
             {
                 Debug.Console(1, device, "Secondary Audio Address is same as this unit's Tx address: '{0}'", address);
                 deviceWithHardware.Hardware.Control.AudioSource = deviceWithHardware.Hardware.Control.DmNaxAudioSourceFeedback;

@@ -21,7 +21,7 @@ namespace NvxEpi.Entities.Streams.Audio
 
             _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedbackForReceiver(Hardware);
             _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedbackForReceiver(Hardware);
-            _secondaryAudioRxAddress = AudioRxAddressFeedback.GetFeedback(_device);
+            _secondaryAudioRxAddress = AudioRxAddressFeedback.GetFeedback(Hardware);
             _secondaryAudioTxAddress = AudioTxAddressFeedback.GetFeedback(Hardware);
 
             Feedbacks.Add(SecondaryAudioStreamStatus);
