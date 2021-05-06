@@ -93,6 +93,9 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == SecondaryAudioAddressFeedback.Key)
                     joinNumber = joinMap.MulticastAudioAddress.JoinNumber;
 
+                if (feedback.Key == VideoAspectRatioModeFeedback.Key)
+                    joinNumber = joinMap.VideoAspectRatioMode.JoinNumber;
+
                 if (feedback.Key == HorizontalResolutionFeedback.Key) { }
 
                 if (joinNumber > 0)
@@ -129,6 +132,7 @@ namespace NvxEpi.Services.Bridge
             LinkHdmiInputs(trilist, joinMap);
             LinkVideowallMode(trilist, joinMap);
             LinkRouting(trilist, joinMap);
+            LinkHdmiOut(trilist, joinMap);
 
             var videoInput = _device as ICurrentVideoInput;
             if (videoInput != null)
@@ -172,6 +176,14 @@ namespace NvxEpi.Services.Bridge
 
             if (!videowallMode.BoolValue) return;
             trilist.SetUShortSigAction(joinMap.VideowallMode.JoinNumber, videowallDevice.SetVideowallMode);
+        }
+
+        private void LinkHdmiOut(BasicTriList trilist, NvxDeviceJoinMap joinMap)
+        {
+            var hdmiOut = _device as IHdmiOutput;
+            if (hdmiOut == null) return;
+
+            trilist.SetUShortSigAction(joinMap.VideoAspectRatioMode.JoinNumber, hdmiOut.SetVideoAspectRatioMode);
         }
 
         private void LinkHdmiInputs(BasicTriList trilist, NvxDeviceJoinMap joinMap)

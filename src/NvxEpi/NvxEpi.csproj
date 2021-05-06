@@ -124,6 +124,7 @@
     <Compile Include="Entities\Hdmi\Input\HdmiInput1.cs" />
     <Compile Include="Entities\Hdmi\Output\HdmiOutput.cs" />
     <Compile Include="Entities\Hdmi\Output\VideowallModeOutput.cs" />
+    <Compile Include="Extensions\HdmiOutputExtensions.cs" />
     <Compile Include="Extensions\HdmiInputExtensions.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
     <Compile Include="Abstractions\Device\ITransmitterReceiver.cs" />
@@ -160,6 +161,7 @@
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Factories\NvxMockDeviceFactory.cs" />
+    <Compile Include="Services\Feedback\VideoAspectRatioModeFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceHostnameFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceIpFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceModeNameFeedback.cs" />
