@@ -104,6 +104,11 @@ namespace NvxEpi.Aggregates
             get { return _hdmiInput.SyncDetected; }
         }
 
+        public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
+        {
+            get { return _hdmiInput.CurrentResolution; }
+        }
+
         public int UsbId
         {
             get { return _usbStream.UsbId; }
@@ -157,18 +162,18 @@ namespace NvxEpi.Aggregates
         {
             HdmiInput1Port.AddRoutingPort(this);
             SwitcherForHdmiOutput.AddRoutingPort(this);
+            SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
+            SecondaryAudioInput.AddRoutingPort(this);
+            AnalogAudioInput.AddRoutingPort(this);
+            SwitcherForAnalogAudioOutput.AddRoutingPort(this);
 
             if (IsTransmitter)
             {
                 SwitcherForStreamOutput.AddRoutingPort(this);
-                SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
-                AnalogAudioInput.AddRoutingPort(this);
             }
             else
             {
                 StreamInput.AddRoutingPort(this);
-                SecondaryAudioInput.AddRoutingPort(this);
-                SwitcherForAnalogAudioOutput.AddRoutingPort(this);
             }
         }
 
@@ -186,6 +191,7 @@ namespace NvxEpi.Aggregates
                         Hardware.SetTxDefaults(props);
                     else
                         Hardware.SetRxDefaults(props);
+                    Hardware.SetAudioDefaults(props);
                 };
         }
     }

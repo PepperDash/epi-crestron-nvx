@@ -32,7 +32,7 @@ namespace NvxEpi.Application.Services
                 }
             }
 
-            foreach (var receiver in _transmitters)
+            foreach (var receiver in _receivers)
             {
                 var rx = receiver.Value;
 
@@ -61,7 +61,7 @@ namespace NvxEpi.Application.Services
                 }
             }
 
-            foreach (var receiver in _transmitters)
+            foreach (var receiver in _receivers)
             {
                 var rx = receiver.Value;
 

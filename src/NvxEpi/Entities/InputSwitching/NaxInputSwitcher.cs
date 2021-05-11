@@ -6,31 +6,31 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.InputSwitching
 {
-    public class VideoInputSwitcher : ICurrentVideoInput
+    public class NaxInputSwitcher : ICurrentNaxInput
     {
-        private readonly StringFeedback _currentVideoInput;
-        private readonly IntFeedback _currentVideoInputValue;
+        private readonly StringFeedback _currentNaxInput;
+        private readonly IntFeedback _currentNaxInputValue;
         private readonly INvxDeviceWithHardware _device;
 
-        public VideoInputSwitcher(INvxDeviceWithHardware device)
+        public NaxInputSwitcher(INvxDeviceWithHardware device)
         {
             _device = device;
 
-            _currentVideoInput = VideoInputFeedback.GetFeedback(Hardware);
-            _currentVideoInputValue = VideoInputValueFeedback.GetFeedback(Hardware);
+            _currentNaxInput = NaxInputFeedback.GetFeedback(Hardware);
+            _currentNaxInputValue = NaxInputValueFeedback.GetFeedback(Hardware);
 
-            Feedbacks.Add(_currentVideoInput);
-            Feedbacks.Add(_currentVideoInputValue);
+            _device.Feedbacks.Add(CurrentNaxInput);
+            _device.Feedbacks.Add(CurrentNaxInputValue);
         }
 
-        public StringFeedback CurrentVideoInput
+        public StringFeedback CurrentNaxInput
         {
-            get { return _currentVideoInput; }
+            get { return _currentNaxInput; }
         }
 
-        public IntFeedback CurrentVideoInputValue
+        public IntFeedback CurrentNaxInputValue
         {
-            get { return _currentVideoInputValue; }
+            get { return _currentNaxInputValue; }
         }
 
         public int DeviceId

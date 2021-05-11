@@ -1,38 +1,26 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
-using NvxEpi.Abstractions.HdmiOutput;
+using NvxEpi.Abstractions.Dante;
+using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Entities.Hdmi.Output
+namespace NvxEpi.Entities.InputSwitching
 {
-    public class HdmiOutput : IHdmiOutput
+    public class DanteInputSwitcher : ICurrentDanteInput
     {
         private readonly INvxDeviceWithHardware _device;
 
-        public HdmiOutput(INvxDeviceWithHardware device)
+        public DanteInputSwitcher(INvxDeviceWithHardware device)
         {
             _device = device;
 
-            DisabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(device.Hardware);
-            HorizontalResolution = HorizontalResolutionFeedback.GetFeedback(device.Hardware);
-            EdidManufacturer = new StringFeedback(() => string.Empty);
+            CurrentDanteInput = AudioInputFeedback.GetFeedback(Hardware);
+            CurrentDanteInputValue = AudioInputValueFeedback.GetFeedback(Hardware);
 
-            device.Feedbacks.Add(DisabledByHdcp);
-            device.Feedbacks.Add(HorizontalResolution);
+            _device.Feedbacks.Add(CurrentDanteInput);
+            _device.Feedbacks.Add(CurrentDanteInputValue);
         }
-
-        public BoolFeedback DisabledByHdcp { get; private set; }
-
-        public DmNvxBaseClass Hardware
-        {
-            get { return _device.Hardware; }
-        }
-
-        public IntFeedback HorizontalResolution { get; private set; }
-
-        public StringFeedback EdidManufacturer { get; private set; }
 
         public string Key
         {
@@ -78,5 +66,13 @@ namespace NvxEpi.Entities.Hdmi.Output
         {
             get { return _device.DeviceId; }
         }
+
+        public DmNvxBaseClass Hardware
+        {
+            get { return _device.Hardware; }
+        }
+
+        public StringFeedback CurrentDanteInput { get; private set; }
+        public IntFeedback CurrentDanteInputValue { get; private set; }
     }
 }

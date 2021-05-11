@@ -10,15 +10,6 @@ namespace NvxEpi.Application.Services
 {
     public class ApplicationTieLineConnector
     {
-        public static void AddTieLineForDummySource(DummyRoutingInputsDevice source, INvxDevice tx)
-        {
-            var inputPort = tx.InputPorts[DeviceInputEnum.Hdmi1.Name];
-            if (inputPort == null)
-                throw new ArgumentNullException("inputPort");
-
-            TieLineCollection.Default.Add(new TieLine(source.AudioVideoOutputPort, inputPort, eRoutingSignalType.AudioVideo));
-        }
-
         public static void AddTieLineForAmp(Amplifier amp, INvxDevice rx)
         {
             var outputPort = rx.OutputPorts[SwitcherForAnalogAudioOutput.Key];

@@ -1,19 +1,18 @@
-﻿using System;
-using NvxEpi.Abstractions;
+﻿using NvxEpi.Abstractions;
 using NvxEpi.Enums;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputPorts
 {
-    public class AnalogAudioInput
+    public class AutomaticInput
     {
         public static void AddRoutingPort(INvxDevice device)
         {
             var port = new RoutingInputPort(
-                DeviceInputEnum.AnalogAudio.Name,
-                eRoutingSignalType.Audio,
-                eRoutingPortConnectionType.LineAudio,
-                DeviceInputEnum.AnalogAudio,
+                DeviceInputEnum.Automatic.Name,
+                eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Streaming,
+                DeviceInputEnum.Automatic,
                 device);
 
             device.InputPorts.Add(port);

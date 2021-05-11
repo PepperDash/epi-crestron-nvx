@@ -11,17 +11,13 @@ namespace NvxEpi.Entities.Hdmi.Input
     {
         protected readonly Dictionary<uint, IntFeedback> _capability = new Dictionary<uint, IntFeedback>();
         protected readonly Dictionary<uint, BoolFeedback> _sync = new Dictionary<uint, BoolFeedback>();
+        protected readonly Dictionary<uint, StringFeedback> _currentResolution = new Dictionary<uint, StringFeedback>();
 
         private readonly INvxDeviceWithHardware _device;
 
         protected HdmiInputBase(INvxDeviceWithHardware device)
         {
             _device = device;
-        }
-
-        public StringFeedback AudioName
-        {
-            get { return _device.AudioName; }
         }
 
         public int DeviceId
@@ -84,9 +80,9 @@ namespace NvxEpi.Entities.Hdmi.Input
             get { return new ReadOnlyDictionary<uint, BoolFeedback>(_sync); }
         }
 
-        public StringFeedback VideoName
+        public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
         {
-            get { return _device.VideoName; }
+            get { return new ReadOnlyDictionary<uint, StringFeedback>(_currentResolution); }
         }
     }
 }

@@ -12,21 +12,21 @@ namespace NvxEpi.Services.InputSwitching
     {
         public const string Key = "SecondaryAudioOutput";
 
-        private readonly ICurrentAudioInput _device;
+        private readonly ICurrentNaxInput _device;
 
-        public SwitcherForSecondaryAudioOutput(ICurrentAudioInput device)
+        public SwitcherForSecondaryAudioOutput(ICurrentNaxInput device)
         {
             _device = device;
         }
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
-            if (!_device.IsTransmitter)
-                throw new NotSupportedException("receiver"); 
-
             var routingInput = input as DeviceInputEnum;
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
+
+            if (routingInput == DeviceInputEnum.NoSwitch)
+                return;
 
             Debug.Console(1, _device, "Switching input on SecondaryAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
 
@@ -40,11 +40,13 @@ namespace NvxEpi.Services.InputSwitching
         private void SwitchAudio(Enumeration<DeviceInputEnum> input)
         {
             if (input == DeviceInputEnum.Hdmi1)
-                _device.SetAudioToHdmiInput1();
+                _device.SetNaxAudioToHdmiInput1();
             else if (input == DeviceInputEnum.Hdmi2)
-                _device.SetAudioToHdmiInput2();
+                _device.SetNaxAudioToHdmiInput2();
             else if (input == DeviceInputEnum.AnalogAudio)
-                _device.SetAudioToInputAnalog();
+                _device.SetNaxAudioToInputAnalog();
+            else if (input == DeviceInputEnum.Automatic)
+                _device.SetNaxAudioToInputAutomatic();
             else
                 throw new NotSupportedException(input.Name);
         }
@@ -54,7 +56,7 @@ namespace NvxEpi.Services.InputSwitching
             return _device.Key + "-" + Key;
         }
 
-        public static void AddRoutingPort(ICurrentAudioInput parent)
+        public static void AddRoutingPort(ICurrentNaxInput parent)
         {
             parent.OutputPorts.Add(new RoutingOutputPort(
                 Key, 

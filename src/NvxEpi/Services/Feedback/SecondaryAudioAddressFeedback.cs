@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback
 {
-    public class SecondaryAudioAddressFeedback
+    /*public class SecondaryAudioAddressFeedback
     {
         public const string Key = "SecondaryAudioAddress";
 
@@ -42,9 +42,9 @@ namespace NvxEpi.Services.Feedback
             {
                 device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
             }
-            else if (device.DmNaxRouting.DmNaxTransmit != null)
+            else if (device.DmNaxRouting.DmNaxReceive != null)
             {
-                device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
+                device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
                 device.DmNaxRouting.DmNaxRoutingChange += (sender, args) => feedback.FireUpdate();
             }
             else
@@ -54,5 +54,5 @@ namespace NvxEpi.Services.Feedback
 
             return feedback;
         }
-    }
+    }*/
 }

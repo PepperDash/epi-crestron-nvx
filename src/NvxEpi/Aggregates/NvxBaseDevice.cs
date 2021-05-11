@@ -10,6 +10,7 @@ using NvxEpi.Entities.InputSwitching;
 using NvxEpi.Entities.Streams.Audio;
 using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Services.Feedback;
+using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.Utilities;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -17,7 +18,7 @@ using PepperDash.Essentials.Core.Config;
 namespace NvxEpi.Aggregates
 {
     public abstract class NvxBaseDevice : CrestronGenericBridgeableBaseDevice, ICurrentVideoInput, ICurrentAudioInput, ICurrentStream,
-        ICurrentSecondaryAudioStream
+        ICurrentSecondaryAudioStream, ICurrentNaxInput
     {
         private readonly int _deviceId;
 
@@ -26,6 +27,7 @@ namespace NvxEpi.Aggregates
         private readonly ICurrentStream _currentVideoStream;
         private readonly ICurrentVideoInput _videoSwitcher;
         private readonly ICurrentAudioInput _audioSwitcher;
+        private readonly ICurrentNaxInput _naxSwitcher;
 
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
             new RoutingPortCollection<RoutingInputPort>();
@@ -34,9 +36,6 @@ namespace NvxEpi.Aggregates
             new RoutingPortCollection<RoutingOutputPort>();
 
         private readonly IntFeedback _deviceMode;
-
-        private readonly StringFeedback _audioName;
-        private readonly StringFeedback _videoName;
 
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
@@ -79,14 +78,10 @@ namespace NvxEpi.Aggregates
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
+            _naxSwitcher = new NaxInputSwitcher(this);
 
-            _videoName = String.IsNullOrEmpty(props.VideoSourceName)
-                ? new StringFeedback("VideoName", () => Name)
-                : new StringFeedback("VideoName", () => props.VideoSourceName);
-
-            _audioName = String.IsNullOrEmpty(props.AudioSourceName)
-                ? new StringFeedback("AudioName", () => Name)
-                : new StringFeedback("AudioName", () => props.AudioSourceName);
+            AutomaticInput.AddRoutingPort(this);
+            NoSwitchInput.AddRoutingPort(this);
 
             _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
@@ -96,17 +91,12 @@ namespace NvxEpi.Aggregates
                     DeviceIpFeedback.GetFeedback(Hardware),
                     DeviceHostnameFeedback.GetFeedback(Hardware),
                     DeviceModeNameFeedback.GetFeedback(Hardware),
-                    VideoName,
-                    AudioName,
+                    DanteInputFeedback.GetFeedback(Hardware),
+                    DanteInputValueFeedback.GetFeedback(Hardware),
                     DeviceMode
                 });
 
             RegisterForOnlineFeedback(Hardware, props);
-        }
-
-        public StringFeedback AudioName
-        {
-            get { return _audioName; }
         }
 
         public StringFeedback CurrentAudioInput
@@ -114,9 +104,19 @@ namespace NvxEpi.Aggregates
             get { return _audioSwitcher.CurrentAudioInput; }
         }
 
+        public StringFeedback CurrentNaxInput
+        {
+            get { return _naxSwitcher.CurrentNaxInput; }
+        }
+
         public IntFeedback CurrentAudioInputValue
         {
             get { return _audioSwitcher.CurrentAudioInputValue; }
+        }
+
+        public IntFeedback CurrentNaxInputValue
+        {
+            get { return _naxSwitcher.CurrentNaxInputValue; }
         }
 
         public StringFeedback CurrentVideoInput
@@ -154,11 +154,6 @@ namespace NvxEpi.Aggregates
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _outputPorts; }
-        }
-
-        public StringFeedback VideoName
-        {
-            get { return _videoName; }
         }
 
         public override string ToString()
@@ -206,6 +201,16 @@ namespace NvxEpi.Aggregates
         public StringFeedback SecondaryAudioAddress
         {
             get { return _currentSecondaryAudioStream.SecondaryAudioAddress; }
+        }
+
+        public StringFeedback TxAudioAddress
+        {
+            get { return _currentSecondaryAudioStream.TxAudioAddress; }
+        }
+
+        public StringFeedback RxAudioAddress
+        {
+            get { return _currentSecondaryAudioStream.RxAudioAddress; }
         }
 
         public BoolFeedback IsStreamingSecondaryAudio

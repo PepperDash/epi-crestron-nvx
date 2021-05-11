@@ -21,14 +21,14 @@ namespace NvxEpi.Services.InputSwitching
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
-            if (_device.IsTransmitter)
-                throw new NotSupportedException("transmitter"); 
-
             var routingInput = input as DeviceInputEnum;
             if (routingInput == null)
                 throw new InvalidCastException("routing input");
 
             Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
+
+            if (routingInput == DeviceInputEnum.NoSwitch)
+                return;
 
             if (type.Has(eRoutingSignalType.Audio))
                 SwitchAudio(routingInput);
@@ -49,6 +49,8 @@ namespace NvxEpi.Services.InputSwitching
                 _device.SetAudioToHdmiInput1();
             else if (input == DeviceInputEnum.Hdmi2)
                 _device.SetAudioToHdmiInput2();
+            else if (input == DeviceInputEnum.DmNaxAudio)
+                _device.SetAudioToSecondaryStreamAudio();
             else
                 throw new NotSupportedException(input.Name);
         }

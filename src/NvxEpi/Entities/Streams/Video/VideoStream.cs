@@ -30,11 +30,6 @@ namespace NvxEpi.Entities.Streams.Video
             Feedbacks.Add(_streamUrl);
         }
 
-        public StringFeedback AudioName
-        {
-            get { return _device.AudioName; }
-        }
-
         public int DeviceId
         {
             get { return _device.DeviceId; }
@@ -83,11 +78,6 @@ namespace NvxEpi.Entities.Streams.Video
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
             get { return _device.OutputPorts; }
-        }
-
-        public StringFeedback VideoName
-        {
-            get { return _device.VideoName; }
         }
 
         public BoolFeedback IsStreamingVideo

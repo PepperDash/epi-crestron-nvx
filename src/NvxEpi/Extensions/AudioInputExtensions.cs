@@ -47,27 +47,18 @@ namespace NvxEpi.Extensions
 
         public static void SetAudioToHdmiInput2(this ICurrentAudioInput device)
         {
-            if (!(device.Hardware is DmNvx35x))
-                return;
-
             Debug.Console(1, device, "Switching Audio Input to : 'Hdmi2'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Input2;
         }
 
         public static void SetAudioToInputAnalog(this ICurrentAudioInput device)
         {
-            if (!device.IsTransmitter)
-                return;
-
             Debug.Console(1, device, "Switching Audio Input to : 'Analog'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.AnalogAudio;
         }
 
         public static void SetAudioToPrimaryStreamAudio(this ICurrentAudioInput device)
         {
-            if (!(device.Hardware is DmNvx35x))
-                return;
-
             if (!device.IsTransmitter)
                 return;
 
@@ -77,13 +68,10 @@ namespace NvxEpi.Extensions
 
         public static void SetAudioToSecondaryStreamAudio(this ICurrentAudioInput device)
         {
-            if (!(device.Hardware is DmNvx35x))
-                return;
-
             if (!device.IsTransmitter)
                 return;
 
-            Debug.Console(1, device, "Switching Audio Input to : 'SecondaryStream'");
+            Debug.Console(1, device, "Switching Audio Input to : 'SecondaryStream/DM NAX'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
         }
 
@@ -91,12 +79,6 @@ namespace NvxEpi.Extensions
         {
             Debug.Console(1, device, "Switching Audio Input to : 'Automatic'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
-        }
-
-        public static void SetDanteInputToAutomatic(this IDanteAudio device)
-        {
-            Debug.Console(1, device, "Switching Dante Audio Input to : 'Automatic'");
-            device.Hardware.Control.DanteAudioSource = DmNvxControl.eAudioSource.Automatic;
         }
     }
 }

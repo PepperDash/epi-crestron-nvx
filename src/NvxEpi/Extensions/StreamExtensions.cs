@@ -36,6 +36,10 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Routing device stream : '{0}'", tx.Name);
             tx.StreamUrl.FireUpdate();
+
+            if (String.IsNullOrEmpty(tx.StreamUrl.StringValue))
+                return;
+
             device.SetStreamUrl(tx.StreamUrl.StringValue);
         }
 

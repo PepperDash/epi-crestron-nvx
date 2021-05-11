@@ -6,11 +6,12 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Streams.Audio
 {
-    public class SecondaryAudioStream : ISecondardyAudioStreamWithHardware
+    public class SecondaryAudioStream : ISecondaryAudioStreamWithHardware
     {
         private readonly INvxDeviceWithHardware _device;
 
-        private readonly StringFeedback _secondaryAudioAddress;
+        private readonly StringFeedback _secondaryAudioRxAddress;
+        private readonly StringFeedback _secondaryAudioTxAddress;
         private readonly BoolFeedback _isStreamingSecondaryAudio;
         private readonly StringFeedback _secondaryAudioStreamStatus;
 
@@ -18,22 +19,15 @@ namespace NvxEpi.Entities.Streams.Audio
         {
             _device = device;
 
-            if (device.IsTransmitter)
-            {
-                _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedbackForTransmitter(Hardware);
-                _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedbackForTransmitter(Hardware);
-                _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedbackForTransmitter(Hardware);
-            }
-            else
-            {
-                _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedbackForReceiver(Hardware);
-                _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedbackForReceiver(Hardware);
-                _secondaryAudioAddress = SecondaryAudioAddressFeedback.GetFeedbackForReceiver(Hardware);
-            }
+            _secondaryAudioStreamStatus = SecondaryAudioStatusFeedback.GetFeedbackForReceiver(Hardware);
+            _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedbackForReceiver(Hardware);
+            _secondaryAudioRxAddress = AudioRxAddressFeedback.GetFeedback(Hardware);
+            _secondaryAudioTxAddress = AudioTxAddressFeedback.GetFeedback(Hardware);
 
             Feedbacks.Add(SecondaryAudioStreamStatus);
             Feedbacks.Add(IsStreamingSecondaryAudio);
-            Feedbacks.Add(SecondaryAudioAddress);
+            Feedbacks.Add(TxAudioAddress);
+            Feedbacks.Add(RxAudioAddress);
         }
 
         public IntFeedback DeviceMode
@@ -76,16 +70,6 @@ namespace NvxEpi.Entities.Streams.Audio
             get { return _device.Feedbacks; }
         }
 
-        public StringFeedback VideoName
-        {
-            get { return _device.VideoName; }
-        }
-
-        public StringFeedback AudioName
-        {
-            get { return _device.AudioName; }
-        }
-
         public BoolFeedback IsOnline
         {
             get { return _device.IsOnline; }
@@ -103,7 +87,23 @@ namespace NvxEpi.Entities.Streams.Audio
 
         public StringFeedback SecondaryAudioAddress
         {
-            get { return _secondaryAudioAddress; }
+            get
+            {
+                if (_device.IsTransmitter)
+                    return _secondaryAudioTxAddress;
+                else
+                    return _secondaryAudioRxAddress;
+            }
+        }
+
+        public StringFeedback TxAudioAddress
+        {
+            get { return _secondaryAudioTxAddress; }
+        }
+
+        public StringFeedback RxAudioAddress
+        {
+            get { return _secondaryAudioRxAddress; }
         }
 
         public DmNvxBaseClass Hardware

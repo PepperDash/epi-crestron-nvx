@@ -4,7 +4,6 @@ using System.Linq;
 using Crestron.SimplSharp;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Entities.Routing;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -19,21 +18,15 @@ namespace NvxEpi.Entities.Streams.Audio
         private readonly IntFeedback _currentSecondaryAudioStreamId;
         private readonly StringFeedback _currentSecondaryAudioStreamName;
 
-        private readonly IList<ISecondaryAudioStream> _transmitters = new List<ISecondaryAudioStream>(); 
+        private readonly IList<ISecondaryAudioStream> _audioTransmitters = new List<ISecondaryAudioStream>(); 
         private readonly CCriticalSection _lock = new CCriticalSection();
 
         private ISecondaryAudioStream _current;
 
         public CurrentSecondaryAudioStream(INvxDeviceWithHardware device) : base(device)
         {
-            _currentSecondaryAudioStreamId = IsTransmitter
-                ? new IntFeedback(() => default( int ))
-                : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
-
-            _currentSecondaryAudioStreamName = IsTransmitter
-                ? new StringFeedback(() => String.Empty)
-                : new StringFeedback(RouteNameKey,
-                    () => _current != null ? _current.AudioName.StringValue : NvxGlobalRouter.NoSourceText);
+            _currentSecondaryAudioStreamId = new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
+            _currentSecondaryAudioStreamName = new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
 
             Feedbacks.Add(CurrentSecondaryAudioStreamId);
             Feedbacks.Add(CurrentSecondaryAudioStreamName);
@@ -53,12 +46,12 @@ namespace NvxEpi.Entities.Streams.Audio
 
         private ISecondaryAudioStream GetCurrentAudioStream()
         {
-            if (!IsStreamingSecondaryAudio.BoolValue)
+            if (string.IsNullOrEmpty(RxAudioAddress.StringValue) || RxAudioAddress.StringValue.Equals("0.0.0.0"))
                 return null;
 
-            var result = _transmitters
+            var result = _audioTransmitters
                 .FirstOrDefault(
-                    x => x.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
+                    x => x.TxAudioAddress.StringValue.Equals(RxAudioAddress.StringValue));
 
             if (result != null)
                 return result;
@@ -66,12 +59,11 @@ namespace NvxEpi.Entities.Streams.Audio
             result = DeviceManager
                 .AllDevices
                 .OfType<ISecondaryAudioStream>()
-                .Where(t => t.IsTransmitter)
                 .FirstOrDefault(
-                    tx => tx.SecondaryAudioAddress.StringValue.Equals(SecondaryAudioAddress.StringValue));
+                    tx => tx.TxAudioAddress.StringValue.Equals(RxAudioAddress.StringValue));
 
             if (result != null)
-                _transmitters.Add(result);
+                _audioTransmitters.Add(result);
 
             return result;      
         }
@@ -81,12 +73,12 @@ namespace NvxEpi.Entities.Streams.Audio
             IsOnline.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
             IsStreamingSecondaryAudio.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
             SecondaryAudioStreamStatus.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
-            SecondaryAudioAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
+            RxAudioAddress.OutputChange += (sender, args) => UpdateCurrentAudioRoute();
         }
 
         private void UpdateCurrentAudioRoute()
         {
-            if (!IsOnline.BoolValue || IsTransmitter)
+            if (!IsOnline.BoolValue)
                 return;
 
             try

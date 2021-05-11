@@ -1,6 +1,7 @@
 ﻿using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Services.Feedback;
+using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Entities.Hdmi.Input
 {
@@ -14,9 +15,13 @@ namespace NvxEpi.Entities.Hdmi.Input
             var sync = Hdmi2SyncDetectedFeedback.GetFeedback(device.Hardware);
             _sync.Add(2, sync);
 
+            //TODO
+            var inputResolution = new StringFeedback(() => string.Empty);
+            _currentResolution.Add(2, inputResolution);
+
             Feedbacks.Add(capability);
             Feedbacks.Add(sync);
-            Feedbacks.Add(Hdmi2HdcpCapabilityFeedback.GetFeedback(device.Hardware));
+            Feedbacks.Add(inputResolution);
         }
     }
 }

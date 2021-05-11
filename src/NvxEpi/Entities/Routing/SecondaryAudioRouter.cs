@@ -4,6 +4,7 @@ using System.Linq;
 using Crestron.SimplSharp;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Services.InputSwitching;
@@ -23,14 +24,13 @@ namespace NvxEpi.Entities.Routing
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
                 .OfType<INvxDevice>()
-                .Where(x => x.IsTransmitter)
                 .ToList()
                 .ForEach(tx =>
                 {
-                    var stream = tx as ISecondaryAudioStream;
+                    var stream = tx as ISecondaryAudioStreamWithHardware;
                     if (stream == null)
                         return;
-        
+
                     var streamRoutingPort = tx.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
                     if (streamRoutingPort == null)
                         return;
@@ -48,11 +48,10 @@ namespace NvxEpi.Entities.Routing
             AddPreActivationAction(() => DeviceManager
                 .AllDevices
                 .OfType<INvxDevice>()
-                .Where(x => !x.IsTransmitter)
                 .ToList()
                 .ForEach(rx =>
                 {
-                    var stream = rx as ISecondaryAudioStream;
+                    var stream = rx as ISecondaryAudioStreamWithHardware;
                     if (stream == null)
                         return;
 
@@ -85,7 +84,12 @@ namespace NvxEpi.Entities.Routing
                 };
             }
 
-            CheckDictionaries();
+            if (_transmitters == null)
+                _transmitters = GetTransmitterDictionary();
+
+            if (_receivers == null)
+                _receivers = GetReceiverDictionary();
+
             return base.CustomActivate();
         }
 
@@ -96,14 +100,15 @@ namespace NvxEpi.Entities.Routing
         {
             try
             {
+                Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", inputSelector, outputSelector);
                 if (!signalType.Has(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include audio");
 
-                var rx = outputSelector as ISecondaryAudioStream;
+                var rx = outputSelector as ISecondaryAudioStreamWithHardware;
                 if (rx == null)
                     throw new ArgumentNullException("rx");
 
-                rx.RouteSecondaryAudio(inputSelector as ISecondaryAudioStream);
+                rx.RouteSecondaryAudio(inputSelector as ISecondaryAudioStreamWithHardware);
             }
             catch (Exception ex)
             {
@@ -112,18 +117,19 @@ namespace NvxEpi.Entities.Routing
             }
         }
 
-        public static string GetInputPortKeyForTx(ISecondaryAudioStream tx)
+        public static string GetInputPortKeyForTx(ISecondaryAudioStreamWithHardware tx)
         {
-            return "SecondaryAudio" + "--" + tx.Key;
+            return tx.Key + "-SecondaryAudio";
         }
 
-        public static string GetOutputPortKeyForRx(ISecondaryAudioStream rx)
+        public static string GetOutputPortKeyForRx(ISecondaryAudioStreamWithHardware rx)
         {
-            return "SecondaryAudio" + "--" + rx.Key;
+            return rx.Key + "-SecondaryAudioOutput";
         }
 
         public static void Route(int txId, int rxId)
         {
+            Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txId, rxId);
             if (rxId == 0)
                 return;
 
@@ -140,29 +146,25 @@ namespace NvxEpi.Entities.Routing
             Route(txId, rx);
         }
 
-        public static void Route(int txId, ISecondaryAudioStream rx)
+        public static void Route(int txId, ISecondaryAudioStreamWithHardware rx)
         {
-            if (rx.IsTransmitter)
-                throw new ArgumentException("rx device is transmitter");
-
+            Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txId, rx.RxAudioAddress);
             if (txId == 0)
             {
                 rx.ClearSecondaryStream();
                 return;
             }
 
-            var tx = _receivers.Values.FirstOrDefault(x => x.DeviceId == txId);
+            var tx = _transmitters.Values.FirstOrDefault(x => x.DeviceId == txId);
             if (tx == null)
                 return;
 
             rx.RouteSecondaryAudio(tx);
         }
 
-        public static void Route(string txName, ISecondaryAudioStream rx)
+        public static void Route(string txName, ISecondaryAudioStreamWithHardware rx)
         {
-            if (rx.IsTransmitter)
-                throw new ArgumentException("rx device is transmitter");
-
+            Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route: {0} {1}", txName, rx.RxAudioAddress);
             if (String.IsNullOrEmpty(txName))
                 return;
 
@@ -172,7 +174,7 @@ namespace NvxEpi.Entities.Routing
                 return;
             }
 
-            ISecondaryAudioStream txByName;
+            ISecondaryAudioStreamWithHardware txByName;
             if (_transmitters.TryGetValue(txName, out txByName))
             {
                 rx.RouteSecondaryAudio(txByName);
@@ -190,34 +192,42 @@ namespace NvxEpi.Entities.Routing
         }
 
         private static readonly CCriticalSection _lock = new CCriticalSection();
-        private static Dictionary<string, ISecondaryAudioStream> _transmitters;
-        private static Dictionary<string, ISecondaryAudioStream> _receivers;
+        private static Dictionary<string, ISecondaryAudioStreamWithHardware> _transmitters;
+        private static Dictionary<string, ISecondaryAudioStreamWithHardware> _receivers;
 
-        private static void CheckDictionaries()
+        private static Dictionary<string, ISecondaryAudioStreamWithHardware> GetTransmitterDictionary()
         {
             try
             {
                 _lock.Enter();
-                if (_transmitters == null)
+                var dict = new Dictionary<string, ISecondaryAudioStreamWithHardware>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStreamWithHardware>())
                 {
-                    _transmitters = DeviceManager
-                        .AllDevices
-                        .OfType<ISecondaryAudioStream>()
-                        .Where(x => x.IsTransmitter)
-                        .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
+                    dict.Add(device.Name, device);
                 }
 
-                if (_receivers != null) return;
-
-                _receivers = DeviceManager
-                    .AllDevices
-                    .OfType<ISecondaryAudioStream>()
-                    .Where(x => x.IsTransmitter)
-                    .ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
+                return dict;
             }
-            catch (Exception ex)
+            finally
             {
-                Debug.Console(0, NvxGlobalRouter.Instance.SecondaryAudioRouter, "There was an error building the dictionaries: {1}\n{2}", ex.Message, ex.StackTrace);
+                _lock.Leave();
+            }
+        }
+
+        private static Dictionary<string, ISecondaryAudioStreamWithHardware> GetReceiverDictionary()
+        {
+            try
+            {
+                _lock.Enter();
+
+                var dict = new Dictionary<string, ISecondaryAudioStreamWithHardware>(StringComparer.OrdinalIgnoreCase);
+                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStreamWithHardware>())
+                {
+                    dict.Add(device.Name, device);
+                }
+
+                return dict;
             }
             finally
             {

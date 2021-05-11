@@ -30,7 +30,7 @@ namespace NvxEpi.Entities.Streams.Video
             _currentStreamName = IsTransmitter
                 ? new StringFeedback(() => String.Empty)
                 : new StringFeedback(RouteNameKey,
-                    () => _current != null ? _current.VideoName.StringValue : NvxGlobalRouter.NoSourceText);
+                    () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
 
             Feedbacks.Add(_currentStreamId);
             Feedbacks.Add(_currentStreamName);
@@ -78,7 +78,7 @@ namespace NvxEpi.Entities.Streams.Video
 
         private IStream GetCurrentStream()
         {
-            if (!IsStreamingVideo.BoolValue)
+            if (string.IsNullOrEmpty(MulticastAddress.StringValue) || MulticastAddress.StringValue.Equals("0.0.0.0"))
                 return null;
 
             var result = _transmitters
