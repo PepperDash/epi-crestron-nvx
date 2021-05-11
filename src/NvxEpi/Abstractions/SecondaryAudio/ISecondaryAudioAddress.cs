@@ -1,6 +1,6 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Device
+namespace NvxEpi.Abstractions.SecondaryAudio
 {
     public interface ISecondaryAudioAddress
     {

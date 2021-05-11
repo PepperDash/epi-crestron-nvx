@@ -2,17 +2,12 @@
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
-<<<<<<< HEAD
-=======
-using Crestron.SimplSharpPro.DM;
-using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
->>>>>>> hotfix/add-output-resolution-mode
 using NvxEpi.Application.Builder;
 using NvxEpi.Application.Entities;
 using NvxEpi.Application.JoinMap;
 using NvxEpi.Application.Services;
+using NvxEpi.Extensions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -68,9 +63,12 @@ namespace NvxEpi.Application
                 .Values.
                 ToList()
                 .ForEach(DeviceManager.AddDevice);
+
+            _enableAudioBreakawayFeedback = new BoolFeedback(() => _enableAudioBreakaway);
         }
 
-        public bool EnableAudioBreakaway { get; private set; }
+        private bool _enableAudioBreakaway;
+        private readonly BoolFeedback _enableAudioBreakawayFeedback;
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -78,22 +76,23 @@ namespace NvxEpi.Application
             if (bridge != null)
                 bridge.AddJoinMap(Key, joinMap);
 
+            _enableAudioBreakawayFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableAudioBreakaway.JoinNumber]);
             trilist.SetBoolSigAction(joinMap.EnableAudioBreakaway.JoinNumber,
                 value =>
                     {
-                        if (EnableAudioBreakaway == value)
+                        if (_enableAudioBreakaway == value)
                             return;
 
                         try
                         {
                             _lock.Enter();
-                            EnableAudioBreakaway = value;
-                            Debug.Console(1, this, "Setting EnableAudioBreakaway to : {0}", EnableAudioBreakaway);
+                            _enableAudioBreakaway = value;
+                            Debug.Console(1, this, "Setting EnableAudioBreakaway to : {0}", _enableAudioBreakaway);
 
                             var audioFollowsVideoHandler = new AudioFollowsVideoHandler(
                                 _transmitters.ToDictionary(x => x.Key, x => x.Value.Device), _receivers.ToDictionary(x => x.Key, x => x.Value.Device));
 
-                            if (EnableAudioBreakaway)
+                            if (_enableAudioBreakaway)
                                 audioFollowsVideoHandler.SetAudioFollowsVideoFalse();
                             else
                                 audioFollowsVideoHandler.SetAudioFollowsVideoTrue();
@@ -101,26 +100,14 @@ namespace NvxEpi.Application
                         finally
                         {
                             _lock.Leave();
+                            _enableAudioBreakawayFeedback.FireUpdate();
                         }
                     });
 
-<<<<<<< HEAD
             LinkTransmitters(trilist, joinMap);
             LinkReceivers(trilist, joinMap);
             LinkAudioTransmitters(trilist, joinMap);
             LinkAudioReceivers(trilist, joinMap);
-=======
-            LinkOnlineStatus(trilist, joinMap);
-            LinkVideoRoutes(trilist, joinMap);
-            LinkAudioRoutes(trilist, joinMap);
-            LinkSyncDetectedStatus(trilist, joinMap);
-            LinkDeviceNames(trilist, joinMap);
-            LinkHdcpCapability(trilist, joinMap);
-            LinkOutputDisabledFeedback(trilist, joinMap);
-            LinkHorizontalResolution(trilist, joinMap);
-            LinkRxComPorts(trilist, joinMap);
-            LinkVideoOutputAspectResolutionMode(trilist, joinMap);
->>>>>>> hotfix/add-output-resolution-mode
         }
 
         private void LinkTransmitters(BasicTriList trilist, NvxApplicationJoinMap joinMap)
@@ -197,6 +184,11 @@ namespace NvxEpi.Application
                 item.DeviceActual.CurrentVideoRouteName.LinkInputSig(
                     trilist.StringInput[(uint) ( joinMap.OutputCurrentVideoInputNames.JoinNumber + item.DeviceId - 1 )]);
 
+
+                Debug.Console(1, this, "Linking {0} OutputAspectRatioMode to join {1}", item.DeviceActual.Key, joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1);
+                item.DeviceActual.AspectRatioMode.LinkInputSig(
+                    trilist.UShortInput[(uint)(joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1)]);
+
                 var rx = item.DeviceActual;
                 trilist.SetUShortSigAction((uint) ( joinMap.OutputVideo.JoinNumber + item.DeviceId - 1 ),
                     s =>
@@ -209,54 +201,26 @@ namespace NvxEpi.Application
                                 if (!_transmitters.TryGetValue(s, out device))
                                     return;
 
-                                rx.Display.ReleaseAndMakeRoute(device.Source, EnableAudioBreakaway ? eRoutingSignalType.Video : eRoutingSignalType.AudioVideo);   
+                                rx.Display.ReleaseAndMakeRoute(device.Source, _enableAudioBreakaway ? eRoutingSignalType.Video : eRoutingSignalType.AudioVideo);   
                             }
                         });
+
+                var hdmiOut = item.DeviceActual.Device as IHdmiOutput;
+                if (hdmiOut != null)
+                {
+                    trilist.SetUShortSigAction((uint) ( joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1 ),
+                        hdmiOut.SetVideoAspectRatioMode);
+                }
             }
         }
 
-<<<<<<< HEAD
         private void LinkAudioTransmitters(BasicTriList trilist, NvxApplicationJoinMap joinMap)
-=======
-        private void LinkVideoOutputAspectResolutionMode(BasicTriList trilist, NvxApplicationJoinMap joinMap)
-        {
-            for (var x = 1; x <= joinMap.OutputAspectRatioMode.JoinSpan; x++)
-            {
-                INvxDevice device;
-                if (!_receivers.TryGetValue(x, out device))
-                    continue;
-
-                var hdmiOut = device as IHdmiOutput;
-                if (hdmiOut == null)
-                    continue;
-
-                var feedback =
-                    device.Feedbacks[VideoAspectRatioModeFeedback.Key] as IntFeedback;
-                if (feedback == null)
-                    continue;
-
-                var index = (uint)x - 1;
-                Debug.Console(1,
-                    device,
-                    "Linking Feedback:{0} to Join:{1}",
-                    feedback.Key,
-                    joinMap.OutputAspectRatioMode.JoinNumber + index);
-
-                feedback.LinkInputSig(trilist.UShortInput[joinMap.OutputAspectRatioMode.JoinNumber + index]);
-                trilist.SetUShortSigAction(joinMap.OutputAspectRatioMode.JoinNumber + index,
-                    hdmiOut.SetVideoAspectRatioMode);
-            }
-        }
-
-        private void LinkRxComPorts(BasicTriList trilist, NvxApplicationJoinMap joinMap)
->>>>>>> hotfix/add-output-resolution-mode
         {
             foreach (var item in _audioTransmitters.Select(x => new { DeviceId = x.Key, DeviceActual = x.Value }))
             {
                 Debug.Console(1, this, "Linking {0} Input Audio Name to join {1}", item.DeviceActual.Key, joinMap.InputAudioNames.JoinNumber + item.DeviceId - 1);
                 item.DeviceActual.AudioName.LinkInputSig(
                     trilist.StringInput[(uint)(joinMap.InputAudioNames.JoinNumber + item.DeviceId - 1)]);
-
             }
         }
 

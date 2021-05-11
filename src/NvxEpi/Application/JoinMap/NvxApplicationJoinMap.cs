@@ -22,34 +22,7 @@ namespace NvxEpi.Application.JoinMap
                     JoinType = eJoinType.Digital
                 });
 
-        [JoinName("OutputAspectRatioMode")]
-        public JoinDataComplete OutputAspectRatioMode = new JoinDataComplete
-            (
-            new JoinData
-            {
-                JoinNumber = 3401,
-                JoinSpan = 32
-            },
-            new JoinMetadata
-            {
-                Description = "Analog value of Aspect Ratio Mode on HDMI output",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Analog
-            });
 
-        [JoinName("OutputNames")] public JoinDataComplete OutputNames;
-        [JoinName("OutputUsb")] public JoinDataComplete OutputUsb;
-        [JoinName("OutputVideo")] public JoinDataComplete OutputVideo;
-        [JoinName("OutputVideoNames")] public JoinDataComplete OutputVideoNames;
-
-        [JoinName("ReceiverSerialPorts")] public JoinDataComplete ReceiverSerialPorts = new JoinDataComplete(
-            new JoinData
-                {
-                    JoinNumber = 3901,
-                    JoinSpan = 32
-                },
-            
-        //Video Transmitters
         [JoinName("HdcpSupportCapability")] public JoinDataComplete HdcpSupportCapability =
             new JoinDataComplete(new JoinData {JoinNumber = 1201, JoinSpan = 32},
                 new JoinMetadata
@@ -104,6 +77,20 @@ namespace NvxEpi.Application.JoinMap
                         JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                         JoinType = eJoinType.Serial
                     });
+
+        [JoinName("OutputAspectRatioMode")] public JoinDataComplete OutputAspectRatioMode = new JoinDataComplete
+            (
+            new JoinData
+                {
+                    JoinNumber = 3401,
+                    JoinSpan = 32
+                },
+            new JoinMetadata
+                {
+                    Description = "Analog value of Aspect Ratio Mode on HDMI output",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Analog
+                });
 
         [JoinName("OutputAudio")] public JoinDataComplete OutputAudio =
             new JoinDataComplete(new JoinData {JoinNumber = 301, JoinSpan = 32},
@@ -197,8 +184,6 @@ namespace NvxEpi.Application.JoinMap
                         JoinCapabilities = eJoinCapabilities.ToSIMPL,
                         JoinType = eJoinType.Serial
                     });
-
-        //[JoinName("OutputUsb")] public JoinDataComplete OutputUsb;
 
         [JoinName("OutputVideo")] public JoinDataComplete OutputVideo =
             new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 32},

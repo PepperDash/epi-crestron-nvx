@@ -4,8 +4,8 @@ using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Entities.Config;
-using NvxEpi.Entities.Routing;
+using NvxEpi.Features.Config;
+using NvxEpi.Features.Routing;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 

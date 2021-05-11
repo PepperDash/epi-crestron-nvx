@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Aggregates;
+using NvxEpi.Devices;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 

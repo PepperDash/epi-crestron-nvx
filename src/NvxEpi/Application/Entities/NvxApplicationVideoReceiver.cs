@@ -4,8 +4,8 @@ using System.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Application.Config;
-using NvxEpi.Entities.Routing;
-using NvxEpi.Entities.Streams.Video;
+using NvxEpi.Features.Routing;
+using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Essentials.Core;
 
@@ -24,6 +24,7 @@ namespace NvxEpi.Application.Entities
         public BoolFeedback DisabledByHdcp { get; private set; }
         public IntFeedback HorizontalResolution { get; private set; }
         public StringFeedback EdidManufacturer { get; private set; }
+        public IntFeedback AspectRatioMode { get; private set; }
 
         public NvxApplicationVideoReceiver(string key, NvxApplicationDeviceVideoConfig config, int deviceId, IEnumerable<NvxApplicationVideoTransmitter> transmitters) : base(key)
         {
@@ -97,6 +98,7 @@ namespace NvxEpi.Application.Entities
                 {
                     DisabledByHdcp = new BoolFeedback(() => false);
                     HorizontalResolution = new IntFeedback(() => 0);
+                    AspectRatioMode = new IntFeedback(() => 0);
                     EdidManufacturer = new StringFeedback(() => string.Empty);
 
                     var hdmiOut = Device as IHdmiOutput;
@@ -106,6 +108,7 @@ namespace NvxEpi.Application.Entities
                     DisabledByHdcp = hdmiOut.DisabledByHdcp;
                     HorizontalResolution = hdmiOut.HorizontalResolution;
                     EdidManufacturer = hdmiOut.EdidManufacturer;
+                    AspectRatioMode = hdmiOut.VideoAspectRatioMode;
                 });
 
         }

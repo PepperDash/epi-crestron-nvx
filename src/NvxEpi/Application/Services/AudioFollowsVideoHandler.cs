@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NvxEpi.Abstractions;
-using NvxEpi.Entities.Routing;
+using NvxEpi.Features.Routing;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Application.Services

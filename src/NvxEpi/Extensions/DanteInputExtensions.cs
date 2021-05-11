@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Dante;
 using NvxEpi.Abstractions.InputSwitching;
@@ -35,7 +36,7 @@ namespace NvxEpi.Extensions
                 case DmNvxControl.eAudioSource.DanteAes67Audio:
                     throw new NotImplementedException();
                 default:
-                    throw new ArgumentOutOfRangeException(input.ToString());
+                    throw new ArgumentOutOfRangeException(input.ToString(CultureInfo.InvariantCulture));
             }
         }
 
