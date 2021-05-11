@@ -5,7 +5,6 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
@@ -30,7 +29,6 @@ namespace NvxEpi.Aggregates
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
-        private readonly bool _isTransmitter;
 
         public Nvx36X(DeviceConfig config, DmNvx36x hardware)
             : base(config, hardware)
@@ -38,10 +36,7 @@ namespace NvxEpi.Aggregates
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
 
-            _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
-                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
-
-            _hdmiInput = new HdmiInput2(this);
+            _hdmiInput = new HdmiInput1(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
             RegisterForOnlineFeedback(hardware, props);
@@ -72,6 +67,11 @@ namespace NvxEpi.Aggregates
         public IntFeedback HorizontalResolution
         {
             get { return _hdmiOutput.HorizontalResolution; }
+        }
+
+        public StringFeedback EdidManufacturer
+        {
+            get { return _hdmiOutput.EdidManufacturer; }
         }
 
         public CrestronCollection<IROutputPort> IROutputPorts
@@ -156,7 +156,6 @@ namespace NvxEpi.Aggregates
         private void AddRoutingPorts()
         {
             HdmiInput1Port.AddRoutingPort(this);
-            HdmiInput2Port.AddRoutingPort(this);
             SwitcherForHdmiOutput.AddRoutingPort(this);
 
             if (IsTransmitter)
@@ -188,11 +187,6 @@ namespace NvxEpi.Aggregates
                     else
                         Hardware.SetRxDefaults(props);
                 };
-        }
-
-        public override bool IsTransmitter
-        {
-            get { return _isTransmitter; }
         }
     }
 }

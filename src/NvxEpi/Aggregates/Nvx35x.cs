@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
@@ -22,22 +23,18 @@ using PepperDash.Essentials.Core.Config;
 namespace NvxEpi.Aggregates
 {
     public class Nvx35X : NvxBaseDevice, IComPorts, IIROutputPorts,
-        IUsbStream, IHdmiInput, IVideowallMode, IRouting, ICec
+        IUsbStream, IHdmiInput, IVideowallMode, IRouting, ICec, INvx35XDeviceWithHardware
     {
         private readonly DmNvx35x _hardware;
         private readonly IHdmiInput _hdmiInput;
         private readonly IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
-        private readonly bool _isTransmitter;
 
         public Nvx35X(DeviceConfig config, DmNvx35x hardware)
             : base(config, hardware)
         {
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _hardware = hardware;
-
-            _isTransmitter = !String.IsNullOrEmpty(props.Mode) &&
-                             props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
 
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
@@ -70,6 +67,11 @@ namespace NvxEpi.Aggregates
         public IntFeedback HorizontalResolution
         {
             get { return _hdmiOutput.HorizontalResolution; }
+        }
+
+        public StringFeedback EdidManufacturer
+        {
+            get { return _hdmiOutput.EdidManufacturer; }
         }
 
         public CrestronCollection<IROutputPort> IROutputPorts
@@ -186,11 +188,6 @@ namespace NvxEpi.Aggregates
                     else
                         Hardware.SetRxDefaults(props);
                 };
-        }
-
-        public override bool IsTransmitter
-        {
-            get { return _isTransmitter; }
         }
     }
 }

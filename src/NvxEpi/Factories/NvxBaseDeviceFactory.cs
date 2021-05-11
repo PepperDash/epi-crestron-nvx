@@ -15,7 +15,7 @@ namespace NvxEpi.Factories
     {
         public const string MinumumEssentialsVersion = "1.8.0";
 
-        protected static IDictionary<string, CType> _types;
+        private static IDictionary<string, CType> _types;
 
         static NvxBaseDeviceFactory()
         {
@@ -23,7 +23,7 @@ namespace NvxEpi.Factories
                 DeviceManager.AddDevice(NvxGlobalRouter.Instance); 
         }
 
-        public static DmNvxBaseClass BuildDeviceFromConfig(DeviceConfig config)
+        protected static DmNvxBaseClass BuildDeviceFromConfig(DeviceConfig config)
         {
             if (_types == null)
             {
