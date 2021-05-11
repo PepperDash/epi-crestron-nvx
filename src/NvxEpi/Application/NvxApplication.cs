@@ -2,6 +2,13 @@
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+<<<<<<< HEAD
+=======
+using Crestron.SimplSharpPro.DM;
+using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Abstractions.HdmiOutput;
+>>>>>>> hotfix/add-output-resolution-mode
 using NvxEpi.Application.Builder;
 using NvxEpi.Application.Entities;
 using NvxEpi.Application.JoinMap;
@@ -97,10 +104,23 @@ namespace NvxEpi.Application
                         }
                     });
 
+<<<<<<< HEAD
             LinkTransmitters(trilist, joinMap);
             LinkReceivers(trilist, joinMap);
             LinkAudioTransmitters(trilist, joinMap);
             LinkAudioReceivers(trilist, joinMap);
+=======
+            LinkOnlineStatus(trilist, joinMap);
+            LinkVideoRoutes(trilist, joinMap);
+            LinkAudioRoutes(trilist, joinMap);
+            LinkSyncDetectedStatus(trilist, joinMap);
+            LinkDeviceNames(trilist, joinMap);
+            LinkHdcpCapability(trilist, joinMap);
+            LinkOutputDisabledFeedback(trilist, joinMap);
+            LinkHorizontalResolution(trilist, joinMap);
+            LinkRxComPorts(trilist, joinMap);
+            LinkVideoOutputAspectResolutionMode(trilist, joinMap);
+>>>>>>> hotfix/add-output-resolution-mode
         }
 
         private void LinkTransmitters(BasicTriList trilist, NvxApplicationJoinMap joinMap)
@@ -195,7 +215,41 @@ namespace NvxEpi.Application
             }
         }
 
+<<<<<<< HEAD
         private void LinkAudioTransmitters(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+=======
+        private void LinkVideoOutputAspectResolutionMode(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+        {
+            for (var x = 1; x <= joinMap.OutputAspectRatioMode.JoinSpan; x++)
+            {
+                INvxDevice device;
+                if (!_receivers.TryGetValue(x, out device))
+                    continue;
+
+                var hdmiOut = device as IHdmiOutput;
+                if (hdmiOut == null)
+                    continue;
+
+                var feedback =
+                    device.Feedbacks[VideoAspectRatioModeFeedback.Key] as IntFeedback;
+                if (feedback == null)
+                    continue;
+
+                var index = (uint)x - 1;
+                Debug.Console(1,
+                    device,
+                    "Linking Feedback:{0} to Join:{1}",
+                    feedback.Key,
+                    joinMap.OutputAspectRatioMode.JoinNumber + index);
+
+                feedback.LinkInputSig(trilist.UShortInput[joinMap.OutputAspectRatioMode.JoinNumber + index]);
+                trilist.SetUShortSigAction(joinMap.OutputAspectRatioMode.JoinNumber + index,
+                    hdmiOut.SetVideoAspectRatioMode);
+            }
+        }
+
+        private void LinkRxComPorts(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+>>>>>>> hotfix/add-output-resolution-mode
         {
             foreach (var item in _audioTransmitters.Select(x => new { DeviceId = x.Key, DeviceActual = x.Value }))
             {

@@ -8,5 +8,6 @@ namespace NvxEpi.Abstractions.HdmiOutput
         BoolFeedback DisabledByHdcp { get; }
         IntFeedback HorizontalResolution { get; }
         StringFeedback EdidManufacturer { get; }
+        IntFeedback VideoAspectRatioMode { get; }
     }
 }

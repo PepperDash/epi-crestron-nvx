@@ -358,7 +358,20 @@ namespace NvxEpi.JoinMaps
                     Description = "Videowall Mode"
                 });
 
+        [JoinName("Video Aspect Ratio Mode")] public JoinDataComplete VideoAspectRatioMode = new JoinDataComplete(
+            new JoinData
+                {
+                    JoinNumber = 11,
+                    JoinSpan = 1,
+                },
+            new JoinMetadata
+                {
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Analog,
+                    Description = "Video Aspect Ratio Mode"
+                });
+
         public NvxDeviceJoinMap(uint joinStart)
-            : base(joinStart, typeof(NvxDeviceJoinMap)) { }
+            : base(joinStart, typeof (NvxDeviceJoinMap)) { }
     }
 }

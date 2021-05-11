@@ -108,6 +108,9 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == NaxInputValueFeedback.Key)
                     joinNumber = joinMap.NaxInput.JoinNumber;
 
+                if (feedback.Key == VideoAspectRatioModeFeedback.Key)
+                    joinNumber = joinMap.VideoAspectRatioMode.JoinNumber;
+
                 if (feedback.Key == HorizontalResolutionFeedback.Key) { }
 
                 if (joinNumber > 0)
@@ -190,7 +193,7 @@ namespace NvxEpi.Services.Bridge
             if (_device.IsTransmitter) return;
 
             var videowallDevice = _device as IVideowallMode;
-            var videowallMode = new BoolFeedback(() => videowallDevice == null);
+            var videowallMode = new BoolFeedback(() => videowallDevice != null);
             videowallMode.LinkInputSig(trilist.BooleanInput[joinMap.VideowallMode.JoinNumber]);
             videowallMode.FireUpdate();
 

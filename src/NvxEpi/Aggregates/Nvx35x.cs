@@ -73,6 +73,10 @@ namespace NvxEpi.Aggregates
         {
             get { return _hdmiOutput.EdidManufacturer; }
         }
+        public IntFeedback VideoAspectRatioMode
+        {
+            get { return _hdmiOutput.VideoAspectRatioMode; }
+        }
 
         public CrestronCollection<IROutputPort> IROutputPorts
         {

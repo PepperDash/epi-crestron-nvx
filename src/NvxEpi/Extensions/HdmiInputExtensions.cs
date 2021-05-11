@@ -15,7 +15,7 @@ namespace NvxEpi.Extensions
                     throw new NotSupportedException("hdmi1");
 
                 var capabilityToSet = (eHdcpCapabilityType) capability;
-                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}", capabilityToSet.ToString());
+                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
                 device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
             }
             catch (ArgumentOutOfRangeException ex)
@@ -39,7 +39,7 @@ namespace NvxEpi.Extensions
                 if (device.Hardware.HdmiIn[1] == null)
                     throw new NotSupportedException("hdmi1");
 
-                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}", capability.ToString());
+                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capability.ToString());
                 device.Hardware.HdmiIn[1].HdcpCapability = capability;
             }
             catch (ArgumentOutOfRangeException ex)
@@ -65,24 +65,8 @@ namespace NvxEpi.Extensions
 
                 var capabilityToSet = (eHdcpCapabilityType) capability;
 
-                Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}", capabilityToSet.ToString());
-                switch (capabilityToSet)
-                {
-                    case eHdcpCapabilityType.HdcpSupportOff:
-                        device.Hardware.HdmiIn[2].HdcpCapability = capabilityToSet;
-                        break;
-                    case eHdcpCapabilityType.HdcpAutoSupport:
-                        device.Hardware.HdmiIn[2].HdcpCapability = capabilityToSet;
-                        break;
-                    case eHdcpCapabilityType.Hdcp1xSupport:
-                        device.Hardware.HdmiIn[2].HdcpCapability = capabilityToSet;
-                        break;
-                    case eHdcpCapabilityType.Hdcp2_2Support:
-                        device.Hardware.HdmiIn[2].HdcpCapability = capabilityToSet;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}'", capabilityToSet.ToString());
+                device.Hardware.HdmiIn[2].HdcpCapability = capabilityToSet;
             }
             catch (ArgumentOutOfRangeException ex)
             {
@@ -105,7 +89,7 @@ namespace NvxEpi.Extensions
                 if (device.Hardware.HdmiIn[2] == null)
                     throw new NotSupportedException("hdmi1");
 
-                Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}", capability.ToString());
+                Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}'", capability.ToString());
                 device.Hardware.HdmiIn[2].HdcpCapability = capability;
             }
             catch (ArgumentOutOfRangeException ex)

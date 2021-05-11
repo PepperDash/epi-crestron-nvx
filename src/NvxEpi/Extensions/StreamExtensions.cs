@@ -55,7 +55,7 @@ namespace NvxEpi.Extensions
             if (deviceWithHardware == null)
                 return;
 
-            Debug.Console(1, device, "Setting stream: '{0}", url);
+            Debug.Console(1, device, "Setting stream: '{0}'", url);
             deviceWithHardware.Hardware.Control.ServerUrl.StringValue = url;
             deviceWithHardware.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
         }

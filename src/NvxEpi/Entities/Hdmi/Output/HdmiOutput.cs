@@ -10,6 +10,9 @@ namespace NvxEpi.Entities.Hdmi.Output
     public class HdmiOutput : IHdmiOutput
     {
         private readonly INvxDeviceWithHardware _device;
+        private readonly BoolFeedback _disabledByHdcp;
+        private readonly IntFeedback _horizontalResolution;
+        private readonly IntFeedback _videoAspectRatioMode;
 
         public HdmiOutput(INvxDeviceWithHardware device)
         {
@@ -19,8 +22,14 @@ namespace NvxEpi.Entities.Hdmi.Output
             HorizontalResolution = HorizontalResolutionFeedback.GetFeedback(device.Hardware);
             EdidManufacturer = new StringFeedback(() => string.Empty);
 
+            _disabledByHdcp = HdmiOutputDisabledFeedback.GetFeedback(device.Hardware);
+            _horizontalResolution = HorizontalResolutionFeedback.GetFeedback(device.Hardware);
+            _videoAspectRatioMode = VideoAspectRatioModeFeedback.GetFeedback(device.Hardware);
+
             device.Feedbacks.Add(DisabledByHdcp);
             device.Feedbacks.Add(HorizontalResolution);
+            device.Feedbacks.Add(VideoAspectRatioMode);
+            device.Feedbacks.Add(VideoAspectRatioModeFeedbackName.GetFeedback(device.Hardware));
         }
 
         public BoolFeedback DisabledByHdcp { get; private set; }
@@ -33,6 +42,11 @@ namespace NvxEpi.Entities.Hdmi.Output
         public IntFeedback HorizontalResolution { get; private set; }
 
         public StringFeedback EdidManufacturer { get; private set; }
+
+        public IntFeedback VideoAspectRatioMode
+        {
+            get { return _videoAspectRatioMode; }
+        }
 
         public string Key
         {

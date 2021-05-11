@@ -189,6 +189,7 @@
     <Compile Include="Entities\Routing\SecondaryAudioRouter.cs" />
     <Compile Include="Entities\Routing\PrimaryStreamRouter.cs" />
     <Compile Include="Services\Feedback\UsbLocalAddressFeedback.cs" />
+    <Compile Include="Services\Feedback\VideoAspectRatioModeFeedback.cs" />
     <Compile Include="Services\Feedback\VideoInputFeedback.cs" />
     <Compile Include="Services\InputPorts\AnalogAudioInput.cs" />
     <Compile Include="Services\InputPorts\AutomaticInput.cs" />
@@ -233,7 +234,7 @@
     <Compile Include="Extensions\SecondaryAudioExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\VideoInputExtensions.cs" />
-    <Compile Include="Extensions\VideowallModeExtensions.cs" />
+    <Compile Include="Extensions\HdmiOutputExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Feedback\DeviceModeFeedback.cs" />
     <Compile Include="Services\Feedback\StreamUrlFeedback.cs" />
