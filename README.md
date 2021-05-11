@@ -30,7 +30,7 @@ See details section below for detailed description of device properties.
 | 8    | Output Disabled by Hdcp| Output Horizontal Res.   | -                        |
 | 9    | Supports Videowall     | Videowall Mode           | -                        |
 | 10   | -                      | USB Route                | USB Route                |
-| 11   | -                      | -                        | Device Name              |
+| 11   | -                      | AspectRatioMode          | Device Name              |
 | 12   | -                      | -                        | Stream URL               |
 | 13   | -                      | -                        | Multicast Address        |
 | 14   | -                      | -                        | NAX Tx Address           |
