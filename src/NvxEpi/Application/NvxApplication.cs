@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Application.Builder;
 using NvxEpi.Application.JoinMap;
 using NvxEpi.Application.Services;
@@ -175,6 +176,7 @@ namespace NvxEpi.Application
             LinkOutputDisabledFeedback(trilist, joinMap);
             LinkHorizontalResolution(trilist, joinMap);
             LinkRxComPorts(trilist, joinMap);
+            LinkVideoOutputAspectResolutionMode(trilist, joinMap);
         }
 
         private void LinkAudioRoutes(BasicTriList trilist, NvxApplicationJoinMap joinMap)
@@ -442,6 +444,36 @@ namespace NvxEpi.Application
                     feedback.Key,
                     joinMap.OutputHorizontalResolution.JoinNumber + index);
                 feedback.LinkInputSig(trilist.UShortInput[joinMap.OutputHorizontalResolution.JoinNumber + index]);
+            }
+        }
+
+        private void LinkVideoOutputAspectResolutionMode(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+        {
+            for (var x = 1; x <= joinMap.OutputAspectRatioMode.JoinSpan; x++)
+            {
+                INvxDevice device;
+                if (!_receivers.TryGetValue(x, out device))
+                    continue;
+
+                var hdmiOut = device as IHdmiOutput;
+                if (hdmiOut == null)
+                    continue;
+
+                var feedback =
+                    device.Feedbacks[VideoAspectRatioModeFeedback.Key] as IntFeedback;
+                if (feedback == null)
+                    continue;
+
+                var index = (uint)x - 1;
+                Debug.Console(1,
+                    device,
+                    "Linking Feedback:{0} to Join:{1}",
+                    feedback.Key,
+                    joinMap.OutputAspectRatioMode.JoinNumber + index);
+
+                feedback.LinkInputSig(trilist.UShortInput[joinMap.OutputAspectRatioMode.JoinNumber + index]);
+                trilist.SetUShortSigAction(joinMap.OutputAspectRatioMode.JoinNumber + index,
+                    hdmiOut.SetVideoAspectRatioMode);
             }
         }
 
