@@ -41,6 +41,21 @@ namespace NvxEpi.Application.JoinMap
                     JoinType = eJoinType.Analog
                 });
 
+        [JoinName("OutputAspectRatioMode")]
+        public JoinDataComplete OutputAspectRatioMode = new JoinDataComplete
+            (
+            new JoinData
+            {
+                JoinNumber = 3401,
+                JoinSpan = 32
+            },
+            new JoinMetadata
+            {
+                Description = "Analog value of Aspect Ratio Mode on HDMI output",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
         [JoinName("OutputNames")] public JoinDataComplete OutputNames;
         [JoinName("OutputUsb")] public JoinDataComplete OutputUsb;
         [JoinName("OutputVideo")] public JoinDataComplete OutputVideo;
