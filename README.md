@@ -28,7 +28,7 @@ See details section below for detailed description of device properties.
 | 6    | Supports HDMI01        | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
 | 7    | Supports HDMI02        | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
 | 8    | Output Disabled by Hdcp| Output Horizontal Res.   | -                        |
-| 9    | Supports Videowall     | Videowall Mode           | -                        |
+| 9    | Supports HdmiOut       | Videowall Mode           | -                        |
 | 10   | -                      | USB Route                | USB Route                |
 | 11   | -                      | AspectRatioMode          | Device Name              |
 | 12   | -                      | -                        | Stream URL               |
