@@ -10,6 +10,7 @@ using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using Crestron.SimplSharpPro.DM.Streaming;
 
 namespace NvxEpi.Features.Routing
 {
@@ -139,6 +140,7 @@ namespace NvxEpi.Features.Routing
             if (txId == 0)
             {
                 rx.ClearSecondaryStream();
+                rx.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
                 return;
             }
 
@@ -151,6 +153,7 @@ namespace NvxEpi.Features.Routing
             if (txId == 0)
             {
                 rx.ClearSecondaryStream();
+                rx.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
                 return;
             }
 
@@ -170,6 +173,7 @@ namespace NvxEpi.Features.Routing
             if (txName.Equals(NvxGlobalRouter.RouteOff, StringComparison.OrdinalIgnoreCase))
             {
                 rx.ClearSecondaryStream();
+                rx.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
                 return;
             }
 
