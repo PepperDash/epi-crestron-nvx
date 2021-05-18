@@ -38,7 +38,13 @@ namespace NvxEpi.Services.Utilities
 
         public static void RegisterForPluginFeedback(IHasFeedback feedback)
         {
-            foreach (var item in feedback.Feedbacks)
+            if (feedback == null)
+                throw new ArgumentNullException("IHasFeedback");
+
+            if (feedback.Feedbacks == null)
+                throw new NullReferenceException("Feedbacks");
+
+            foreach (var item in feedback.Feedbacks.Where(x => x != null))
             {
                 item.OutputChange += (sender, args) =>
                     {

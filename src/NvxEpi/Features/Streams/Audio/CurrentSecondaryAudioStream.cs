@@ -50,6 +50,7 @@ namespace NvxEpi.Features.Streams.Audio
                 return null;
 
             var result = _audioTransmitters
+                .Where(x => !string.IsNullOrEmpty(x.TxAudioAddress.StringValue))
                 .FirstOrDefault(
                     x => x.TxAudioAddress.StringValue.Equals(RxAudioAddress.StringValue));
 
@@ -59,6 +60,7 @@ namespace NvxEpi.Features.Streams.Audio
             result = DeviceManager
                 .AllDevices
                 .OfType<ISecondaryAudioStream>()
+                .Where(x => !string.IsNullOrEmpty(x.TxAudioAddress.StringValue))
                 .FirstOrDefault(
                     tx => tx.TxAudioAddress.StringValue.Equals(RxAudioAddress.StringValue));
 

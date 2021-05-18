@@ -12,18 +12,21 @@ using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.Utilities;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Devices
 {
     public abstract class NvxBaseDevice : 
-        CrestronGenericBridgeableBaseDevice, 
+        EssentialsBridgeableDevice, 
         ICurrentVideoInput, 
         ICurrentAudioInput, 
         ICurrentStream,
         ICurrentSecondaryAudioStream, 
-        ICurrentNaxInput
+        ICurrentNaxInput,
+        IHasFeedback,
+        IOnline
     {
         private readonly int _deviceId;
 
@@ -54,9 +57,30 @@ namespace NvxEpi.Devices
         }
 
         protected NvxBaseDevice(DeviceConfig config, DmNvxBaseClass hardware)
-            : base(config.Key, config.Name, hardware)
+            : base(config.Key, config.Name)
         {
+            if (hardware == null)
+                throw new ArgumentNullException("hardware");
+
             _hardware = hardware;
+            IsOnline = new BoolFeedback("IsOnline", () => _hardware.IsOnline);
+
+            AddPreActivationAction(() => CrestronInvoke.BeginInvoke(o => hardware.RegisterWithLogging(Key)));
+
+            Feedbacks = new FeedbackCollection<Feedback>();
+            _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
+
+            Feedbacks.AddRange(new Feedback[] 
+                {
+                    IsOnline,
+                    DeviceNameFeedback.GetFeedback(Name),
+                    DeviceIpFeedback.GetFeedback(Hardware),
+                    DeviceHostnameFeedback.GetFeedback(Hardware),
+                    DeviceModeNameFeedback.GetFeedback(Hardware),
+                    DanteInputFeedback.GetFeedback(Hardware),
+                    DanteInputValueFeedback.GetFeedback(Hardware),
+                    DeviceMode
+                });
 
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _deviceId = props.DeviceId;
@@ -87,19 +111,6 @@ namespace NvxEpi.Devices
 
             AutomaticInput.AddRoutingPort(this);
             NoSwitchInput.AddRoutingPort(this);
-
-            _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
-
-            Feedbacks.AddRange(new Feedback[]
-                {
-                    DeviceNameFeedback.GetFeedback(Name),
-                    DeviceIpFeedback.GetFeedback(Hardware),
-                    DeviceHostnameFeedback.GetFeedback(Hardware),
-                    DeviceModeNameFeedback.GetFeedback(Hardware),
-                    DanteInputFeedback.GetFeedback(Hardware),
-                    DanteInputValueFeedback.GetFeedback(Hardware),
-                    DeviceMode
-                });
 
             RegisterForOnlineFeedback(Hardware, props);
         }
@@ -170,7 +181,14 @@ namespace NvxEpi.Devices
         {
             hardware.OnlineStatusChange += (device, args) =>
                 {
-                    Feedbacks.ForEach(f => f.FireUpdate());
+                    Feedbacks.ForEach(f =>
+                    {
+                        if (f == null)
+                            return;
+
+                        f.FireUpdate();
+                    });
+
                     if (!args.DeviceOnLine)
                         return;
 
@@ -242,5 +260,9 @@ namespace NvxEpi.Devices
         {
             get { return _currentVideoStream.MulticastAddress; }
         }
+
+        public FeedbackCollection<Feedback> Feedbacks { get; private set; }
+
+        public BoolFeedback IsOnline { get; private set; }
     }
 }

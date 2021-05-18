@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Routing;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -40,10 +41,15 @@ namespace NvxEpi.Factories
 
             CType nvxDeviceType;
             if (!_types.TryGetValue(type, out nvxDeviceType))
-                throw new NullReferenceException("The type specified in the config file wasn't found");
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Warning, "The type specified '{0}' in the config file wasn't found", config.Type);
+                return null;
+            }
 
             if (props.Control.IpId == null)
                 throw new Exception("The IPID for this device must be defined");
+
+            Debug.Console(0, "Building a type : {0}", nvxDeviceType.Name);
 
             return nvxDeviceType
                 .GetConstructor(new CType[] { typeof(ushort).GetCType(), typeof(CrestronControlSystem) })
