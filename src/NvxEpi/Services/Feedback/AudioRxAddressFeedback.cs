@@ -11,7 +11,7 @@ namespace NvxEpi.Services.Feedback
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device)
         {
-            var feedback = new StringFeedback(Key, () => GetSecondaryAudioFeedbackHelper(device));
+            var feedback = new StringFeedback(Key, () => device.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue);
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
 
@@ -30,21 +30,6 @@ namespace NvxEpi.Services.Feedback
             }
 
             return feedback;
-        }
-
-        public static string GetSecondaryAudioFeedbackHelper(DmNvxBaseClass device)
-        {
-            if (device.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.DmNaxAudio)
-            {
-                return device.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue;
-            }
-            else if (device.DmNaxRouting.DmNaxTransmit != null)
-            {
-                //Audio feedback for this receiver is itself, since it isn't using DmNaxAudio as the source
-                return device.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue;
-            }
-            else
-                return "0.0.0.0";
         }
     }
 }
