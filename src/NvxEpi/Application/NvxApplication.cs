@@ -2,6 +2,7 @@
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Application.Builder;
 using NvxEpi.Application.Entities;
@@ -247,7 +248,10 @@ namespace NvxEpi.Application
                     s =>
                     {
                         if (s == 0)
+                        {
+                            rx.Device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
                             rx.Amp.ReleaseRoute();
+                        }
                         else
                         {
                             NvxApplicationAudioTransmitter device;
