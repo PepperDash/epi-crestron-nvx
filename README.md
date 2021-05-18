@@ -21,20 +21,23 @@ See details section below for detailed description of device properties.
 | Join | Digital                | Analog                   | Serial                   |
 | ---- | ---------------------- | ------------------------ | ------------------------ |
 | 1    | Device Online          | Video Route              | Video Route              |
-| 2    | -                      | Audio Route              | Audio Route              |
+| 2    | Stream Started         | Audio Route              | Audio Route              |
 | 3    | HDMI01 Sync Detected   | Video Input              | Video Input              |
 | 4    | HDMI02 Sync Detected   | Audio Input              | Audio Input              |
-| 5    | -                      | NAX Input                | NAX Input                |
+| 5    | -                      | USB Route                | USB Route                |
 | 6    | Supports HDMI01        | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
 | 7    | Supports HDMI02        | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
-| 8    | Output Disabled by Hdcp| Output Horizontal Res.   | -                        |
-| 9    | Supports HdmiOut       | Videowall Mode           | -                        |
-| 10   | -                      | USB Route                | USB Route                |
-| 11   | -                      | AspectRatioMode          | Device Name              |
-| 12   | -                      | -                        | Stream URL               |
-| 13   | -                      | -                        | Multicast Address        |
-| 14   | -                      | -                        | NAX Tx Address           |
-| 15   | -                      | -                        | NAX Rx Address           |
+| 8    | Output Disabled by Hdcp| Hdmi Output Res.         | Hdmi Output Res.         |
+| 9    | Supports Videowall     | Videowall Mode           | -                        |
+| 10   | -                      | Video Aspect Ratio Mode  | Dante Input              |
+| 11   | -                      | Nax Input                | Device Name              |
+| 12   | Supports Nax           | Nax Route                | Nax Route                |
+| 13   | -                      | Nax Input                | Nax Input                |
+| 14   | -                      | -                        | Stream Url               |
+| 15   | -                      | -                        | Multicast Video Address  |
+| 16   | -                      | -                        | Secondary Audio Address  |
+| 17   | -                      | -                        | NAX Tx Address           |
+| 18   | -                      | -                        | NAX Rx Address           |
 
 ## Join Details
 

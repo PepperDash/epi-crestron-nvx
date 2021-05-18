@@ -33,7 +33,7 @@ namespace NvxEpi.JoinMaps
         [JoinName("Device Name")] public JoinDataComplete DeviceName = new JoinDataComplete(
             new JoinData
                 {
-                    JoinNumber = 13,
+                    JoinNumber = 11,
                     JoinSpan = 1,
                 },
             new JoinMetadata
@@ -148,8 +148,7 @@ namespace NvxEpi.JoinMaps
                     Description = "Hdmi Output Disabled By Hdcp"
                 });
 
-
-        [JoinName("Hdmi Output Resolution")] public JoinDataComplete HdmiOutputResolution = new JoinDataComplete(
+        [JoinName("HDMI Output Resolution")] public JoinDataComplete HdmiOutputResolution = new JoinDataComplete(
             new JoinData
                 {
                     JoinNumber = 8,
@@ -191,7 +190,7 @@ namespace NvxEpi.JoinMaps
         [JoinName("Nax Input")] public JoinDataComplete NaxInput = new JoinDataComplete(
             new JoinData
                 {
-                    JoinNumber = 11,
+                    JoinNumber = 13,
                     JoinSpan = 1
                 },
             new JoinMetadata
