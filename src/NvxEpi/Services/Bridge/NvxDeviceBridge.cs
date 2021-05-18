@@ -6,10 +6,10 @@ using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
-using NvxEpi.Entities.Routing;
-using NvxEpi.Entities.Streams.Audio;
-using NvxEpi.Entities.Streams.Video;
 using NvxEpi.Extensions;
+using NvxEpi.Features.Routing;
+using NvxEpi.Features.Streams.Audio;
+using NvxEpi.Features.Streams.Video;
 using NvxEpi.JoinMaps;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core;
@@ -90,8 +90,23 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == MulticastAddressFeedback.Key)
                     joinNumber = joinMap.MulticastVideoAddress.JoinNumber;
 
-                if (feedback.Key == SecondaryAudioAddressFeedback.Key)
-                    joinNumber = joinMap.MulticastAudioAddress.JoinNumber;
+                if (feedback.Key == AudioTxAddressFeedback.Key)
+                    joinNumber = joinMap.NaxTxAddress.JoinNumber;
+
+                if (feedback.Key == AudioRxAddressFeedback.Key)
+                    joinNumber = joinMap.NaxRxAddress.JoinNumber;
+
+                if (feedback.Key == DanteInputFeedback.Key)
+                    joinNumber = joinMap.DanteInput.JoinNumber;
+
+                if (feedback.Key == DanteInputValueFeedback.Key)
+                    joinNumber = joinMap.DanteInput.JoinNumber;
+
+                if (feedback.Key == NaxInputFeedback.Key)
+                    joinNumber = joinMap.NaxInput.JoinNumber;
+
+                if (feedback.Key == NaxInputValueFeedback.Key)
+                    joinNumber = joinMap.NaxInput.JoinNumber;
 
                 if (feedback.Key == VideoAspectRatioModeFeedback.Key)
                     joinNumber = joinMap.VideoAspectRatioMode.JoinNumber;
@@ -141,6 +156,14 @@ namespace NvxEpi.Services.Bridge
             if (audioInput != null)
                 trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, audioInput.SetAudioInput);
 
+            var naxInput = _device as ICurrentNaxInput;
+            if (naxInput != null)
+                trilist.SetUShortSigAction(joinMap.NaxInput.JoinNumber, naxInput.SetNaxInput);
+
+            var danteInput = _device as ICurrentDanteInput;
+            if (audioInput != null)
+                trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, danteInput.SetDanteInput);
+
             var stream = _device as IStream;
             if (stream != null)
                 trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, stream.SetStreamUrl);
@@ -148,16 +171,17 @@ namespace NvxEpi.Services.Bridge
 
         private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
         {
-            if (_device.IsTransmitter) return;
-
-            var stream = _device as IStream;
-            if (stream != null)
+            if (!_device.IsTransmitter)
             {
-                trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, source => PrimaryStreamRouter.Route(source, stream));
-                trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber,
-                    name => PrimaryStreamRouter.Route(name, stream));
+                var stream = _device as IStream;
+                if (stream != null)
+                {
+                    trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, source => PrimaryStreamRouter.Route(source, stream));
+                    trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber,
+                        name => PrimaryStreamRouter.Route(name, stream));
+                }
             }
-            var secondaryAudio = _device as ISecondaryAudioStream;
+            var secondaryAudio = _device as ISecondaryAudioStreamWithHardware;
             if (secondaryAudio == null) return;
             trilist.SetUShortSigAction(joinMap.AudioRoute.JoinNumber, source => SecondaryAudioRouter.Route(source, secondaryAudio));
             trilist.SetStringSigAction(joinMap.AudioRoute.JoinNumber,

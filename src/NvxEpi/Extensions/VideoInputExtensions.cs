@@ -32,18 +32,12 @@ namespace NvxEpi.Extensions
 
         public static void SetVideoToHdmiInput1(this ICurrentVideoInput device)
         {
-            if (device.Hardware is DmNvxD3x)
-                return;
-
             Debug.Console(1, device, "Switching Video Input to : 'Hdmi1'");
             device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
         }
 
         public static void SetVideoToHdmiInput2(this ICurrentVideoInput device)
         {
-            if (!(device.Hardware is DmNvx35x))
-                return;
-
             Debug.Console(1, device, "Switching Video Input to : 'Hdmi2'");
             device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
         }
@@ -61,6 +55,12 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Switching Video Input to : 'Stream'");
             device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+        }
+
+        public static void SetVideoToAutomatic(this ICurrentVideoInput device)
+        {
+            Debug.Console(1, device, "Switching Video Input to : 'Automatic'");
+            device.Hardware.Control.EnableAutomaticInputRouting();
         }
     }
 }

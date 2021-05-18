@@ -148,7 +148,6 @@ namespace NvxEpi.JoinMaps
                     Description = "Hdmi Output Disabled By Hdcp"
                 });
 
-
         [JoinName("HDMI Output Resolution")] public JoinDataComplete HdmiOutputResolution = new JoinDataComplete(
             new JoinData
                 {
@@ -265,6 +264,20 @@ namespace NvxEpi.JoinMaps
                     JoinType = eJoinType.Serial,
                     Description = "Stream Url"
                 });
+
+        [JoinName("Dante Input")]
+        public JoinDataComplete DanteInput = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 10,
+                JoinSpan = 1,
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.AnalogSerial,
+                Description = "Dante Input"
+            });
 
         [JoinName("Supports NAX")] public JoinDataComplete SupportsNax = new JoinDataComplete(
             new JoinData
