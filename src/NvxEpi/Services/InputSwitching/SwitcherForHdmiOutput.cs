@@ -88,11 +88,11 @@ namespace NvxEpi.Services.InputSwitching
         public static void AddRoutingPort(ICurrentVideoInput parent)
         {
             parent.OutputPorts.Add(new RoutingOutputPort(
-                Key, 
-                eRoutingSignalType.AudioVideo, 
-                eRoutingPortConnectionType.Hdmi, 
-                new SwitcherForHdmiOutput(parent), 
-                parent));
+                Key,
+                eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi,
+                new SwitcherForHdmiOutput(parent),
+                parent) { Port = parent });
         }
     }
 }
