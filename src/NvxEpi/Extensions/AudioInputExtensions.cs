@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Dante;
 using NvxEpi.Abstractions.InputSwitching;
 using PepperDash.Core;
@@ -80,6 +81,18 @@ namespace NvxEpi.Extensions
         {
             Debug.Console(1, device, "Switching Audio Input to : 'Automatic'");
             device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
+        }
+
+        public static bool AudioInputIsLocal(INvxDeviceWithHardware device)
+        {
+            if (device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.AnalogAudio)
+                return true;
+            if (device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.Input1)
+                return true;
+            if (device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.Input2)
+                return true;
+            else
+                return false;
         }
     }
 }
