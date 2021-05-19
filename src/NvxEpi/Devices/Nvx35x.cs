@@ -22,8 +22,16 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Devices
 {
-    public class Nvx35X : NvxBaseDevice, IComPorts, IIROutputPorts,
-        IUsbStream, IHdmiInput, IVideowallMode, IRouting, ICec, INvx35XDeviceWithHardware
+    public class Nvx35X :
+        NvxBaseDevice, 
+        IComPorts, 
+        IIROutputPorts,
+        IUsbStream, 
+        IHdmiInput, 
+        IVideowallMode, 
+        IRouting, 
+        ICec, 
+        INvx35XDeviceWithHardware
     {
         private readonly DmNvx35x _hardware;
         private readonly IHdmiInput _hdmiInput;

@@ -82,6 +82,7 @@ namespace NvxEpi.Features.Streams.Video
                 return null;
 
             var result = _transmitters
+                .Where(x => !string.IsNullOrEmpty(x.MulticastAddress.StringValue))
                 .FirstOrDefault(
                     x => x.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
 
@@ -92,6 +93,7 @@ namespace NvxEpi.Features.Streams.Video
                 .AllDevices
                 .OfType<IStream>()
                 .Where(t => t.IsTransmitter)
+                .Where(x => !string.IsNullOrEmpty(x.MulticastAddress.StringValue))
                 .FirstOrDefault(
                     tx => tx.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
 

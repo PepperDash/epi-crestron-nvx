@@ -25,13 +25,25 @@ namespace NvxEpi.Application.Builder
 
         public NvxApplicationApplicationBuilder(DeviceConfig config)
         {
+            Transmitters = new Dictionary<int, NvxApplicationDeviceVideoConfig>();
+            Receivers = new Dictionary<int, NvxApplicationDeviceVideoConfig>();
+            AudioTransmitters = new Dictionary<int, NvxApplicationDeviceAudioConfig>();
+            AudioReceivers = new Dictionary<int, NvxApplicationDeviceAudioConfig>();
+
             Key = config.Key;
             var props = JsonConvert.DeserializeObject<NvxApplicationConfig>(config.Properties.ToString());
 
-            Transmitters = props.Transmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
-            Receivers = props.Receivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
-            AudioTransmitters = props.AudioTransmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
-            AudioReceivers = props.AudioReceivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
+            if (props.Transmitters != null)
+                Transmitters = props.Transmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
+            
+            if (props.Receivers != null)
+                Receivers = props.Receivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
+
+            if (props.AudioTransmitters != null)
+                AudioTransmitters = props.AudioTransmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
+
+            if (props.AudioReceivers != null)
+                AudioReceivers = props.AudioReceivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
         }
     }
 }

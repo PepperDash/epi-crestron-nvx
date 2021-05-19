@@ -139,8 +139,12 @@ namespace NvxEpi.Application
                 item.DeviceActual.HdcpCapability.LinkInputSig(
                     trilist.UShortInput[(uint)(joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1)]);
 
-                trilist.SetUShortSigAction((uint)(joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1),
-                    item.DeviceActual.SetHdcpCapability);
+                Debug.Console(1, this, "Linking {0} HdcpSupportState to join {1}", item.DeviceActual.Key, joinMap.HdcpSupportState.JoinNumber + item.DeviceId - 1);
+                item.DeviceActual.HdcpState.LinkInputSig(
+                    trilist.UShortInput[(uint)(joinMap.HdcpSupportState.JoinNumber + item.DeviceId - 1)]);
+
+                trilist.SetUShortSigAction((uint)(joinMap.HdcpSupportState.JoinNumber + item.DeviceId - 1),
+                    item.DeviceActual.SetHdcpState);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
@@ -12,18 +13,23 @@ using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.Utilities;
+using NvxEpi.Services.Messages;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Devices
 {
     public abstract class NvxBaseDevice : 
-        CrestronGenericBridgeableBaseDevice, 
+        EssentialsBridgeableDevice, 
         ICurrentVideoInput, 
         ICurrentAudioInput, 
         ICurrentStream,
         ICurrentSecondaryAudioStream, 
-        ICurrentNaxInput
+        ICurrentNaxInput,
+        IHasFeedback,
+        IOnline
     {
         private readonly int _deviceId;
 
@@ -45,6 +51,8 @@ namespace NvxEpi.Devices
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
 
+        private static IQueue<IQueueMessage> _queue;
+
         static NvxBaseDevice()
         {
             CrestronConsole.AddNewConsoleCommand(s => DeviceConsole.PrintInfoForAllDevices(),
@@ -54,9 +62,33 @@ namespace NvxEpi.Devices
         }
 
         protected NvxBaseDevice(DeviceConfig config, DmNvxBaseClass hardware)
-            : base(config.Key, config.Name, hardware)
+            : base(config.Key, config.Name)
         {
+            if (hardware == null)
+                throw new ArgumentNullException("hardware");
+
+            if (_queue == null)
+                _queue = new GenericQueue("NvxDeviceBuildQueue", Thread.eThreadPriority.LowestPriority, 200);
+
             _hardware = hardware;
+            IsOnline = new BoolFeedback("IsOnline", () => _hardware.IsOnline);
+
+            _queue.Enqueue(new BuildNvxDeviceMessage(Key, hardware));
+
+            Feedbacks = new FeedbackCollection<Feedback>();
+            _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
+
+            Feedbacks.AddRange(new Feedback[] 
+                {
+                    IsOnline,
+                    DeviceNameFeedback.GetFeedback(Name),
+                    DeviceIpFeedback.GetFeedback(Hardware),
+                    DeviceHostnameFeedback.GetFeedback(Hardware),
+                    DeviceModeNameFeedback.GetFeedback(Hardware),
+                    DanteInputFeedback.GetFeedback(Hardware),
+                    DanteInputValueFeedback.GetFeedback(Hardware),
+                    DeviceMode
+                });
 
             var props = NvxDeviceProperties.FromDeviceConfig(config);
             _deviceId = props.DeviceId;
@@ -87,19 +119,6 @@ namespace NvxEpi.Devices
 
             AutomaticInput.AddRoutingPort(this);
             NoSwitchInput.AddRoutingPort(this);
-
-            _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
-
-            Feedbacks.AddRange(new Feedback[]
-                {
-                    DeviceNameFeedback.GetFeedback(Name),
-                    DeviceIpFeedback.GetFeedback(Hardware),
-                    DeviceHostnameFeedback.GetFeedback(Hardware),
-                    DeviceModeNameFeedback.GetFeedback(Hardware),
-                    DanteInputFeedback.GetFeedback(Hardware),
-                    DanteInputValueFeedback.GetFeedback(Hardware),
-                    DeviceMode
-                });
 
             RegisterForOnlineFeedback(Hardware, props);
         }
@@ -170,7 +189,14 @@ namespace NvxEpi.Devices
         {
             hardware.OnlineStatusChange += (device, args) =>
                 {
-                    Feedbacks.ForEach(f => f.FireUpdate());
+                    Feedbacks.ForEach(f =>
+                    {
+                        if (f == null)
+                            return;
+
+                        f.FireUpdate();
+                    });
+
                     if (!args.DeviceOnLine)
                         return;
 
@@ -242,5 +268,9 @@ namespace NvxEpi.Devices
         {
             get { return _currentVideoStream.MulticastAddress; }
         }
+
+        public FeedbackCollection<Feedback> Feedbacks { get; private set; }
+
+        public BoolFeedback IsOnline { get; private set; }
     }
 }
