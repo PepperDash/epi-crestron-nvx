@@ -19,13 +19,13 @@ namespace NvxEpi.Factories
 
             if (_typeNames == null)
             {
-                _typeNames = typeof(DmNvxBaseClass)
-                    .GetCType()
-                    .Assembly
-                    .GetTypes()
-                    .Where(x => x.IsSubclassOf(typeof(DmNvxE3x).GetCType()) && !x.IsAbstract)
-                    .Select(x => x.Name)
-                    .ToList();
+                _typeNames = new List<string>
+                {
+                    "dmnvxe30",
+                    "dmnvxe30c",
+                    "dmnvxe31",
+                    "dmnvxe31c",
+                };
             }
 
             TypeNames = _typeNames.ToList();

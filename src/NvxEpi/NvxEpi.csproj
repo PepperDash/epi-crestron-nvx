@@ -204,6 +204,7 @@
     <Compile Include="Services\InputSwitching\SwitcherForStreamOutput.cs" />
     <Compile Include="Services\InputSwitching\SwitcherForHdmiOutput.cs" />
     <Compile Include="Services\InputSwitching\IHandleInputSwitch.cs" />
+    <Compile Include="Services\Messages\BuildNvxDeviceMessage.cs" />
     <Compile Include="Services\TieLines\TieLineConnector.cs" />
     <Compile Include="Services\Utilities\DeviceConsole.cs" />
     <Compile Include="Enums\Enumeration.cs" />

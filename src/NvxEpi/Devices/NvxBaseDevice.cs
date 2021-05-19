@@ -1,6 +1,7 @@
 ﻿using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
@@ -12,8 +13,10 @@ using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.Utilities;
+using NvxEpi.Services.Messages;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Devices
@@ -48,6 +51,8 @@ namespace NvxEpi.Devices
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
 
+        private static IQueue<IQueueMessage> _queue;
+
         static NvxBaseDevice()
         {
             CrestronConsole.AddNewConsoleCommand(s => DeviceConsole.PrintInfoForAllDevices(),
@@ -62,10 +67,13 @@ namespace NvxEpi.Devices
             if (hardware == null)
                 throw new ArgumentNullException("hardware");
 
+            if (_queue == null)
+                _queue = new GenericQueue("NvxDeviceBuildQueue", Thread.eThreadPriority.LowestPriority, 200);
+
             _hardware = hardware;
             IsOnline = new BoolFeedback("IsOnline", () => _hardware.IsOnline);
 
-            AddPreActivationAction(() => CrestronInvoke.BeginInvoke(o => hardware.RegisterWithLogging(Key)));
+            _queue.Enqueue(new BuildNvxDeviceMessage(Key, hardware));
 
             Feedbacks = new FeedbackCollection<Feedback>();
             _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
