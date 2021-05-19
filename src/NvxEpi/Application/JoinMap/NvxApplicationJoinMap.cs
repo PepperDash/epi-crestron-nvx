@@ -22,9 +22,18 @@ namespace NvxEpi.Application.JoinMap
                     JoinType = eJoinType.Digital
                 });
 
+        [JoinName("HdcpSupportState")]
+        public JoinDataComplete HdcpSupportState =
+            new JoinDataComplete(new JoinData { JoinNumber = 1001, JoinSpan = 200},
+            new JoinMetadata
+            {
+                Description = "Input HDCP Support Capability",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Analog
+            });
 
         [JoinName("HdcpSupportCapability")] public JoinDataComplete HdcpSupportCapability =
-            new JoinDataComplete(new JoinData {JoinNumber = 1201, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 1201, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Input HDCP Support Capability",
@@ -43,7 +52,7 @@ namespace NvxEpi.Application.JoinMap
 
 
         [JoinName("InputCurrentResolution")] public JoinDataComplete InputCurrentResolution =
-            new JoinDataComplete(new JoinData {JoinNumber = 2401, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 2401, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "DM Chassis Input Current Resolution",
@@ -52,7 +61,7 @@ namespace NvxEpi.Application.JoinMap
                     });
 
         [JoinName("InputEndpointOnline")] public JoinDataComplete InputEndpointOnline =
-            new JoinDataComplete(new JoinData {JoinNumber = 501, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 501, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Input Endpoint Online",
@@ -61,7 +70,7 @@ namespace NvxEpi.Application.JoinMap
                     });
 
         [JoinName("InputNames")] public JoinDataComplete InputNames =
-            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Input Name",
@@ -83,7 +92,7 @@ namespace NvxEpi.Application.JoinMap
             new JoinData
                 {
                     JoinNumber = 3401,
-                    JoinSpan = 32
+                    JoinSpan = 200
                 },
             new JoinMetadata
                 {
@@ -93,7 +102,7 @@ namespace NvxEpi.Application.JoinMap
                 });
 
         [JoinName("OutputAudio")] public JoinDataComplete OutputAudio =
-            new JoinDataComplete(new JoinData {JoinNumber = 301, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 301, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "DM Chassis Output Audio Set / Get",
@@ -111,7 +120,7 @@ namespace NvxEpi.Application.JoinMap
                     });
 
         [JoinName("OutputCurrentAudioInputNames")] public JoinDataComplete OutputCurrentAudioInputNames =
-            new JoinDataComplete(new JoinData {JoinNumber = 2201, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 2201, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "DM Chassis Audio Output Currently Routed Video Input Name",
@@ -121,7 +130,7 @@ namespace NvxEpi.Application.JoinMap
 
 
         [JoinName("OutputCurrentVideoInputNames")] public JoinDataComplete OutputCurrentVideoInputNames =
-            new JoinDataComplete(new JoinData {JoinNumber = 2001, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 2001, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Video Output Currently Routed Video Input Name",
@@ -131,7 +140,7 @@ namespace NvxEpi.Application.JoinMap
 
 
         [JoinName("OutputDisabledByHdcp")] public JoinDataComplete OutputDisabledByHdcp =
-            new JoinDataComplete(new JoinData {JoinNumber = 1201, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 1201, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Output Disabled by HDCP",
@@ -154,7 +163,7 @@ namespace NvxEpi.Application.JoinMap
                 });
 
         [JoinName("OutputEndpointOnline")] public JoinDataComplete OutputEndpointOnline =
-            new JoinDataComplete(new JoinData {JoinNumber = 701, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 701, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Output Endpoint Online",
@@ -167,7 +176,7 @@ namespace NvxEpi.Application.JoinMap
             new JoinData
                 {
                     JoinNumber = 3301,
-                    JoinSpan = 32
+                    JoinSpan = 200
                 },
             new JoinMetadata
                 {
@@ -177,7 +186,7 @@ namespace NvxEpi.Application.JoinMap
                 });
 
         [JoinName("OutputNames")] public JoinDataComplete OutputNames =
-            new JoinDataComplete(new JoinData {JoinNumber = 301, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 301, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Output Name",
@@ -186,7 +195,7 @@ namespace NvxEpi.Application.JoinMap
                     });
 
         [JoinName("OutputVideo")] public JoinDataComplete OutputVideo =
-            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Output Video Set / Get",
@@ -207,7 +216,7 @@ namespace NvxEpi.Application.JoinMap
             new JoinData
                 {
                     JoinNumber = 3901,
-                    JoinSpan = 32
+                    JoinSpan = 200
                 },
             new JoinMetadata
                 {
@@ -217,7 +226,7 @@ namespace NvxEpi.Application.JoinMap
                 });
 
         [JoinName("TxAdvancedIsPresent")] public JoinDataComplete TxAdvancedIsPresent =
-            new JoinDataComplete(new JoinData {JoinNumber = 1001, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 1001, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Tx Advanced Is Present",
@@ -226,7 +235,7 @@ namespace NvxEpi.Application.JoinMap
                     });
 
         [JoinName("VideoSyncStatus")] public JoinDataComplete VideoSyncStatus =
-            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 32},
+            new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Input Video Sync",

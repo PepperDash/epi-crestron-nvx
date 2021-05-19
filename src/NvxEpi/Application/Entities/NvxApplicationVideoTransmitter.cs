@@ -5,6 +5,7 @@ using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Application.Config;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
+using NvxEpi.Abstractions.InputSwitching;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
@@ -15,6 +16,7 @@ namespace NvxEpi.Application.Entities
     {
         public int DeviceId { get; private set; }
         public BoolFeedback HdmiSyncDetected { get; private set; }
+        public IntFeedback HdcpState { get; private set; }
         public IntFeedback HdcpCapability { get; private set; }
         public StringFeedback InputResolution { get; private set; }
         public StringFeedback NameFeedback { get; private set; }
@@ -110,8 +112,10 @@ namespace NvxEpi.Application.Entities
         private void LinkInputValues(string routingPortKey)
         {
             HdmiSyncDetected = new BoolFeedback(() => false);
-            HdcpCapability = new IntFeedback(() => 0);
+            HdcpState = new IntFeedback(() => 0);
+            HdcpCapability = new IntFeedback(() => 99);
             InputResolution = new StringFeedback(() => string.Empty);
+
             if (string.IsNullOrEmpty(routingPortKey))
             {
                 var hdmiInput = Device as IHdmiInput;
@@ -119,7 +123,7 @@ namespace NvxEpi.Application.Entities
                     return;
 
                 HdmiSyncDetected = hdmiInput.SyncDetected[1];
-                HdcpCapability = hdmiInput.HdcpCapability[1];
+                HdcpState = hdmiInput.HdcpCapability[1];
                 InputResolution = hdmiInput.CurrentResolution[1];
             }
             else if (routingPortKey.Equals(DeviceInputEnum.Hdmi1.Name, StringComparison.OrdinalIgnoreCase))
@@ -129,7 +133,7 @@ namespace NvxEpi.Application.Entities
                     return;
 
                 HdmiSyncDetected = hdmiInput.SyncDetected[1];
-                HdcpCapability = hdmiInput.HdcpCapability[1];
+                HdcpState = hdmiInput.HdcpCapability[1];
                 InputResolution = hdmiInput.CurrentResolution[1];
             }
             else if (routingPortKey.Equals(DeviceInputEnum.Hdmi2.Name, StringComparison.OrdinalIgnoreCase))
@@ -140,7 +144,7 @@ namespace NvxEpi.Application.Entities
 
                 _useHdmiInput2 = true;
                 HdmiSyncDetected = hdmiInput.SyncDetected[2];
-                HdcpCapability = hdmiInput.HdcpCapability[2];
+                HdcpState = hdmiInput.HdcpCapability[2];
                 InputResolution = hdmiInput.CurrentResolution[2];
             }
             else if (routingPortKey.Equals(DeviceInputEnum.Automatic.Name, StringComparison.OrdinalIgnoreCase))
@@ -149,8 +153,12 @@ namespace NvxEpi.Application.Entities
                 if (hdmiInput == null)
                     return;
 
+                var hdmiSwitcher = Device as ICurrentVideoInput;
+                if (hdmiSwitcher == null)
+                    return;
+
                 HdmiSyncDetected = hdmiInput.SyncDetected[1];
-                HdcpCapability = hdmiInput.HdcpCapability[1];
+                HdcpState = hdmiInput.HdcpCapability[1];
                 InputResolution = hdmiInput.CurrentResolution[1];
             }
             else
@@ -166,7 +174,7 @@ namespace NvxEpi.Application.Entities
             get { return Device.IsOnline; }
         }
 
-        public void SetHdcpCapability(ushort state)
+        public void SetHdcpState(ushort state)
         {
             var hdmiInput = Device as IHdmiInput;
             if (hdmiInput == null)
