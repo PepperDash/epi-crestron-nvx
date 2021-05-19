@@ -7,6 +7,8 @@ namespace NvxEpi.Extensions
 {
     public static class SecondaryAudioExtensions
     {
+        public const string NoRouteString = "0.0.0.0";
+
         public static void SetSecondaryAudioAddress(this ISecondaryAudioStream device, string address)
         {
             if (String.IsNullOrEmpty(address))
@@ -20,7 +22,7 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
 
-            if (deviceWithHardware.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue == address && address != "0.0.0.0")
+            if (deviceWithHardware.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue == address && address != NoRouteString)
             {
                 Debug.Console(1, device, "Secondary Audio Address is same as this unit's Tx address: '{0}'", address);
                 deviceWithHardware.Hardware.Control.AudioSource = deviceWithHardware.Hardware.Control.DmNaxAudioSourceFeedback;
@@ -28,7 +30,7 @@ namespace NvxEpi.Extensions
             else
             {
                 deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
-                deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;                
+                deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;   
             }
         }
 
@@ -38,8 +40,7 @@ namespace NvxEpi.Extensions
             if (deviceWithHardware == null) return;
 
             Debug.Console(1, device, "Clearing Secondary Audio Stream");
-            deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = "0.0.0.0";
-            deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
+            device.SetSecondaryAudioAddress(NoRouteString);
         }
 
         public static void RouteSecondaryAudio(this ISecondaryAudioStream device, ISecondaryAudioStream tx)
