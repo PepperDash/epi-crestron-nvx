@@ -24,6 +24,7 @@ namespace NvxEpi.Factories
                     "dmnvx360",
                     "dmnvx360c",
                     "dmnvx363",
+                    "dmnvx363c",
                 };
             }
 
