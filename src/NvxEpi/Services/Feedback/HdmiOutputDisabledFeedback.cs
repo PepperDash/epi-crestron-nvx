@@ -19,4 +19,20 @@ namespace NvxEpi.Services.Feedback
             return feedback;
         }
     }
+
+    public class HdmiOutputEdidFeedback
+    {
+        public const string Key = "HdmiOutputEdidManufacturer";
+
+        public static StringFeedback GetFeedback(DmNvxBaseClass device)
+        {
+            if (device.HdmiOut == null)
+                return new StringFeedback(() => string.Empty);
+
+            var feedback = new StringFeedback(Key, () => device.HdmiOut.ConnectedDevice.Manufacturer.StringValue);
+            device.HdmiOut.ConnectedDevice.DeviceInformationChange += (stream, args) => feedback.FireUpdate();
+
+            return feedback;
+        }
+    }
 }
