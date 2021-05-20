@@ -6,12 +6,10 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.Usb;
-using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
-using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -27,20 +25,27 @@ namespace NvxEpi.Devices
         IHdmiInput,
         IRouting
     {
-        private readonly DmNvxE3x _hardware;
-        private readonly IHdmiInput _hdmiInput;
+        private IHdmiInput _hdmiInput;
         private readonly IUsbStream _usbStream;
 
-        public NvxE3X(DeviceConfig config, DmNvxE3x hardware)
-            : base(config, hardware)
+        public NvxE3X(DeviceConfig config, Func<DmNvxBaseClass> getHardware)
+            : base(config, getHardware, true)
         {
-            var props = NvxDeviceProperties.FromDeviceConfig(config);
-            _hardware = hardware;
+            AddRoutingPorts();
+        }
+
+        public override bool CustomActivate()
+        {
+            base.CustomActivate();
+
+            var hardware = base.Hardware as DmNvxE3x;
+            if (hardware == null)
+                throw new Exception("hardware built doesn't match");
+
+            Hardware = hardware;
             _hdmiInput = new HdmiInput1(this);
 
-            RegisterForOnlineFeedback(hardware, props);
-            RegisterForFeedback();
-            AddRoutingPorts();
+            return true;
         }
 
         public CrestronCollection<ComPort> ComPorts
@@ -48,10 +53,7 @@ namespace NvxEpi.Devices
             get { return Hardware.ComPorts; }
         }
 
-        public new DmNvxE3x Hardware
-        {
-            get { return _hardware; }
-        }
+        public new DmNvxE3x Hardware { get; private set; }
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
@@ -122,23 +124,6 @@ namespace NvxEpi.Devices
             HdmiInput1Port.AddRoutingPort(this);
             SwitcherForStreamOutput.AddRoutingPort(this);
             AnalogAudioInput.AddRoutingPort(this);
-        }
-
-        private void RegisterForFeedback()
-        {
-            DeviceDebug.RegisterForDeviceFeedback(this);
-            DeviceDebug.RegisterForPluginFeedback(this);
-        }
-
-        private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
-        {
-            hardware.OnlineStatusChange += (device, args) =>
-                {
-                    if (!args.DeviceOnLine)
-                        return;
-
-                    Hardware.SetDefaults(props);
-                };
         }
     }
 }

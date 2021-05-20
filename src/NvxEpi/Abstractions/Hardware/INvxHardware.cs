@@ -8,4 +8,9 @@ namespace NvxEpi.Abstractions.Hardware
     {
         DmNvxBaseClass Hardware { get; }
     }
+
+    public interface INvxDirector
+    {
+        DmXioDirectorBase Hardware { get; }
+    }
 }

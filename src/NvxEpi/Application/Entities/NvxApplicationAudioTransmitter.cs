@@ -29,14 +29,14 @@ namespace NvxEpi.Application.Entities
             DeviceId = deviceId;
             _source = new DummyRoutingInputsDevice(config.DeviceKey + "--audioSource");
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Device = DeviceManager.GetDeviceForKey(config.DeviceKey) as INvxDevice;
                     if (Device == null)
                         throw new NullReferenceException("device");
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Name = Device.Name;
                     AudioName =

@@ -8,13 +8,11 @@ using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
-using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
-using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -33,23 +31,30 @@ namespace NvxEpi.Devices
         ICec, 
         INvx35XDeviceWithHardware
     {
-        private readonly DmNvx35x _hardware;
-        private readonly IHdmiInput _hdmiInput;
-        private readonly IVideowallMode _hdmiOutput;
+        private IHdmiInput _hdmiInput;
+        private IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
 
-        public Nvx35X(DeviceConfig config, DmNvx35x hardware)
-            : base(config, hardware)
+        public Nvx35X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
+            : base(config, getHardware, isTransmitter)
         {
-            var props = NvxDeviceProperties.FromDeviceConfig(config);
-            _hardware = hardware;
+            AddRoutingPorts();
+        }
+
+        public override bool CustomActivate()
+        {
+            base.CustomActivate();
+
+            var hardware = base.Hardware as DmNvx35x;
+            if (hardware == null)
+                throw new Exception("hardware built doesn't match");
+
+            Hardware = hardware;
 
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            RegisterForOnlineFeedback(hardware, props);
-            RegisterForDeviceFeedback();
-            AddRoutingPorts();
+            return true;
         }
 
         public CrestronCollection<ComPort> ComPorts
@@ -62,10 +67,7 @@ namespace NvxEpi.Devices
             get { return _hdmiOutput.DisabledByHdcp; }
         }
 
-        public new DmNvx35x Hardware
-        {
-            get { return _hardware; }
-        }
+        public new DmNvx35x Hardware { get; private set; }
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
@@ -188,24 +190,6 @@ namespace NvxEpi.Devices
             {
                 StreamInput.AddRoutingPort(this);
             }
-        }
-
-        private void RegisterForDeviceFeedback()
-        {
-            DeviceDebug.RegisterForDeviceFeedback(this);
-            DeviceDebug.RegisterForPluginFeedback(this);
-        }
-
-        private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
-        {
-            hardware.OnlineStatusChange += (device, args) =>
-                {
-                    if (IsTransmitter)
-                        Hardware.SetTxDefaults(props);
-                    else
-                        Hardware.SetRxDefaults(props);
-                    Hardware.SetAudioDefaults(props);
-                };
         }
     }
 }

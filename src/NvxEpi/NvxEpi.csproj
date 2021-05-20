@@ -124,6 +124,7 @@
     <Compile Include="Application\Entities\NvxApplicationAudioTransmitter.cs" />
     <Compile Include="Application\Entities\NvxApplicationVideoReceiver.cs" />
     <Compile Include="Application\Entities\NvxApplicationVideoTransmitter.cs" />
+    <Compile Include="Devices\NvxXioDirector.cs" />
     <Compile Include="Features\Hdmi\Input\HdmiInput2.cs" />
     <Compile Include="Features\Hdmi\Input\HdmiInputBase.cs" />
     <Compile Include="Features\Hdmi\Input\HdmiInput1.cs" />

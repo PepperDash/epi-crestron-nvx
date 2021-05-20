@@ -26,20 +26,27 @@ namespace NvxEpi.Devices
         IHdmiOutput,
         IRouting
     {
-        private readonly DmNvxD3x _hardware;
-        private readonly IHdmiOutput _hdmiOutput;
+        private IHdmiOutput _hdmiOutput;
         private readonly IUsbStream _usbStream;
 
-        public NvxD3X(DeviceConfig config, DmNvxD3x hardware)
-            : base(config, hardware)
+        public NvxD3X(DeviceConfig config, Func<DmNvxBaseClass> getHardware)
+            : base(config, getHardware, false)
         {
-            var props = NvxDeviceProperties.FromDeviceConfig(config);
-            _hardware = hardware;
+            AddRoutingPorts();
+        }
+
+        public override bool CustomActivate()
+        {
+            base.CustomActivate();
+
+            var hardware = base.Hardware as DmNvxD3x;
+            if (hardware == null)
+                throw new Exception("hardware built doesn't match");
+
+            Hardware = hardware;
             _hdmiOutput = new HdmiOutput(this);
 
-            RegisterForOnlineFeedback(hardware, props);
-            RegisterForFeedback();
-            AddRoutingPorts();
+            return true;
         }
 
         public CrestronCollection<ComPort> ComPorts
@@ -52,10 +59,7 @@ namespace NvxEpi.Devices
             get { return _hdmiOutput.DisabledByHdcp; }
         }
 
-        public new DmNvxD3x Hardware
-        {
-            get { return _hardware; }
-        }
+        public new DmNvxD3x Hardware { get; private set; }
 
         public IntFeedback HorizontalResolution
         {

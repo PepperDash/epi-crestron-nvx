@@ -7,6 +7,30 @@ namespace NvxEpi.Services.Utilities
 {
     public static class DeviceDefaults
     {
+        public static void SetTxDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
+        {
+            if (device is DmNvx35x)
+                (device as DmNvx35x).SetTxDefaults(props);
+
+            else if (device is DmNvx36x)
+                (device as DmNvx36x).SetTxDefaults(props);
+
+            else if (device is DmNvxE3x)
+                (device as DmNvxE3x).SetDefaults(props);
+        }
+
+        public static void SetRxDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
+        {
+            if (device is DmNvx35x)
+                (device as DmNvx35x).SetRxDefaults(props);
+
+            else if (device is DmNvx36x)
+                (device as DmNvx36x).SetRxDefaults(props);
+
+            else if (device is DmNvxD3x)
+                (device as DmNvxD3x).SetDefaults(props);
+        }
+
         public static void SetTxDefaults(this DmNvx35x device, NvxDeviceProperties props)
         {
             device.Control.DeviceMode = eDeviceMode.Transmitter;
@@ -82,6 +106,15 @@ namespace NvxEpi.Services.Utilities
             device.Control.EnableAutomaticInitiation();
             device.SecondaryAudio.EnableAutomaticInitiation();
             device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+        }
+
+        public static void SetAudioDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
+        {
+            if (device is DmNvx35x)
+                (device as DmNvx35x).SetAudioDefaults(props);
+
+            else if (device is DmNvx36x)
+                (device as DmNvx36x).SetAudioDefaults(props);
         }
 
         public static void SetAudioDefaults(this DmNvx35x device, NvxDeviceProperties props)

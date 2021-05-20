@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -17,7 +18,18 @@ namespace NvxEpi.Features.Config
         public string Mode { get; set; }
         public string StreamUrl { get; set; }
         public string MulticastVideoAddress { get; set; }
-        public string MulticastAudioAddress { get; set; } 
+        public string MulticastAudioAddress { get; set; }
+        public string ParentDeviceKey { get; set; }
+        public uint DomainId { get; set; }
+    }
+
+    internal static class NvxDevicePropertiesExt
+    {
+        public static bool DeviceIsTransmitter(this NvxDeviceProperties props)
+        {
+            return !string.IsNullOrEmpty(props.Mode) &&
+                        props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     public class NvxUsbProperties

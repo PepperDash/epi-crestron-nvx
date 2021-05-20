@@ -35,7 +35,7 @@ namespace NvxEpi.Application.Entities
             var sink = new Amplifier(key + "--amp", key + "--amp");
             Amp = sink;
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Debug.Console(1, this, "Looking for Device...");
                     Device = DeviceManager.GetDeviceForKey(config.DeviceKey) as INvxDeviceWithHardware;
@@ -43,7 +43,7 @@ namespace NvxEpi.Application.Entities
                         throw new NullReferenceException("device");
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Debug.Console(1, this, "Activating ports...");
                     var port = Device.OutputPorts[SwitcherForAnalogAudioOutput.Key];
@@ -53,7 +53,7 @@ namespace NvxEpi.Application.Entities
                     TieLineCollection.Default.Add(new TieLine(port, sink.AudioIn));
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Debug.Console(1, this, "Setting up device name...");
                     Name = Device.Name;
@@ -62,7 +62,7 @@ namespace NvxEpi.Application.Entities
                     AudioName.FireUpdate();
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Debug.Console(1, this, "Setting up secondary audio route id...");
                     var feedback = Device.Feedbacks[CurrentSecondaryAudioStream.RouteNameKey] as StringFeedback;
@@ -89,7 +89,7 @@ namespace NvxEpi.Application.Entities
                     Device.Feedbacks.Add(currentRouteFb);
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Debug.Console(1, this, "Setting up secondary audio route name...");
                     var audioSourceFeedback = Device.Feedbacks[AudioInputFeedback.Key] as StringFeedback;

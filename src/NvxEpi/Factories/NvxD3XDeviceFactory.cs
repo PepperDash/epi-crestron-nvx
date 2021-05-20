@@ -4,6 +4,7 @@ using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Devices;
+using NvxEpi.Features.Config;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -11,13 +12,12 @@ namespace NvxEpi.Factories
 {
     public class NvxD3XDeviceFactory : NvxBaseDeviceFactory<NvxD3X>
     {
-        private static List<string> _typeNames;
+        private static IEnumerable<string> _typeNames;
 
         public NvxD3XDeviceFactory()
         {
             MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
             
-
             if (_typeNames == null)
             {
                 _typeNames = new List<string>
@@ -32,12 +32,9 @@ namespace NvxEpi.Factories
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            var device = BuildDeviceFromConfig(dc);
-            var hardware = device as DmNvxD3x;
-            if (hardware == null)
-                throw new ArgumentException("type");
-
-            return new NvxD3X(dc, hardware);
+            var props = NvxDeviceProperties.FromDeviceConfig(dc);
+            var deviceBuild = GetDeviceBuildAction(dc.Type, props);
+            return new NvxD3X(dc, deviceBuild);
         }
     }
 }

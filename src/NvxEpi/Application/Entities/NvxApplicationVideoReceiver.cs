@@ -33,14 +33,14 @@ namespace NvxEpi.Application.Entities
             var sink = new MockDisplay(key + "--sink", key + "--videoSink");
             Display = sink;
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Device = DeviceManager.GetDeviceForKey(config.DeviceKey) as INvxDevice;
                     if (Device == null)
                         throw new NullReferenceException("device");
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     var port = Device.OutputPorts[SwitcherForHdmiOutput.Key];
                     if (port == null)
@@ -49,7 +49,7 @@ namespace NvxEpi.Application.Entities
                     TieLineCollection.Default.Add(new TieLine(port, sink.HdmiIn1));
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Name = Device.Name;
                     NameFeedback = new StringFeedback(() => Device.Name);
@@ -58,7 +58,7 @@ namespace NvxEpi.Application.Entities
                     VideoName.FireUpdate();
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     var feedback = Device.Feedbacks[CurrentVideoStream.RouteNameKey] as StringFeedback;
                     if (feedback == null)
@@ -78,7 +78,7 @@ namespace NvxEpi.Application.Entities
                     Device.Feedbacks.Add(currentRouteFb);
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     var currentRouteNameFb = new StringFeedback(() =>
                         {
@@ -94,7 +94,7 @@ namespace NvxEpi.Application.Entities
                     Device.Feedbacks.Add(currentRouteNameFb);
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     DisabledByHdcp = new BoolFeedback(() => false);
                     HorizontalResolution = new IntFeedback(() => 0);

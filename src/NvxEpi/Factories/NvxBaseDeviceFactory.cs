@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp.Reflection;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Devices;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Routing;
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Factories
 {
@@ -16,50 +12,300 @@ namespace NvxEpi.Factories
     {
         public const string MinumumEssentialsVersion = "1.8.0";
 
-        private static IDictionary<string, Func<uint, DmNvxBaseClass>> _types;
-
         static NvxBaseDeviceFactory()
         {
             if (DeviceManager.GetDeviceForKey(NvxGlobalRouter.InstanceKey) == null)
                 DeviceManager.AddDevice(NvxGlobalRouter.Instance);
-
-            _types = new Dictionary<string, Func<uint, DmNvxBaseClass>>(StringComparer.OrdinalIgnoreCase)
-            {
-                {"dmnvx350", ipid => new DmNvx350(ipid, Global.ControlSystem)},
-                {"dmnvx350c", ipid => new DmNvx350C(ipid, Global.ControlSystem)},
-                {"dmnvx351", ipid => new DmNvx351(ipid, Global.ControlSystem)},
-                {"dmnvx351c", ipid => new DmNvx351C(ipid, Global.ControlSystem)},
-                {"dmnvx352", ipid => new DmNvx352(ipid, Global.ControlSystem)},
-                {"dmnvx352c", ipid => new DmNvx352C(ipid, Global.ControlSystem)},
-                {"dmnvx360", ipid => new DmNvx360(ipid, Global.ControlSystem)},
-                {"dmnvx360c", ipid => new DmNvx360C(ipid, Global.ControlSystem)},
-                {"dmnvx363", ipid => new DmNvx363(ipid, Global.ControlSystem)},
-                {"dmnvxe30", ipid => new DmNvxE30(ipid, Global.ControlSystem)},
-                {"dmnvxe30c", ipid => new DmNvxE30C(ipid, Global.ControlSystem)},
-                {"dmnvxe31", ipid => new DmNvxE31(ipid, Global.ControlSystem)},
-                {"dmnvxe31c", ipid => new DmNvxE31C(ipid, Global.ControlSystem)},
-                {"dmnvxd30", ipid => new DmNvxD30(ipid, Global.ControlSystem)},
-                {"dmnvxd30c", ipid => new DmNvxD30C(ipid, Global.ControlSystem)},
-            };
         }
 
-        protected static DmNvxBaseClass BuildDeviceFromConfig(DeviceConfig config)
+        private static NvxXioDirector GetDirector(string key)
         {
+            var result = DeviceManager.GetDeviceForKey(key) as NvxXioDirector;
+            if (result == null)
+                throw new NullReferenceException(key);
 
-            var type = config.Type;
-            var props = NvxDeviceProperties.FromDeviceConfig(config);
+            return result;
+        }
 
-            Func<uint, DmNvxBaseClass> nvxDeviceType;
-            if (!_types.TryGetValue(type, out nvxDeviceType))
+        protected static Func<DmNvxBaseClass> GetDeviceBuildAction(string type, NvxDeviceProperties props)
+        {
+            switch (type.ToLower())
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning, "The type specified '{0}' in the config file wasn't found", config.Type);
-                return null;
+                case "dmnvx350":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx350(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx350((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx350((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx350c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx350C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx350C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx350C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx351":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx351(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx351((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx351((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx351c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx351C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx351C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx351C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx352":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx352(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx352((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx352((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx352c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx352C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx352C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx352C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx360":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx360(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx360((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx360((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx360c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx360C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx360C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx360C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx363":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx363(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx363((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx363((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvx363c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvx363C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvx363C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
+                                : new DmNvx363C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
+                        };
+                    }
+                case "dmnvxd30":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxD30(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxD30((uint)props.DeviceId, domain)
+                                : new DmNvxD30((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                case "dmnvxd30c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxD30C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxD30C((uint)props.DeviceId, domain)
+                                : new DmNvxD30C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                case "dmnvxe30":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxE30(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxE30((uint)props.DeviceId, domain)
+                                : new DmNvxE30((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                case "dmnvxe30c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxE30C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxE30C((uint)props.DeviceId, domain)
+                                : new DmNvxE30C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                case "dmnvxe31":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxE31(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxE31((uint)props.DeviceId, domain)
+                                : new DmNvxE31((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                case "dmnvxe31c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxE31C(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxE31C((uint)props.DeviceId, domain)
+                                : new DmNvxE31C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                default:
+                    throw new NotSupportedException(type);
             }
-
-            if (props.Control.IpId == null)
-                throw new Exception("The IPID for this device must be defined");
-
-            return nvxDeviceType(props.Control.IpIdInt);
         }
     }
 }
