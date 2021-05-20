@@ -34,6 +34,7 @@ namespace NvxEpi.Factories
                 {"dmnvx360", ipid => new DmNvx360(ipid, Global.ControlSystem)},
                 {"dmnvx360c", ipid => new DmNvx360C(ipid, Global.ControlSystem)},
                 {"dmnvx363", ipid => new DmNvx363(ipid, Global.ControlSystem)},
+                {"dmnvx363c", ipid => new DmNvx363C(ipid, Global.ControlSystem)},
                 {"dmnvxe30", ipid => new DmNvxE30(ipid, Global.ControlSystem)},
                 {"dmnvxe30c", ipid => new DmNvxE30C(ipid, Global.ControlSystem)},
                 {"dmnvxe31", ipid => new DmNvxE31(ipid, Global.ControlSystem)},

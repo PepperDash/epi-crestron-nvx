@@ -37,7 +37,6 @@ namespace NvxEpi.Application.Entities
 
             AddPreActivationAction(() =>
                 {
-                    Debug.Console(1, this, "Looking for Device...");
                     Device = DeviceManager.GetDeviceForKey(config.DeviceKey) as INvxDeviceWithHardware;
                     if (Device == null)
                         throw new NullReferenceException("device");
@@ -45,7 +44,6 @@ namespace NvxEpi.Application.Entities
 
             AddPreActivationAction(() =>
                 {
-                    Debug.Console(1, this, "Activating ports...");
                     var port = Device.OutputPorts[SwitcherForAnalogAudioOutput.Key];
                     if (port == null)
                         throw new NullReferenceException("audio output routing port");
@@ -55,7 +53,6 @@ namespace NvxEpi.Application.Entities
 
             AddPreActivationAction(() =>
                 {
-                    Debug.Console(1, this, "Setting up device name...");
                     Name = Device.Name;
                     AudioName =
                         new StringFeedback(() => string.IsNullOrEmpty(config.AudioName) ? Device.Name : config.AudioName);
@@ -64,7 +61,6 @@ namespace NvxEpi.Application.Entities
 
             AddPreActivationAction(() =>
                 {
-                    Debug.Console(1, this, "Setting up secondary audio route id...");
                     var feedback = Device.Feedbacks[CurrentSecondaryAudioStream.RouteNameKey] as StringFeedback;
                     var audioSourceFeedback = Device.Feedbacks[AudioInputFeedback.Key] as StringFeedback;
                     if (feedback == null)
@@ -83,6 +79,7 @@ namespace NvxEpi.Application.Entities
                                 var result = _transmitters.FirstOrDefault(t => t.Name.Equals(feedback.StringValue));
                                 return result == null ? 0 : result.DeviceId;
                             });
+
                     feedback.OutputChange += (sender, args) => currentRouteFb.FireUpdate();
                     audioSourceFeedback.OutputChange += (sender, args) => currentRouteFb.FireUpdate();
                     CurrentAudioRouteId = currentRouteFb;
