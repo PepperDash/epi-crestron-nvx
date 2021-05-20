@@ -71,34 +71,13 @@ namespace NvxEpi.Devices
             NoSwitchInput.AddRoutingPort(this);
 
             AddPreActivationAction(() => Hardware = getHardware());
-            /*AddPreActivationAction(() =>
-                {
-                    if (Hardware is DmNvx35x || Hardware is DmNvx36x)
-                    {
-                        IsTransmitter = 
-                    }
-                    else if (Hardware is DmNvxD3x)
-                    {
-                        IsTransmitter = false;
-                    }
-                    else if (Hardware is DmNvxE3x || Hardware is DmNvxE760x)
-                    {
-                        IsTransmitter = true;
-                    }
-                    else
-                    {
-                        throw new Exception(string.Format("Type is not yet accounted for : {0}", Hardware.GetType().Name));
-                    }
-
-                });*/
-
+            AddPreActivationAction(() => IsOnline = new BoolFeedback("IsOnline", () => Hardware.IsOnline));
             AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
             AddPreActivationAction(RegisterForDeviceFeedback);
         }
 
         public override bool CustomActivate()
         {
-            IsOnline = new BoolFeedback("IsOnline", () => Hardware.IsOnline);
             DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[] 

@@ -38,7 +38,7 @@ namespace NvxEpi.Devices
         public Nvx35X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
             : base(config, getHardware, isTransmitter)
         {
-            AddRoutingPorts();
+            AddPreActivationAction(AddRoutingPorts);
         }
 
         public override bool CustomActivate()

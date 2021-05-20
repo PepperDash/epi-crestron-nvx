@@ -29,11 +29,13 @@ namespace NvxEpi.Features.Routing
 
             DeviceManager.AddDevice(PrimaryStreamRouter);
             DeviceManager.AddDevice(SecondaryAudioRouter);
+
+            AddPostActivationAction(BuildTieLines);
         }
 
         public static NvxGlobalRouter Instance { get { return _instance; } }
 
-        public override bool CustomActivate()
+        private static void BuildTieLines()
         {
             var transmitters = DeviceManager
                 .AllDevices
@@ -64,8 +66,6 @@ namespace NvxEpi.Features.Routing
                 .ToList();
 
             TieLineConnector.AddTieLinesForAudioReceivers(audioReceivers);
-
-            return base.CustomActivate();
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }

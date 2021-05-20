@@ -44,7 +44,7 @@ namespace NvxEpi.Application.Entities
                     AudioName.FireUpdate();
                 });
 
-            AddPreActivationAction(() => LinkRoutingInputPort(config.NvxRoutingPort));
+            AddPostActivationAction(() => LinkRoutingInputPort(config.NvxRoutingPort));
         }
 
         private void LinkRoutingInputPort(string routingPortKey)

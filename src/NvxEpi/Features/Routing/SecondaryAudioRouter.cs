@@ -20,58 +20,48 @@ namespace NvxEpi.Features.Routing
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
-            AddPreActivationAction(() => DeviceManager
-                .AllDevices
-                .OfType<INvxDevice>()
-                .ToList()
-                .ForEach(tx =>
-                {
-                    var stream = tx as ISecondaryAudioStreamWithHardware;
-                    if (stream == null)
-                        return;
-
-                    var streamRoutingPort = tx.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
-                    if (streamRoutingPort == null)
-                        return;
-
-                    var input = new RoutingInputPort(
-                        GetInputPortKeyForTx(stream),
-                        eRoutingSignalType.Audio,
-                        eRoutingPortConnectionType.Streaming,
-                        stream,
-                        this);
-
-                    InputPorts.Add(input);
-                }));
-
-            AddPreActivationAction(() => DeviceManager
-                .AllDevices
-                .OfType<INvxDevice>()
-                .ToList()
-                .ForEach(rx =>
-                {
-                    var stream = rx as ISecondaryAudioStreamWithHardware;
-                    if (stream == null)
-                        return;
-
-                    var streamRoutingPort = rx.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
-                    if (streamRoutingPort == null)
-                        return;
-
-                    var output = new RoutingOutputPort(
-                        GetOutputPortKeyForRx(stream),
-                        eRoutingSignalType.Audio,
-                        eRoutingPortConnectionType.Streaming,
-                        stream,
-                        this);
-
-                    OutputPorts.Add(output);
-                }));
         }
 
         public override bool CustomActivate()
         {
+            if (_transmitters == null)
+                _transmitters = GetTransmitterDictionary();
+
+            if (_receivers == null)
+                _receivers = GetReceiverDictionary();
+
+            new [] {_transmitters.Values, _receivers.Values}
+                .SelectMany(x => x)
+                .ToList()
+                .ForEach(device =>
+                    {
+                        var streamInputPort = device.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
+                        if (streamInputPort != null)
+                        {
+                            var input = new RoutingInputPort(
+                                GetInputPortKeyForTx(device),
+                                eRoutingSignalType.Audio,
+                                eRoutingPortConnectionType.Streaming,
+                                device,
+                                this);
+
+                            InputPorts.Add(input);
+                        }
+
+                        var streamOutputPort = device.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
+                        if (streamOutputPort == null)
+                            return;
+
+                        var output = new RoutingOutputPort(
+                            GetOutputPortKeyForRx(device),
+                            eRoutingSignalType.Audio,
+                            eRoutingPortConnectionType.Streaming,
+                            device,
+                            this);
+
+                        OutputPorts.Add(output);
+                    });
+
             foreach (var routingOutputPort in OutputPorts)
             {
                 var port = routingOutputPort;
@@ -83,12 +73,6 @@ namespace NvxEpi.Features.Routing
                     ExecuteSwitch(null, port.Selector, eRoutingSignalType.Audio);
                 };
             }
-
-            if (_transmitters == null)
-                _transmitters = GetTransmitterDictionary();
-
-            if (_receivers == null)
-                _receivers = GetReceiverDictionary();
 
             return base.CustomActivate();
         }

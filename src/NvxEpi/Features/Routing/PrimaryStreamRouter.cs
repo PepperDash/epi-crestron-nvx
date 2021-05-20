@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
@@ -20,56 +19,6 @@ namespace NvxEpi.Features.Routing
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
-            AddPreActivationAction(() => DeviceManager
-                .AllDevices
-                .OfType<INvxDevice>()
-                .Where(x => x.IsTransmitter)
-                .ToList()
-                .ForEach(tx =>
-                {
-                    var stream = tx as IStream;
-                    if (stream == null)
-                        return;
-                    
-                    var streamRoutingPort = tx.OutputPorts[SwitcherForStreamOutput.Key];
-                    if (streamRoutingPort == null)
-                        return;
-
-                    var input = new RoutingInputPort(
-                        GetInputPortKeyForTx(stream),
-                        eRoutingSignalType.AudioVideo,
-                        eRoutingPortConnectionType.Streaming,
-                        stream,
-                        this);
-
-                    InputPorts.Add(input);
-                }));
-
-            AddPreActivationAction(() => DeviceManager
-                .AllDevices
-                .OfType<INvxDevice>()
-                .Where(x => !x.IsTransmitter)
-                .ToList()
-                .ForEach(rx =>
-                {
-                    var stream = rx as IStream;
-                    if (stream == null)
-                        return;
-
-                    var streamRoutingPort = rx.InputPorts[DeviceInputEnum.Stream.Name];
-                    if (streamRoutingPort == null)
-                        return;
-
-                    var output = new RoutingOutputPort(
-                        GetOutputPortKeyForRx(stream),
-                        eRoutingSignalType.AudioVideo,
-                        eRoutingPortConnectionType.Streaming,
-                        stream,
-                        this);
-
-                    OutputPorts.Add(output);
-                }));
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -111,6 +60,51 @@ namespace NvxEpi.Features.Routing
 
         public override bool CustomActivate()
         {
+
+            if (_transmitters == null)
+                _transmitters = GetTransmitterDictionary();
+
+            if (_receivers == null)
+                _receivers = GetReceiverDictionary();
+
+            _transmitters
+                .Values
+                .ToList()
+                .ForEach(tx =>
+                    {
+                        var streamRoutingPort = tx.OutputPorts[SwitcherForStreamOutput.Key];
+                        if (streamRoutingPort == null)
+                            return;
+
+                        var input = new RoutingInputPort(
+                            GetInputPortKeyForTx(tx),
+                            eRoutingSignalType.AudioVideo,
+                            eRoutingPortConnectionType.Streaming,
+                            tx,
+                            this);
+
+                        InputPorts.Add(input);
+                    });
+
+            _receivers
+                .Values
+                .ToList()
+                .ForEach(rx =>
+                    {
+                        var streamRoutingPort = rx.InputPorts[DeviceInputEnum.Stream.Name];
+                        if (streamRoutingPort == null)
+                            return;
+
+                        var output = new RoutingOutputPort(
+                            GetOutputPortKeyForRx(rx),
+                            eRoutingSignalType.AudioVideo,
+                            eRoutingPortConnectionType.Streaming,
+                            rx,
+                            this);
+
+                        OutputPorts.Add(output);
+                    });
+
             foreach (var routingOutputPort in OutputPorts)
             {
                 var port = routingOutputPort;
@@ -122,12 +116,6 @@ namespace NvxEpi.Features.Routing
                     ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
                 };
             }
-
-            if (_receivers == null)
-                _receivers = GetReceiverDictionary();
-
-            if (_transmitters == null)
-                _transmitters = GetTransmitterDictionary();
 
             return base.CustomActivate();
         }

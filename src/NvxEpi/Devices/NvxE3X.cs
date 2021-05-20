@@ -31,7 +31,7 @@ namespace NvxEpi.Devices
         public NvxE3X(DeviceConfig config, Func<DmNvxBaseClass> getHardware)
             : base(config, getHardware, true)
         {
-            AddRoutingPorts();
+            AddPreActivationAction(AddRoutingPorts);
         }
 
         public override bool CustomActivate()
