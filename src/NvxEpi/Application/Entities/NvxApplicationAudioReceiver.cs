@@ -79,6 +79,7 @@ namespace NvxEpi.Application.Entities
                                 var result = _transmitters.FirstOrDefault(t => t.Name.Equals(feedback.StringValue));
                                 return result == null ? 0 : result.DeviceId;
                             });
+
                     feedback.OutputChange += (sender, args) => currentRouteFb.FireUpdate();
                     audioSourceFeedback.OutputChange += (sender, args) => currentRouteFb.FireUpdate();
                     CurrentAudioRouteId = currentRouteFb;
