@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
@@ -10,7 +9,6 @@ using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using Crestron.SimplSharpPro.DM.Streaming;
 
 namespace NvxEpi.Features.Routing
 {
@@ -185,7 +183,6 @@ namespace NvxEpi.Features.Routing
             {
                 _lock.Enter();
                 var dict = new Dictionary<string, ISecondaryAudioStreamWithHardware>(StringComparer.OrdinalIgnoreCase);
-
                 foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStreamWithHardware>())
                 {
                     dict.Add(device.Name, device);
@@ -204,7 +201,6 @@ namespace NvxEpi.Features.Routing
             try
             {
                 _lock.Enter();
-
                 var dict = new Dictionary<string, ISecondaryAudioStreamWithHardware>(StringComparer.OrdinalIgnoreCase);
                 foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStreamWithHardware>())
                 {

@@ -110,7 +110,6 @@ namespace NvxEpi.Application.Entities
                     EdidManufacturer = hdmiOut.EdidManufacturer;
                     AspectRatioMode = hdmiOut.VideoAspectRatioMode;
                 });
-
         }
 
         public BoolFeedback IsOnline

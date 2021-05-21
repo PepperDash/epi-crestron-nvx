@@ -34,7 +34,7 @@ namespace NvxEpi.Factories
                 case "dmnvx350":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx350(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -51,7 +51,7 @@ namespace NvxEpi.Factories
                 case "dmnvx350c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx350C(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -68,7 +68,7 @@ namespace NvxEpi.Factories
                 case "dmnvx351":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx351(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -85,7 +85,7 @@ namespace NvxEpi.Factories
                 case "dmnvx351c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx351C(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -102,7 +102,7 @@ namespace NvxEpi.Factories
                 case "dmnvx352":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx352(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -119,7 +119,7 @@ namespace NvxEpi.Factories
                 case "dmnvx352c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx352C(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -136,7 +136,7 @@ namespace NvxEpi.Factories
                 case "dmnvx360":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx360(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -153,7 +153,7 @@ namespace NvxEpi.Factories
                 case "dmnvx360c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx360C(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -170,7 +170,7 @@ namespace NvxEpi.Factories
                 case "dmnvx363":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx363(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -187,7 +187,7 @@ namespace NvxEpi.Factories
                 case "dmnvx363c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvx363C(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -204,7 +204,7 @@ namespace NvxEpi.Factories
                 case "dmnvxd30":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvxD30(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -221,7 +221,7 @@ namespace NvxEpi.Factories
                 case "dmnvxd30c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvxD30C(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -238,7 +238,7 @@ namespace NvxEpi.Factories
                 case "dmnvxe30":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvxE30(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -255,7 +255,7 @@ namespace NvxEpi.Factories
                 case "dmnvxe30c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvxE30C(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -272,7 +272,7 @@ namespace NvxEpi.Factories
                 case "dmnvxe31":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvxE31(props.Control.IpIdInt, Global.ControlSystem);
                         }
@@ -289,7 +289,7 @@ namespace NvxEpi.Factories
                 case "dmnvxe31c":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
-                            !props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
                             return () => new DmNvxE31C(props.Control.IpIdInt, Global.ControlSystem);
                         }

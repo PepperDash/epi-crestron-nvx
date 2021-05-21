@@ -2,13 +2,12 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Hardware;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Utilities
 {
-    public class DeviceDebug
+    public static class DeviceDebug
     {
         public static void RegisterForDeviceFeedback(INvxDeviceWithHardware device)
         {
@@ -44,22 +43,19 @@ namespace NvxEpi.Services.Utilities
             if (feedback.Feedbacks == null)
                 throw new NullReferenceException("Feedbacks");
 
-            foreach (var item in feedback.Feedbacks.Where(x => x != null))
+            foreach (var item in feedback.Feedbacks.Where(x => x != null && !string.IsNullOrEmpty(x.Key)))
             {
+                var fb = item;
                 item.OutputChange += (sender, args) =>
                     {
-                        var keyed = sender as IKeyed;
-                        if (keyed == null || String.IsNullOrEmpty(keyed.Key))
-                            return;
-
                         if (sender is BoolFeedback)
-                            Debug.Console(1, feedback, "Received {0} Update : '{1}'", keyed.Key, args.BoolValue);
+                            Debug.Console(1, feedback, "Received {0} Update : '{1}'", fb.Key, args.BoolValue);
 
                         if (sender is IntFeedback)
-                            Debug.Console(1, feedback, "Received {0} Update : '{1}'", keyed.Key, args.IntValue);
+                            Debug.Console(1, feedback, "Received {0} Update : '{1}'", fb.Key, args.IntValue);
 
                         if (sender is StringFeedback)
-                            Debug.Console(1, feedback, "Received {0} Update : '{1}'", keyed.Key, args.StringValue);
+                            Debug.Console(1, feedback, "Received {0} Update : '{1}'", fb.Key, args.StringValue);
                     };
             }
         }

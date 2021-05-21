@@ -37,8 +37,6 @@ namespace NvxEpi.Devices
 
         public override bool CustomActivate()
         {
-            base.CustomActivate();
-
             var hardware = base.Hardware as DmNvxD3x;
             if (hardware == null)
                 throw new Exception("hardware built doesn't match");
@@ -46,7 +44,7 @@ namespace NvxEpi.Devices
             Hardware = hardware;
             _hdmiOutput = new HdmiOutput(this);
 
-            return true;
+            return base.CustomActivate();
         }
 
         public CrestronCollection<ComPort> ComPorts

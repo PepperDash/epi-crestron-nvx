@@ -73,7 +73,6 @@ namespace NvxEpi.Devices
             AddPreActivationAction(() => Hardware = getHardware());
             AddPreActivationAction(() => IsOnline = new BoolFeedback("IsOnline", () => Hardware.IsOnline));
             AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
-            AddPreActivationAction(RegisterForDeviceFeedback);
         }
 
         public override bool CustomActivate()
@@ -98,6 +97,7 @@ namespace NvxEpi.Devices
             _audioSwitcher = new AudioInputSwitcher(this);
             _naxSwitcher = new NaxInputSwitcher(this);
 
+            RegisterForFeedback();
             _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
 
             return base.CustomActivate();
@@ -182,7 +182,7 @@ namespace NvxEpi.Devices
                 };
         }
 
-        private void RegisterForDeviceFeedback()
+        private void RegisterForFeedback()
         {
             DeviceDebug.RegisterForDeviceFeedback(this);
             DeviceDebug.RegisterForPluginFeedback(this);

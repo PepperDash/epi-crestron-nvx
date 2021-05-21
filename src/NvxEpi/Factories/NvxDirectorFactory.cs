@@ -20,6 +20,7 @@ namespace NvxEpi.Factories
                     "xiodirector160",
                 };
         }
+
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             var config = JsonConvert.DeserializeObject<NvxDirectorConfig>(dc.Properties.ToString());
@@ -40,6 +41,7 @@ namespace NvxEpi.Factories
                     throw new NotSupportedException(dc.Type);
             }
 
+            xio.RegisterWithLogging(dc.Key);
             return new NvxXioDirector(dc.Key, dc.Name, xio);
         }
     }
