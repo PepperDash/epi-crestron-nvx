@@ -141,6 +141,10 @@ namespace NvxEpi.Services.Bridge
             if (bridge != null)
                 bridge.AddJoinMap(_device.Key, joinMap);
 
+            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+            if (customJoins != null)
+                joinMap.SetCustomJoinData(customJoins);
+
             _device.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.DeviceOnline.JoinNumber]);
 
             BuildFeedbackList(trilist, _device.Feedbacks, joinMap);
