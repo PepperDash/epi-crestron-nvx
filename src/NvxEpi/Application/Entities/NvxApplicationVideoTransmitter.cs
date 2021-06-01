@@ -39,14 +39,14 @@ namespace NvxEpi.Application.Entities
             DeviceId = deviceId;
             _source = new DummyRoutingInputsDevice(config.DeviceKey + "--videoSource");
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Device = DeviceManager.GetDeviceForKey(config.DeviceKey) as INvxDevice;
                     if (Device == null)
                         throw new NullReferenceException("device");
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Name = Device.Name;
                     NameFeedback = new StringFeedback(() => Device.Name);
@@ -56,7 +56,7 @@ namespace NvxEpi.Application.Entities
                     VideoName.FireUpdate();
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     LinkRoutingInputPort(config.NvxRoutingPort);
                     LinkInputValues(config.NvxRoutingPort);

@@ -6,7 +6,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Utilities
 {
-    public class DeviceConsole
+    public static class DeviceConsole
     {
         public static void PrintInfoForAllDevices()
         {
@@ -22,7 +22,7 @@ namespace NvxEpi.Services.Utilities
             }       
         }
 
-        public static void PrintInfoToConsole(IHasFeedback device)
+        private static void PrintInfoToConsole(IHasFeedback device)
         {
             foreach (var feedback in device.Feedbacks.Where(x => !String.IsNullOrEmpty(x.Key)))
             {

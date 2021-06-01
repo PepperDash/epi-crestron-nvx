@@ -14,7 +14,6 @@ using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.Utilities;
 using NvxEpi.Services.Messages;
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Config;
@@ -27,26 +26,19 @@ namespace NvxEpi.Devices
         ICurrentAudioInput, 
         ICurrentStream,
         ICurrentSecondaryAudioStream, 
-        ICurrentNaxInput,
-        IHasFeedback,
-        IOnline
+        ICurrentNaxInput
     {
-        private readonly int _deviceId;
-
-        private readonly DmNvxBaseClass _hardware;
-        private readonly ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
-        private readonly ICurrentStream _currentVideoStream;
-        private readonly ICurrentVideoInput _videoSwitcher;
-        private readonly ICurrentAudioInput _audioSwitcher;
-        private readonly ICurrentNaxInput _naxSwitcher;
+        private ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
+        private ICurrentStream _currentVideoStream;
+        private ICurrentVideoInput _videoSwitcher;
+        private ICurrentAudioInput _audioSwitcher;
+        private ICurrentNaxInput _naxSwitcher;
 
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
             new RoutingPortCollection<RoutingInputPort>();
 
         private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
             new RoutingPortCollection<RoutingOutputPort>();
-
-        private readonly IntFeedback _deviceMode;
 
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
@@ -61,22 +53,31 @@ namespace NvxEpi.Devices
                 ConsoleAccessLevelEnum.AccessAdministrator);
         }
 
-        protected NvxBaseDevice(DeviceConfig config, DmNvxBaseClass hardware)
+        protected NvxBaseDevice(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
             : base(config.Key, config.Name)
         {
-            if (hardware == null)
+            if (getHardware == null)
                 throw new ArgumentNullException("hardware");
 
             if (_queue == null)
                 _queue = new GenericQueue("NvxDeviceBuildQueue", Thread.eThreadPriority.LowestPriority, 200);
 
-            _hardware = hardware;
-            IsOnline = new BoolFeedback("IsOnline", () => _hardware.IsOnline);
-
-            _queue.Enqueue(new BuildNvxDeviceMessage(Key, hardware));
-
             Feedbacks = new FeedbackCollection<Feedback>();
-            _deviceMode = DeviceModeFeedback.GetFeedback(Hardware);
+            var props = NvxDeviceProperties.FromDeviceConfig(config);
+            DeviceId = props.DeviceId;
+            IsTransmitter = isTransmitter;
+
+            AutomaticInput.AddRoutingPort(this);
+            NoSwitchInput.AddRoutingPort(this);
+
+            AddPreActivationAction(() => Hardware = getHardware());
+            AddPreActivationAction(() => IsOnline = new BoolFeedback("IsOnline", () => Hardware.IsOnline));
+            AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
+        }
+
+        public override bool CustomActivate()
+        {
+            DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[] 
                 {
@@ -90,37 +91,16 @@ namespace NvxEpi.Devices
                     DeviceMode
                 });
 
-            var props = NvxDeviceProperties.FromDeviceConfig(config);
-            _deviceId = props.DeviceId;
-
-            if (hardware is DmNvx35x || hardware is DmNvx36x)
-            {
-                IsTransmitter = !String.IsNullOrEmpty(props.Mode) &&
-                                props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
-            }
-            else if (hardware is DmNvxD3x)
-            {
-                IsTransmitter = false;
-            }
-            else if (hardware is DmNvxE3x || hardware is DmNvxE760x)
-            {
-                IsTransmitter = true;
-            }
-            else
-            {
-                throw new Exception(string.Format("Type is not yet accounted for : {0}", hardware.GetType().Name));
-            }
-
             _currentVideoStream = new CurrentVideoStream(this);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
             _videoSwitcher = new VideoInputSwitcher(this);
             _audioSwitcher = new AudioInputSwitcher(this);
             _naxSwitcher = new NaxInputSwitcher(this);
 
-            AutomaticInput.AddRoutingPort(this);
-            NoSwitchInput.AddRoutingPort(this);
+            RegisterForFeedback();
+            _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
 
-            RegisterForOnlineFeedback(Hardware, props);
+            return base.CustomActivate();
         }
 
         public StringFeedback CurrentAudioInput
@@ -153,20 +133,11 @@ namespace NvxEpi.Devices
             get { return _videoSwitcher.CurrentVideoInputValue; }
         }
 
-        public int DeviceId
-        {
-            get { return _deviceId; }
-        }
+        public int DeviceId { get; private set; }
 
-        public IntFeedback DeviceMode
-        {
-            get { return _deviceMode; }
-        }
+        public IntFeedback DeviceMode { get; private set; }
 
-        public new DmNvxBaseClass Hardware
-        {
-            get { return _hardware; }
-        }
+        public DmNvxBaseClass Hardware { get; private set; }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts
         {
@@ -201,7 +172,20 @@ namespace NvxEpi.Devices
                         return;
 
                     Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
+
+                    if (IsTransmitter)
+                        Hardware.SetTxDefaults(props);
+                    else
+                        Hardware.SetRxDefaults(props);
+
+                    Hardware.SetAudioDefaults(props);
                 };
+        }
+
+        private void RegisterForFeedback()
+        {
+            DeviceDebug.RegisterForDeviceFeedback(this);
+            DeviceDebug.RegisterForPluginFeedback(this);
         }
 
         public StringFeedback StreamUrl

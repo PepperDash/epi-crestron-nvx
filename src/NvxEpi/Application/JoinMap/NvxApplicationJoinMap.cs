@@ -22,18 +22,17 @@ namespace NvxEpi.Application.JoinMap
                     JoinType = eJoinType.Digital
                 });
 
-        [JoinName("HdcpSupportState")]
-        public JoinDataComplete HdcpSupportState =
-            new JoinDataComplete(new JoinData { JoinNumber = 1001, JoinSpan = 200},
-            new JoinMetadata
-            {
-                Description = "Input HDCP Support Capability",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Analog
-            });
-
         [JoinName("HdcpSupportCapability")] public JoinDataComplete HdcpSupportCapability =
             new JoinDataComplete(new JoinData {JoinNumber = 1201, JoinSpan = 200},
+                new JoinMetadata
+                    {
+                        Description = "Input HDCP Support Capability",
+                        JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                        JoinType = eJoinType.Analog
+                    });
+
+        [JoinName("HdcpSupportState")] public JoinDataComplete HdcpSupportState =
+            new JoinDataComplete(new JoinData {JoinNumber = 1001, JoinSpan = 200},
                 new JoinMetadata
                     {
                         Description = "Input HDCP Support Capability",
@@ -153,7 +152,7 @@ namespace NvxEpi.Application.JoinMap
             new JoinData
                 {
                     JoinNumber = 3501,
-                    JoinSpan = 32
+                    JoinSpan = 200
                 },
             new JoinMetadata
                 {

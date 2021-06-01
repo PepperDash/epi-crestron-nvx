@@ -35,14 +35,14 @@ namespace NvxEpi.Application.Entities
             var sink = new Amplifier(key + "--amp", key + "--amp");
             Amp = sink;
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Device = DeviceManager.GetDeviceForKey(config.DeviceKey) as INvxDeviceWithHardware;
                     if (Device == null)
-                        throw new NullReferenceException("device");
+                        throw new NullReferenceException(string.Format("device at key : {0}", config.DeviceKey));
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     var port = Device.OutputPorts[SwitcherForAnalogAudioOutput.Key];
                     if (port == null)
@@ -51,7 +51,7 @@ namespace NvxEpi.Application.Entities
                     TieLineCollection.Default.Add(new TieLine(port, sink.AudioIn));
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     Name = Device.Name;
                     AudioName =
@@ -59,12 +59,15 @@ namespace NvxEpi.Application.Entities
                     AudioName.FireUpdate();
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
                     var feedback = Device.Feedbacks[CurrentSecondaryAudioStream.RouteNameKey] as StringFeedback;
                     var audioSourceFeedback = Device.Feedbacks[AudioInputFeedback.Key] as StringFeedback;
                     if (feedback == null)
                         throw new NullReferenceException(CurrentSecondaryAudioStream.RouteNameKey);
+
+                    if (audioSourceFeedback == null)
+                        throw new NullReferenceException(AudioInputFeedback.Key);
 
                     var currentRouteFb = new IntFeedback(Key + "--appRouteAudioCurrentId",
                         () =>
@@ -86,10 +89,13 @@ namespace NvxEpi.Application.Entities
                     Device.Feedbacks.Add(currentRouteFb);
                 });
 
-            AddPreActivationAction(() =>
+            AddPostActivationAction(() =>
                 {
-                    Debug.Console(1, this, "Setting up secondary audio route name...");
                     var audioSourceFeedback = Device.Feedbacks[AudioInputFeedback.Key] as StringFeedback;
+
+                    if (audioSourceFeedback == null)
+                        throw new NullReferenceException(AudioInputFeedback.Key);
+
                     var currentRouteNameFb = new StringFeedback(Key + "--appRouteAudioName",
                         () =>
                             {

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp.Reflection;
-using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Devices;
+using NvxEpi.Features.Config;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -33,12 +31,9 @@ namespace NvxEpi.Factories
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            var device = BuildDeviceFromConfig(dc);
-            var hardware = device as DmNvxE3x;
-            if (hardware == null)
-                throw new ArgumentException("type");
-
-            return new NvxE3X(dc, hardware);
+            var props = NvxDeviceProperties.FromDeviceConfig(dc);
+            var deviceBuild = GetDeviceBuildAction(dc.Type, props);
+            return new NvxE3X(dc, deviceBuild);
         }
     }
 }
