@@ -127,8 +127,10 @@ namespace NvxEpi.Devices
         {
             SwitcherForHdmiOutput.AddRoutingPort(this);
             StreamInput.AddRoutingPort(this);
+            AnalogAudioInput.AddRoutingPort(this);
             SecondaryAudioInput.AddRoutingPort(this);
             SwitcherForAnalogAudioOutput.AddRoutingPort(this);
+            SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
         }
 
         private void RegisterForFeedback()
