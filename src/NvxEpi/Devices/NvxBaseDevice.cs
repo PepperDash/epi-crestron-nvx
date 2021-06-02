@@ -72,7 +72,7 @@ namespace NvxEpi.Devices
             AutomaticInput.AddRoutingPort(this);
             NoSwitchInput.AddRoutingPort(this);
 
-            string tempName = string.IsNullOrEmpty(Name) ? Name : Key;
+            string tempName = string.IsNullOrEmpty(Name) ? Key : Name;
             tempName = tempName.Replace(' ','-');
             Regex r = new Regex("[^a-zA-Z0-9-]");   //Replace all except alphanumeric and dash
             _hardwareName = r.Replace(tempName,"");
