@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
@@ -40,6 +41,7 @@ namespace NvxEpi.Devices
         private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
             new RoutingPortCollection<RoutingOutputPort>();
 
+        private string _hardwareName;
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
 
@@ -69,6 +71,11 @@ namespace NvxEpi.Devices
 
             AutomaticInput.AddRoutingPort(this);
             NoSwitchInput.AddRoutingPort(this);
+
+            string tempName = string.IsNullOrEmpty(Name) ? Name : Key;
+            tempName = tempName.Replace(' ','-');
+            Regex r = new Regex("[^a-zA-Z0-9-]");   //Replace all except alphanumeric and dash
+            _hardwareName = r.Replace(tempName,"");
 
             AddPreActivationAction(() => Hardware = getHardware());
             AddPreActivationAction(() => IsOnline = new BoolFeedback("IsOnline", () => Hardware.IsOnline));
@@ -171,7 +178,7 @@ namespace NvxEpi.Devices
                     if (!args.DeviceOnLine)
                         return;
 
-                    Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
+                    Hardware.Control.Name.StringValue = _hardwareName;
 
                     if (IsTransmitter)
                         Hardware.SetTxDefaults(props);
