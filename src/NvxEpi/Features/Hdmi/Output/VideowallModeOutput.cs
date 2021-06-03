@@ -5,7 +5,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Hdmi.Output
 {
-    public class VideowallModeOutput : HdmiOutput, IVideowallMode
+    public class VideowallModeOutput : HdmiOutputWithAspect, IVideowallMode
     {
         private readonly IntFeedback _videowallMode;
 

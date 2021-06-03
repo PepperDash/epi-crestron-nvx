@@ -57,7 +57,14 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Setting stream: '{0}'", url);
             deviceWithHardware.Hardware.Control.ServerUrl.StringValue = url;
-            deviceWithHardware.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+            if (deviceWithHardware.Hardware is DmNvxE3x)
+            {
+                Debug.Console(1, device, "Device is DmNvxE3x type, not able to route VideoSource");
+            }
+            else
+            {
+                deviceWithHardware.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+            }
         }
     }
 }

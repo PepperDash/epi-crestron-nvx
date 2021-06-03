@@ -213,7 +213,7 @@ namespace NvxEpi.Application
                             }
                         });
 
-                var hdmiOut = item.DeviceActual.Device as IHdmiOutput;
+                var hdmiOut = item.DeviceActual.Device as IHdmiOutputWithAspect;
                 if (hdmiOut != null)
                 {
                     trilist.SetUShortSigAction((uint) ( joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1 ),

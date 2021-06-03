@@ -123,7 +123,6 @@ namespace NvxEpi.Devices
             SwitcherForStreamOutput.AddRoutingPort(this);
             AnalogAudioInput.AddRoutingPort(this);
             SecondaryAudioInput.AddRoutingPort(this);
-            SwitcherForAnalogAudioOutput.AddRoutingPort(this);
             SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
         }
     }

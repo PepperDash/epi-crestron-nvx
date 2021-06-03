@@ -69,11 +69,6 @@ namespace NvxEpi.Devices
             get { return _hdmiOutput.EdidManufacturer; }
         }
 
-        public IntFeedback VideoAspectRatioMode
-        {
-            get { return _hdmiOutput.VideoAspectRatioMode; }
-        }
-
         public CrestronCollection<IROutputPort> IROutputPorts
         {
             get { return Hardware.IROutputPorts; }
@@ -127,7 +122,6 @@ namespace NvxEpi.Devices
         {
             SwitcherForHdmiOutput.AddRoutingPort(this);
             StreamInput.AddRoutingPort(this);
-            AnalogAudioInput.AddRoutingPort(this);
             SecondaryAudioInput.AddRoutingPort(this);
             SwitcherForAnalogAudioOutput.AddRoutingPort(this);
             SwitcherForSecondaryAudioOutput.AddRoutingPort(this);

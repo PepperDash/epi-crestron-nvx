@@ -3,7 +3,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.HdmiOutput
 {
-    public interface IVideowallMode : IHdmiOutput
+    public interface IVideowallMode : IHdmiOutputWithAspect
     {
         IntFeedback VideowallMode { get; }
     }
