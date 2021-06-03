@@ -192,6 +192,7 @@
     <Compile Include="Features\Routing\SecondaryAudioRouter.cs" />
     <Compile Include="Features\Routing\PrimaryStreamRouter.cs" />
     <Compile Include="Services\Feedback\UsbLocalAddressFeedback.cs" />
+    <Compile Include="Services\Feedback\UsbStatusFeedback.cs" />
     <Compile Include="Services\Feedback\VideoAspectRatioModeFeedback.cs" />
     <Compile Include="Services\Feedback\VideoInputFeedback.cs" />
     <Compile Include="Services\InputPorts\AnalogAudioInput.cs" />

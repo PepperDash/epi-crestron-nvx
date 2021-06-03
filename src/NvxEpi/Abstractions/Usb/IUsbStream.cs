@@ -1,4 +1,5 @@
-﻿using NvxEpi.Abstractions.Hardware;
+﻿using Crestron.SimplSharp;
+using NvxEpi.Abstractions.Hardware;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.Usb
@@ -7,7 +8,11 @@ namespace NvxEpi.Abstractions.Usb
     {
         bool IsRemote { get; }
         StringFeedback UsbLocalId { get; }
-        StringFeedback UsbRemoteId { get; }
-        int UsbId { get; }
+        ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds { get; }
+    }
+
+    public interface IUsbStreamWithHardware : IUsbStream, INvxHardware
+    {
+
     }
 }

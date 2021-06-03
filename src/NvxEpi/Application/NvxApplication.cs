@@ -41,8 +41,8 @@ namespace NvxEpi.Application
                                   .ToDictionary(x => x.DeviceId);
 
             _receivers
-                .Values.
-                ToList()
+                .Values
+                .ToList()
                 .ForEach(DeviceManager.AddDevice);
 
             _audioTransmitters =
@@ -61,8 +61,8 @@ namespace NvxEpi.Application
                                   .ToDictionary(x => x.DeviceId);
 
             _audioReceivers
-                .Values.
-                ToList()
+                .Values
+                .ToList()
                 .ForEach(DeviceManager.AddDevice);
 
             _enableAudioBreakawayFeedback = new BoolFeedback(() => _enableAudioBreakaway);
@@ -155,7 +155,7 @@ namespace NvxEpi.Application
                 Debug.Console(2, this, "Linking {0} Online to join {1}", item.DeviceActual.Key, joinMap.OutputEndpointOnline.JoinNumber + item.DeviceId - 1);
                 item.DeviceActual.IsOnline.LinkInputSig(
                     trilist.BooleanInput[(uint) ( joinMap.OutputEndpointOnline.JoinNumber + item.DeviceId - 1 )]);
-
+ 
 
                 Debug.Console(2, this, "Linking {0} Name to join {1}", item.DeviceActual.Key, joinMap.OutputNames.JoinNumber + item.DeviceId - 1);
                 item.DeviceActual.NameFeedback.LinkInputSig(

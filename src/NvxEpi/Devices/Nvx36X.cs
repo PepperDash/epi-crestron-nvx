@@ -3,13 +3,16 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
+using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
+using NvxEpi.Features.Streams.Usb;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -33,11 +36,13 @@ namespace NvxEpi.Devices
     {
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
-        private readonly IUsbStream _usbStream;
+        private IUsbStream _usbStream;
+        private readonly NvxDeviceProperties _config;
 
         public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
             : base(config, getHardware, isTransmitter)
         {
+            _config = NvxDeviceProperties.FromDeviceConfig(config);
             AddPreActivationAction(AddRoutingPorts);
         }
 
@@ -49,6 +54,7 @@ namespace NvxEpi.Devices
 
             Hardware = hardware;
 
+            _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInput = new HdmiInput1(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
@@ -97,6 +103,16 @@ namespace NvxEpi.Devices
             get { return _usbStream.IsRemote; }
         }
 
+        public StringFeedback UsbLocalId
+        {
+            get { return _usbStream.UsbLocalId; }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
+        {
+            get { return _usbStream.UsbRemoteIds; }
+        }
+
         public int NumberOfComPorts
         {
             get { return Hardware.NumberOfComPorts; }
@@ -120,21 +136,6 @@ namespace NvxEpi.Devices
         public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
         {
             get { return _hdmiInput.CurrentResolution; }
-        }
-
-        public int UsbId
-        {
-            get { return _usbStream.UsbId; }
-        }
-
-        public StringFeedback UsbLocalId
-        {
-            get { return _usbStream.UsbLocalId; }
-        }
-
-        public StringFeedback UsbRemoteId
-        {
-            get { return _usbStream.UsbRemoteId; }
         }
 
         public IntFeedback VideowallMode

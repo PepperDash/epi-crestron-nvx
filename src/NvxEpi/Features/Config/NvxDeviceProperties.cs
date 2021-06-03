@@ -35,7 +35,7 @@ namespace NvxEpi.Features.Config
     public class NvxUsbProperties
     {
         public string Mode { get; set; }
-        public int UsbId { get; set; }
         public string Default { get; set; }
+        public bool FollowVideo { get; set; }
     }
 }
