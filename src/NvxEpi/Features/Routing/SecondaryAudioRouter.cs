@@ -63,12 +63,20 @@ namespace NvxEpi.Features.Routing
             foreach (var routingOutputPort in OutputPorts)
             {
                 var port = routingOutputPort;
+                var timer = new CTimer(o =>
+                {
+                    if (port.InUseTracker.InUseFeedback.BoolValue)
+                        return;
+
+                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.Audio);
+                }, Timeout.Infinite);
+
                 port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
                 {
                     if (args.BoolValue)
                         return;
 
-                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.Audio);
+                    timer.Reset(250);
                 };
             }
 
