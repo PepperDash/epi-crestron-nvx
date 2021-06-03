@@ -16,7 +16,7 @@ namespace NvxEpi.Features.Streams.Usb
 {
     public class UsbStream : IUsbStreamWithHardware
     {
-        public static IUsbStream GetUsbStream(INvxDeviceWithHardware device, NvxUsbProperties props)
+        public static IUsbStreamWithHardware GetUsbStream(INvxDeviceWithHardware device, NvxUsbProperties props)
         {
             try
             {
@@ -85,8 +85,12 @@ namespace NvxEpi.Features.Streams.Usb
                 return;
             }
 
-            var currentRoute = DeviceManager.GetDeviceForKey(streamUrl) as IUsbStreamWithHardware;
+            var result = DeviceManager
+                .AllDevices
+                .OfType<IStreamWithHardware>()
+                .FirstOrDefault(x => x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl));
 
+            var currentRoute = result as IUsbStreamWithHardware;
             if (currentRoute == null)
                 ClearCurrentRoute();
             else if (IsRemote && !currentRoute.IsRemote)

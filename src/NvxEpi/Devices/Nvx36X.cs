@@ -27,7 +27,7 @@ namespace NvxEpi.Devices
         NvxBaseDevice, 
         IComPorts, 
         IIROutputPorts,
-        IUsbStream, 
+        IUsbStreamWithHardware, 
         IHdmiInput, 
         IVideowallMode, 
         IRouting, 
@@ -36,7 +36,7 @@ namespace NvxEpi.Devices
     {
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
-        private IUsbStream _usbStream;
+        private IUsbStreamWithHardware _usbStream;
         private readonly NvxDeviceProperties _config;
 
         public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)

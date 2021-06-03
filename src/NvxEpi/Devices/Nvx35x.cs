@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
@@ -26,16 +27,16 @@ namespace NvxEpi.Devices
         NvxBaseDevice, 
         IComPorts, 
         IIROutputPorts,
-        IUsbStream, 
+        IUsbStreamWithHardware, 
         IHdmiInput, 
         IVideowallMode, 
         IRouting, 
-        ICec, 
+        ICec,
         INvx35XDeviceWithHardware
     {
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
-        private IUsbStream _usbStream;
+        private IUsbStreamWithHardware _usbStream;
         private readonly NvxDeviceProperties _config;
 
         public Nvx35X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
