@@ -109,9 +109,10 @@ namespace NvxEpi.Application.Entities
                     HorizontalResolution = hdmiOut.HorizontalResolution;
                     EdidManufacturer = hdmiOut.EdidManufacturer;
 
-                    var aspect = Device as IHdmiOutputWithAspect;
+                    var aspect = Device as IVideowallMode;
                     if(aspect == null)
                         return;
+
                     AspectRatioMode = aspect.VideoAspectRatioMode;
                 });
         }

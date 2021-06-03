@@ -105,7 +105,6 @@
     <Compile Include="Abstractions\Hardware\INvxD8XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxE76XHardware.cs" />
-    <Compile Include="Abstractions\HdmiOutput\IHdmiOutputWithAspect.cs" />
     <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
     <Compile Include="Abstractions\InputSwitching\ICurrentNaxInput.cs" />
     <Compile Include="Abstractions\InputSwitching\ICurrentDanteInput.cs" />
@@ -131,7 +130,6 @@
     <Compile Include="Features\Hdmi\Input\HdmiInput2.cs" />
     <Compile Include="Features\Hdmi\Input\HdmiInputBase.cs" />
     <Compile Include="Features\Hdmi\Input\HdmiInput1.cs" />
-    <Compile Include="Features\Hdmi\Output\HdmiOutputWithAspect.cs" />
     <Compile Include="Features\Hdmi\Output\HdmiOutput.cs" />
     <Compile Include="Features\Hdmi\Output\VideowallModeOutput.cs" />
     <Compile Include="Features\InputSwitching\NaxInputSwitcher.cs" />
