@@ -63,6 +63,8 @@ namespace NvxEpi.Features.Routing
             foreach (var routingOutputPort in OutputPorts)
             {
                 var port = routingOutputPort;
+                const int delayTime = 250;
+
                 var timer = new CTimer(o =>
                 {
                     if (port.InUseTracker.InUseFeedback.BoolValue)
@@ -76,7 +78,7 @@ namespace NvxEpi.Features.Routing
                     if (args.BoolValue)
                         return;
 
-                    timer.Reset(250);
+                    timer.Reset(delayTime);
                 };
             }
 
