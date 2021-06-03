@@ -108,7 +108,12 @@ namespace NvxEpi.Application.Entities
                     DisabledByHdcp = hdmiOut.DisabledByHdcp;
                     HorizontalResolution = hdmiOut.HorizontalResolution;
                     EdidManufacturer = hdmiOut.EdidManufacturer;
-                    AspectRatioMode = hdmiOut.VideoAspectRatioMode;
+
+                    var aspect = Device as IVideowallMode;
+                    if(aspect == null)
+                        return;
+
+                    AspectRatioMode = aspect.VideoAspectRatioMode;
                 });
         }
 

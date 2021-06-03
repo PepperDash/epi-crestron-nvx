@@ -213,11 +213,10 @@ namespace NvxEpi.Application
                             }
                         });
 
-                var hdmiOut = item.DeviceActual.Device as IHdmiOutput;
+                var hdmiOut = item.DeviceActual.Device as IVideowallMode;
                 if (hdmiOut != null)
                 {
-                    trilist.SetUShortSigAction((uint) ( joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1 ),
-                        hdmiOut.SetVideoAspectRatioMode);
+                    trilist.SetUShortSigAction((uint) ( joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1 ), hdmiOut.SetVideoAspectRatioMode);
                 }
             }
         }

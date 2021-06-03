@@ -14,12 +14,19 @@ namespace NvxEpi.Services.Feedback
 
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
 
-            var nvx35X = device as DmNvx35x;
-            if (nvx35X == null)
-                return feedback;
-
-            device.SourceReceive.StreamChange += (stream, args) => feedback.FireUpdate();
-            device.SourceTransmit.StreamChange += (stream, args) => feedback.FireUpdate();
+            if (device is DmNvxD3x)
+            {
+                device.SourceReceive.StreamChange += (stream, args) => feedback.FireUpdate();
+            }
+            else if (device is DmNvxE3x)
+            {
+                device.SourceTransmit.StreamChange += (stream, args) => feedback.FireUpdate();
+            }
+            else
+            {
+                device.SourceReceive.StreamChange += (stream, args) => feedback.FireUpdate();
+                device.SourceTransmit.StreamChange += (stream, args) => feedback.FireUpdate();
+            }
 
             return feedback;
         }
