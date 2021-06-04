@@ -9,7 +9,7 @@ namespace NvxEpi.Services.Utilities
     {
         public static void SetTxDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
         {
-            if (device is DmNvx35x || device is DmNvx36x)
+            if (!(device is DmNvxE3x))
             {
                 device.Control.DeviceMode = eDeviceMode.Transmitter;
             }
@@ -19,34 +19,81 @@ namespace NvxEpi.Services.Utilities
             {
                 device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
             }
-            device.SetAudioDefaults(props);
+            device.SetTxAudioDefaults(props);
         }
 
         public static void SetRxDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
         {
-            if (device is DmNvx35x || device is DmNvx36x)
+            if (!(device is DmNvxD3x))
             {
                 device.Control.DeviceMode = eDeviceMode.Receiver;
             }
 
             device.Control.EnableAutomaticInitiation();
-            device.SetAudioDefaults(props);
+            device.SetRxAudioDefaults(props);
         }
 
-        public static void SetAudioDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
+        public static void SetTxAudioDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
         {
             if (device.DmNaxRouting != null)
             {
                 device.DmNaxRouting.DmNaxReceive.EnableAutomaticInitiation();
                 device.DmNaxRouting.DmNaxTransmit.EnableAutomaticInitiation();
+
                 if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
                 {
+                    //For a TX, multicast audio address is optional, if it isn't defined it will auto generate from the video multicast address +1
                     device.DmNaxRouting.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
                     device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
                 }
                 else
                 {
                     device.DmNaxRouting.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+                }
+            }
+            if (device.SecondaryAudio != null)
+            {
+                device.SecondaryAudio.EnableAutomaticInitiation();
+                if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
+                {
+                    //For a TX, multicast audio address is optional, if it isn't defined it will auto generate from the video multicast address +1
+                    device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+                    device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
+                }
+                else
+                {
+                    device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Automatic;
+                }
+            }
+        }
+
+        public static void SetRxAudioDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
+        {
+            if (device.DmNaxRouting != null)
+            {
+                device.DmNaxRouting.DmNaxReceive.EnableAutomaticInitiation();
+                device.DmNaxRouting.DmNaxTransmit.EnableAutomaticInitiation();
+
+                //Receivers should be in manual mode all the time - auto mode is only if you want NaxAudio to follow the video route, which is not common
+                device.DmNaxRouting.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+                if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
+                {
+                    //This is only true if the rx is being used to transmit audio, in which case config MUST define the multicast address
+                    //There is no video multicast address on a receiver so no ability to deduct multicast audio address from the video address
+                    device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue = props.MulticastAudioAddress;
+                }
+            }
+            if (device.SecondaryAudio != null)
+            {
+                device.SecondaryAudio.EnableAutomaticInitiation();
+
+                //Receivers should be in manual mode all the time - auto mode is only if you want NaxAudio to follow the video route, which is not common
+                device.SecondaryAudio.SecondaryAudioMode = DmNvxBaseClass.DmNvx35xSecondaryAudio.eSecondaryAudioMode.Manual;
+                if (!String.IsNullOrEmpty(props.MulticastAudioAddress))
+                {
+                    //This is only true if the rx is being used to transmit audio, in which case config MUST define the multicast address
+                    //There is no video multicast address on a receiver so no ability to deduct multicast audio address from the video address
+                    device.SecondaryAudio.MulticastAddress.StringValue = props.MulticastAudioAddress;
                 }
             }
         }
