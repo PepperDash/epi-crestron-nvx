@@ -187,12 +187,10 @@ namespace NvxEpi.Devices
 
                     Hardware.Control.Name.StringValue = _hardwareName;
 
-                    if (IsTransmitter)
+                    if (IsTransmitter || hardware is DmNvxE30)
                         Hardware.SetTxDefaults(props);
                     else
                         Hardware.SetRxDefaults(props);
-
-                    Hardware.SetAudioDefaults(props);
                 };
         }
 

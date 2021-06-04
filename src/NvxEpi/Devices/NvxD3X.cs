@@ -5,7 +5,6 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
-using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
@@ -125,23 +124,6 @@ namespace NvxEpi.Devices
             SecondaryAudioInput.AddRoutingPort(this);
             SwitcherForAnalogAudioOutput.AddRoutingPort(this);
             SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
-        }
-
-        private void RegisterForFeedback()
-        {
-            DeviceDebug.RegisterForDeviceFeedback(this);
-            DeviceDebug.RegisterForPluginFeedback(this);
-        }
-
-        private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
-        {
-            hardware.OnlineStatusChange += (device, args) =>
-                {
-                    if (!args.DeviceOnLine)
-                        return;
-
-                    Hardware.SetDefaults(props);
-                };
         }
     }
 }
