@@ -4,6 +4,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiOutput;
+using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Application.Builder;
 using NvxEpi.Application.Entities;
 using NvxEpi.Application.JoinMap;
@@ -202,7 +204,13 @@ namespace NvxEpi.Application
                     s =>
                         {
                             if (s == 0)
+                            {
+                                var stream = rx.Device as IStream;
+                                if (stream != null)
+                                    stream.ClearStream();
+
                                 rx.Display.ReleaseRoute();
+                            }
                             else
                             {
                                 NvxApplicationVideoTransmitter device;
@@ -254,6 +262,10 @@ namespace NvxEpi.Application
                         if (s == 0)
                         {
                             rx.Device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
+                            var audioStream = rx.Device as ISecondaryAudioStream;
+                            if (audioStream != null)
+                                audioStream.ClearSecondaryStream();
+
                             rx.Amp.ReleaseRoute();
                         }
                         else
