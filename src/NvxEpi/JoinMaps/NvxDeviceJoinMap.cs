@@ -65,7 +65,7 @@ namespace NvxEpi.JoinMaps
             new JoinMetadata
                 {
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.AnalogSerial,
+                    JoinType = eJoinType.Analog,
                     Description = "Hdmi1 Capability"
                 });
 
@@ -91,7 +91,7 @@ namespace NvxEpi.JoinMaps
             new JoinMetadata
                 {
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.AnalogSerial,
+                    JoinType = eJoinType.Analog,
                     Description = "Hdmi2 Capability"
                 });
 
@@ -157,7 +157,7 @@ namespace NvxEpi.JoinMaps
             new JoinMetadata
                 {
                     JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.AnalogSerial,
+                    JoinType = eJoinType.Serial,
                     Description = "Hdmi Output Resolution"
                 });
 
