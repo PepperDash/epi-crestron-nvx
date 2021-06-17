@@ -26,9 +26,22 @@ namespace NvxEpi.JoinMaps
             new JoinMetadata
                 {
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.AnalogSerial,
+                    JoinType = eJoinType.Analog,
                     Description = "Audio Route"
                 });
+        [JoinName("AudioRouteString")]
+        public JoinDataComplete AudioRouteString = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 2,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Audio Route String"
+            });
 
         [JoinName("DeviceName")] public JoinDataComplete DeviceName = new JoinDataComplete(
             new JoinData
@@ -339,9 +352,22 @@ namespace NvxEpi.JoinMaps
             new JoinMetadata
                 {
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.AnalogSerial,
+                    JoinType = eJoinType.Analog,
                     Description = "Video Route"
                 });
+        [JoinName("VideoRouteString")]
+        public JoinDataComplete VideoRouteString = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 1,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Video Route String"
+            });
 
         [JoinName("VideowallMode")] public JoinDataComplete VideowallMode = new JoinDataComplete(
             new JoinData
