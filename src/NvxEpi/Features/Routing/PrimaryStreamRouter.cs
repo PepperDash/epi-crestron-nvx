@@ -163,7 +163,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var tx = _receivers.Values.FirstOrDefault(x => x.DeviceId == txId);
+            var tx = _transmitters.Values.FirstOrDefault(x => x.DeviceId == txId);
             if (tx == null)
                 return;
 
