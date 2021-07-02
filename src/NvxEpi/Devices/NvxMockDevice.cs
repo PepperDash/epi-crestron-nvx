@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
@@ -88,6 +89,12 @@ namespace NvxEpi.Devices
                 eRoutingPortConnectionType.LineAudio,
                 null,
                 this));
+        }
+
+        public override bool CustomActivate()
+        {
+            Feedbacks.ToList().ForEach(x => x.FireUpdate());
+            return base.CustomActivate();
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts
