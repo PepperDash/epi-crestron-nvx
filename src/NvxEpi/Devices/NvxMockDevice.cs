@@ -31,26 +31,25 @@ namespace NvxEpi.Devices
             DeviceMode = new IntFeedback(DeviceModeFeedback.Key, () => (int)eDeviceMode.Transmitter);
             IsTransmitter = true;
 
-            StreamUrl = new StringFeedback(
+            StreamUrl = new StringFeedback(StreamUrlFeedback.Key,
                 () => !String.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : String.Empty);
 
-            MulticastAddress = new StringFeedback(
+            MulticastAddress = new StringFeedback(MulticastAddressFeedback.Key,
                 () => !String.IsNullOrEmpty(props.MulticastVideoAddress) ? props.MulticastVideoAddress : String.Empty);
 
-            IsStreamingVideo = new BoolFeedback(
+            IsStreamingVideo = new BoolFeedback(IsStreamingVideo.Key,
                 () => !String.IsNullOrEmpty(props.StreamUrl));
 
-            VideoStreamStatus = new StringFeedback(
+            VideoStreamStatus = new StringFeedback(VideoStreamStatus.Key,
                 () => !String.IsNullOrEmpty(props.StreamUrl) ? "Streaming" : String.Empty);
 
-            SecondaryAudioAddress = new StringFeedback(
+            SecondaryAudioAddress = new StringFeedback(AudioTxAddressFeedback.Key,
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
 
-            TxAudioAddress = new StringFeedback(
+            TxAudioAddress = new StringFeedback(AudioTxAddressFeedback.Key,
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
 
-            RxAudioAddress = new StringFeedback(
-                () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
+            RxAudioAddress = new StringFeedback(() => string.Empty);
 
             IsStreamingSecondaryAudio = new BoolFeedback(
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress));
@@ -61,10 +60,9 @@ namespace NvxEpi.Devices
             Feedbacks.AddRange(new Feedback[]
                 {
                     DeviceNameFeedback.GetFeedback(Name),
-                    VideoName,
-                    AudioSourceName,
-                    AudioDestinationName,
-                    DeviceMode
+                    StreamUrl,
+                    MulticastAddress,
+                    TxAudioAddress
                 });
 
             InputPorts.Add(
@@ -121,9 +119,6 @@ namespace NvxEpi.Devices
         public StringFeedback SecondaryAudioAddress { get; private set; }
         public StringFeedback TxAudioAddress { get; private set; }
         public StringFeedback RxAudioAddress { get; private set; }
-        public StringFeedback VideoName { get; private set; }
-        public StringFeedback AudioSourceName { get; private set; }
-        public StringFeedback AudioDestinationName { get; private set; }
         public BoolFeedback IsStreamingVideo { get; private set; }
         public StringFeedback VideoStreamStatus { get; private set; }
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
