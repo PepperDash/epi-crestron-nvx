@@ -25,6 +25,14 @@ namespace NvxEpi.Features.Config
         public string DefaultVideoInput { get; set; }
     }
 
+    public class NvxMockDeviceProperties
+    {
+        public int DeviceId { get; set; }
+        public string StreamUrl { get; set; }
+        public string MulticastVideoAddress { get; set; }
+        public string MulticastAudioAddress { get; set; }
+    }
+
     internal static class NvxDevicePropertiesExt
     {
         public static bool DeviceIsTransmitter(this NvxDeviceProperties props)
