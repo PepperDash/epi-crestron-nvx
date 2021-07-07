@@ -24,7 +24,7 @@ namespace NvxEpi.Services.Utilities
 
         private static void PrintInfoToConsole(IHasFeedback device)
         {
-            foreach (var feedback in device.Feedbacks.Where(x => !String.IsNullOrEmpty(x.Key)))
+            foreach (var feedback in device.Feedbacks.Where(x => x != null && !String.IsNullOrEmpty(x.Key)))
             {
                 if (feedback is BoolFeedback)
                     Debug.Console(1, device, "{0} : '{1}'", feedback.Key, feedback.BoolValue);

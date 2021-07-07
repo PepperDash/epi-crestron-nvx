@@ -96,11 +96,11 @@ namespace NvxEpi.Features.Routing
                 if (!signalType.Has(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include audio");
 
-                var rx = outputSelector as ISecondaryAudioStreamWithHardware;
+                var rx = outputSelector as ISecondaryAudioStream;
                 if (rx == null)
                     throw new ArgumentNullException("rx");
 
-                rx.RouteSecondaryAudio(inputSelector as ISecondaryAudioStreamWithHardware);
+                rx.RouteSecondaryAudio(inputSelector as ISecondaryAudioStream);
             }
             catch (Exception ex)
             {
@@ -109,12 +109,12 @@ namespace NvxEpi.Features.Routing
             }
         }
 
-        public static string GetInputPortKeyForTx(ISecondaryAudioStreamWithHardware tx)
+        public static string GetInputPortKeyForTx(ISecondaryAudioStream tx)
         {
             return tx.Key + "-SecondaryAudio";
         }
 
-        public static string GetOutputPortKeyForRx(ISecondaryAudioStreamWithHardware rx)
+        public static string GetOutputPortKeyForRx(ISecondaryAudioStream rx)
         {
             return rx.Key + "-SecondaryAudioOutput";
         }
@@ -138,7 +138,7 @@ namespace NvxEpi.Features.Routing
             Route(txId, rx);
         }
 
-        public static void Route(int txId, ISecondaryAudioStreamWithHardware rx)
+        public static void Route(int txId, ISecondaryAudioStream rx)
         {
             Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txId & address: {0} {1}", txId, rx.RxAudioAddress);
             if (txId == 0)
@@ -154,7 +154,7 @@ namespace NvxEpi.Features.Routing
             rx.RouteSecondaryAudio(tx);
         }
 
-        public static void Route(string txName, ISecondaryAudioStreamWithHardware rx)
+        public static void Route(string txName, ISecondaryAudioStream rx)
         {
             Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txName & address: {0} {1}", txName, rx.RxAudioAddress);
             if (String.IsNullOrEmpty(txName))
@@ -166,7 +166,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            ISecondaryAudioStreamWithHardware txByName;
+            ISecondaryAudioStream txByName;
             if (_transmitters.TryGetValue(txName, out txByName))
             {
                 rx.RouteSecondaryAudio(txByName);
@@ -184,16 +184,16 @@ namespace NvxEpi.Features.Routing
         }
 
         private static readonly CCriticalSection _lock = new CCriticalSection();
-        private static Dictionary<string, ISecondaryAudioStreamWithHardware> _transmitters;
-        private static Dictionary<string, ISecondaryAudioStreamWithHardware> _receivers;
+        private static Dictionary<string, ISecondaryAudioStream> _transmitters;
+        private static Dictionary<string, ISecondaryAudioStream> _receivers;
 
-        private static Dictionary<string, ISecondaryAudioStreamWithHardware> GetTransmitterDictionary()
+        private static Dictionary<string, ISecondaryAudioStream> GetTransmitterDictionary()
         {
             try
             {
                 _lock.Enter();
-                var dict = new Dictionary<string, ISecondaryAudioStreamWithHardware>(StringComparer.OrdinalIgnoreCase);
-                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStreamWithHardware>())
+                var dict = new Dictionary<string, ISecondaryAudioStream>(StringComparer.OrdinalIgnoreCase);
+                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStream>())
                 {
                     dict.Add(device.Name, device);
                 }
@@ -206,13 +206,13 @@ namespace NvxEpi.Features.Routing
             }
         }
 
-        private static Dictionary<string, ISecondaryAudioStreamWithHardware> GetReceiverDictionary()
+        private static Dictionary<string, ISecondaryAudioStream> GetReceiverDictionary()
         {
             try
             {
                 _lock.Enter();
-                var dict = new Dictionary<string, ISecondaryAudioStreamWithHardware>(StringComparer.OrdinalIgnoreCase);
-                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStreamWithHardware>())
+                var dict = new Dictionary<string, ISecondaryAudioStream>(StringComparer.OrdinalIgnoreCase);
+                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStream>())
                 {
                     dict.Add(device.Name, device);
                 }

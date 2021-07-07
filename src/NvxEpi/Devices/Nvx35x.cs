@@ -96,6 +96,11 @@ namespace NvxEpi.Devices
             get { return _usbStream.IsRemote; }
         }
 
+        public StringFeedback UsbId
+        {
+            get { return _usbStream.UsbId; }
+        }
+
         public int NumberOfComPorts
         {
             get { return Hardware.NumberOfComPorts; }
@@ -119,21 +124,6 @@ namespace NvxEpi.Devices
         public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
         {
             get { return _hdmiInput.CurrentResolution; }
-        }
-
-        public int UsbId
-        {
-            get { return _usbStream.UsbId; }
-        }
-
-        public StringFeedback UsbLocalId
-        {
-            get { return _usbStream.UsbLocalId; }
-        }
-
-        public StringFeedback UsbRemoteId
-        {
-            get { return _usbStream.UsbRemoteId; }
         }
 
         public IntFeedback VideowallMode

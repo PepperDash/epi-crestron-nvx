@@ -1,8 +1,5 @@
-using System;
-using System.Globalization;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
-using NvxEpi.Abstractions.Dante;
 using NvxEpi.Abstractions.InputSwitching;
 using PepperDash.Core;
 
@@ -10,34 +7,31 @@ namespace NvxEpi.Extensions
 {
     public static class AudioInputExtensions
     {
+        //TODO: needs documentation
         public static void SetAudioInput(this ICurrentAudioInput device, ushort input)
         {
-            var inputToSwitch = (DmNvxControl.eAudioSource) input;
-
-            switch (inputToSwitch)
+            switch (input)
             {
-                case DmNvxControl.eAudioSource.Automatic:
+                case 0:
+                    break;
+                case 99:
                     device.SetAudioToInputAutomatic();
                     break;
-                case DmNvxControl.eAudioSource.Input1:
+                case 1:
                     device.SetAudioToHdmiInput1();
                     break;
-                case DmNvxControl.eAudioSource.Input2:
+                case 2:
                     device.SetAudioToHdmiInput2();
                     break;
-                case DmNvxControl.eAudioSource.AnalogAudio:
+                case 3:
                     device.SetAudioToInputAnalog();
                     break;
-                case DmNvxControl.eAudioSource.PrimaryStreamAudio:
+                case 4:
                     device.SetAudioToPrimaryStreamAudio();
                     break;
-                case DmNvxControl.eAudioSource.DmNaxAudio:
+                case 5:
                     device.SetAudioToSecondaryStreamAudio();
                     break;
-                case DmNvxControl.eAudioSource.DanteAes67Audio:
-                    throw new NotImplementedException();
-                default:
-                    throw new ArgumentOutOfRangeException(input.ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -89,10 +83,8 @@ namespace NvxEpi.Extensions
                 return true;
             if (device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.Input1)
                 return true;
-            if (device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.Input2)
-                return true;
-            else
-                return false;
+
+            return device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.Input2;
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
@@ -60,10 +61,9 @@ namespace NvxEpi.Services.TieLines
 
         public static void AddTieLinesForAudioTransmitters(IEnumerable<INvxDevice> transmitters)
         {
-            foreach (var tx in transmitters)
+            foreach (var secondaryAudio in transmitters.OfType<ISecondaryAudioStream>())
             {
-                var secondaryAudio = tx as ISecondaryAudioStreamWithHardware;
-                var secondaryAudioPort = tx.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
+                var secondaryAudioPort = secondaryAudio.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
                 if (secondaryAudioPort == null)
                     throw new NullReferenceException("secondaryAudioInput");
 
@@ -81,10 +81,9 @@ namespace NvxEpi.Services.TieLines
 
         public static void AddTieLinesForAudioReceivers(IEnumerable<INvxDevice> receivers)
         {
-            foreach (var rx in receivers)
+            foreach (var secondaryAudio in receivers.OfType<ISecondaryAudioStream>())
             {
-                var secondaryAudio = rx as ISecondaryAudioStreamWithHardware;
-                var secondaryAudioPort = rx.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
+                var secondaryAudioPort = secondaryAudio.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
                 if (secondaryAudioPort == null)
                     throw new NullReferenceException("SecondaryRouterInput");
 

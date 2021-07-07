@@ -15,9 +15,7 @@ namespace NvxEpi.Services.Feedback
         public static StringFeedback GetFeedback(DmNvx35x device)
         {
             var feedback = new StringFeedback(Key, () => device.UsbInput.ModeFeedback.ToString());
-
             device.UsbInput.UsbInputChange += (sender, args) => feedback.FireUpdate();
-
             return feedback;
         }
     }
