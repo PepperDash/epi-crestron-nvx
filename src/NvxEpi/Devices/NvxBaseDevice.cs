@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
@@ -95,6 +96,7 @@ namespace NvxEpi.Devices
             Feedbacks.AddRange(new Feedback[] 
                 {
                     IsOnline,
+                    new IntFeedback("DeviceId", () => DeviceId), 
                     DeviceNameFeedback.GetFeedback(Name),
                     DeviceIpFeedback.GetFeedback(Hardware),
                     DeviceHostnameFeedback.GetFeedback(Hardware),
@@ -174,13 +176,10 @@ namespace NvxEpi.Devices
         {
             hardware.OnlineStatusChange += (device, args) =>
                 {
-                    Feedbacks.ForEach(f =>
-                    {
-                        if (f == null)
-                            return;
-
-                        f.FireUpdate();
-                    });
+                    Feedbacks
+                        .Where(x => x != null)
+                        .ToList()
+                        .ForEach(f => f.FireUpdate());
 
                     if (!args.DeviceOnLine)
                         return;

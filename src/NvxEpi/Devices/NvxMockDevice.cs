@@ -1,5 +1,5 @@
 ﻿using System;
-using Crestron.SimplSharpPro.DM.Streaming;
+using System.Linq;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
@@ -23,22 +23,32 @@ namespace NvxEpi.Devices
         public NvxMockDevice(DeviceConfig dc)
             : base(dc.Key, dc.Name)
         {
-            var props = NvxDeviceProperties.FromDeviceConfig(dc);
-            DeviceId = props.DeviceId;
+            var props = dc.Properties.ToObject<NvxMockDeviceProperties>();
+            if (props == null)
+            {
+                Debug.Console(1, this, "************ PROPS IS NULL ************");
+                throw new NullReferenceException("props");
+            }
 
             Feedbacks = new FeedbackCollection<Feedback>();
-            IsOnline = new BoolFeedback(() => true);
-            DeviceMode = new IntFeedback(DeviceModeFeedback.Key, () => (int)eDeviceMode.Transmitter);
-            IsTransmitter = true;
 
-            StreamUrl = new StringFeedback(
+            DeviceId = props.DeviceId;
+            IsTransmitter = true;
+            BuildFeedbacks(props);
+            BuildInputPorts();
+        }
+
+        private void BuildFeedbacks(NvxMockDeviceProperties props)
+        {
+            IsOnline = new BoolFeedback("IsOnline", () => true);
+            DeviceMode = new IntFeedback(() => 0);
+            StreamUrl = new StringFeedback("StreamUrl",
                 () => !String.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : String.Empty);
 
-            MulticastAddress = new StringFeedback(
+            MulticastAddress = new StringFeedback("MulticastVideoAddress",
                 () => !String.IsNullOrEmpty(props.MulticastVideoAddress) ? props.MulticastVideoAddress : String.Empty);
 
-            IsStreamingVideo = new BoolFeedback(
-                () => !String.IsNullOrEmpty(props.StreamUrl));
+            IsStreamingVideo = new BoolFeedback(() => !String.IsNullOrEmpty(props.StreamUrl));
 
             VideoStreamStatus = new StringFeedback(
                 () => !String.IsNullOrEmpty(props.StreamUrl) ? "Streaming" : String.Empty);
@@ -46,11 +56,10 @@ namespace NvxEpi.Devices
             SecondaryAudioAddress = new StringFeedback(
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
 
-            TxAudioAddress = new StringFeedback(
+            TxAudioAddress = new StringFeedback("MulticastAudio",
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
 
-            RxAudioAddress = new StringFeedback(
-                () => !String.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : String.Empty);
+            RxAudioAddress = new StringFeedback(() => string.Empty);
 
             IsStreamingSecondaryAudio = new BoolFeedback(
                 () => !String.IsNullOrEmpty(props.MulticastAudioAddress));
@@ -61,12 +70,15 @@ namespace NvxEpi.Devices
             Feedbacks.AddRange(new Feedback[]
                 {
                     DeviceNameFeedback.GetFeedback(Name),
-                    VideoName,
-                    AudioSourceName,
-                    AudioDestinationName,
-                    DeviceMode
+                    IsOnline,
+                    StreamUrl,
+                    MulticastAddress,
+                    TxAudioAddress
                 });
+        }
 
+        private void BuildInputPorts()
+        {
             InputPorts.Add(
                 new RoutingInputPort(
                     DeviceInputEnum.Hdmi1.Name,
@@ -75,21 +87,35 @@ namespace NvxEpi.Devices
                     DeviceInputEnum.Hdmi1,
                     this));
 
-            OutputPorts.Add(
-                new RoutingOutputPort(
-                SwitcherForStreamOutput.Key,
-                eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Streaming,
-                null,
-                this));
+            InputPorts.Add(
+                new RoutingInputPort(
+                    DeviceInputEnum.SecondaryAudio.Name,
+                    eRoutingSignalType.Audio,
+                    eRoutingPortConnectionType.Streaming,
+                    DeviceInputEnum.SecondaryAudio,
+                    this));
 
             OutputPorts.Add(
                 new RoutingOutputPort(
-                SwitcherForSecondaryAudioOutput.Key,
-                eRoutingSignalType.Audio,
-                eRoutingPortConnectionType.LineAudio,
-                null,
-                this));
+                    SwitcherForStreamOutput.Key,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    null,
+                    this));
+
+            OutputPorts.Add(
+                new RoutingOutputPort(
+                    SwitcherForSecondaryAudioOutput.Key,
+                    eRoutingSignalType.Audio,
+                    eRoutingPortConnectionType.LineAudio,
+                    null,
+                    this));
+        }
+
+        public override bool CustomActivate()
+        {
+            Feedbacks.ToList().ForEach(x => x.FireUpdate());
+            return base.CustomActivate();
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts
@@ -121,9 +147,6 @@ namespace NvxEpi.Devices
         public StringFeedback SecondaryAudioAddress { get; private set; }
         public StringFeedback TxAudioAddress { get; private set; }
         public StringFeedback RxAudioAddress { get; private set; }
-        public StringFeedback VideoName { get; private set; }
-        public StringFeedback AudioSourceName { get; private set; }
-        public StringFeedback AudioDestinationName { get; private set; }
         public BoolFeedback IsStreamingVideo { get; private set; }
         public StringFeedback VideoStreamStatus { get; private set; }
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }

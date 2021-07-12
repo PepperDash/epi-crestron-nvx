@@ -105,9 +105,9 @@
             get { return _device.Feedbacks; }
         }
 
-        public BoolFeedback IsOnline
+        public BoolFeedback BuildFeedbacks
         {
-            get { return _device.IsOnline; }
+            get { return _device.BuildFeedbacks; }
         }
 
         public DmNvx35x Hardware

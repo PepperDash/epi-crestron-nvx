@@ -7,26 +7,26 @@ namespace NvxEpi.Extensions
 {
     public static class VideoInputExtensions
     {
+        //TODO: Documentation
         public static void SetVideoInput(this ICurrentVideoInput device, ushort input)
         {
-            var inputToSwitch = (eSfpVideoSourceTypes)input;
-
-            switch (inputToSwitch)
+            switch (input)
             {
-                case eSfpVideoSourceTypes.Disable:
-                    device.SetVideoToInputNone();
-                    break;
-                case eSfpVideoSourceTypes.Hdmi1:
+                case 1:
                     device.SetVideoToHdmiInput1();
                     break;
-                case eSfpVideoSourceTypes.Hdmi2:
+                case 2:
                     device.SetVideoToHdmiInput2();
                     break;
-                case eSfpVideoSourceTypes.Stream:
+                case 3:
                     device.SetVideoToStream();
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(input.ToString());
+                case 4:
+                    device.SetVideoToAutomatic();
+                    break;
+                case 99:
+                    device.SetVideoToInputNone();
+                    break;
             }
         }
 

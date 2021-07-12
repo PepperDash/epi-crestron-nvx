@@ -16,7 +16,7 @@ namespace NvxEpi.Devices
                 throw new ArgumentNullException("hardware");
 
             _hardware = hardware;
-            _isOnline = new BoolFeedback("IsOnline", () => _hardware.IsOnline);
+            _isOnline = new BoolFeedback("BuildFeedbacks", () => _hardware.IsOnline);
             _hardware.OnlineStatusChange += (device, args) => _isOnline.FireUpdate();
         }
 
