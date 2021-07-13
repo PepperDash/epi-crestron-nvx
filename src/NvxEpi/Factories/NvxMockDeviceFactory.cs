@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using NvxEpi.Aggregates;
+using NvxEpi.Devices;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 

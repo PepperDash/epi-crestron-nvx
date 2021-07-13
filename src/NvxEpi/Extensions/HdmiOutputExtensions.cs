@@ -7,7 +7,7 @@ namespace NvxEpi.Extensions
 {
     public static class HdmiOutputExtensions
     {
-        public static void SetVideoAspectRatioMode(this IHdmiOutput device, ushort mode)
+        public static void SetVideoAspectRatioMode(this IVideowallMode device, ushort mode)
         {
             try
             {

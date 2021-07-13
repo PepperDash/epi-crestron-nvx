@@ -36,6 +36,10 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Routing device stream : '{0}'", tx.Name);
             tx.StreamUrl.FireUpdate();
+
+            if (String.IsNullOrEmpty(tx.StreamUrl.StringValue))
+                return;
+
             device.SetStreamUrl(tx.StreamUrl.StringValue);
         }
 
@@ -53,7 +57,14 @@ namespace NvxEpi.Extensions
 
             Debug.Console(1, device, "Setting stream: '{0}'", url);
             deviceWithHardware.Hardware.Control.ServerUrl.StringValue = url;
-            deviceWithHardware.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+            if (deviceWithHardware.Hardware is DmNvxD3x)
+            {
+                Debug.Console(1, device, "Device is DmNvxE3x type, not able to route VideoSource");
+            }
+            else
+            {
+                deviceWithHardware.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+            }
         }
     }
 }

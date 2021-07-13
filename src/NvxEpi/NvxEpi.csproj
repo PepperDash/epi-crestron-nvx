@@ -56,27 +56,31 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DM.dll</HintPath>
     </Reference>
+    <Reference Include="Essentials Devices Common, Version=1.9.0.38855, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\PepperDashEssentials\lib\net35\Essentials Devices Common.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="PepperDashEssentials, Version=1.5.8.36287, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDashEssentials, Version=1.9.0.38861, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\PepperDashEssentials\lib\net35\PepperDashEssentials.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Core, Version=1.0.38.2539, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Core, Version=1.0.45.265, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\PepperDashEssentials\lib\net35\PepperDash_Core.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Essentials_Core, Version=1.5.8.36276, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Essentials_Core, Version=1.9.0.38851, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\PepperDashEssentials\lib\net35\PepperDash_Essentials_Core.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
@@ -85,7 +89,7 @@
     </Reference>
     <Reference Include="SimplSharpPro, Version=1.5.3.17, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
@@ -97,24 +101,45 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Abstractions\Dante\IDanteAudio.cs" />
     <Compile Include="Abstractions\Device\IDeviceId.cs" />
     <Compile Include="Abstractions\Device\IDeviceMode.cs" />
+    <Compile Include="Abstractions\Hardware\INvx36XHardware.cs" />
+    <Compile Include="Abstractions\Hardware\INvxD3XHardware.cs" />
+    <Compile Include="Abstractions\Hardware\INvxD8XHardware.cs" />
     <Compile Include="Abstractions\Hardware\INvxE3XHardware.cs" />
+    <Compile Include="Abstractions\Hardware\INvxE76XHardware.cs" />
     <Compile Include="Abstractions\HdmiOutput\IVideowallMode.cs" />
-    <Compile Include="Abstractions\INvx35xDeviceWithHarware.cs" />
+    <Compile Include="Abstractions\InputSwitching\ICurrentNaxInput.cs" />
+    <Compile Include="Abstractions\InputSwitching\ICurrentDanteInput.cs" />
+    <Compile Include="Abstractions\INvx35xDeviceWithHardware.cs" />
+    <Compile Include="Abstractions\INvx36XDeviceWithHardware.cs" />
+    <Compile Include="Abstractions\INvxD3XDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxDeviceWithHardware.cs" />
     <Compile Include="Abstractions\INvxE3xDeviceWithHardware.cs" />
-    <Compile Include="Abstractions\SecondaryAudio\ISecondardyAudioStreamWithHardware.cs" />
+    <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioStreamWithHardware.cs" />
     <Compile Include="Abstractions\SecondaryAudio\ISecondaryAudioAddress.cs" />
-    <Compile Include="Abstractions\Stream\IStreamUrl.cs" />
     <Compile Include="Abstractions\Stream\IStreamWithHardware.cs" />
-    <Compile Include="Aggregates\NvxBaseDevice.cs" />
-    <Compile Include="Aggregates\NvxMockDevice.cs" />
-    <Compile Include="Entities\Hdmi\Input\HdmiInput2.cs" />
-    <Compile Include="Entities\Hdmi\Input\HdmiInputBase.cs" />
-    <Compile Include="Entities\Hdmi\Input\HdmiInput1.cs" />
-    <Compile Include="Entities\Hdmi\Output\HdmiOutput.cs" />
-    <Compile Include="Entities\Hdmi\Output\VideowallModeOutput.cs" />
+    <Compile Include="Devices\Nvx36X.cs" />
+    <Compile Include="Devices\NvxBaseDevice.cs" />
+    <Compile Include="Devices\NvxD3X.cs" />
+    <Compile Include="Devices\NvxMockDevice.cs" />
+    <Compile Include="Application\Entities\NvxApplicationAudioReceiver.cs" />
+    <Compile Include="Application\Entities\NvxApplicationAudioTransmitter.cs" />
+    <Compile Include="Application\Entities\NvxApplicationVideoReceiver.cs" />
+    <Compile Include="Application\Entities\NvxApplicationVideoTransmitter.cs" />
+    <Compile Include="Devices\NvxXioDirector.cs" />
+    <Compile Include="Features\Config\NvxDirectorConfig.cs" />
+    <Compile Include="Factories\NvxDirectorFactory.cs" />
+    <Compile Include="Features\Hdmi\Input\HdmiInput2.cs" />
+    <Compile Include="Features\Hdmi\Input\HdmiInputBase.cs" />
+    <Compile Include="Features\Hdmi\Input\HdmiInput1.cs" />
+    <Compile Include="Features\Hdmi\Output\HdmiOutput.cs" />
+    <Compile Include="Features\Hdmi\Output\VideowallModeOutput.cs" />
+    <Compile Include="Features\InputSwitching\NaxInputSwitcher.cs" />
+    <Compile Include="Features\InputSwitching\DanteInputSwitcher.cs" />
+    <Compile Include="Extensions\NaxInputExtensions.cs" />
+    <Compile Include="Extensions\DanteInputExtensions.cs" />
     <Compile Include="Extensions\HdmiInputExtensions.cs" />
     <Compile Include="Abstractions\INvxDevice.cs" />
     <Compile Include="Abstractions\Device\ITransmitterReceiver.cs" />
@@ -130,25 +155,31 @@
     <Compile Include="Abstractions\Device\IMulticastAddress.cs" />
     <Compile Include="Abstractions\Stream\IStream.cs" />
     <Compile Include="Abstractions\Usb\IUsbStream.cs" />
-    <Compile Include="Aggregates\NvxE3X.cs" />
+    <Compile Include="Devices\NvxE3X.cs" />
     <Compile Include="Application\Builder\NvxApplicationBuilder.cs" />
     <Compile Include="Application\Builder\INvxApplicationBuilder.cs" />
     <Compile Include="Application\Config\NvxApplicationConfig.cs" />
     <Compile Include="Application\Factories\NvxApplicationFactory.cs" />
     <Compile Include="Application\JoinMap\NvxApplicationJoinMap.cs" />
     <Compile Include="Application\NvxApplication.cs" />
-    <Compile Include="Application\Router\NvxRouter.cs" />
     <Compile Include="Application\Services\ApplicationTieLineConnector.cs" />
-    <Compile Include="Application\Services\AudioFollowsVideo.cs" />
-    <Compile Include="Entities\InputSwitching\AudioInputSwitcher.cs" />
-    <Compile Include="Entities\Routing\NvxGlobalRouter.cs" />
-    <Compile Include="Entities\Streams\Usb\UsbStream.cs" />
-    <Compile Include="Entities\Streams\Video\VideoStream.cs" />
+    <Compile Include="Application\Services\AudioFollowsVideoHandler.cs" />
+    <Compile Include="Features\InputSwitching\AudioInputSwitcher.cs" />
+    <Compile Include="Features\Routing\NvxGlobalRouter.cs" />
+    <Compile Include="Features\Streams\Usb\UsbStream.cs" />
+    <Compile Include="Features\Streams\Video\VideoStream.cs" />
     <Compile Include="Enums\DeviceInputEnum.cs" />
     <Compile Include="Extensions\UsbStreamExtensions.cs" />
+    <Compile Include="Factories\Nvx36XDeviceFactory.cs" />
+    <Compile Include="Factories\NvxD3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxE3XDeviceFactory.cs" />
     <Compile Include="Factories\NvxBaseDeviceFactory.cs" />
     <Compile Include="Factories\NvxMockDeviceFactory.cs" />
+    <Compile Include="Services\Feedback\AudioRxAddressFeedback.cs" />
+    <Compile Include="Services\Feedback\AudioTxAddressFeedback.cs" />
+    <Compile Include="Services\Feedback\NaxInputValueFeedback.cs" />
+    <Compile Include="Services\Feedback\DanteInputFeedback.cs" />
+    <Compile Include="Services\Feedback\DanteInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceHostnameFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceIpFeedback.cs" />
     <Compile Include="Services\Feedback\DeviceModeNameFeedback.cs" />
@@ -162,45 +193,45 @@
     <Compile Include="Services\Feedback\Hdmi1HdcpCapabilityValueFeedback.cs" />
     <Compile Include="Services\Feedback\Hdmi2HdcpCapabilityFeedback.cs" />
     <Compile Include="Services\Feedback\Hdmi2SyncDetectedFeedback.cs" />
-    <Compile Include="Entities\Routing\NaxAudioRouter.cs" />
-    <Compile Include="Entities\Routing\SecondaryAudioRouter.cs" />
-    <Compile Include="Entities\Routing\PrimaryStreamRouter.cs" />
+    <Compile Include="Features\Routing\SecondaryAudioRouter.cs" />
+    <Compile Include="Features\Routing\PrimaryStreamRouter.cs" />
     <Compile Include="Services\Feedback\UsbLocalAddressFeedback.cs" />
     <Compile Include="Services\Feedback\VideoAspectRatioModeFeedback.cs" />
     <Compile Include="Services\Feedback\VideoInputFeedback.cs" />
     <Compile Include="Services\InputPorts\AnalogAudioInput.cs" />
+    <Compile Include="Services\InputPorts\AutomaticInput.cs" />
+    <Compile Include="Services\InputPorts\NoSwitchInput.cs" />
     <Compile Include="Services\InputPorts\PrimaryAudioInput.cs" />
     <Compile Include="Services\InputPorts\SecondaryAudioInput.cs" />
     <Compile Include="Services\InputPorts\StreamInput.cs" />
     <Compile Include="Services\InputPorts\HdmiInput1Port.cs" />
     <Compile Include="Services\InputPorts\HdmiInput2Port.cs" />
-    <Compile Include="Services\InputSwitching\AnalogAudioOutput.cs" />
-    <Compile Include="Services\InputSwitching\SecondaryAudioOutput.cs" />
-    <Compile Include="Services\InputSwitching\StreamOutput.cs" />
-    <Compile Include="Services\InputSwitching\HdmiOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForAnalogAudioOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForSecondaryAudioOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForStreamOutput.cs" />
+    <Compile Include="Services\InputSwitching\SwitcherForHdmiOutput.cs" />
     <Compile Include="Services\InputSwitching\IHandleInputSwitch.cs" />
+    <Compile Include="Services\Messages\BuildNvxDeviceMessage.cs" />
     <Compile Include="Services\TieLines\TieLineConnector.cs" />
     <Compile Include="Services\Utilities\DeviceConsole.cs" />
     <Compile Include="Enums\Enumeration.cs" />
     <Compile Include="Factories\Nvx35XDeviceFactory.cs" />
     <Compile Include="JoinMaps\NvxDeviceJoinMap.cs" />
-    <Compile Include="Entities\Streams\Audio\SecondaryAudioStream.cs" />
-    <Compile Include="Entities\Streams\Audio\CurrentSecondaryAudioStream.cs" />
-    <Compile Include="Entities\InputSwitching\VideoInputSwitcher.cs" />
-    <Compile Include="Entities\Streams\Video\CurrentVideoStream.cs" />
-    <Compile Include="Aggregates\Nvx35x.cs" />
+    <Compile Include="Features\Streams\Audio\SecondaryAudioStream.cs" />
+    <Compile Include="Features\Streams\Audio\CurrentSecondaryAudioStream.cs" />
+    <Compile Include="Features\InputSwitching\VideoInputSwitcher.cs" />
+    <Compile Include="Features\Streams\Video\CurrentVideoStream.cs" />
+    <Compile Include="Devices\Nvx35x.cs" />
     <Compile Include="Services\Utilities\DeviceDefaults.cs" />
     <Compile Include="Services\Feedback\AudioInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\HdmiOutputDisabledFeedback.cs" />
     <Compile Include="Services\Feedback\IsStreamingVideoFeedback.cs" />
-    <Compile Include="Services\Feedback\NaxRxStatus.cs" />
     <Compile Include="Services\Feedback\SecondaryAudioAddressFeedback.cs" />
     <Compile Include="Services\Feedback\IsStreamingSecondaryAudioFeedback.cs" />
     <Compile Include="Services\Feedback\VideowallModeFeedback.cs" />
     <Compile Include="Services\Utilities\DeviceDebug.cs" />
-    <Compile Include="Services\Feedback\NaxInput.cs" />
+    <Compile Include="Services\Feedback\NaxInputFeedback.cs" />
     <Compile Include="Services\Feedback\VideoStreamStatusFeedback.cs" />
-    <Compile Include="Services\Feedback\NaxTxStatus.cs" />
     <Compile Include="Services\Feedback\Hdmi1SyncDetectedFeedback.cs" />
     <Compile Include="Services\Feedback\HorizontalResolutionFeedback.cs" />
     <Compile Include="Services\Feedback\MulticastAddressFeedback.cs" />
@@ -208,7 +239,6 @@
     <Compile Include="Services\Bridge\NvxDeviceBridge.cs" />
     <Compile Include="Services\Utilities\EnumExtensions.cs" />
     <Compile Include="Extensions\AudioInputExtensions.cs" />
-    <Compile Include="Extensions\NaxAudioStreamExtensions.cs" />
     <Compile Include="Extensions\SecondaryAudioExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\VideoInputExtensions.cs" />
@@ -218,7 +248,7 @@
     <Compile Include="Services\Feedback\StreamUrlFeedback.cs" />
     <Compile Include="Services\Feedback\VideoInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\Hdmi2HdcpCapabilityValueFeedback.cs" />
-    <Compile Include="Entities\Config\NvxDeviceProperties.cs" />
+    <Compile Include="Features\Config\NvxDeviceProperties.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

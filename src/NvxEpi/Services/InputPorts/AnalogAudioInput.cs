@@ -9,9 +9,6 @@ namespace NvxEpi.Services.InputPorts
     {
         public static void AddRoutingPort(INvxDevice device)
         {
-            if (!device.IsTransmitter)
-                throw new NotSupportedException("analog audio");
-
             var port = new RoutingInputPort(
                 DeviceInputEnum.AnalogAudio.Name,
                 eRoutingSignalType.Audio,

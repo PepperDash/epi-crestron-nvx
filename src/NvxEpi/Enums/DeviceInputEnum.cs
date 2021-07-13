@@ -15,5 +15,7 @@
         public static readonly DeviceInputEnum SecondaryAudio = new DeviceInputEnum(5, "SecondaryAudio");
         public static readonly DeviceInputEnum DanteAudio = new DeviceInputEnum(6, "DanteAudio");
         public static readonly DeviceInputEnum DmNaxAudio = new DeviceInputEnum(7, "DmNaxAudio");
+        public static readonly DeviceInputEnum Automatic = new DeviceInputEnum(98, "Automatic");
+        public static readonly DeviceInputEnum NoSwitch = new DeviceInputEnum(99, "NoSwitch");
     }
 }
