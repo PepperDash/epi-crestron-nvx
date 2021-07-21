@@ -66,7 +66,7 @@ See details section below for detailed description of device properties.
         },
         "model": "DmNvx351",
         "mode": "tx",
-        "virtualDevice": 1,
+        "deviceId": 1,
         "multicastVideoAddress": "239.0.0.2",
         "multicastAudioAddress": "239.0.0.3"
     }
@@ -84,7 +84,7 @@ See details section below for detailed description of device properties.
         },
         "model": "DmNvx351",
         "mode": "rx",
-        "virtualDevice": 1
+        "deviceId": 1
     }
 }
 ```
@@ -97,7 +97,7 @@ __Properties:__
 2. Model = Case-insentive model number of the actual NVX device.
 3. Mode = VALID VALUES: { "tx", "rx" }; sets the device as a transmitter or receiver.  This must be defined or else the application
 will throw an exception.  Many default values are set based on this property.  Adjusting this value via the web interface is _not_ supported.
-4. Virtual Device: A unique number that can be thought of as an "input" or "output" number when performing routing.  For example, if you required to route
+4. Device Id: A unique number that can be thought of as an "input" or "output" number when performing routing.  For example, if you required to route
 TX-1 to RX-1, you would send a value of 1 to the Video Source input of RX-1.
 5. Multicast Video Address = Sets the local multicast Video address that a transmitter will attempt to stream to.  This address __must__ have an even number as the last Octet and is recommended to fall within a locally scoped mulitcast address range. Recommended reading : [http://www.tcpipguide.com/free/t_IPMulticastAddressing.htm]
 6. Multicast Audio Address = Sets the local multicast Audio address that a transmitter will attempt to stream the secondary audio to.  In most cases set this to be +1 of the Multicast Video address.

@@ -3,7 +3,6 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
@@ -103,14 +102,15 @@ namespace NvxEpi.Devices
             get { return _usbStream.IsRemote; }
         }
 
-        public StringFeedback UsbLocalId
-        {
-            get { return _usbStream.UsbLocalId; }
-        }
 
         public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
         {
             get { return _usbStream.UsbRemoteIds; }
+        }
+
+        public StringFeedback UsbId
+        {
+            get { return _usbStream.UsbId; }
         }
 
         public int NumberOfComPorts

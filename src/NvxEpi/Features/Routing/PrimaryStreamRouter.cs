@@ -31,11 +31,11 @@ namespace NvxEpi.Features.Routing
                 if (signalType.Is(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include video");
 
-                var rx = outputSelector as IStreamWithHardware;
+                var rx = outputSelector as IStream;
                 if (rx == null)
                     throw new ArgumentNullException("rx");
 
-                var tx = inputSelector as IStreamWithHardware;
+                var tx = inputSelector as IStream;
                 if (tx == null)
                 {
                     rx.ClearStream();
@@ -108,12 +108,22 @@ namespace NvxEpi.Features.Routing
             foreach (var routingOutputPort in OutputPorts)
             {
                 var port = routingOutputPort;
+                const int delayTime = 250;
+
+                var timer = new CTimer(o =>
+                    {
+                        if (port.InUseTracker.InUseFeedback.BoolValue)
+                            return;
+
+                        ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
+                    }, Timeout.Infinite);
+
                 port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
                 {
                     if (args.BoolValue)
                         return;
 
-                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
+                    timer.Reset(delayTime);
                 };
             }
 
@@ -153,7 +163,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var tx = _receivers.Values.FirstOrDefault(x => x.DeviceId == txId);
+            var tx = _transmitters.Values.FirstOrDefault(x => x.DeviceId == txId);
             if (tx == null)
                 return;
 
@@ -191,17 +201,14 @@ namespace NvxEpi.Features.Routing
             rx.RouteStream(txByKey);
         }
 
-        private static readonly CCriticalSection _lock = new CCriticalSection();
         private static Dictionary<string, IStream> _receivers;
         private static Dictionary<string, IStream> _transmitters;
 
         private static Dictionary<string, IStream> GetTransmitterDictionary()
         {
+            var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
             try
             {
-                _lock.Enter();
-                var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
-
                 foreach (var device in DeviceManager.AllDevices.OfType<IStream>())
                 {
                     if (!device.IsTransmitter)
@@ -212,19 +219,18 @@ namespace NvxEpi.Features.Routing
 
                 return dict;
             }
-            finally
+            catch(Exception ex)
             {
-                _lock.Leave();
+                Debug.Console(1, "Error building Transmitter Dictionary : {0}{1}", ex.Message, ex.StackTrace);
+                return new Dictionary<string, IStream>();
             }
         }
 
         private static Dictionary<string, IStream> GetReceiverDictionary()
         {
+            var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
             try
             {
-                _lock.Enter();
-
-                var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
                 foreach (var device in DeviceManager.AllDevices.OfType<IStream>())
                 {
                     if (device.IsTransmitter)
@@ -235,9 +241,10 @@ namespace NvxEpi.Features.Routing
 
                 return dict;
             }
-            finally
+            catch (Exception ex)
             {
-                _lock.Leave();
+                Debug.Console(1, "Error building Receiver Dictionary : {0}{1}", ex.Message, ex.StackTrace);
+                return new Dictionary<string, IStream>();
             }
         }
     }

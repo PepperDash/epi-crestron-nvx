@@ -19,9 +19,7 @@ namespace NvxEpi.Services.Feedback
                 throw new NotSupportedException(device.GetType().GetCType().Name);
 
             var feedback = new StringFeedback(Key, () => device.UsbInput.ModeFeedback.ToString());
-
             device.UsbInput.UsbInputChange += (sender, args) => feedback.FireUpdate();
-
             return feedback;
         }
     }

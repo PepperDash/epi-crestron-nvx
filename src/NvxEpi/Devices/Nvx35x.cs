@@ -102,14 +102,14 @@ namespace NvxEpi.Devices
             get { return _usbStream.IsRemote; }
         }
 
-        public StringFeedback UsbLocalId
-        {
-            get { return _usbStream.UsbLocalId; }
-        }
-
         public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
         {
             get { return _usbStream.UsbRemoteIds; }
+        }
+
+        public StringFeedback UsbId
+        {
+            get { return _usbStream.UsbId; }
         }
 
         public int NumberOfComPorts

@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <!-- Update ID with a plugin ID representative of the plugin being built-->
-    <id>NvxEpi</id>
+    <id>PepperDash.Essentials.Plugin.Nvx</id>
     <version>1.0.0</version>
     <!-- Update Title with the plugin name that users will see-->
     <title>NVX EPI</title>

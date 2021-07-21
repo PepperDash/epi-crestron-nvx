@@ -122,6 +122,8 @@ namespace NvxEpi.Devices
             HdmiInput1Port.AddRoutingPort(this);
             SwitcherForStreamOutput.AddRoutingPort(this);
             AnalogAudioInput.AddRoutingPort(this);
+            SecondaryAudioInput.AddRoutingPort(this);
+            SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
         }
     }
 }

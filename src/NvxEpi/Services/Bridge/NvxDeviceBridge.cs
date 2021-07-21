@@ -64,12 +64,16 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == VideowallModeFeedback.Key)
                     joinNumber = joinMap.VideowallMode.JoinNumber;
 
-                if (feedback.Key == CurrentVideoStream.RouteNameKey 
-                    || feedback.Key == CurrentVideoStream.RouteValueKey)
+                if (feedback.Key == CurrentVideoStream.RouteNameKey)
+                    joinNumber = joinMap.VideoRouteString.JoinNumber;
+
+                if (feedback.Key == CurrentVideoStream.RouteValueKey)
                     joinNumber = joinMap.VideoRoute.JoinNumber;
 
-                if (feedback.Key == CurrentSecondaryAudioStream.RouteNameKey
-                    || feedback.Key == CurrentSecondaryAudioStream.RouteValueKey)
+                if (feedback.Key == CurrentSecondaryAudioStream.RouteNameKey)
+                    joinNumber = joinMap.AudioRouteString.JoinNumber;
+
+                if (feedback.Key == CurrentSecondaryAudioStream.RouteValueKey)
                     joinNumber = joinMap.AudioRoute.JoinNumber;
 
                 if (feedback.Key == VideoInputFeedback.Key)

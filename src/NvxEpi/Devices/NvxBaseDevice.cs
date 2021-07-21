@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
@@ -26,7 +28,8 @@ namespace NvxEpi.Devices
         ICurrentAudioInput, 
         ICurrentStream,
         ICurrentSecondaryAudioStream, 
-        ICurrentNaxInput
+        ICurrentNaxInput,
+        ICommunicationMonitor
     {
         private ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private ICurrentStream _currentVideoStream;
@@ -40,6 +43,7 @@ namespace NvxEpi.Devices
         private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
             new RoutingPortCollection<RoutingOutputPort>();
 
+        private string _hardwareName;
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
 
@@ -70,9 +74,19 @@ namespace NvxEpi.Devices
             AutomaticInput.AddRoutingPort(this);
             NoSwitchInput.AddRoutingPort(this);
 
+            SetDeviceName();
+
             AddPreActivationAction(() => Hardware = getHardware());
-            AddPreActivationAction(() => IsOnline = new BoolFeedback("IsOnline", () => Hardware.IsOnline));
+            AddPreActivationAction(() => CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, Hardware, 10000, 30000));
             AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
+        }
+
+        private void SetDeviceName()
+        {
+            var tempName = string.IsNullOrEmpty(Name) ? Key : Name;
+            tempName = tempName.Replace(' ', '-');
+            var r = new Regex("[^a-zA-Z0-9-]"); //Replace all except alphanumeric and dash
+            _hardwareName = r.Replace(tempName, "");
         }
 
         public override bool CustomActivate()
@@ -82,6 +96,7 @@ namespace NvxEpi.Devices
             Feedbacks.AddRange(new Feedback[] 
                 {
                     IsOnline,
+                    new IntFeedback("DeviceId", () => DeviceId), 
                     DeviceNameFeedback.GetFeedback(Name),
                     DeviceIpFeedback.GetFeedback(Hardware),
                     DeviceHostnameFeedback.GetFeedback(Hardware),
@@ -98,6 +113,7 @@ namespace NvxEpi.Devices
             _naxSwitcher = new NaxInputSwitcher(this);
 
             RegisterForFeedback();
+            CommunicationMonitor.Start();
             _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
 
             return base.CustomActivate();
@@ -160,25 +176,20 @@ namespace NvxEpi.Devices
         {
             hardware.OnlineStatusChange += (device, args) =>
                 {
-                    Feedbacks.ForEach(f =>
-                    {
-                        if (f == null)
-                            return;
-
-                        f.FireUpdate();
-                    });
+                    Feedbacks
+                        .Where(x => x != null)
+                        .ToList()
+                        .ForEach(f => f.FireUpdate());
 
                     if (!args.DeviceOnLine)
                         return;
 
-                    Hardware.Control.Name.StringValue = Key.Replace(' ', '-');
+                    Hardware.Control.Name.StringValue = _hardwareName;
 
-                    if (IsTransmitter)
+                    if (IsTransmitter || hardware is DmNvxE30)
                         Hardware.SetTxDefaults(props);
                     else
                         Hardware.SetRxDefaults(props);
-
-                    Hardware.SetAudioDefaults(props);
                 };
         }
 
@@ -255,6 +266,11 @@ namespace NvxEpi.Devices
 
         public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
-        public BoolFeedback IsOnline { get; private set; }
+        public BoolFeedback IsOnline
+        {
+            get { return CommunicationMonitor.IsOnlineFeedback; }
+        }
+
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
     }
 }

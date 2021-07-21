@@ -21,6 +21,16 @@ namespace NvxEpi.Features.Config
         public string MulticastAudioAddress { get; set; }
         public string ParentDeviceKey { get; set; }
         public uint DomainId { get; set; }
+        public string DefaultAudioInput { get; set; }
+        public string DefaultVideoInput { get; set; }
+    }
+
+    public class NvxMockDeviceProperties
+    {
+        public int DeviceId { get; set; }
+        public string StreamUrl { get; set; }
+        public string MulticastVideoAddress { get; set; }
+        public string MulticastAudioAddress { get; set; }
     }
 
     internal static class NvxDevicePropertiesExt
