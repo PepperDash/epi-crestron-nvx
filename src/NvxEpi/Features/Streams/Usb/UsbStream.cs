@@ -49,6 +49,7 @@ namespace NvxEpi.Features.Streams.Usb
             _device.Feedbacks.AddRange(new Feedback[]
                 {
                     _usbLocalId,
+                    new BoolFeedback("UsbFollowsVideoStream", () => !followStream || IsTransmitter), 
                     UsbRemoteAddressFeedback.GetFeedback(device.Hardware),
                     UsbModeFeedback.GetFeedback(Hardware),
                     UsbStatusFeedback.GetFeedback(Hardware)
@@ -64,10 +65,13 @@ namespace NvxEpi.Features.Streams.Usb
 
                     Hardware.UsbInput.AutomaticUsbPairingEnabled();
                     Hardware.UsbInput.Mode = IsRemote ? DmNvxUsbInput.eUsbMode.Remote : DmNvxUsbInput.eUsbMode.Local;
+                    if (!followStream || IsTransmitter)
+                        return;
+
                     SetDefaultStream(isRemote, defaultPair);
                 };
 
-            if (!followStream || !IsTransmitter) 
+            if (!followStream || IsTransmitter) 
                 return;
 
             var stream = device as ICurrentStream;
@@ -174,11 +178,6 @@ namespace NvxEpi.Features.Streams.Usb
             get { return _device.Feedbacks; }
         }
 
-        public BoolFeedback BuildFeedbacks
-        {
-            get { return _device.BuildFeedbacks; }
-        }
-
         public IntFeedback DeviceMode
         {
             get { return _device.DeviceMode; }
@@ -217,6 +216,11 @@ namespace NvxEpi.Features.Streams.Usb
         public DmNvxBaseClass Hardware
         {
             get { return _device.Hardware; }
+        }
+
+        public BoolFeedback IsOnline
+        {
+            get { return _device.IsOnline; }
         }
     }
 }

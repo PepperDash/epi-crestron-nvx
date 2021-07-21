@@ -12,6 +12,6 @@ namespace NvxEpi.Abstractions.Usb
 
     public interface IUsbStreamWithHardware : IUsbStream, INvxHardware
     {
-        StringFeedback UsbId { get; }
+        StringFeedback UsbLocalId { get; }
     }
 }

@@ -53,12 +53,13 @@ namespace NvxEpi.Devices
                 throw new Exception("hardware built doesn't match");
 
             Hardware = hardware;
+            var result = base.CustomActivate();
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            return base.CustomActivate();
+            return result;
         }
 
         public CrestronCollection<ComPort> ComPorts
@@ -105,11 +106,6 @@ namespace NvxEpi.Devices
         public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
         {
             get { return _usbStream.UsbRemoteIds; }
-        }
-
-        public StringFeedback UsbId
-        {
-            get { return _usbStream.UsbId; }
         }
 
         public int NumberOfComPorts
@@ -189,6 +185,11 @@ namespace NvxEpi.Devices
             {
                 StreamInput.AddRoutingPort(this);
             }
+        }
+
+        public StringFeedback UsbLocalId
+        {
+            get { return _usbStream.UsbLocalId; }
         }
     }
 }
