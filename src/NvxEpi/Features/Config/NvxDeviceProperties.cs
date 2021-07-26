@@ -1,5 +1,4 @@
 ﻿using System;
-using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -9,7 +8,7 @@ namespace NvxEpi.Features.Config
     {
         public static NvxDeviceProperties FromDeviceConfig(DeviceConfig config)
         {
-            return JsonConvert.DeserializeObject<NvxDeviceProperties>(config.Properties.ToString());
+            return config.Properties.ToObject<NvxDeviceProperties>();
         }
 
         public int DeviceId { get; set; }
@@ -23,6 +22,7 @@ namespace NvxEpi.Features.Config
         public uint DomainId { get; set; }
         public string DefaultAudioInput { get; set; }
         public string DefaultVideoInput { get; set; }
+        public bool EnableAutoRoute { get; set; }
     }
 
     public class NvxMockDeviceProperties

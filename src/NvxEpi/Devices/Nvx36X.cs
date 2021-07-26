@@ -8,6 +8,8 @@ using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Features.AutomaticRouting;
+using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Services.Bridge;
@@ -34,10 +36,12 @@ namespace NvxEpi.Devices
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
         private readonly IUsbStream _usbStream;
+        private readonly NvxDeviceProperties _props;
 
         public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
             : base(config, getHardware, isTransmitter)
         {
+            _props = NvxDeviceProperties.FromDeviceConfig(config);
             AddPreActivationAction(AddRoutingPorts);
         }
 
@@ -46,13 +50,18 @@ namespace NvxEpi.Devices
             var hardware = base.Hardware as DmNvx36x;
             if (hardware == null)
                 throw new Exception("hardware built doesn't match");
-
+            
             Hardware = hardware;
 
+            var result = base.CustomActivate();
             _hdmiInput = new HdmiInput1(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            return base.CustomActivate();
+            if (_props.EnableAutoRoute)
+                // ReSharper disable once ObjectCreationAsStatement
+                new AutomaticInputRouter(_hdmiInput);
+
+            return result;
         }
 
         public CrestronCollection<ComPort> ComPorts
