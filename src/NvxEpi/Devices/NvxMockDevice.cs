@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Linq;
+using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
+using NvxEpi.Extensions;
 using NvxEpi.Features.Config;
+using NvxEpi.JoinMaps;
+using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices
 {
-    public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, IRoutingNumeric
+    public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced
     {
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
             new RoutingPortCollection<RoutingInputPort>();
 
         private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
             new RoutingPortCollection<RoutingOutputPort>();
+
+        private string _streamUrl;
 
         public NvxMockDevice(DeviceConfig dc)
             : base(dc.Key, dc.Name)
@@ -34,6 +42,7 @@ namespace NvxEpi.Devices
 
             DeviceId = props.DeviceId;
             IsTransmitter = true;
+            _streamUrl = !String.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : String.Empty;
             BuildFeedbacks(props);
             BuildInputPorts();
         }
@@ -42,8 +51,7 @@ namespace NvxEpi.Devices
         {
             IsOnline = new BoolFeedback("IsOnline", () => true);
             DeviceMode = new IntFeedback(() => 0);
-            StreamUrl = new StringFeedback("StreamUrl",
-                () => !String.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : String.Empty);
+            StreamUrl = new StringFeedback("StreamUrl", () => _streamUrl);
 
             MulticastAddress = new StringFeedback("MulticastVideoAddress",
                 () => !String.IsNullOrEmpty(props.MulticastVideoAddress) ? props.MulticastVideoAddress : String.Empty);
@@ -152,5 +160,33 @@ namespace NvxEpi.Devices
         public BoolFeedback IsStreamingSecondaryAudio { get; private set; }
         public StringFeedback SecondaryAudioStreamStatus { get; private set; }
         public StringFeedback MulticastAddress { get; private set; }
+
+        private void SetStreamUrl(string url)
+        {
+            if (url.Equals(_streamUrl))
+                return;
+
+            var oldUrl = _streamUrl;
+            _streamUrl = url;
+            StreamUrl.FireUpdate();
+
+            if (string.IsNullOrEmpty(oldUrl))
+                return;
+
+            foreach (
+                var rx in
+                    DeviceManager.AllDevices.OfType<IStream>()
+                                 .Where(x => !x.IsTransmitter && x.StreamUrl.StringValue.Equals(oldUrl)))
+                rx.RouteStream(this);
+        }
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = new NvxDeviceJoinMap(joinStart);
+
+            var deviceBridge = new NvxDeviceBridge(this);
+            deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
+            trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetStreamUrl);
+        }
     }
 }
