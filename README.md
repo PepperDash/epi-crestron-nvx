@@ -57,14 +57,13 @@ See details section below for detailed description of device properties.
     "key": "Tx-1",
     "uid": 1,
     "name": "Laptop",
-    "type": "nvxdevice",
+    "type": "DmNvx351",
     "group": "nvx",
     "properties": {
         "control": {
             "method": "ipid",
             "ipid": "41"
         },
-        "model": "DmNvx351",
         "mode": "tx",
         "deviceId": 1,
         "multicastVideoAddress": "239.0.0.2",
@@ -75,14 +74,13 @@ See details section below for detailed description of device properties.
     "key": "Rx-1",
     "uid": 74,
     "name": "PC-Cam",
-    "type": "nvxdevice",
+    "type": "DmNvx363",
     "group": "nvx",
     "properties": {
         "control": {
             "method": "ipid",
             "ipid": "51"
         },
-        "model": "DmNvx351",
         "mode": "rx",
         "deviceId": 1
     }
