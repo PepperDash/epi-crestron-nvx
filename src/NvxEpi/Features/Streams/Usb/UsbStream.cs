@@ -92,9 +92,10 @@ namespace NvxEpi.Features.Streams.Usb
             var result = DeviceManager
                 .AllDevices
                 .OfType<IStreamWithHardware>()
-                .FirstOrDefault(x => x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl));
+                .FirstOrDefault(x => x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl)) as IUsbStreamWithHardware;
 
-            var currentRoute = result as IUsbStreamWithHardware;
+
+            var currentRoute = result;
             if (currentRoute == null)
                 ClearCurrentRoute();
             else if (IsRemote && !currentRoute.IsRemote)
@@ -121,7 +122,7 @@ namespace NvxEpi.Features.Streams.Usb
             uint index = 0;
             foreach (var usbStream in results)
             {
-                foreach (var item in usbStream.UsbRemoteIds.Where(s => s.Value.StringValue.Equals(usbId)))
+                foreach (var item in usbStream.UsbRemoteIds.Where(s => s.Value != null && s.Value.StringValue.Equals(usbId)))
                 {
                     local = usbStream;
                     index = item.Key;

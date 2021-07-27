@@ -7,7 +7,7 @@ namespace NvxEpi.Extensions
 {
     public static class UsbStreamExt
     {
-        public const string ClearUsbValue = "00:00:00:00:00";
+        public const string ClearUsbValue = "00:00:00:00:00:00";
 
         public static void AddRemoteUsbStreamToLocal(this IUsbStreamWithHardware local, IUsbStreamWithHardware remote)
         {
