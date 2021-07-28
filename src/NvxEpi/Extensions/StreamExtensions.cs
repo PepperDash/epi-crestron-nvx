@@ -38,9 +38,9 @@ namespace NvxEpi.Extensions
             tx.StreamUrl.FireUpdate();
 
             if (String.IsNullOrEmpty(tx.StreamUrl.StringValue))
-                return;
-
-            device.SetStreamUrl(tx.StreamUrl.StringValue);
+                device.ClearStream();
+            else
+                device.SetStreamUrl(tx.StreamUrl.StringValue);
         }
 
         public static void SetStreamUrl(this IStream device, string url)
