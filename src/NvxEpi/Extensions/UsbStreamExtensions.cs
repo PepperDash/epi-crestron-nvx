@@ -19,8 +19,19 @@ namespace NvxEpi.Extensions
                 if (!remote.IsRemote)
                     throw new NotSupportedException(remote.Key);
 
+                /*
+                 * This doesn't work because we're comparing references, not values of the feedbacks
                 if (local.UsbRemoteIds.ContainsValue(remote.UsbLocalId))
                     return;
+                 */
+
+                if (local.UsbRemoteIds.Any((x) => x.Value.StringValue.Equals(remote.UsbLocalId.StringValue)))
+                {
+                    Debug.Console(2, remote, "Remote {0} already added to list. Setting remote to {1}",
+                        remote.UsbLocalId, local.UsbLocalId);
+                    remote.Hardware.UsbInput.RemoteDeviceId.StringValue = local.UsbLocalId.StringValue;
+                    return;
+                }
 
                 var index =
                     local.UsbRemoteIds.FirstOrDefault(
@@ -28,7 +39,7 @@ namespace NvxEpi.Extensions
 
                 if (index.Value == null)
                 {
-                    Debug.Console(1, remote, "Cannot pair to : {0}, it doesn't support any more connections", local.Key);
+                    Debug.Console(1, remote, "Cannot pair to: {0}, it doesn't support any more connections", local.Key);
                     return;
                 }
 
@@ -43,7 +54,7 @@ namespace NvxEpi.Extensions
                     return;
                 }
 
-                Debug.Console(1, local, "Setting Remote Id : {0} to {1}", index, remote.UsbLocalId.StringValue);
+                Debug.Console(1, local, "Setting Remote Id: {0} to {1}", index, remote.UsbLocalId.StringValue);
                 inputSig.StringValue = remote.UsbLocalId.StringValue;
                 Debug.Console(1, remote, "Setting Remote Id to {0}", local.UsbLocalId.StringValue);
                 remote.Hardware.UsbInput.RemoteDeviceId.StringValue = local.UsbLocalId.StringValue;
