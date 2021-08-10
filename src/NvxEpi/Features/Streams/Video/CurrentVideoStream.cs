@@ -58,15 +58,6 @@ namespace NvxEpi.Features.Streams.Video
                 _lock.Enter();
                 _current = GetCurrentStream();
 
-                if (_current == null)
-                {
-                    Debug.Console(2, this, "Current stream address: {0} device ID: {1}", "0.0.0.0", 0);
-                }
-                else
-                {
-                    Debug.Console(2, this, "Current stream address: {0} device ID: {1}", _current.MulticastAddress, _current.DeviceId);
-                }
-
                 CurrentStreamId.FireUpdate();
                 CurrentStreamName.FireUpdate();
             }
@@ -96,10 +87,7 @@ namespace NvxEpi.Features.Streams.Video
                     x => x.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
 
             if (result != null)
-
-            {
                 return result;
-            }
 
             result = DeviceManager
                 .AllDevices
@@ -110,9 +98,7 @@ namespace NvxEpi.Features.Streams.Video
                     tx => tx.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
 
             if (result != null)
-            {
                 _transmitters.Add(result);
-            }
 
             return result;
         }
