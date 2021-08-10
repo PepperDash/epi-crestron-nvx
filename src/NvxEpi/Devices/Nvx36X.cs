@@ -8,10 +8,8 @@ using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
-using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
-using NvxEpi.Features.Streams.Usb;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -26,7 +24,7 @@ namespace NvxEpi.Devices
         NvxBaseDevice, 
         IComPorts, 
         IIROutputPorts,
-        IUsbStreamWithHardware, 
+        IUsbStream, 
         IHdmiInput, 
         IVideowallMode, 
         IRouting, 
@@ -35,13 +33,11 @@ namespace NvxEpi.Devices
     {
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
-        private IUsbStreamWithHardware _usbStream;
-        private readonly NvxDeviceProperties _config;
+        private readonly IUsbStream _usbStream;
 
         public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
             : base(config, getHardware, isTransmitter)
         {
-            _config = NvxDeviceProperties.FromDeviceConfig(config);
             AddPreActivationAction(AddRoutingPorts);
         }
 
@@ -52,13 +48,11 @@ namespace NvxEpi.Devices
                 throw new Exception("hardware built doesn't match");
 
             Hardware = hardware;
-            var result = base.CustomActivate();
 
-            _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInput = new HdmiInput1(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            return result;
+            return base.CustomActivate();
         }
 
         public CrestronCollection<ComPort> ComPorts
@@ -103,9 +97,9 @@ namespace NvxEpi.Devices
             get { return _usbStream.IsRemote; }
         }
 
-        public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
+        public StringFeedback UsbId
         {
-            get { return _usbStream.UsbRemoteIds; }
+            get { return _usbStream.UsbId; }
         }
 
         public int NumberOfComPorts
@@ -185,11 +179,6 @@ namespace NvxEpi.Devices
             {
                 StreamInput.AddRoutingPort(this);
             }
-        }
-
-        public StringFeedback UsbLocalId
-        {
-            get { return _usbStream.UsbLocalId; }
         }
     }
 }
