@@ -7,11 +7,13 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
+using NvxEpi.Features.Streams.Usb;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -26,23 +28,23 @@ namespace NvxEpi.Devices
         NvxBaseDevice, 
         IComPorts, 
         IIROutputPorts,
-        IUsbStream, 
+        IUsbStreamWithHardware, 
         IHdmiInput, 
         IVideowallMode, 
         IRouting, 
-        ICec, 
+        ICec,
         INvx35XDeviceWithHardware
     {
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
-        private readonly IUsbStream _usbStream;
-        private readonly NvxDeviceProperties _props;
+        private IUsbStreamWithHardware _usbStream;
+        private readonly NvxDeviceProperties _config;
 
         public Nvx35X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
             : base(config, getHardware, isTransmitter)
         {
+            _config = NvxDeviceProperties.FromDeviceConfig(config);
             AddPreActivationAction(AddRoutingPorts);
-            _props = NvxDeviceProperties.FromDeviceConfig(config);
         }
 
         public override bool CustomActivate()
@@ -52,12 +54,13 @@ namespace NvxEpi.Devices
                 throw new Exception("hardware built doesn't match");
 
             Hardware = hardware;
+            var result = base.CustomActivate();
 
-            var result = base.CustomActivate(); 
+            _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            if (_props.EnableAutoRoute)
+            if (_config.EnableAutoRoute)
                 // ReSharper disable once ObjectCreationAsStatement
                 new AutomaticInputRouter(_hdmiInput);
 
@@ -105,9 +108,9 @@ namespace NvxEpi.Devices
             get { return _usbStream.IsRemote; }
         }
 
-        public StringFeedback UsbId
+        public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
         {
-            get { return _usbStream.UsbId; }
+            get { return _usbStream.UsbRemoteIds; }
         }
 
         public int NumberOfComPorts
@@ -187,6 +190,11 @@ namespace NvxEpi.Devices
             {
                 StreamInput.AddRoutingPort(this);
             }
+        }
+
+        public StringFeedback UsbLocalId
+        {
+            get { return _usbStream.UsbLocalId; }
         }
     }
 }
