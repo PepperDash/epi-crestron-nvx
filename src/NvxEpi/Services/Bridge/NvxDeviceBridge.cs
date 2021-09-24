@@ -163,14 +163,14 @@ namespace NvxEpi.Services.Bridge
             var audioInput = _device as ICurrentAudioInput;
             if (audioInput != null)
                 trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, audioInput.SetAudioInput);
-
+                
             var naxInput = _device as ICurrentNaxInput;
             if (naxInput != null)
                 trilist.SetUShortSigAction(joinMap.NaxInput.JoinNumber, naxInput.SetNaxInput);
 
             var danteInput = _device as ICurrentDanteInput;
             if (audioInput != null)
-                trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, danteInput.SetDanteInput);
+                trilist.SetUShortSigAction(joinMap.DanteInput.JoinNumber, danteInput.SetDanteInput);
 
             var stream = _device as IStream;
             if (stream != null)
