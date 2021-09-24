@@ -12,11 +12,6 @@ namespace NvxEpi.Extensions
         {
             switch (input)
             {
-                case 0:
-                    break;
-                case 99:
-                    device.SetAudioToInputAutomatic();
-                    break;
                 case 1:
                     device.SetAudioToHdmiInput1();
                     break;
@@ -31,6 +26,9 @@ namespace NvxEpi.Extensions
                     break;
                 case 5:
                     device.SetAudioToSecondaryStreamAudio();
+                    break;
+                case 99:
+                    device.SetAudioToInputAutomatic();
                     break;
             }
         }
