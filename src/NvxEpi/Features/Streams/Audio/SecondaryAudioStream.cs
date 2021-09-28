@@ -14,6 +14,7 @@ namespace NvxEpi.Features.Streams.Audio
         private readonly StringFeedback _secondaryAudioTxAddress;
         private readonly BoolFeedback _isStreamingSecondaryAudio;
         private readonly StringFeedback _secondaryAudioStreamStatus;
+        private readonly StringFeedback _secondaryAudioAddres;
 
         public SecondaryAudioStream(INvxDeviceWithHardware device)
         {
@@ -23,6 +24,9 @@ namespace NvxEpi.Features.Streams.Audio
             _isStreamingSecondaryAudio = IsStreamingSecondaryAudioFeedback.GetFeedbackForReceiver(Hardware);
             _secondaryAudioRxAddress = AudioRxAddressFeedback.GetFeedback(Hardware);
             _secondaryAudioTxAddress = AudioTxAddressFeedback.GetFeedback(Hardware);
+            _secondaryAudioAddres = IsTransmitter
+                ? SecondaryAudioAddressFeedback.GetFeedbackForTransmitter(Hardware)
+                : SecondaryAudioAddressFeedback.GetFeedbackForReceiver(Hardware);
 
             Feedbacks.Add(SecondaryAudioAddress);
             Feedbacks.Add(SecondaryAudioStreamStatus);
@@ -90,7 +94,7 @@ namespace NvxEpi.Features.Streams.Audio
         {
             get 
             {
-                return _device.IsTransmitter ? _secondaryAudioTxAddress : _secondaryAudioRxAddress;
+                return _secondaryAudioAddres;
             }
         }
 
