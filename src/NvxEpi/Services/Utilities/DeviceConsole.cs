@@ -16,9 +16,9 @@ namespace NvxEpi.Services.Utilities
 
             foreach (var device in devices)
             {
-                Debug.Console(1, device, "----------- {0} -----------", device.Name);
+                Debug.Console(0, device, "----------- {0} -----------", device.Name);
                 PrintInfoToConsole(device);
-                Debug.Console(1, device, "-----------------------------------------\r");
+                Debug.Console(0, device, "-----------------------------------------\r");
             }       
         }
 
@@ -27,13 +27,13 @@ namespace NvxEpi.Services.Utilities
             foreach (var feedback in device.Feedbacks.Where(x => x != null && !String.IsNullOrEmpty(x.Key)))
             {
                 if (feedback is BoolFeedback)
-                    Debug.Console(1, device, "{0} : '{1}'", feedback.Key, feedback.BoolValue);
+                    Debug.Console(0, device, "{0} : '{1}'", feedback.Key, feedback.BoolValue);
 
                 if (feedback is IntFeedback)
-                    Debug.Console(1, device, "{0} : '{1}'", feedback.Key, feedback.IntValue);
+                    Debug.Console(0, device, "{0} : '{1}'", feedback.Key, feedback.IntValue);
 
                 if (feedback is StringFeedback)
-                    Debug.Console(1, device, "{0} : '{1}'", feedback.Key, feedback.StringValue);
+                    Debug.Console(0, device, "{0} : '{1}'", feedback.Key, feedback.StringValue);
             }
         }
     }

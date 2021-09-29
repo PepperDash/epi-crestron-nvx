@@ -96,7 +96,6 @@ namespace NvxEpi.Features.Streams.Video
                     x => x.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
 
             if (result != null)
-
             {
                 return result;
             }
@@ -107,7 +106,7 @@ namespace NvxEpi.Features.Streams.Video
                 .Where(t => t.IsTransmitter)
                 .Where(x => !string.IsNullOrEmpty(x.StreamUrl.StringValue))
                 .FirstOrDefault(
-                    tx => tx.MulticastAddress.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
+                    tx => tx.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
 
             if (result != null)
             {
