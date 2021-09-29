@@ -49,7 +49,7 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == Hdmi1HdcpCapabilityValueFeedback.Key)
                     joinNumber = joinMap.Hdmi1Capability.JoinNumber;
 
-                if (feedback.Key == Hdmi1HdcpCapabilityValueFeedback.Key)
+                if (feedback.Key == Hdmi2HdcpCapabilityValueFeedback.Key)
                     joinNumber = joinMap.Hdmi2Capability.JoinNumber;
 
                 if (feedback.Key == Hdmi1HdcpCapabilityFeedback.Key)
@@ -127,7 +127,7 @@ namespace NvxEpi.Services.Bridge
 
         private static void LinkFeedback(BasicTriList trilist, IKeyed feedback, uint join)
         {
-            Debug.Console(1, feedback, "Linking to Trilist : {0} | Join : {0}", trilist.ID, join);
+            Debug.Console(2, feedback, "Linking to Trilist : {0} | Join : {1}", trilist.ID, join);
 
             var stringFeedback = feedback as StringFeedback;
             if (stringFeedback != null)
