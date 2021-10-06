@@ -170,12 +170,9 @@ namespace NvxEpi.Devices
             _streamUrl = url;
             StreamUrl.FireUpdate();
 
-            if (string.IsNullOrEmpty(oldUrl))
-                return;
-
             foreach (
                 var rx in
-                    DeviceManager.AllDevices.OfType<IStream>()
+                    DeviceManager.AllDevices.OfType<IStreamWithHardware>()
                                  .Where(x => !x.IsTransmitter && x.StreamUrl.StringValue.Equals(oldUrl)))
                 rx.RouteStream(this);
         }

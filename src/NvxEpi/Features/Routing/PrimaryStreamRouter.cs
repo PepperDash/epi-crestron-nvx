@@ -31,7 +31,7 @@ namespace NvxEpi.Features.Routing
                 if (signalType.Is(eRoutingSignalType.Audio))
                     throw new ArgumentException("signal type must include video");
 
-                var rx = outputSelector as IStream;
+                var rx = outputSelector as IStreamWithHardware;
                 if (rx == null)
                     throw new ArgumentNullException("rx");
 
@@ -60,7 +60,6 @@ namespace NvxEpi.Features.Routing
 
         public override bool CustomActivate()
         {
-
             if (_transmitters == null)
                 _transmitters = GetTransmitterDictionary();
 
@@ -145,14 +144,24 @@ namespace NvxEpi.Features.Routing
             if (rxId == 0)
                 return;
 
-            var rx = _receivers.Values.FirstOrDefault(x => x.DeviceId == rxId);
+            var rx = GetRxById(rxId);
             if (rx == null)
                 return;
 
             Route(txId, rx);
         }
 
-        public static void Route(int txId, IStream rx)
+        public static IStreamWithHardware GetRxById(int rxId)
+        {
+            return _receivers.Values.OfType<IStreamWithHardware>().FirstOrDefault(x => x.DeviceId == rxId);
+        }
+
+        public static IStream GetTxById(int txId)
+        {
+            return _transmitters.Values.FirstOrDefault(x => x.DeviceId == txId);
+        }
+
+        public static void Route(int txId, IStreamWithHardware rx)
         {
             if (rx.IsTransmitter)
                 throw new ArgumentException("rx device is transmitter");
@@ -163,14 +172,14 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var tx = _transmitters.Values.FirstOrDefault(x => x.DeviceId == txId);
+            var tx = GetTxById(txId);
             if (tx == null)
                 return;
 
             rx.RouteStream(tx);
         }
 
-        public static void Route(string txName, IStream rx)
+        public static void Route(string txName, IStreamWithHardware rx)
         {
             if (rx.IsTransmitter)
                 throw new ArgumentException("rx device is transmitter");
@@ -206,46 +215,22 @@ namespace NvxEpi.Features.Routing
 
         private static Dictionary<string, IStream> GetTransmitterDictionary()
         {
-            var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
-            try
-            {
-                foreach (var device in DeviceManager.AllDevices.OfType<IStream>())
-                {
-                    if (!device.IsTransmitter)
-                        continue;
-
-                    dict.Add(device.Name, device);
-                }
-
-                return dict;
-            }
-            catch(Exception ex)
-            {
-                Debug.Console(1, "Error building Transmitter Dictionary : {0}{1}", ex.Message, ex.StackTrace);
-                return new Dictionary<string, IStream>();
-            }
+            return
+                DeviceManager
+                    .AllDevices
+                    .OfType<IStream>()
+                    .Where(device => device.IsTransmitter)
+                    .ToDictionary(device => device.Name, stream => stream);
         }
 
         private static Dictionary<string, IStream> GetReceiverDictionary()
         {
-            var dict = new Dictionary<string, IStream>(StringComparer.OrdinalIgnoreCase);
-            try
-            {
-                foreach (var device in DeviceManager.AllDevices.OfType<IStream>())
-                {
-                    if (device.IsTransmitter)
-                        continue;
-
-                    dict.Add(device.Name, device);
-                }
-
-                return dict;
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(1, "Error building Receiver Dictionary : {0}{1}", ex.Message, ex.StackTrace);
-                return new Dictionary<string, IStream>();
-            }
+            return
+                DeviceManager
+                    .AllDevices
+                    .OfType<IStream>()
+                    .Where(device => !device.IsTransmitter)
+                    .ToDictionary(device => device.Name, stream => stream);
         }
     }
 }
