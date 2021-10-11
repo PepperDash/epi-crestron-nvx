@@ -175,7 +175,7 @@ namespace NvxEpi.Services.Bridge
             if (audioInput != null)
                 trilist.SetUShortSigAction(joinMap.DanteInput.JoinNumber, danteInput.SetDanteInput);
 
-            var stream = _device as IStream;
+            var stream = _device as IStreamWithHardware;
             if (stream != null)
                 trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, stream.SetStreamUrl);
         }
@@ -184,7 +184,7 @@ namespace NvxEpi.Services.Bridge
         {
             if (!_device.IsTransmitter)
             {
-                var stream = _device as IStream;
+                var stream = _device as IStreamWithHardware;
                 if (stream != null)
                 {
                     trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, source => PrimaryStreamRouter.Route(source, stream));

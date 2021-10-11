@@ -7,20 +7,16 @@ namespace NvxEpi.Extensions
 {
     public static class StreamExtensions
     {
-        public static void ClearStream(this IStream device)
+        public static void ClearStream(this IStreamWithHardware device)
         {
             if (device.IsTransmitter)
                 return;
 
-            var deviceWithHardware = device as IStreamWithHardware;
-            if (deviceWithHardware == null)
-                return;
-            
             Debug.Console(1, device, "Clearing stream");
-            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = string.Empty;
+            device.Hardware.Control.ServerUrl.StringValue = string.Empty;
         }
 
-        public static void RouteStream(this IStream device, IStream tx)
+        public static void RouteStream(this IStreamWithHardware device, IStream tx)
         {
             if (device.IsTransmitter)
                 throw new ArgumentException("device");
@@ -43,27 +39,20 @@ namespace NvxEpi.Extensions
                 device.SetStreamUrl(tx.StreamUrl.StringValue);
         }
 
-        public static void SetStreamUrl(this IStream device, string url)
+        public static void SetStreamUrl(this IStreamWithHardware device, string url)
         {
             if (device.IsTransmitter)
                 return;
 
-            if (String.IsNullOrEmpty(url))
-                return;
-
-            var deviceWithHardware = device as IStreamWithHardware;
-            if (deviceWithHardware == null)
-                return;
-
             Debug.Console(1, device, "Setting stream: '{0}'", url);
-            deviceWithHardware.Hardware.Control.ServerUrl.StringValue = url;
-            if (deviceWithHardware.Hardware is DmNvxD3x)
+            device.Hardware.Control.ServerUrl.StringValue = url;
+            if (device.Hardware is DmNvxD3x)
             {
                 Debug.Console(1, device, "Device is DmNvxE3x type, not able to route VideoSource");
             }
             else
             {
-                deviceWithHardware.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
+                device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
             }
         }
     }
