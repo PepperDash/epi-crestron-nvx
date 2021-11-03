@@ -166,15 +166,14 @@ namespace NvxEpi.Devices
             if (url.Equals(_streamUrl))
                 return;
 
-            var oldUrl = _streamUrl;
             _streamUrl = url;
             StreamUrl.FireUpdate();
 
-            foreach (
+            /*foreach (
                 var rx in
                     DeviceManager.AllDevices.OfType<IStreamWithHardware>()
                                  .Where(x => !x.IsTransmitter && x.StreamUrl.StringValue.Equals(oldUrl)))
-                rx.RouteStream(this);
+                rx.RouteStream(this);*/
         }
 
         public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
