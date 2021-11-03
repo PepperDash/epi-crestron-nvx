@@ -18,9 +18,12 @@ namespace NvxEpi.Features.Hdmi.Input
             var inputResolution = new StringFeedback(() => string.Empty);
             _currentResolution.Add(2, inputResolution);
 
+            var capabilityString = Hdmi2HdcpCapabilityFeedback.GetFeedback(device.Hardware);
+
             Feedbacks.Add(capability);
             Feedbacks.Add(sync);
             Feedbacks.Add(inputResolution);
+            Feedbacks.Add(capabilityString);
         }
     }
 }

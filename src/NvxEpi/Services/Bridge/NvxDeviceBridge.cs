@@ -49,7 +49,7 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == Hdmi1HdcpCapabilityValueFeedback.Key)
                     joinNumber = joinMap.Hdmi1Capability.JoinNumber;
 
-                if (feedback.Key == Hdmi1HdcpCapabilityValueFeedback.Key)
+                if (feedback.Key == Hdmi2HdcpCapabilityValueFeedback.Key)
                     joinNumber = joinMap.Hdmi2Capability.JoinNumber;
 
                 if (feedback.Key == Hdmi1HdcpCapabilityFeedback.Key)
@@ -94,6 +94,9 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == MulticastAddressFeedback.Key)
                     joinNumber = joinMap.MulticastVideoAddress.JoinNumber;
 
+                if (feedback.Key == SecondaryAudioAddressFeedback.Key)
+                    joinNumber = joinMap.MulticastAudioAddress.JoinNumber;
+
                 if (feedback.Key == AudioTxAddressFeedback.Key)
                     joinNumber = joinMap.NaxTxAddress.JoinNumber;
 
@@ -124,7 +127,7 @@ namespace NvxEpi.Services.Bridge
 
         private static void LinkFeedback(BasicTriList trilist, IKeyed feedback, uint join)
         {
-            Debug.Console(1, feedback, "Linking to Trilist : {0} | Join : {0}", trilist.ID, join);
+            Debug.Console(2, feedback, "Linking to Trilist : {0} | Join : {1}", trilist.ID, join);
 
             var stringFeedback = feedback as StringFeedback;
             if (stringFeedback != null)
@@ -163,16 +166,16 @@ namespace NvxEpi.Services.Bridge
             var audioInput = _device as ICurrentAudioInput;
             if (audioInput != null)
                 trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, audioInput.SetAudioInput);
-
+                
             var naxInput = _device as ICurrentNaxInput;
             if (naxInput != null)
                 trilist.SetUShortSigAction(joinMap.NaxInput.JoinNumber, naxInput.SetNaxInput);
 
             var danteInput = _device as ICurrentDanteInput;
             if (audioInput != null)
-                trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, danteInput.SetDanteInput);
+                trilist.SetUShortSigAction(joinMap.DanteInput.JoinNumber, danteInput.SetDanteInput);
 
-            var stream = _device as IStream;
+            var stream = _device as IStreamWithHardware;
             if (stream != null)
                 trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, stream.SetStreamUrl);
         }
@@ -181,7 +184,7 @@ namespace NvxEpi.Services.Bridge
         {
             if (!_device.IsTransmitter)
             {
-                var stream = _device as IStream;
+                var stream = _device as IStreamWithHardware;
                 if (stream != null)
                 {
                     trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, source => PrimaryStreamRouter.Route(source, stream));

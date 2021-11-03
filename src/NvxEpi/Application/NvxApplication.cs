@@ -200,12 +200,12 @@ namespace NvxEpi.Application
                     trilist.UShortInput[(uint)(joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1)]);
 
                 var rx = item.DeviceActual;
+                var stream = rx.Device as IStreamWithHardware;
                 trilist.SetUShortSigAction((uint) ( joinMap.OutputVideo.JoinNumber + item.DeviceId - 1 ),
                     s =>
                         {
                             if (s == 0)
                             {
-                                var stream = rx.Device as IStream;
                                 if (stream != null)
                                     stream.ClearStream();
 
@@ -256,13 +256,14 @@ namespace NvxEpi.Application
                     trilist.StringInput[(uint)(joinMap.OutputCurrentAudioInputNames.JoinNumber + item.DeviceId - 1)]);
 
                 var rx = item.DeviceActual;
+                var audioStream = rx.Device as ISecondaryAudioStream;
+
                 trilist.SetUShortSigAction((uint)(joinMap.OutputAudio.JoinNumber + item.DeviceId - 1),
                     s =>
                     {
                         if (s == 0)
                         {
                             rx.Device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
-                            var audioStream = rx.Device as ISecondaryAudioStream;
                             if (audioStream != null)
                                 audioStream.ClearSecondaryStream();
 

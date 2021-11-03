@@ -9,6 +9,7 @@ using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
@@ -58,6 +59,10 @@ namespace NvxEpi.Devices
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInput = new HdmiInput2(this);
             _hdmiOutput = new VideowallModeOutput(this);
+
+            if (_config.EnableAutoRoute)
+                // ReSharper disable once ObjectCreationAsStatement
+                new AutomaticInputRouter(_hdmiInput);
 
             return result;
         }

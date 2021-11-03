@@ -87,16 +87,15 @@ namespace NvxEpi.Features.Streams.Video
 
         private IStream GetCurrentStream()
         {
-            if (string.IsNullOrEmpty(MulticastAddress.StringValue) || MulticastAddress.StringValue.Equals("0.0.0.0"))
+            if (string.IsNullOrEmpty(StreamUrl.StringValue) || MulticastAddress.StringValue.Equals("0.0.0.0"))
                 return null;
 
             var result = _transmitters
-                .Where(x => !string.IsNullOrEmpty(x.MulticastAddress.StringValue))
+                .Where(x => !string.IsNullOrEmpty(x.StreamUrl.StringValue))
                 .FirstOrDefault(
-                    x => x.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
+                    x => x.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
 
             if (result != null)
-
             {
                 return result;
             }
@@ -105,9 +104,9 @@ namespace NvxEpi.Features.Streams.Video
                 .AllDevices
                 .OfType<IStream>()
                 .Where(t => t.IsTransmitter)
-                .Where(x => !string.IsNullOrEmpty(x.MulticastAddress.StringValue))
+                .Where(x => !string.IsNullOrEmpty(x.StreamUrl.StringValue))
                 .FirstOrDefault(
-                    tx => tx.MulticastAddress.StringValue.Equals(MulticastAddress.StringValue));
+                    tx => tx.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
 
             if (result != null)
             {

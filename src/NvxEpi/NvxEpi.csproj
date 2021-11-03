@@ -129,6 +129,7 @@
     <Compile Include="Application\Entities\NvxApplicationVideoReceiver.cs" />
     <Compile Include="Application\Entities\NvxApplicationVideoTransmitter.cs" />
     <Compile Include="Devices\NvxXioDirector.cs" />
+    <Compile Include="Features\AutomaticRouting\AutomaticInputRouter.cs" />
     <Compile Include="Features\Config\NvxDirectorConfig.cs" />
     <Compile Include="Factories\NvxDirectorFactory.cs" />
     <Compile Include="Features\Hdmi\Input\HdmiInput2.cs" />
