@@ -229,7 +229,7 @@ namespace NvxEpi.Features.Routing
                 DeviceManager
                     .AllDevices
                     .OfType<IStream>()
-                    .Where(device => !device.IsTransmitter)
+                    .Where(device => !device.IsReceiver)
                     .ToDictionary(device => device.Name, stream => stream);
         }
     }
