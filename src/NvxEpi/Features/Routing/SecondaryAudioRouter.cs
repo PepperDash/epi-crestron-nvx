@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Services.InputSwitching;
@@ -183,46 +184,27 @@ namespace NvxEpi.Features.Routing
             rx.RouteSecondaryAudio(txByKey);
         }
 
-        private static readonly CCriticalSection _lock = new CCriticalSection();
         private static Dictionary<string, ISecondaryAudioStream> _transmitters;
         private static Dictionary<string, ISecondaryAudioStream> _receivers;
 
         private static Dictionary<string, ISecondaryAudioStream> GetTransmitterDictionary()
         {
-            try
-            {
-                _lock.Enter();
-                var dict = new Dictionary<string, ISecondaryAudioStream>(StringComparer.OrdinalIgnoreCase);
-                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStream>())
-                {
-                    dict.Add(device.Name, device);
-                }
-
-                return dict;
-            }
-            finally
-            {
-                _lock.Leave();
-            }
+            return
+                DeviceManager
+                    .AllDevices
+                    .OfType<ISecondaryAudioStream>()
+                    .Where(device => device.IsTransmitter)
+                    .ToDictionary(device => device.Name, stream => stream);
         }
 
         private static Dictionary<string, ISecondaryAudioStream> GetReceiverDictionary()
         {
-            try
-            {
-                _lock.Enter();
-                var dict = new Dictionary<string, ISecondaryAudioStream>(StringComparer.OrdinalIgnoreCase);
-                foreach (var device in DeviceManager.AllDevices.OfType<ISecondaryAudioStream>())
-                {
-                    dict.Add(device.Name, device);
-                }
-
-                return dict;
-            }
-            finally
-            {
-                _lock.Leave();
-            }
+            return
+                DeviceManager
+                    .AllDevices
+                    .OfType<ISecondaryAudioStream>()
+                    .Where(device => !device.IsTransmitter)
+                    .ToDictionary(device => device.Name, stream => stream);
         }
     }
 }
