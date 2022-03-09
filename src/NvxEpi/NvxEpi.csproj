@@ -166,6 +166,7 @@
     <Compile Include="Application\Services\ApplicationTieLineConnector.cs" />
     <Compile Include="Application\Services\AudioFollowsVideoHandler.cs" />
     <Compile Include="Features\InputSwitching\AudioInputSwitcher.cs" />
+    <Compile Include="Features\Monitor\NvxCommunicationMonitor.cs" />
     <Compile Include="Features\Routing\NvxGlobalRouter.cs" />
     <Compile Include="Features\Streams\Usb\UsbStream.cs" />
     <Compile Include="Features\Streams\Video\VideoStream.cs" />
