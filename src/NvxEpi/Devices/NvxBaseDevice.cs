@@ -10,6 +10,7 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.InputSwitching;
+using NvxEpi.Features.Monitor;
 using NvxEpi.Features.Streams.Audio;
 using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.Feedback;
@@ -77,7 +78,7 @@ namespace NvxEpi.Devices
             SetDeviceName();
 
             AddPreActivationAction(() => Hardware = getHardware());
-            AddPreActivationAction(() => CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, Hardware, 10000, 30000));
+            AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, Hardware));
             AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
         }
 
