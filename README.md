@@ -67,7 +67,12 @@ See details section below for detailed description of device properties.
         "mode": "tx",
         "deviceId": 1,
         "multicastVideoAddress": "239.0.0.2",
-        "multicastAudioAddress": "239.0.0.3"
+        "multicastAudioAddress": "239.0.0.3",
+        "usb": {
+            "mode": "local",
+            "default": "nvx-decoder11",
+            "followVideo": false
+        }
     }
 },
 {
@@ -82,7 +87,12 @@ See details section below for detailed description of device properties.
             "ipid": "51"
         },
         "mode": "rx",
-        "deviceId": 1
+        "deviceId": 1,
+        "usb": {
+            "mode": "remote",
+            "default": "nvx-encoder5",
+            "followVideo": false
+        }
     }
 }
 ```
