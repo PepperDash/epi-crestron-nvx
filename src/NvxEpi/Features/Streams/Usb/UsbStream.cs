@@ -21,7 +21,7 @@ namespace NvxEpi.Features.Streams.Usb
             try
             {
                 if (props == null || string.IsNullOrEmpty(props.Mode))
-                    return new UsbStream(device, true, false, string.Empty);
+		            return null;
 
                 return props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase) 
                     ? new UsbStream(device, false, props.FollowVideo, props.Default) 
