@@ -4,7 +4,6 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
@@ -13,7 +12,6 @@ using NvxEpi.Features.Config;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
 
 namespace NvxEpi.Features.Streams.Usb
 {
