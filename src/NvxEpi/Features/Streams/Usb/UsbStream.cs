@@ -3,6 +3,8 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
@@ -11,6 +13,7 @@ using NvxEpi.Features.Config;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
 
 namespace NvxEpi.Features.Streams.Usb
 {
@@ -20,8 +23,20 @@ namespace NvxEpi.Features.Streams.Usb
         {
             try
             {
-                if (props == null || string.IsNullOrEmpty(props.Mode))
-		            return null;
+	            if (props == null || string.IsNullOrEmpty(props.Mode))
+	            {
+					Debug.Console(0, device.Key, "USB properties not configured, setting USB stream defaults.  WARNING: this may override setings applied via web interface");
+
+		            props = new NvxUsbProperties()
+		            {
+			            Mode = "local",
+                        Default = string.Empty,
+						FollowVideo = false
+		            };
+					
+					if (Debug.Level >= 1)
+						Debug.Console(0, device.Key, "{0}", JsonConvert.SerializeObject(props, Formatting.Indented));
+	            }
 
                 return props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase) 
                     ? new UsbStream(device, false, props.FollowVideo, props.Default) 
