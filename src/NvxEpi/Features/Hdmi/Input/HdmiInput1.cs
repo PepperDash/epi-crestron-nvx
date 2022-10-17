@@ -1,6 +1,6 @@
-﻿using NvxEpi.Abstractions;
+﻿using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Services.Feedback;
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Hdmi.Input
@@ -10,10 +10,16 @@ namespace NvxEpi.Features.Hdmi.Input
         public HdmiInput1(INvxDeviceWithHardware device)
             : base(device)
         {
-            var capability = Hdmi1HdcpCapabilityValueFeedback.GetFeedback(device.Hardware);
+            var capability = (device.Hardware is DmNvxE760x) 
+                ? DmHdcpCapabilityValueFeedback.GetFeedback(device.Hardware) 
+                : Hdmi1HdcpCapabilityValueFeedback.GetFeedback(device.Hardware);
+
             _capability.Add(1, capability);
 
-            var sync = Hdmi1SyncDetectedFeedback.GetFeedback(device.Hardware);
+            var sync = (device.Hardware is DmNvxE760x) 
+                ? DmSyncDetectedFeedback.GetFeedback(device.Hardware)
+                : Hdmi1SyncDetectedFeedback.GetFeedback(device.Hardware);
+
             _sync.Add(1, sync);
 
             //TODO
