@@ -12,7 +12,7 @@ namespace NvxEpi.Services.Feedback
         public static IntFeedback GetFeedback(DmNvxBaseClass device)
         {
             if (device.HdmiOut == null)
-                throw new NotSupportedException("hdmi out");
+                return new IntFeedback(() => default (int));
 
             var feedback = new IntFeedback(Key, () => (int) device.HdmiOut.VideoAttributes.AspectRatioModeFeedback);
             device.HdmiOut.VideoAttributes.AttributeChange += (stream, args) => feedback.FireUpdate();
@@ -30,7 +30,7 @@ namespace NvxEpi.Services.Feedback
         public static StringFeedback GetFeedback(DmNvxBaseClass device)
         {
             if (device.HdmiOut == null)
-                throw new NotSupportedException("hdmi out");
+                return new StringFeedback(() => string.Empty);
 
             var feedback = new StringFeedback(Key,
                 () => device.HdmiOut.VideoAttributes.AspectRatioModeFeedback.ToString());

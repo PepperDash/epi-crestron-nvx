@@ -303,6 +303,40 @@ namespace NvxEpi.Factories
                                 : new DmNvxE31C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                         };
                     }
+                case "dmnvxe760":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxE760(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxE760((uint)props.DeviceId, domain)
+                                : new DmNvxE760((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                case "dmnvxe760c":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxE760(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+                            DmXioDirectorBase.DmXioDomain domain;
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                                ? new DmNvxE760((uint)props.DeviceId, domain)
+                                : new DmNvxE760((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
                 default:
                     throw new NotSupportedException(type);
             }

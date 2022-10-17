@@ -48,22 +48,27 @@ namespace NvxEpi.Devices
 
         public override bool CustomActivate()
         {
-            var hardware = base.Hardware as DmNvx36x;
-            if (hardware == null)
-                throw new Exception("hardware built doesn't match");
-            
-            Hardware = hardware;
-            var result = base.CustomActivate();
+            try
+            {
 
-            _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
-            _hdmiInput = new HdmiInput1(this);
-            _hdmiOutput = new VideowallModeOutput(this);
+                Hardware = base.Hardware as DmNvx36x;
+                var result = base.CustomActivate();
 
-            if (_config.EnableAutoRoute)
-                // ReSharper disable once ObjectCreationAsStatement
-                new AutomaticInputRouter(_hdmiInput);
+                _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
+                _hdmiInput = new HdmiInput1(this);
+                _hdmiOutput = new VideowallModeOutput(this);
 
-            return result;
+                if (_config.EnableAutoRoute)
+                    // ReSharper disable once ObjectCreationAsStatement
+                    new AutomaticInputRouter(_hdmiInput);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(0, this, "Caught an exception in activate:{0}", ex);
+                throw;
+            }
         }
 
         public CrestronCollection<ComPort> ComPorts

@@ -12,7 +12,7 @@ namespace NvxEpi.Services.Feedback
         public static StringFeedback GetFeedback(DmNvxBaseClass device)
         {
             if (device.UsbInput == null)
-                throw new NotSupportedException(device.GetType().GetCType().Name);
+                return new StringFeedback(() => string.Empty);
 
             var feedback = new StringFeedback(Key, () => device.UsbInput.StatusFeedback.ToString());
 
