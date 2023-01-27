@@ -17,32 +17,33 @@ namespace NvxEpi.Features.Streams.Usb
 {
     public class UsbStream : IUsbStreamWithHardware
     {
-        public static IUsbStreamWithHardware GetUsbStream(INvxDeviceWithHardware device, NvxUsbProperties props)
+        public static IUsbStreamWithHardware GetUsbStream(INvxDeviceWithHardware device, NvxUsbProperties incomingProps)
         {
-            try
+            try{
+            var props = incomingProps ?? new NvxUsbProperties()
             {
-	            if (props == null || string.IsNullOrEmpty(props.Mode))
-	            {
-					Debug.Console(0, device.Key, "USB properties not configured, setting USB stream defaults.  WARNING: this may override setings applied via web interface");
+                Mode = "local",
+                Default = string.Empty,
+                FollowVideo = false,
+                IsLayer3 = false
+            };
+                    //if (Debug.Level >= 0)
+                    //    Debug.Console(0, device.Key, JsonConvert.SerializeObject(props, Formatting.Indented));
+                
+                Debug.Console(1, device, "Mode : \"{0}\", Default : \"{1}\", FollowVideo = \"{2}\"", props.Mode, props.Default, props.FollowVideo);
 
-		            props = new NvxUsbProperties()
-		            {
-			            Mode = "local",
-                        Default = string.Empty,
-						FollowVideo = false
-		            };
-					
-					if (Debug.Level >= 1)
-						Debug.Console(0, device.Key, "{0}", JsonConvert.SerializeObject(props, Formatting.Indented));
-	            }
-
-                return props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase) 
-                    ? new UsbStream(device, false, props.FollowVideo, props.Default) 
-                    : new UsbStream(device, true, props.FollowVideo, props.Default);
+                return props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase)
+                    ? new UsbStream(device, false, props.FollowVideo, props.Default, props.IsLayer3)
+                    : new UsbStream(device, true, props.FollowVideo, props.Default, props.IsLayer3);
             }
             catch (ArgumentException ex)
             {
-                Debug.Console(1, "Cannot set usb mode, argument not resolved:{0}", ex.Message);
+                Debug.Console(0, "Cannot set usb mode, argument not resolved:{0}", ex.Message);
+                throw;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, "Exception in GetUsbStream : {0}", e.Message);
                 throw;
             }
         }
@@ -52,7 +53,7 @@ namespace NvxEpi.Features.Streams.Usb
         private readonly ReadOnlyDictionary<uint, StringFeedback> _usbRemoteIds;
         private readonly bool _isRemote;
 
-        private UsbStream(INvxDeviceWithHardware device, bool isRemote, bool followStream, string defaultPair)
+        private UsbStream(INvxDeviceWithHardware device, bool isRemote, bool followStream, string defaultPair, bool isLayer3)
         {
             _device = device;
             _isRemote = isRemote;
@@ -68,6 +69,8 @@ namespace NvxEpi.Features.Streams.Usb
                     UsbStatusFeedback.GetFeedback(Hardware)
                 });
 
+
+
             foreach (var item in _usbRemoteIds.Values)
                 _device.Feedbacks.Add(item);
 
@@ -78,18 +81,24 @@ namespace NvxEpi.Features.Streams.Usb
 
                     Hardware.UsbInput.AutomaticUsbPairingEnabled();
                     Hardware.UsbInput.Mode = IsRemote ? DmNvxUsbInput.eUsbMode.Remote : DmNvxUsbInput.eUsbMode.Local;
+                    Hardware.UsbInput.TransportMode = isLayer3 ? DmNvxUsbInput.eUsbTransportMode.Layer3 : DmNvxUsbInput.eUsbTransportMode.Layer2;
                     if (!followStream || IsTransmitter)
                         return;
 
                     SetDefaultStream(isRemote, defaultPair);
                 };
 
-            if (!followStream || IsTransmitter) 
+            if (!followStream || IsTransmitter)
+            {
+                Debug.Console(1, device, "Will not Follow Stream!");
                 return;
+            }
 
             var stream = device as ICurrentStream;
             if (stream == null)
+            {
                 return;
+            }
 
             stream.StreamUrl.OutputChange += (sender, args) => FollowCurrentRoute(args.StringValue);
         }
@@ -109,12 +118,16 @@ namespace NvxEpi.Features.Streams.Usb
                 {
                     if (x.StreamUrl == null)
                     {
+                        Debug.Console(1, this, "StreamUrl Is Null!");
                         return false;
                     }
                     if (String.IsNullOrEmpty(x.StreamUrl.StringValue))
                     {
+                        Debug.Console(1, this, "StreamUrl Is Empty!");
                         return false;
                     }
+                    Debug.Console(1, this, "StreamUrl Is Valid!");
+
                     return x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl);
                 }) as IUsbStreamWithHardware;
 
@@ -123,9 +136,17 @@ namespace NvxEpi.Features.Streams.Usb
             if (currentRoute == null)
                 ClearCurrentRoute();
             else if (IsRemote && !currentRoute.IsRemote)
+            {
+                Debug.Console(1, this, "Routing to Local from CurrentRoute : {0}!", currentRoute.Name);
+
                 currentRoute.AddRemoteUsbStreamToLocal(this);
+            }
             else if (!IsRemote && currentRoute.IsRemote)
+            {
+                Debug.Console(1, this, "Routing to Remote from CurrentRoute : {0}!", currentRoute.Name);
+
                 this.AddRemoteUsbStreamToLocal(currentRoute);
+            }
             else
                 Debug.Console(1, this, "Cannot follow usb on device : {0}", currentRoute.Key);
         }

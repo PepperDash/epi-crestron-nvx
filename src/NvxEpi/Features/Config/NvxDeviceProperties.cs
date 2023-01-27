@@ -47,5 +47,6 @@ namespace NvxEpi.Features.Config
         public string Mode { get; set; }
         public string Default { get; set; }
         public bool FollowVideo { get; set; }
+        public bool IsLayer3 { get; set; }
     }
 }
