@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
+using Newtonsoft.Json;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
@@ -55,6 +56,8 @@ namespace NvxEpi.Devices
 
             Hardware = hardware;
             var result = base.CustomActivate();
+            //if (Debug.Level >= 0)
+            //    Debug.Console(0, this, "{0}", JsonConvert.SerializeObject(_config, Formatting.Indented));
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInput = new HdmiInput2(this);

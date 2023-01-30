@@ -23,6 +23,8 @@ namespace NvxEpi.Factories
                     "dmnvx360c",
                     "dmnvx363",
                     "dmnvx363c",
+                    "dmnvxe760",
+                    "dmnvxe760c",
                 };
             }
 
