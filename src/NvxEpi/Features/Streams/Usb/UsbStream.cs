@@ -133,9 +133,9 @@ namespace NvxEpi.Features.Streams.Usb
 
 
             var currentRoute = result;
-            if (currentRoute == null)
-                ClearCurrentRoute();
-            else if (IsRemote && !currentRoute.IsRemote)
+            //if (currentRoute == null)
+            ClearCurrentRoute();
+            /*else*/ if (IsRemote && !currentRoute.IsRemote)
             {
                 Debug.Console(1, this, "Routing to Local from CurrentRoute : {0}!", currentRoute.Name);
 
@@ -155,6 +155,12 @@ namespace NvxEpi.Features.Streams.Usb
         {
             Debug.Console(1, this, "Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
             Hardware.UsbInput.RemoteDeviceId.StringValue = UsbStreamExt.ClearUsbValue;
+            foreach (var usb in Hardware.UsbInput.RemoteDeviceIds)
+            {
+                usb.StringValue = UsbStreamExt.ClearUsbValue;
+            }
+            if(Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
+                Hardware.UsbInput.RemovePairing();
             ClearRemoteUsbStreamToLocal(UsbLocalId.StringValue);
         }
 
@@ -185,7 +191,7 @@ namespace NvxEpi.Features.Streams.Usb
 
             if (local == null)
                 return;
-
+            /*
             var inputSig = local
                 .Hardware
                 .UsbInput
@@ -196,9 +202,16 @@ namespace NvxEpi.Features.Streams.Usb
                 Debug.Console(0, local, "Somehow input sig and index:{0} doesn't exist", index);
                 return;
             }
+             */
 
             Debug.Console(1, local, "Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
-            inputSig.StringValue = UsbStreamExt.ClearUsbValue;
+            local.Hardware.UsbInput.RemoteDeviceId.StringValue = UsbStreamExt.ClearUsbValue;
+            foreach (var usb in local.Hardware.UsbInput.RemoteDeviceIds)
+            {
+                usb.StringValue = UsbStreamExt.ClearUsbValue;
+            }
+            if(local.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
+                local.Hardware.UsbInput.RemovePairing();
         }
 
         private void SetDefaultStream(bool isRemote, string defaultPair)
