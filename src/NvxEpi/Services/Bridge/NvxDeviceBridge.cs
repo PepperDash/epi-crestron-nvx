@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
@@ -6,6 +7,7 @@ using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Abstractions.Usb;
 using NvxEpi.Extensions;
 using NvxEpi.Features.Routing;
 using NvxEpi.Features.Streams.Audio;
@@ -118,6 +120,11 @@ namespace NvxEpi.Services.Bridge
                 if (feedback.Key == VideoAspectRatioModeFeedback.Key)
                     joinNumber = joinMap.VideoAspectRatioMode.JoinNumber;
 
+                if (feedback.Key == UsbRouteFeedback.Key)
+                {
+                    joinNumber = joinMap.UsbRoute.JoinNumber;
+                }
+
                 if (feedback.Key == HorizontalResolutionFeedback.Key) { }
 
                 if (joinNumber > 0)
@@ -158,6 +165,7 @@ namespace NvxEpi.Services.Bridge
             LinkHdmiInputs(trilist, joinMap);
             LinkVideowallMode(trilist, joinMap);
             LinkRouting(trilist, joinMap);
+            LinkUsbRouting(trilist, joinMap);
 
             var videoInput = _device as ICurrentVideoInput;
             if (videoInput != null)
@@ -178,6 +186,8 @@ namespace NvxEpi.Services.Bridge
             var stream = _device as IStreamWithHardware;
             if (stream != null)
                 trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, stream.SetStreamUrl);
+
+                
         }
 
         private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
@@ -197,6 +207,37 @@ namespace NvxEpi.Services.Bridge
             trilist.SetUShortSigAction(joinMap.AudioRoute.JoinNumber, source => SecondaryAudioRouter.Route(source, secondaryAudio));
             trilist.SetStringSigAction(joinMap.AudioRoute.JoinNumber,
                 name => SecondaryAudioRouter.Route(name, secondaryAudio));
+        }
+
+        private void LinkUsbRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
+        {
+            var stream = _device as IUsbStreamWithHardware;
+            if (stream == null) return;
+            trilist.SetUShortSigAction(joinMap.UsbRoute.JoinNumber, source =>
+            {
+                if (source == 0)
+                {
+                    stream.ClearCurrentUsbRoute();
+                    return;
+                }
+
+                var isRx = source/1000 >= 1;
+
+                if (isRx)
+                {
+                    var receiver =
+                        DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>()
+                            .FirstOrDefault(device => !device.IsTransmitter && device.DeviceId == source%1000);
+                    if (receiver == null) return;
+                    stream.MakeUsbRoute(receiver);
+                    return;
+                }
+                var transmitter =
+                    DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>()
+                        .FirstOrDefault(device => device.IsTransmitter && device.DeviceId == source);
+                if (transmitter == null) return;
+                stream.MakeUsbRoute(transmitter);
+            });
         }
 
         private void LinkVideowallMode(BasicTriList trilist, NvxDeviceJoinMap joinMap)

@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
@@ -70,6 +71,24 @@ namespace NvxEpi.Devices
                 throw;
             }
         }
+
+        public void ClearCurrentUsbRoute()
+        {
+            _usbStream.ClearCurrentUsbRoute();
+        }
+
+        public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+        {
+            Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
+            var usbStream = _usbStream as UsbStream;
+            if (usbStream == null)
+            {
+                Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
+                return;
+            }
+            usbStream.MakeUsbRoute(hardware);
+        }
+
 
         public CrestronCollection<ComPort> ComPorts
         {
