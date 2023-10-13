@@ -48,6 +48,8 @@ namespace NvxEpi.Devices
         private const string _showNvxCmd = "shownvxinfo";
         private const string _showNvxCmdHelp = "Prints all keyed feedback status";
 
+        public readonly string DefaultMulticastRoute;
+
         private static IQueue<IQueueMessage> _queue;
 
         static NvxBaseDevice()
@@ -74,6 +76,8 @@ namespace NvxEpi.Devices
 
             AutomaticInput.AddRoutingPort(this);
             NoSwitchInput.AddRoutingPort(this);
+
+            DefaultMulticastRoute = props.DefaultMulticastSource;
 
             SetDeviceName();
 
@@ -116,6 +120,12 @@ namespace NvxEpi.Devices
             RegisterForFeedback();
             CommunicationMonitor.Start();
             _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
+
+            if (IsTransmitter || Hardware == null) return base.CustomActivate();
+            if (Hardware.Control.ServerUrlFeedback.StringValue != String.Empty)
+                Hardware.Control.ServerUrl.StringValue = String.Empty;
+            Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
+
 
             return base.CustomActivate();
         }

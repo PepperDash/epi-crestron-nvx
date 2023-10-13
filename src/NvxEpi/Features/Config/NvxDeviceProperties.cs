@@ -23,6 +23,7 @@ namespace NvxEpi.Features.Config
         public string DefaultAudioInput { get; set; }
         public string DefaultVideoInput { get; set; }
         public bool EnableAutoRoute { get; set; }
+        public string DefaultMulticastSource { get; set; }
     }
 
     public class NvxMockDeviceProperties

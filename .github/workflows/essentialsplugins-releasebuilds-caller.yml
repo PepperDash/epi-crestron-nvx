@@ -20,7 +20,7 @@ jobs:
     uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-builds.yml@main
     secrets: inherit
     with: 
-      branch: ${{ github.ref_name }}
+      branch: "main"
       default-branch: "main"
 
 

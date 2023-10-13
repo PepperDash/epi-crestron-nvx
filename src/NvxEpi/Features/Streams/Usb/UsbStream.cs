@@ -48,6 +48,7 @@ namespace NvxEpi.Features.Streams.Usb
             }
         }
 
+
         private readonly INvxDeviceWithHardware _device;
         private readonly StringFeedback _usbLocalId;
         private readonly ReadOnlyDictionary<uint, StringFeedback> _usbRemoteIds;
@@ -60,13 +61,15 @@ namespace NvxEpi.Features.Streams.Usb
             _usbLocalId = UsbLocalAddressFeedback.GetFeedback(device.Hardware);
             _usbRemoteIds = UsbRemoteAddressFeedback.GetFeedbacks(device.Hardware);
 
+
             _device.Feedbacks.AddRange(new Feedback[]
                 {
                     _usbLocalId,
                     new BoolFeedback("UsbFollowsVideoStream", () => !followStream || IsTransmitter), 
                     UsbRemoteAddressFeedback.GetFeedback(device.Hardware),
                     UsbModeFeedback.GetFeedback(Hardware),
-                    UsbStatusFeedback.GetFeedback(Hardware)
+                    UsbStatusFeedback.GetFeedback(Hardware),
+                    UsbRouteFeedback.GetFeedback(device.Hardware)
                 });
 
 
@@ -88,6 +91,8 @@ namespace NvxEpi.Features.Streams.Usb
                     SetDefaultStream(isRemote, defaultPair);
                 };
 
+            Hardware.UsbInput.UsbInputChange += UsbInput_UsbInputChange;
+
             if (!followStream || IsTransmitter)
             {
                 Debug.Console(1, device, "Will not Follow Stream!");
@@ -103,11 +108,51 @@ namespace NvxEpi.Features.Streams.Usb
             stream.StreamUrl.OutputChange += (sender, args) => FollowCurrentRoute(args.StringValue);
         }
 
+        void UsbInput_UsbInputChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
+        {
+            if (args.EventId == UsbInputEventIds.RemoteDeviceIdFeedbackEventId)
+            {
+                var feedback =_device.Feedbacks.FirstOrDefault(o => o.Key == UsbRouteFeedback.Key);
+                feedback.FireUpdate();
+            }
+        }
+
+        public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+        {
+            if (hardware == null)
+            {
+                Debug.Console(0, this, "Unable to make USB Route - hardware is null");
+                return;
+            }
+
+            Debug.Console(0, this, "Trying USB Route {0}", hardware.UsbLocalId.StringValue);
+            
+            ClearCurrentUsbRoute();
+            if (String.IsNullOrEmpty(hardware.UsbLocalId.StringValue)) return;
+
+
+            /*else*/
+            if (IsRemote && !hardware.IsRemote)
+            {
+                Debug.Console(1, this, "Routing to Local from New Route : {0}!", hardware.Name);
+
+                hardware.AddRemoteUsbStreamToLocal(this);
+            }
+            else if (!IsRemote && hardware.IsRemote)
+            {
+                Debug.Console(1, this, "Routing to Remote from New Route : {0}!", hardware.Name);
+
+                this.AddRemoteUsbStreamToLocal(hardware);
+            }
+            else
+                Debug.Console(1, this, "Cannot route usb to device : {0}", hardware.Key);
+        }
+
         private void FollowCurrentRoute(string streamUrl)
         {
             if (String.IsNullOrEmpty(streamUrl))
             {
-                ClearCurrentRoute();
+                ClearCurrentUsbRoute();
                 return;
             }
 
@@ -134,7 +179,7 @@ namespace NvxEpi.Features.Streams.Usb
 
             var currentRoute = result;
             //if (currentRoute == null)
-            ClearCurrentRoute();
+            ClearCurrentUsbRoute();
             /*else*/ if (IsRemote && !currentRoute.IsRemote)
             {
                 Debug.Console(1, this, "Routing to Local from CurrentRoute : {0}!", currentRoute.Name);
@@ -151,7 +196,7 @@ namespace NvxEpi.Features.Streams.Usb
                 Debug.Console(1, this, "Cannot follow usb on device : {0}", currentRoute.Key);
         }
 
-        private void ClearCurrentRoute()
+        public void ClearCurrentUsbRoute()
         {
             Debug.Console(1, this, "Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
             Hardware.UsbInput.RemoteDeviceId.StringValue = UsbStreamExt.ClearUsbValue;
@@ -161,7 +206,27 @@ namespace NvxEpi.Features.Streams.Usb
             }
             if(Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                 Hardware.UsbInput.RemovePairing();
-            ClearRemoteUsbStreamToLocal(UsbLocalId.StringValue);
+            ClearRemoteUsbRoute();
+        }
+
+        public void ClearRemoteUsbRoute()
+        {
+            foreach (var item in
+                DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>()
+                    .Where(device => device.Hardware.UsbInput.RemoteDeviceIdFeedback.StringValue.Equals(Hardware.UsbInput.LocalDeviceIdFeedback.StringValue))
+                )
+            {
+                item.Hardware.UsbInput.RemoteDeviceId.StringValue = UsbStreamExt.ClearUsbValue;
+                foreach (var id in item.Hardware.UsbInput.RemoteDeviceIds)
+                {
+                    if (!id.StringValue.Equals(UsbStreamExt.ClearUsbValue, StringComparison.OrdinalIgnoreCase))
+                    {
+                        id.StringValue = UsbStreamExt.ClearUsbValue;
+                    }
+                }
+                if (item.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
+                    item.Hardware.UsbInput.RemovePairing();
+            }
         }
 
         private static void ClearRemoteUsbStreamToLocal(string usbId)
