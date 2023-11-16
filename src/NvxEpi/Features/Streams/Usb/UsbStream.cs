@@ -19,14 +19,15 @@ namespace NvxEpi.Features.Streams.Usb
     {
         public static IUsbStreamWithHardware GetUsbStream(INvxDeviceWithHardware device, NvxUsbProperties incomingProps)
         {
-            try{
-            var props = incomingProps ?? new NvxUsbProperties()
+            try
             {
-                Mode = "local",
-                Default = string.Empty,
-                FollowVideo = false,
-                IsLayer3 = false
-            };
+                var props = incomingProps ?? new NvxUsbProperties()
+                {
+                    Mode = "local",
+                    Default = string.Empty,
+                    FollowVideo = false,
+                    IsLayer3 = false
+                };
                     //if (Debug.Level >= 0)
                     //    Debug.Console(0, device.Key, JsonConvert.SerializeObject(props, Formatting.Indented));
                 
@@ -48,7 +49,6 @@ namespace NvxEpi.Features.Streams.Usb
             }
         }
 
-
         private readonly INvxDeviceWithHardware _device;
         private readonly StringFeedback _usbLocalId;
         private readonly ReadOnlyDictionary<uint, StringFeedback> _usbRemoteIds;
@@ -61,8 +61,7 @@ namespace NvxEpi.Features.Streams.Usb
             _usbLocalId = UsbLocalAddressFeedback.GetFeedback(device.Hardware);
             _usbRemoteIds = UsbRemoteAddressFeedback.GetFeedbacks(device.Hardware);
 
-
-            _device.Feedbacks.AddRange(new Feedback[]
+            device.Feedbacks.AddRange(new Feedback[]
                 {
                     _usbLocalId,
                     new BoolFeedback("UsbFollowsVideoStream", () => !followStream || IsTransmitter), 
@@ -90,6 +89,11 @@ namespace NvxEpi.Features.Streams.Usb
 
                     SetDefaultStream(isRemote, defaultPair);
                 };
+
+            if (Hardware.UsbInput == null)
+            {
+                return;
+            }
 
             Hardware.UsbInput.UsbInputChange += UsbInput_UsbInputChange;
 
@@ -119,7 +123,7 @@ namespace NvxEpi.Features.Streams.Usb
 
         public void MakeUsbRoute(IUsbStreamWithHardware hardware)
         {
-            if (hardware == null)
+            if (hardware == null || hardware.Hardware.UsbInput == null)
             {
                 Debug.Console(0, this, "Unable to make USB Route - hardware is null");
                 return;
