@@ -78,7 +78,7 @@ namespace NvxEpi.Features.Streams.Usb
 
             Hardware.OnlineStatusChange += (currentDevice, args) =>
                 {
-                    if (!args.DeviceOnLine)
+                    if (!args.DeviceOnLine || Hardware.UsbInput == null)
                         return;
 
                     Hardware.UsbInput.AutomaticUsbPairingEnabled();
