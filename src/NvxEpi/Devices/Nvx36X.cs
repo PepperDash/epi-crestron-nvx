@@ -32,8 +32,7 @@ namespace NvxEpi.Devices
         IHdmiInput, 
         IVideowallMode, 
         IRouting, 
-        ICec, 
-        INvx36XDeviceWithHardware
+        ICec
     {
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
@@ -51,8 +50,6 @@ namespace NvxEpi.Devices
         {
             try
             {
-
-                Hardware = base.Hardware as DmNvx36x;
                 var result = base.CustomActivate();
 
                 _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
@@ -99,8 +96,6 @@ namespace NvxEpi.Devices
         {
             get { return _hdmiOutput.DisabledByHdcp; }
         }
-
-        public new DmNvx36x Hardware { get; private set; }
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
