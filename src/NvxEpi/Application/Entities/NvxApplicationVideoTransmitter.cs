@@ -59,8 +59,16 @@ namespace NvxEpi.Application.Entities
 
             AddPostActivationAction(() =>
                 {
-                    LinkRoutingInputPort(config.NvxRoutingPort);
-                    LinkInputValues(config.NvxRoutingPort);
+                    try
+                    {
+
+                        LinkRoutingInputPort(config.NvxRoutingPort);
+                        LinkInputValues(config.NvxRoutingPort);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Console(0, this, "Caught an exception:{0}", ex);
+                    }
                 });
         }
 
