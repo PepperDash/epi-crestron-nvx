@@ -25,6 +25,9 @@ namespace NvxEpi.Services.Feedback
         
         public static IntFeedback GetFeedback(DmNvxBaseClass device)
         {
+            if (device.UsbInput == null)
+                return new IntFeedback(Key, () => 0);
+
             var usbRoute = ReturnRoute(device);
             var usbRouteFb = new IntFeedback(Key, () => usbRoute);
 
@@ -34,6 +37,7 @@ namespace NvxEpi.Services.Feedback
                 usbRoute = ReturnRoute(device);
                 usbRouteFb.FireUpdate();
             };
+
             return usbRouteFb;
         }
 
@@ -41,24 +45,27 @@ namespace NvxEpi.Services.Feedback
 
         private static int ReturnRoute(DmNvxBaseClass device)
         {
-            if (device == null)
+            if (device == null || device.UsbInput == null)
             {
-                Debug.Console(0,"DEVICE IS NULL");
                 return 0;
             }
+
             var deviceIp = device.Network.IpAddressFeedback.StringValue;
 
             var remoteDeviceId = String.IsNullOrEmpty(device.UsbInput.RemoteDeviceIdFeedback.StringValue)
                 ? "00"
                 : device.UsbInput.RemoteDeviceIdFeedback.StringValue;
+
             Debug.Console(2, "{1} :: remoteDeviceId = {0}", remoteDeviceId, deviceIp);
             if (remoteDeviceId.Equals(UsbStreamExt.ClearUsbValue)) return 0;
 
             var remoteEndpoint = DeviceManager.AllDevices.OfType<NvxBaseDevice>()
+                .Where(d => d.Hardware.UsbInput != null)
                 .FirstOrDefault(
                     o =>
                         o.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue.Equals(remoteDeviceId,
                             StringComparison.OrdinalIgnoreCase));
+
             if (remoteEndpoint == null)
             {
                 Debug.Console(0, "RemoteEndpoint is Null", deviceIp);
