@@ -4,10 +4,8 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
@@ -85,7 +83,6 @@ namespace NvxEpi.Devices
             }
             usbStream.MakeUsbRoute(hardware);
         }
-
 
         public CrestronCollection<ComPort> ComPorts
         {

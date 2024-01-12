@@ -20,4 +20,21 @@ namespace NvxEpi.Services.Feedback
             return feedback;
         }
     }
+
+    public class Hdmi1HdcpStateFeedback
+    {
+        public const string Key = "Hdmi1HdcpState";
+
+        public static IntFeedback GetFeedback(DmNvxBaseClass device)
+        {
+            if (device.HdmiIn == null || device.HdmiIn[1] == null)
+                return new IntFeedback(() => 0);
+
+            var feedback = new IntFeedback(Key,
+                () => (int)device.HdmiIn[1].VideoAttributes.HdcpStateFeedback);
+
+            device.HdmiIn[1].StreamChange += (stream, args) => feedback.FireUpdate();
+            return feedback;
+        }
+    }
 }
