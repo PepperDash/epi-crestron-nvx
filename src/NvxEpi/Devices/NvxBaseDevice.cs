@@ -18,6 +18,7 @@ using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.Utilities;
 using NvxEpi.Services.Messages;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Config;
 
@@ -30,7 +31,8 @@ namespace NvxEpi.Devices
         ICurrentStream,
         ICurrentSecondaryAudioStream, 
         ICurrentNaxInput,
-        ICommunicationMonitor
+        ICommunicationMonitor,
+        IDeviceInfoProvider
     {
         private ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
         private ICurrentStream _currentVideoStream;
@@ -119,6 +121,8 @@ namespace NvxEpi.Devices
 
             RegisterForFeedback();
             CommunicationMonitor.Start();
+            Hardware.Network.NetworkChange += (sender, args) => UpdateDeviceInfo();
+
             _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
 
             if (IsTransmitter || Hardware == null) return base.CustomActivate();
@@ -283,5 +287,25 @@ namespace NvxEpi.Devices
         }
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
+
+        public void UpdateDeviceInfo()
+        {
+            DeviceInfo = new DeviceInfo
+            {
+                IpAddress = Hardware.Network.IpAddressFeedback.StringValue,
+                HostName = Hardware.Network.HostNameFeedback.StringValue,
+                MacAddress = string.Empty,
+                FirmwareVersion = string.Empty
+            };
+
+            var handler = DeviceInfoChanged;
+            if (handler == null)
+                return;
+
+            handler(this, new DeviceInfoEventArgs { DeviceInfo = DeviceInfo });
+        }
+
+        public DeviceInfo DeviceInfo { get; private set; }
+        public event DeviceInfoChangeHandler DeviceInfoChanged;
     }
 }
