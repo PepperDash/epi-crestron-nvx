@@ -29,7 +29,7 @@ namespace NvxEpi.Factories
             switch (dc.Type.ToLower())
             {
                 case "xiodirector":
-                    xio = new DmXioDirector80(config.Control.IpIdInt, Global.ControlSystem);
+                    xio = new DmXioDirectorEnterprise(config.Control.IpIdInt, Global.ControlSystem);
                     break;
                 case "xiodirector80":
                     xio = new DmXioDirector80(config.Control.IpIdInt, Global.ControlSystem);
