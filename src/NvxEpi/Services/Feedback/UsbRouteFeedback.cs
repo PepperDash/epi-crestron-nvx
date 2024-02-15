@@ -68,7 +68,6 @@ namespace NvxEpi.Services.Feedback
 
             if (remoteEndpoint == null)
             {
-                Debug.Console(0, "RemoteEndpoint is Null", deviceIp);
                 return 0;
             }
 
