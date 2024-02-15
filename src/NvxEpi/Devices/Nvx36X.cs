@@ -4,11 +4,10 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Features.Audio;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
@@ -21,6 +20,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices
 {
@@ -32,8 +32,10 @@ namespace NvxEpi.Devices
         IHdmiInput, 
         IVideowallMode, 
         IRouting, 
-        ICec
+        ICec,
+        IBasicVolumeWithFeedback
     {
+        private IBasicVolumeWithFeedback _audio;
         private IHdmiInput _hdmiInput;
         private IVideowallMode _hdmiOutput;
         private IUsbStreamWithHardware _usbStream;
@@ -52,9 +54,12 @@ namespace NvxEpi.Devices
             {
                 var result = base.CustomActivate();
 
+                _audio = new Nvx36XAudio((DmNvx36x) Hardware, this);
                 _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
                 _hdmiInput = new HdmiInput1(this);
                 _hdmiOutput = new VideowallModeOutput(this);
+
+                Feedbacks.AddRange(new [] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
 
                 if (_config.EnableAutoRoute)
                     // ReSharper disable once ObjectCreationAsStatement
@@ -214,6 +219,46 @@ namespace NvxEpi.Devices
         public StringFeedback UsbLocalId
         {
             get { return _usbStream.UsbLocalId; }
+        }
+
+        public void VolumeUp(bool pressRelease)
+        {
+            _audio.VolumeUp(pressRelease);
+        }
+
+        public void VolumeDown(bool pressRelease)
+        {
+            _audio.VolumeDown(pressRelease);
+        }
+
+        public void MuteToggle()
+        {
+            _audio.MuteToggle();
+        }
+
+        public void SetVolume(ushort level)
+        {
+            _audio.SetVolume(level);
+        }
+
+        public void MuteOn()
+        {
+            _audio.MuteOn();
+        }
+
+        public void MuteOff()
+        {
+            _audio.MuteOff();
+        }
+
+        public IntFeedback VolumeLevelFeedback
+        {
+            get { return _audio.VolumeLevelFeedback; }
+        }
+
+        public BoolFeedback MuteFeedback
+        {
+            get { return _audio.MuteFeedback; }
         }
     }
 }
