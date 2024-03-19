@@ -91,7 +91,6 @@ namespace NvxEpi.Devices
             usbStream.MakeUsbRoute(hardware);
         }
 
-
         public CrestronCollection<ComPort> ComPorts
         {
             get { return Hardware.ComPorts; }
