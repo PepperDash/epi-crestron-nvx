@@ -9,7 +9,7 @@
     <RepositoryUrl>https://github.com/PepperDash/epi-mobile-control</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Crestron; 4series</PackageTags>
-    <PackageOutputPath>../output</PackageOutputPath>
+    <PackageOutputPath>../../output</PackageOutputPath>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
