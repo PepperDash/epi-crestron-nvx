@@ -1,0 +1,46 @@
+﻿using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Devices;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NvxEpi.Features.Routing
+{
+    public class NvxMatrixInput : IRoutingInputSlot
+    {
+        private readonly NvxBaseDevice _device;
+
+        public NvxMatrixInput(NvxBaseDevice device)
+        {
+            _device = device;
+
+            if(_device is IHdmiInput hdmiInput)
+            {
+                foreach(var feedback in  hdmiInput.Feedbacks)
+                {
+                    feedback.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
+                }
+            }
+        }        
+
+        public string TxDeviceKey => _device.Key;
+
+        public int SlotNumber => _device.DeviceId;
+
+        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
+
+        public string Name => _device.Name;
+
+        public BoolFeedback IsOnline => _device.IsOnline;
+
+        public bool VideoSyncDetected => _device is IHdmiInput inputDevice ? inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue) : false;
+
+        public string Key => $"{_device.Key}-matrixInput";
+
+        public event EventHandler VideoSyncChanged;
+    }
+}
