@@ -1,4 +1,6 @@
 ﻿
+using NvxEpi.Enums;
+
 namespace NvxEpi.Device.Enums
 {
     public class DeviceModeEnum : Enumeration<DeviceModeEnum>

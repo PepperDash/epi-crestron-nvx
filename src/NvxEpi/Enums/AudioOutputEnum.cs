@@ -1,4 +1,6 @@
-﻿namespace NvxEpi.Device.Enums
+﻿using NvxEpi.Enums;
+
+namespace NvxEpi.Device.Enums
 {
     public class AudioOutputEnum : Enumeration<AudioOutputEnum>
     {
