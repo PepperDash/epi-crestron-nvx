@@ -8,6 +8,12 @@ using NvxEpi.Features.Routing;
 using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
+
+
+#if SERIES4
+using MockDisplay = PepperDash.Essentials.Devices.Common.Displays.MockDisplay;
+#endif
 
 namespace NvxEpi.Application.Entities
 {
@@ -46,7 +52,7 @@ namespace NvxEpi.Application.Entities
                     if (port == null)
                         throw new NullReferenceException("hdmi output routing port");
 
-                    TieLineCollection.Default.Add(new TieLine(port, sink.HdmiIn1));
+                    TieLineCollection.Default.Add(new TieLine(port, sink.InputPorts[RoutingPortNames.HdmiIn1]));
                 });
 
             AddPostActivationAction(() =>
