@@ -157,6 +157,6 @@ namespace NvxEpi.Features.Routing
                 Routing.SecondaryAudioRouter.Route(inputSlot.SlotNumber, audioOutput);
             }
         }
-    }
 #endif
+    }
 }
