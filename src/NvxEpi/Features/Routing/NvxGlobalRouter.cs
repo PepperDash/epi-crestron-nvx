@@ -43,6 +43,9 @@ namespace NvxEpi.Features.Routing
 
 #if SERIES4
             AddPostActivationAction(BuildMatrixRouting);
+
+            InputSlots = new Dictionary<string, IRoutingInputSlot>();
+            OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
 #endif
         }
 
@@ -105,20 +108,40 @@ namespace NvxEpi.Features.Routing
 
         private void BuildMatrixRouting()
         {
-            InputSlots = DeviceManager.AllDevices
-                .OfType<NvxBaseDevice>()
-                .Where(t => t.IsTransmitter)
-                .Select(t =>
-                {
-                    return new NvxMatrixInput(t);
-                })
-                .ToDictionary(i => i.Key, i => i as IRoutingInputSlot);
+            try
+            {
+                InputSlots = DeviceManager.AllDevices
+                    .OfType<NvxBaseDevice>()
+                    .Where(t => t.IsTransmitter)
+                    .Select(t =>
+                    {
+                        return new NvxMatrixInput(t);
+                    })
+                    .ToDictionary(i => i.Key, i => i as IRoutingInputSlot);
 
-            OutputSlots = DeviceManager.AllDevices
-                .OfType<NvxBaseDevice>()
-                .Where(t => !t.IsTransmitter)
-                .Select(t => new NvxMatrixOutput(t, this))
-                .ToDictionary(t => t.Key, t => t as IRoutingOutputSlot);
+                var transmitters = DeviceManager.AllDevices
+                   .OfType<NvxBaseDevice>()
+                   .Where(t =>
+                   {
+                       Debug.Console(0, this, $"{t.Key} is transmitter: {t.IsTransmitter}");
+                       return !t.IsTransmitter;
+                   }).ToList();
+
+                Debug.Console(2, this, $"Receiver count: {transmitters.Count}");
+
+                OutputSlots = transmitters.Select((t) =>
+                {
+                    Debug.Console(0, this, $"Getting NvxMatrixOutput for {t.Key}");
+
+                    return new NvxMatrixOutput(t);
+                }).ToDictionary(t => t.Key, t => t as IRoutingOutputSlot);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(0, this, $"Exception building MatrixRouting: {ex}:{ex.Message}");
+                Debug.Console(2, this, $"Exception building MatrixRouting: {ex.StackTrace}");
+            }
         }
 
         public void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type)

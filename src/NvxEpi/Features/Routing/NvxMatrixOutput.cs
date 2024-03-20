@@ -1,5 +1,6 @@
 ﻿using NvxEpi.Abstractions.Stream;
 using NvxEpi.Devices;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using System;
@@ -12,31 +13,41 @@ namespace NvxEpi.Features.Routing
     {       
         private readonly NvxBaseDevice _device;
 
-        public NvxMatrixOutput(NvxBaseDevice device, IMatrixRouting parent)
+        public NvxMatrixOutput(NvxBaseDevice device)
         {
-            _device = device;
-
-            _device.CurrentStreamId.OutputChange += (o, a) =>
+            try
             {
-                var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == a.IntValue);
+                _device = device;
 
-                SetInputRoute(eRoutingSignalType.Video, inputSlot);
+                var parent = NvxGlobalRouter.Instance;
 
-                if (!_device.IsStreamingSecondaryAudio.BoolValue)
+                Debug.Console(0, this, $"Device is null: {_device == null}");
+
+                _device.CurrentStreamId.OutputChange += (o, a) =>
                 {
-                    SetInputRoute(eRoutingSignalType.Audio, inputSlot);
-                }
-            };            
+                    var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == a.IntValue);
 
-            _device.CurrentSecondaryAudioStreamId.OutputChange += (o, a) =>
+                    SetInputRoute(eRoutingSignalType.Video, inputSlot);
+
+                    if (!_device.IsStreamingSecondaryAudio.BoolValue)
+                    {
+                        SetInputRoute(eRoutingSignalType.Audio, inputSlot);
+                    }
+                };
+
+                _device.CurrentSecondaryAudioStreamId.OutputChange += (o, a) =>
+                {
+                    var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == a.IntValue);
+
+                    SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot);
+                };
+            } catch (Exception ex)
             {
-                var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == a.IntValue);
-
-                SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot);
-            };
+                Debug.Console(0, this, $"Exception creating NvxMatrixOutput: {ex.Message}");
+            }
         }
 
-        public string RxDeviceKey { get; set; }
+        public string RxDeviceKey => _device.Key;
 
         private readonly Dictionary<eRoutingSignalType, IRoutingInputSlot> currentRoutes = new Dictionary<eRoutingSignalType, IRoutingInputSlot>
         {
@@ -75,6 +86,6 @@ namespace NvxEpi.Features.Routing
 
         public string Key => $"{_device.Key}-matrixInput";
 
-        public event EventHandler<EventArgs> OutputSlotChanged;
+        public event EventHandler OutputSlotChanged;
     }
 }
