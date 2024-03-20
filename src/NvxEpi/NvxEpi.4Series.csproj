@@ -15,8 +15,8 @@
     <InformationalVersion>$(Version)</InformationalVersion>
     <OutputPath>4Series\bin\$(Configuration)\</OutputPath>
     <Authors>PepperDash Technologies</Authors>
-    <PackageId>PepperDash.Essentials.Plugin.CrestronNvx</PackageId>
-    <PackageProjectUrl>https://github.com/PepperDash/epi-avr-marantz</PackageProjectUrl>
+    <PackageId>PepperDash.Essentials.Plugin.4Series.CrestronNvx</PackageId>
+    <PackageProjectUrl>https://github.com/PepperDash/epi-crestron-nvx</PackageProjectUrl>
     <PackageTags>crestron 4series nvx</PackageTags>
   </PropertyGroup>
 
