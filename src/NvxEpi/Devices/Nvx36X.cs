@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -13,6 +14,7 @@ using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Features.Streams.Usb;
+using NvxEpi.McMessengers;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -20,6 +22,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices
@@ -64,6 +67,8 @@ namespace NvxEpi.Devices
                 if (_config.EnableAutoRoute)
                     // ReSharper disable once ObjectCreationAsStatement
                     new AutomaticInputRouter(_hdmiInput);
+
+                AddMcMessengers();
 
                 return result;
             }
@@ -160,6 +165,14 @@ namespace NvxEpi.Devices
         {
             get { return _hdmiInput.CurrentResolution; }
         }
+
+        public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInput.AudioChannels; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInput.AudioFormat; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInput.ColorSpace; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInput.HdrType; } }
 
         public IntFeedback VideowallMode
         {
@@ -259,5 +272,7 @@ namespace NvxEpi.Devices
         {
             get { return _audio.MuteFeedback; }
         }
+
+        
     }
 }

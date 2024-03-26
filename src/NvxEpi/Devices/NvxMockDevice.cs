@@ -123,6 +123,8 @@ namespace NvxEpi.Devices
         public override bool CustomActivate()
         {
             Feedbacks.ToList().ForEach(x => x.FireUpdate());
+
+            
             return base.CustomActivate();
         }
 

@@ -21,6 +21,11 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Config;
+using NvxEpi.McMessengers;
+using NvxEpi.Abstractions.HdmiInput;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Core;
+
 
 namespace NvxEpi.Devices
 {
@@ -98,6 +103,7 @@ namespace NvxEpi.Devices
 
         public override bool CustomActivate()
         {
+            Debug.Console(1, this, "Activating...");
             DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(new Feedback[] 
@@ -130,8 +136,32 @@ namespace NvxEpi.Devices
                 Hardware.Control.ServerUrl.StringValue = String.Empty;
             Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
 
-
             return base.CustomActivate();
+        }
+
+        protected void AddMcMessengers()
+        {
+#if SERIES4
+            var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
+
+            if (mc == null)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, "Mobile Control not found");
+                return;
+            }
+
+            if (!(this is IHdmiInput hdmiInputDevice))
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, "{key:l} does NOT implement IHdmiIInput interface");
+                return;
+            }
+
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, "Generating HDMI Input messenger for {key:l}", Key);
+
+            var hdmiInputMessenger = new IHdmiInputMessenger($"{Key}-hdmiInputMessenger", $"/device/{Key}", hdmiInputDevice);
+
+            mc.AddDeviceMessenger(hdmiInputMessenger);
+#endif
         }
 
         public StringFeedback CurrentAudioInput

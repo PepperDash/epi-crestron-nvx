@@ -12,6 +12,10 @@ namespace NvxEpi.Features.Hdmi.Input
         protected readonly Dictionary<uint, IntFeedback> _capability = new Dictionary<uint, IntFeedback>();
         protected readonly Dictionary<uint, BoolFeedback> _sync = new Dictionary<uint, BoolFeedback>();
         protected readonly Dictionary<uint, StringFeedback> _currentResolution = new Dictionary<uint, StringFeedback>();
+        protected readonly Dictionary<uint, IntFeedback> _audioChannels = new Dictionary<uint, IntFeedback>();
+        protected readonly Dictionary<uint, StringFeedback> _audioFormat = new Dictionary<uint, StringFeedback>();
+        protected readonly Dictionary<uint, StringFeedback> _colorSpace = new Dictionary<uint, StringFeedback>();
+        protected readonly Dictionary<uint, StringFeedback> _hdrType = new Dictionary<uint, StringFeedback>();
 
         private readonly INvxDeviceWithHardware _device;
 
@@ -84,5 +88,19 @@ namespace NvxEpi.Features.Hdmi.Input
         {
             get { return new ReadOnlyDictionary<uint, StringFeedback>(_currentResolution); }
         }
+
+        public ReadOnlyDictionary<uint, IntFeedback> AudioChannels
+        {
+            get { return new ReadOnlyDictionary<uint, IntFeedback>(_audioChannels); }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> AudioFormat
+        {
+            get { return new ReadOnlyDictionary<uint, StringFeedback>(_audioFormat); }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return new ReadOnlyDictionary<uint, StringFeedback>(_colorSpace); } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return new ReadOnlyDictionary<uint, StringFeedback>(_hdrType); } }
     }
 }

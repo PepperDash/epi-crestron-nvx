@@ -43,6 +43,7 @@ namespace NvxEpi.Devices
             Hardware = hardware;
             _hdmiInput = new HdmiInput1(this);
 
+            AddMcMessengers();
             return base.CustomActivate();
         }
 
@@ -86,6 +87,34 @@ namespace NvxEpi.Devices
         public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
         {
             get { return _hdmiInput.CurrentResolution; }
+        }
+
+        public ReadOnlyDictionary<uint, IntFeedback> AudioChannels {
+            get
+            {
+                return _hdmiInput.AudioChannels;
+            }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> AudioFormat {
+            get
+            {
+                return _hdmiInput.AudioFormat;
+            }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> ColorSpace {
+            get
+            {
+                return _hdmiInput.ColorSpace;
+            }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdrType {
+            get
+            {
+                return _hdmiInput.HdrType;
+            }
         }
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)

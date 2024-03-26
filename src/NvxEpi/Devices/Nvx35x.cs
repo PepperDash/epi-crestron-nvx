@@ -67,6 +67,7 @@ namespace NvxEpi.Devices
                 // ReSharper disable once ObjectCreationAsStatement
                 new AutomaticInputRouter(_hdmiInput);
 
+            AddMcMessengers();
             return result;
         }
 
@@ -217,5 +218,13 @@ namespace NvxEpi.Devices
         {
             get { return _usbStream.UsbLocalId; }
         }
+
+        public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInput.AudioChannels; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInput.AudioFormat; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInput.ColorSpace; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInput.HdrType; } }
     }
 }

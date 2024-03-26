@@ -3,12 +3,13 @@ using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
+using Org.BouncyCastle.Crypto.Prng;
 using PepperDash.Core;
 
 namespace NvxEpi.Extensions
 {
     public static class HdmiInputExtensions
-    {
+    {        
         public static void SetHdmi1HdcpCapability(this IHdmiInput device, ushort capability)
         {
             try
