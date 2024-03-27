@@ -14,7 +14,7 @@ using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Features.Streams.Usb;
-using NvxEpi.McMessengers;
+
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -24,6 +24,10 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Feedback = PepperDash.Essentials.Core.Feedback;
+
+#if SERIES4
+using NvxEpi.McMessengers;
+#endif
 
 namespace NvxEpi.Devices
 {

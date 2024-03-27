@@ -3,7 +3,6 @@ using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
-using Org.BouncyCastle.Crypto.Prng;
 using PepperDash.Core;
 
 namespace NvxEpi.Extensions

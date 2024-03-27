@@ -91,7 +91,7 @@ namespace NvxEpi.Services.Feedback
 
             var feedback = new StringFeedback(string.Format(Key, inputNumber), () =>
             {
-                var resolution = $"{device.HdmiIn[inputNumber].VideoAttributes.HorizontalResolutionFeedback.UShortValue}x{device.HdmiIn[inputNumber].VideoAttributes.VerticalResolutionFeedback.UShortValue}@{device.HdmiIn[inputNumber].VideoAttributes.FramesPerSecondFeedback.UShortValue}";
+                var resolution = string.Format("{0}x{1}@{2}", device.HdmiIn[1].VideoAttributes.HorizontalResolutionFeedback.UShortValue, device.HdmiIn[1].VideoAttributes.VerticalResolutionFeedback.UShortValue, device.HdmiIn[1].VideoAttributes.FramesPerSecondFeedback.UShortValue);
                 return resolution;
             });
 

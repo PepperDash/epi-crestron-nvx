@@ -1,6 +1,5 @@
 using System;
 using Crestron.SimplSharpPro.DM.Streaming;
-using Org.BouncyCastle.Bcpg.OpenPgp;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback
@@ -52,7 +51,7 @@ namespace NvxEpi.Services.Feedback
 
             var feedback = new StringFeedback(Key, () =>
             {
-                var resolution = $"{device.HdmiIn[1].VideoAttributes.HorizontalResolutionFeedback.UShortValue}x{device.HdmiIn[1].VideoAttributes.VerticalResolutionFeedback.UShortValue}@{device.HdmiIn[1].VideoAttributes.FramesPerSecondFeedback.UShortValue}";
+                var resolution = string.Format("{0}x{1}@{2}", device.HdmiIn[1].VideoAttributes.HorizontalResolutionFeedback.UShortValue, device.HdmiIn[1].VideoAttributes.VerticalResolutionFeedback.UShortValue, device.HdmiIn[1].VideoAttributes.FramesPerSecondFeedback.UShortValue);
                 return resolution;
             });
 

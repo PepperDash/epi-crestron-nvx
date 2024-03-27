@@ -183,6 +183,7 @@
     <Compile Include="Services\Feedback\AudioTxAddressFeedback.cs" />
     <Compile Include="Services\Feedback\DmHdcpCapabilityValueFeedback.cs" />
     <Compile Include="Services\Feedback\DmSyncDetectedFeedback.cs" />
+    <Compile Include="Services\Feedback\HdmiInputFeedbacks.cs" />
     <Compile Include="Services\Feedback\NaxInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputValueFeedback.cs" />

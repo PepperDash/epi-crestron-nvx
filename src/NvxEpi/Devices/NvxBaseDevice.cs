@@ -21,10 +21,13 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Config;
-using NvxEpi.McMessengers;
 using NvxEpi.Abstractions.HdmiInput;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Core;
+
+#if SERIES4
+using NvxEpi.McMessengers;
+#endif
 
 
 namespace NvxEpi.Devices
