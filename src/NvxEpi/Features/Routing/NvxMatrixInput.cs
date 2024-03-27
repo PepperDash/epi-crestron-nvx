@@ -7,11 +7,11 @@ using System.Linq;
 
 namespace NvxEpi.Features.Routing
 {
-    public class NvxMatrixInput : IRoutingInputSlot
+    public class NvxMatrixInput : RoutingInputSlotBase
     {
         private readonly NvxBaseDevice _device;
 
-        public NvxMatrixInput(NvxBaseDevice device)
+        public NvxMatrixInput(NvxBaseDevice device):base()
         {
             _device = device;
 
@@ -24,20 +24,20 @@ namespace NvxEpi.Features.Routing
             }
         }        
 
-        public string TxDeviceKey => _device.Key;
+        public override string TxDeviceKey => _device.Key;
 
-        public int SlotNumber => _device.DeviceId;
+        public override int SlotNumber => _device.DeviceId;
 
-        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
+        public override eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
 
-        public string Name => _device.Name;
+        public override string Name => _device.Name;
 
-        public BoolFeedback IsOnline => _device.IsOnline;
+        public override BoolFeedback IsOnline => _device.IsOnline;
 
-        public bool VideoSyncDetected => _device is IHdmiInput inputDevice ? inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue) : false;
+        public override bool VideoSyncDetected => _device is IHdmiInput inputDevice ? inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue) : false;
 
-        public string Key => $"{_device.Key}-matrixInput";
+        public override string Key => $"{_device.Key}-matrixInput";
 
-        public event EventHandler VideoSyncChanged;
+        public override event EventHandler VideoSyncChanged;
     }
 }

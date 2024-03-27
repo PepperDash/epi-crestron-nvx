@@ -9,19 +9,17 @@ using System.Linq;
 
 namespace NvxEpi.Features.Routing
 {
-    public class NvxMatrixOutput : IRoutingOutputSlot
+    public class NvxMatrixOutput : RoutingOutputSlotBase
     {       
         private readonly NvxBaseDevice _device;
 
-        public NvxMatrixOutput(NvxBaseDevice device)
+        public NvxMatrixOutput(NvxBaseDevice device):base()
         {
             try
             {
                 _device = device;
 
-                var parent = NvxGlobalRouter.Instance;
-
-                Debug.Console(0, this, $"Device is null: {_device == null}");
+                var parent = NvxGlobalRouter.Instance;                
 
                 _device.CurrentStreamId.OutputChange += (o, a) =>
                 {
@@ -43,13 +41,13 @@ namespace NvxEpi.Features.Routing
                 };
             } catch (Exception ex)
             {
-                Debug.Console(0, this, $"Exception creating NvxMatrixOutput: {ex.Message}");
+                Debug.LogMessage(ex, "Exception creating NvxMatrixOuput {ex}", this, ex.Message);                
             }
         }
 
-        public string RxDeviceKey => _device.Key;
+        public override string RxDeviceKey => _device.Key;
 
-        private readonly Dictionary<eRoutingSignalType, IRoutingInputSlot> currentRoutes = new Dictionary<eRoutingSignalType, IRoutingInputSlot>
+        private readonly Dictionary<eRoutingSignalType, RoutingInputSlotBase> currentRoutes = new Dictionary<eRoutingSignalType, RoutingInputSlotBase>
         {
             {eRoutingSignalType.Audio, null },
             {eRoutingSignalType.Video, null },
@@ -60,7 +58,7 @@ namespace NvxEpi.Features.Routing
 
         public IStreamWithHardware Device => _device;
 
-        private void SetInputRoute(eRoutingSignalType type, IRoutingInputSlot input)
+        private void SetInputRoute(eRoutingSignalType type, RoutingInputSlotBase input)
         {
             if (currentRoutes.ContainsKey(type))
             {
@@ -76,16 +74,16 @@ namespace NvxEpi.Features.Routing
             OutputSlotChanged?.Invoke(this, new EventArgs());
         }
 
-        public Dictionary<eRoutingSignalType, IRoutingInputSlot> CurrentRoutes => currentRoutes;
+        public override Dictionary<eRoutingSignalType, RoutingInputSlotBase> CurrentRoutes => currentRoutes;
 
-        public int SlotNumber => _device.DeviceId;
+        public override int SlotNumber => _device.DeviceId;
 
-        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
+        public override eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
 
-        public string Name => _device.Name;
+        public override string Name => _device.Name;
 
-        public string Key => $"{_device.Key}-matrixInput";
+        public override string Key => $"{_device.Key}-matrixInput";
 
-        public event EventHandler OutputSlotChanged;
+        public override event EventHandler OutputSlotChanged;
     }
 }

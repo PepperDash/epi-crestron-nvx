@@ -44,8 +44,8 @@ namespace NvxEpi.Features.Routing
 #if SERIES4
             AddPostActivationAction(BuildMatrixRouting);
 
-            InputSlots = new Dictionary<string, IRoutingInputSlot>();
-            OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
+            InputSlots = new Dictionary<string, RoutingInputSlotBase>();
+            OutputSlots = new Dictionary<string, RoutingOutputSlotBase>();
 #endif
         }
 
@@ -102,9 +102,9 @@ namespace NvxEpi.Features.Routing
         }
 
 #if SERIES4
-        public Dictionary<string, IRoutingInputSlot> InputSlots { get; private set; }
+        public Dictionary<string, RoutingInputSlotBase> InputSlots { get; private set; }
 
-        public Dictionary<string, IRoutingOutputSlot> OutputSlots { get; private set; }
+        public Dictionary<string, RoutingOutputSlotBase> OutputSlots { get; private set; }
 
         private void BuildMatrixRouting()
         {
@@ -117,7 +117,7 @@ namespace NvxEpi.Features.Routing
                     {
                         return new NvxMatrixInput(t);
                     })
-                    .ToDictionary(i => i.Key, i => i as IRoutingInputSlot);
+                    .ToDictionary(i => i.Key, i => i as RoutingInputSlotBase);
 
                 var transmitters = DeviceManager.AllDevices
                    .OfType<NvxBaseDevice>()
@@ -134,13 +134,12 @@ namespace NvxEpi.Features.Routing
                     Debug.Console(0, this, $"Getting NvxMatrixOutput for {t.Key}");
 
                     return new NvxMatrixOutput(t);
-                }).ToDictionary(t => t.Key, t => t as IRoutingOutputSlot);
+                }).ToDictionary(t => t.Key, t => t as RoutingOutputSlotBase);
 
             }
             catch (Exception ex)
             {
-                Debug.Console(0, this, $"Exception building MatrixRouting: {ex}:{ex.Message}");
-                Debug.Console(2, this, $"Exception building MatrixRouting: {ex.StackTrace}");
+                Debug.LogMessage(ex, "Exception building MatrixRouting: {message}", this, ex.Message);
             }
         }
 
