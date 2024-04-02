@@ -9,11 +9,14 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Devices;
+using PepperDash.Essentials.AppServer.Messengers;
+using NvxEpi.McMessengers;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace NvxEpi.Features.Routing
 {
 #if SERIES4
-    public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
+    public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting<NvxMatrixInput, NvxMatrixOutput>
 #else
     public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric
 #endif
@@ -44,8 +47,11 @@ namespace NvxEpi.Features.Routing
 #if SERIES4
             AddPostActivationAction(BuildMatrixRouting);
 
-            InputSlots = new Dictionary<string, RoutingInputSlotBase>();
-            OutputSlots = new Dictionary<string, RoutingOutputSlotBase>();
+
+            InputSlots = new Dictionary<string, NvxMatrixInput>();
+            OutputSlots = new Dictionary<string, NvxMatrixOutput>();
+
+            AddPostActivationAction(BuildMobileControlMessenger);
 #endif
         }
 
@@ -102,9 +108,9 @@ namespace NvxEpi.Features.Routing
         }
 
 #if SERIES4
-        public Dictionary<string, RoutingInputSlotBase> InputSlots { get; private set; }
+        public Dictionary<string, NvxMatrixInput> InputSlots { get; private set; }
 
-        public Dictionary<string, RoutingOutputSlotBase> OutputSlots { get; private set; }
+        public Dictionary<string, NvxMatrixOutput> OutputSlots { get; private set; }
 
         private void BuildMatrixRouting()
         {
@@ -117,7 +123,7 @@ namespace NvxEpi.Features.Routing
                     {
                         return new NvxMatrixInput(t);
                     })
-                    .ToDictionary(i => i.Key, i => i as RoutingInputSlotBase);
+                    .ToDictionary(i => i.Key, i => i);
 
                 var transmitters = DeviceManager.AllDevices
                    .OfType<NvxBaseDevice>()
@@ -134,13 +140,27 @@ namespace NvxEpi.Features.Routing
                     Debug.Console(0, this, $"Getting NvxMatrixOutput for {t.Key}");
 
                     return new NvxMatrixOutput(t);
-                }).ToDictionary(t => t.Key, t => t as RoutingOutputSlotBase);
+                }).ToDictionary(t => t.Key, t => t);
 
             }
             catch (Exception ex)
             {
                 Debug.LogMessage(ex, "Exception building MatrixRouting: {message}", this, ex.Message);
             }
+        }
+
+        private void BuildMobileControlMessenger()
+        {
+            var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
+
+            if(mc == null)
+            {
+                Debug.Console(0, this, "Unable to find mobile control device");
+                return;
+            }
+
+            var routingMessenger = new IMatrixRoutingMessenger<NvxMatrixInput, NvxMatrixOutput>($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this as IMatrixRouting<IRoutingInputSlot, IRoutingOutputSlot>);
+            mc.AddDeviceMessenger(routingMessenger);
         }
 
         public void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type)
