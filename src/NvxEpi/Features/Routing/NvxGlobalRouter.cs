@@ -49,7 +49,7 @@ namespace NvxEpi.Features.Routing
 
 
             InputSlots = new Dictionary<string, NvxMatrixInput>();
-            OutputSlots = new Dictionary<string, NvxMatrixOutput>();
+            OutputSlots = new Dictionary<string, NvxMatrixOutput>();            
 
             AddPostActivationAction(BuildMobileControlMessenger);
 #endif
@@ -159,7 +159,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var routingMessenger = new IMatrixRoutingMessenger<NvxMatrixInput, NvxMatrixOutput>($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this as IMatrixRouting<IRoutingInputSlot, IRoutingOutputSlot>);
+            var routingMessenger = new IMatrixRoutingMessenger<NvxMatrixInput, NvxMatrixOutput>($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this);
             mc.AddDeviceMessenger(routingMessenger);
         }
 
