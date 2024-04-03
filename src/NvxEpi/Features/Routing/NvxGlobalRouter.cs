@@ -9,9 +9,11 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Devices;
+
+#if SERIES4
 using PepperDash.Essentials.AppServer.Messengers;
-using NvxEpi.McMessengers;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+#endif
 
 namespace NvxEpi.Features.Routing
 {
