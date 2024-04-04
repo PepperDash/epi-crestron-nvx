@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace NvxEpi.Features.Routing
 {
-    public class NvxMatrixOutput : RoutingOutputSlotBase
+    public class NvxMatrixOutput<TInput> : RoutingOutputSlotBase<TInput> where TInput: NvxMatrixInput
     {       
         private readonly NvxBaseDevice _device;
 
@@ -19,25 +19,11 @@ namespace NvxEpi.Features.Routing
             {
                 _device = device;
 
-                var parent = NvxGlobalRouter.Instance;                
-
-                _device.CurrentStreamId.OutputChange += (o, a) =>
-                {
-                    var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == a.IntValue);
-
-                    SetInputRoute(eRoutingSignalType.Video, inputSlot);
-
-                    if (!_device.IsStreamingSecondaryAudio.BoolValue)
-                    {
-                        SetInputRoute(eRoutingSignalType.Audio, inputSlot);
-                    }
-                };
+                _device.CurrentStreamId.OutputChange += OnPrimaryOutputChange;
 
                 _device.CurrentSecondaryAudioStreamId.OutputChange += (o, a) =>
                 {
-                    var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == a.IntValue);
-
-                    SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot);
+                    
                 };
             } catch (Exception ex)
             {
@@ -47,18 +33,41 @@ namespace NvxEpi.Features.Routing
 
         public override string RxDeviceKey => _device.Key;
 
-        private readonly Dictionary<eRoutingSignalType, RoutingInputSlotBase> currentRoutes = new Dictionary<eRoutingSignalType, RoutingInputSlotBase>
+        private readonly Dictionary<eRoutingSignalType, TInput> currentRoutes = new Dictionary<eRoutingSignalType, TInput>
         {
-            {eRoutingSignalType.Audio, null },
-            {eRoutingSignalType.Video, null },
-            {eRoutingSignalType.UsbInput, null },
-            {eRoutingSignalType.UsbOutput, null },
-            {eRoutingSignalType.SecondaryAudio, null },
+            {eRoutingSignalType.Audio, default },
+            {eRoutingSignalType.Video, default },
+            {eRoutingSignalType.UsbInput, default },
+            {eRoutingSignalType.UsbOutput, default },
+            {eRoutingSignalType.SecondaryAudio, default },
         };
 
         public IStreamWithHardware Device => _device;
 
-        private void SetInputRoute(eRoutingSignalType type, RoutingInputSlotBase input)
+        private void OnPrimaryOutputChange(object sender, FeedbackEventArgs args)
+        {
+            var parent = NvxGlobalRouter.Instance;
+
+            var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == args.IntValue);
+
+            SetInputRoute(eRoutingSignalType.Video, inputSlot as TInput);
+
+            if (!_device.IsStreamingSecondaryAudio.BoolValue)
+            {
+                SetInputRoute(eRoutingSignalType.Audio, inputSlot as TInput);
+            }
+        }
+
+        private void OnSecondaryAudioOutputChange(object sender, FeedbackEventArgs args)
+        {
+            var parent = NvxGlobalRouter.Instance;
+
+            var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == args.IntValue);
+
+            SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot as TInput);
+        }
+
+        private void SetInputRoute(eRoutingSignalType type, TInput input)
         {
             if (currentRoutes.ContainsKey(type))
             {
@@ -74,7 +83,7 @@ namespace NvxEpi.Features.Routing
             OutputSlotChanged?.Invoke(this, new EventArgs());
         }
 
-        public override Dictionary<eRoutingSignalType, RoutingInputSlotBase> CurrentRoutes => currentRoutes;
+        public override Dictionary<eRoutingSignalType, TInput> CurrentRoutes => currentRoutes;
 
         public override int SlotNumber => _device.DeviceId;
 

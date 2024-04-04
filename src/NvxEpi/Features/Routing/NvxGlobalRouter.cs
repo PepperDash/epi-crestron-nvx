@@ -18,7 +18,7 @@ using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 namespace NvxEpi.Features.Routing
 {
 #if SERIES4
-    public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting<NvxMatrixInput, NvxMatrixOutput>
+    public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting<NvxMatrixInput, NvxMatrixOutput<NvxMatrixInput>>
 #else
     public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric
 #endif
@@ -51,7 +51,7 @@ namespace NvxEpi.Features.Routing
 
 
             InputSlots = new Dictionary<string, NvxMatrixInput>();
-            OutputSlots = new Dictionary<string, NvxMatrixOutput>();            
+            OutputSlots = new Dictionary<string, NvxMatrixOutput<NvxMatrixInput>>();            
 
             AddPostActivationAction(BuildMobileControlMessenger);
 #endif
@@ -112,7 +112,7 @@ namespace NvxEpi.Features.Routing
 #if SERIES4
         public Dictionary<string, NvxMatrixInput> InputSlots { get; private set; }
 
-        public Dictionary<string, NvxMatrixOutput> OutputSlots { get; private set; }
+        public Dictionary<string, NvxMatrixOutput<NvxMatrixInput>> OutputSlots { get; private set; }
 
         private void BuildMatrixRouting()
         {
@@ -141,7 +141,7 @@ namespace NvxEpi.Features.Routing
                 {
                     Debug.Console(0, this, $"Getting NvxMatrixOutput for {t.Key}");
 
-                    return new NvxMatrixOutput(t);
+                    return new NvxMatrixOutput<NvxMatrixInput>(t);
                 }).ToDictionary(t => t.Key, t => t);
 
             }
@@ -161,7 +161,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var routingMessenger = new IMatrixRoutingMessenger<NvxMatrixInput, NvxMatrixOutput>($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this);
+            var routingMessenger = new IMatrixRoutingMessenger<NvxMatrixInput, NvxMatrixOutput<NvxMatrixInput>>($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this);
             mc.AddDeviceMessenger(routingMessenger);
         }
 
@@ -179,7 +179,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var outputDevice = (outputSlot as NvxMatrixOutput).Device;
+            var outputDevice = outputSlot.Device;
 
             if (outputDevice == null)
             {
