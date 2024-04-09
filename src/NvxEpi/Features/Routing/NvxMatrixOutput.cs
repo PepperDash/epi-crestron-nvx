@@ -24,7 +24,7 @@ namespace NvxEpi.Features.Routing
                 _device.CurrentSecondaryAudioStreamId.OutputChange += OnSecondaryAudioOutputChange;
             } catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception creating NvxMatrixOuput {ex}", this, ex.Message);                
+                Debug.LogMessage(ex, "Exception creating NvxMatrixOutput {ex}", this, ex.Message);                
             }
         }
 
@@ -47,6 +47,8 @@ namespace NvxEpi.Features.Routing
 
             var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == args.IntValue);
 
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Video: Found input slot {inputSlot} for {inputNumber}", this, inputSlot?.Key ?? "null", args.IntValue);
+
             SetInputRoute(eRoutingSignalType.Video, inputSlot);
 
             if (!_device.IsStreamingSecondaryAudio.BoolValue)
@@ -60,6 +62,8 @@ namespace NvxEpi.Features.Routing
             var parent = NvxGlobalRouter.Instance;
 
             var inputSlot = parent.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == args.IntValue);
+
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Audio: Found input slot {inputSlot} for {inputNumber}", this, inputSlot?.Key ?? "null", args.IntValue);
 
             SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot);
             SetInputRoute(eRoutingSignalType.Audio, inputSlot);

@@ -128,6 +128,9 @@ namespace NvxEpi.Features.Routing
                     .Cast<IRoutingInputSlot>()
                     .ToDictionary(i => i.Key, i => i);
 
+                var clearInput = new NvxMatrixClearInput();
+                InputSlots.Add(clearInput.Key, clearInput);
+
                 var transmitters = DeviceManager.AllDevices
                    .OfType<NvxBaseDevice>()
                    .Where(t =>
