@@ -3,6 +3,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
+using Org.BouncyCastle.Asn1.X509;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Hdmi.Input
@@ -16,6 +17,8 @@ namespace NvxEpi.Features.Hdmi.Input
         protected readonly Dictionary<uint, StringFeedback> _audioFormat = new Dictionary<uint, StringFeedback>();
         protected readonly Dictionary<uint, StringFeedback> _colorSpace = new Dictionary<uint, StringFeedback>();
         protected readonly Dictionary<uint, StringFeedback> _hdrType = new Dictionary<uint, StringFeedback>();
+        protected readonly Dictionary<uint, StringFeedback> _capabilityString = new Dictionary<uint, StringFeedback>();
+        protected readonly Dictionary<uint, StringFeedback> _hdcpSupport = new Dictionary<uint, StringFeedback>();
 
         private readonly INvxDeviceWithHardware _device;
 
@@ -47,6 +50,11 @@ namespace NvxEpi.Features.Hdmi.Input
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
             get { return new ReadOnlyDictionary<uint, IntFeedback>(_capability); }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString
+        {
+            get { return new ReadOnlyDictionary<uint, StringFeedback>(_capabilityString); }
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts
@@ -102,5 +110,7 @@ namespace NvxEpi.Features.Hdmi.Input
         public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return new ReadOnlyDictionary<uint, StringFeedback>(_colorSpace); } }
 
         public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return new ReadOnlyDictionary<uint, StringFeedback>(_hdrType); } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return new ReadOnlyDictionary<uint, StringFeedback>(_hdcpSupport); } }
     }
 }

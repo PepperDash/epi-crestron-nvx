@@ -2,9 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
-using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
-using Org.BouncyCastle.Crypto.Prng;
 using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
 using System;
@@ -28,34 +26,26 @@ namespace NvxEpi.McMessengers
 
             AddAction("/fullStatus",(id, content) => SendFullStatus());
 
-            foreach (var feedback in device.Feedbacks.Where(fb => fb.Key.Contains("Hdmi")))
+            foreach (var feedback in device.Feedbacks.Where((f) => f.Key.Contains("Hdmi1") || f.Key.Contains("Hdmi2")))
             {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Feedback key: {key}", this, feedback.Key);
                 feedback.OutputChange += (o, a) => UpdateStatus();
             }
         }
 
         private void SendFullStatus()
         {
-            Debug.Console(1, this, "Sending Full Status");
-
             var hdmiInputs = GetInputState();
 
-            Debug.Console(2, this, "Current input state: {@inputState}", hdmiInputs);
 
             var message = new HdmiInputFullState
             {
                 HdmiInputs = hdmiInputs,
             };
 
-            Debug.Console(2, this, "Sending message {@hdmiInputs}", message);
-
             try
             {
-
-                PostStatusMessage(new HdmiInputFullState
-                {
-                    HdmiInputs = hdmiInputs,
-                });
+                PostStatusMessage(message);
             } catch(Exception e)
             {
                 Debug.Console(5, this, "Exception sending message {exception}", e);
@@ -74,18 +64,9 @@ namespace NvxEpi.McMessengers
             var hdmiInputs = device.Hardware.HdmiIn == null
                 ? new Dictionary<string, HdmiInputState>()
                 : device.Hardware.HdmiIn.Keys.Select(hdmiIn =>
-                {                  
-                    return new HdmiInputState
-                    {
-                        Key = string.Format("HdmiIn{0}", hdmiIn),
-                        HdcpCapability = (eHdcpCapabilityType)device.HdcpCapability[hdmiIn]?.IntValue,
-                        SyncDetected = device.SyncDetected[hdmiIn]?.BoolValue,
-                        CurrentResolution = device.CurrentResolution[hdmiIn]?.StringValue,
-                        AudioChannelCount = device.AudioChannels[hdmiIn]?.IntValue,
-                        AudioFormat = device.AudioFormat[hdmiIn]?.StringValue,
-                        ColorspaceMode = device.ColorSpace[hdmiIn]?.StringValue,
-                        HdrType = device.HdrType[hdmiIn]?.StringValue,
-                    };
+                {
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting Hdmi Input State for {input}",this, hdmiIn);
+                    return new HdmiInputState(device, hdmiIn);
                 }).ToDictionary(hdmiInState => hdmiInState.Key, hdmiInputState => hdmiInputState);
 
             return hdmiInputs;
@@ -100,28 +81,39 @@ namespace NvxEpi.McMessengers
 
     public class HdmiInputState
     {
+        private readonly IHdmiInput device;
+        private readonly uint input;
         [JsonIgnore]
-        public string Key { get; set; }
-        [JsonProperty("hdcpCapability", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public eHdcpCapabilityType? HdcpCapability { get; set; }
+        public string Key => $"HdmiIn{input}";
 
-        [JsonProperty("syncDetected", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? SyncDetected { get; set; }
+        [JsonProperty("hdcpCapability")]        
+        public string HdcpCapability => device.HdcpCapabilityString[input].StringValue;
 
-        [JsonProperty("currentResolution", NullValueHandling = NullValueHandling.Ignore)]
-        public string CurrentResolution { get; set; }
+        [JsonProperty("hdcpSupport")]
+        public string HdcpSupport => device.HdcpSupport[input].StringValue;
 
-        [JsonProperty("audioChannelCount", NullValueHandling = NullValueHandling.Ignore)]
-        public int? AudioChannelCount { get; set; }
+        [JsonProperty("syncDetected")]
+        public bool SyncDetected => device.SyncDetected[input].BoolValue;
 
-        [JsonProperty("audioFormat", NullValueHandling = NullValueHandling.Ignore)]
-        public string AudioFormat { get; set; }
+        [JsonProperty("currentResolution")]
+        public string CurrentResolution => device.CurrentResolution[input].StringValue;
 
-        [JsonProperty("colorspaceMode", NullValueHandling = NullValueHandling.Ignore)]
-        public string ColorspaceMode { get; set; }
+        [JsonProperty("audioChannelCount")]
+        public int AudioChannelCount => device.AudioChannels[input].IntValue;
 
-        [JsonProperty("hdrType", NullValueHandling = NullValueHandling.Ignore)]
-        public string HdrType { get; set; }
+        [JsonProperty("audioFormat")]
+        public string AudioFormat => device.AudioFormat[input].StringValue;
+
+        [JsonProperty("colorspaceMode")]
+        public string ColorspaceMode => device.ColorSpace[input].StringValue;
+
+        [JsonProperty("hdrType")]
+        public string HdrType => device.HdrType[input].StringValue;
+
+        public HdmiInputState(IHdmiInput device, uint input)
+        {
+            this.device = device;
+            this.input = input;
+        }
     }
 }

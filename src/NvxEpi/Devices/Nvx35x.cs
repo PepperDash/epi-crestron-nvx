@@ -23,6 +23,8 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
+using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
+
 namespace NvxEpi.Devices
 {
     public class Nvx35X :
@@ -36,7 +38,7 @@ namespace NvxEpi.Devices
         ICec,
         INvx35XDeviceWithHardware
     {
-        private IHdmiInput _hdmiInput;
+        private IHdmiInput _hdmiInputs;        
         private IVideowallMode _hdmiOutput;
         private IUsbStreamWithHardware _usbStream;
         private readonly NvxDeviceProperties _config;
@@ -60,12 +62,12 @@ namespace NvxEpi.Devices
             //    Debug.Console(0, this, "{0}", JsonConvert.SerializeObject(_config, Formatting.Indented));
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
-            _hdmiInput = new HdmiInput2(this);
+            _hdmiInputs = new HdmiInput(this);            
             _hdmiOutput = new VideowallModeOutput(this);
 
             if (_config.EnableAutoRoute)
                 // ReSharper disable once ObjectCreationAsStatement
-                new AutomaticInputRouter(_hdmiInput);
+                new AutomaticInputRouter(_hdmiInputs);
 
             AddMcMessengers();
             return result;
@@ -103,7 +105,7 @@ namespace NvxEpi.Devices
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
-            get { return _hdmiInput.HdcpCapability; }
+            get { return _hdmiInputs.HdcpCapability; }
         }
 
         public IntFeedback HorizontalResolution
@@ -114,6 +116,11 @@ namespace NvxEpi.Devices
         public StringFeedback EdidManufacturer
         {
             get { return _hdmiOutput.EdidManufacturer; }
+        }
+
+        public StringFeedback OutputResolution
+        {
+            get { return _hdmiOutput.OutputResolution; }
         }
         public IntFeedback VideoAspectRatioMode
         {
@@ -152,12 +159,12 @@ namespace NvxEpi.Devices
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
         {
-            get { return _hdmiInput.SyncDetected; }
+            get { return _hdmiInputs.SyncDetected; }
         }
 
         public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
         {
-            get { return _hdmiInput.CurrentResolution; }
+            get { return _hdmiInputs.CurrentResolution; }
         }
 
         public IntFeedback VideowallMode
@@ -219,12 +226,16 @@ namespace NvxEpi.Devices
             get { return _usbStream.UsbLocalId; }
         }
 
-        public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInput.AudioChannels; } }
+        public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInputs.AudioChannels; } }
 
-        public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInput.AudioFormat; } }
+        public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInputs.AudioFormat; } }
 
-        public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInput.ColorSpace; } }
+        public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInputs.ColorSpace; } }
 
-        public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInput.HdrType; } }
+        public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInputs.HdrType; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport => _hdmiInputs.HdcpSupport;
     }
 }

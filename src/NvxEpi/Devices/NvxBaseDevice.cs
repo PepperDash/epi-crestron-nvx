@@ -24,6 +24,8 @@ using PepperDash.Essentials.Core.Config;
 using NvxEpi.Abstractions.HdmiInput;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Core;
+using NvxEpi.Abstractions.HdmiOutput;
+
 
 #if SERIES4
 using NvxEpi.McMessengers;
@@ -145,25 +147,46 @@ namespace NvxEpi.Devices
         protected void AddMcMessengers()
         {
 #if SERIES4
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Device Feedback Keys: {@feedbacks}", this, Feedbacks.Select(f => f.Key));
+
             var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
 
             if (mc == null)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, "Mobile Control not found");
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Mobile Control not found", this);
                 return;
             }
+
+            var streamMessenger = new PrimaryStreamStatusMessenger($"{Key}-streamStatus", $"/device/{Key}", this);
+
+            mc.AddDeviceMessenger(streamMessenger);
+
+            var secondaryAudioMessenger = new SecondaryAudioStatusMessenger($"{Key}-secondaryAudioStreamStatus", $"/device/{Key}", this);
+
+            mc.AddDeviceMessenger(secondaryAudioMessenger);
 
             if (!(this is IHdmiInput hdmiInputDevice))
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, "{key:l} does NOT implement IHdmiIInput interface");
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "{key:l} does NOT implement IHdmiInput interface", this, Key);
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, "Generating HDMI Input messenger for {key:l}", Key);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Generating HDMI Input messenger for {key:l}", this, Key);
 
+            
             var hdmiInputMessenger = new IHdmiInputMessenger($"{Key}-hdmiInputMessenger", $"/device/{Key}", hdmiInputDevice);
 
             mc.AddDeviceMessenger(hdmiInputMessenger);
+
+            if (!(this is IHdmiOutput hdmiOutputDevice))
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information,"{key:l} does NOT implement IHdmiOutput interface", this, Key);
+                return;
+            }
+
+            var hdmiOutputMessenger = new IHdmiOutputMessenger($"{Key}-hdmiOutputMessenger", $"/device/{Key}", hdmiOutputDevice);
+
+            mc.AddDeviceMessenger(hdmiOutputMessenger);
 #endif
         }
 

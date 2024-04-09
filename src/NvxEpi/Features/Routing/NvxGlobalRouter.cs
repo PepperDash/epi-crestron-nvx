@@ -18,7 +18,7 @@ using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 namespace NvxEpi.Features.Routing
 {
 #if SERIES4
-    public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting<NvxMatrixInput, NvxMatrixOutput<NvxMatrixInput>>
+    public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 #else
     public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric
 #endif
@@ -50,10 +50,10 @@ namespace NvxEpi.Features.Routing
             AddPostActivationAction(BuildMatrixRouting);
 
 
-            InputSlots = new Dictionary<string, NvxMatrixInput>();
-            OutputSlots = new Dictionary<string, NvxMatrixOutput<NvxMatrixInput>>();            
+            InputSlots = new Dictionary<string, IRoutingInputSlot>();
+            OutputSlots = new Dictionary<string, IRoutingOutputSlot>();            
 
-            AddPostActivationAction(BuildMobileControlMessenger);
+            //AddPostActivationAction(BuildMobileControlMessenger);
 #endif
         }
 
@@ -110,9 +110,9 @@ namespace NvxEpi.Features.Routing
         }
 
 #if SERIES4
-        public Dictionary<string, NvxMatrixInput> InputSlots { get; private set; }
+        public Dictionary<string, IRoutingInputSlot> InputSlots { get; private set; }
 
-        public Dictionary<string, NvxMatrixOutput<NvxMatrixInput>> OutputSlots { get; private set; }
+        public Dictionary<string, IRoutingOutputSlot> OutputSlots { get; private set; }
 
         private void BuildMatrixRouting()
         {
@@ -125,6 +125,7 @@ namespace NvxEpi.Features.Routing
                     {
                         return new NvxMatrixInput(t);
                     })
+                    .Cast<IRoutingInputSlot>()
                     .ToDictionary(i => i.Key, i => i);
 
                 var transmitters = DeviceManager.AllDevices
@@ -141,8 +142,8 @@ namespace NvxEpi.Features.Routing
                 {
                     Debug.Console(0, this, $"Getting NvxMatrixOutput for {t.Key}");
 
-                    return new NvxMatrixOutput<NvxMatrixInput>(t);
-                }).ToDictionary(t => t.Key, t => t);
+                    return new NvxMatrixOutput(t);
+                }).Cast<IRoutingOutputSlot>().ToDictionary(t => t.Key, t => t);
 
             }
             catch (Exception ex)
@@ -161,7 +162,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var routingMessenger = new IMatrixRoutingMessenger<NvxMatrixInput, NvxMatrixOutput<NvxMatrixInput>>($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this);
+            var routingMessenger = new IMatrixRoutingMessenger($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this);
             mc.AddDeviceMessenger(routingMessenger);
         }
 
@@ -179,7 +180,13 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            var outputDevice = outputSlot.Device;
+            if(!(outputSlot is NvxMatrixOutput output))
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Output with key {key} is not NvxMatrixOutput", this, outputSlotKey);
+                return;
+            }
+
+            var outputDevice = output.Device;
 
             if (outputDevice == null)
             {

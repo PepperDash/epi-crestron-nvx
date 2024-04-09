@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NvxEpi.Features.Routing
 {
-    public class NvxMatrixInput : RoutingInputSlotBase
+    public class NvxMatrixInput : IRoutingInputSlot
     {
         private readonly NvxBaseDevice _device;
 
@@ -17,27 +17,27 @@ namespace NvxEpi.Features.Routing
 
             if(_device is IHdmiInput hdmiInput)
             {
-                foreach(var feedback in  hdmiInput.Feedbacks)
+                foreach(var feedback in  hdmiInput.SyncDetected)
                 {
-                    feedback.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
+                    feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
                 }
             }
         }        
 
-        public override string TxDeviceKey => _device.Key;
+        public string TxDeviceKey => _device.Key;
 
-        public override int SlotNumber => _device.DeviceId;
+        public int SlotNumber => _device.DeviceId;
 
-        public override eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
+        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
 
-        public override string Name => _device.Name;
+        public string Name => _device.Name;
 
-        public override BoolFeedback IsOnline => _device.IsOnline;
+        public BoolFeedback IsOnline => _device.IsOnline;
 
-        public override bool VideoSyncDetected => _device is IHdmiInput inputDevice ? inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue) : false;
+        public bool VideoSyncDetected => _device is IHdmiInput inputDevice ? inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue) : false;
 
-        public override string Key => $"{_device.Key}-matrixInput";
+        public string Key => $"{_device.Key}";
 
-        public override event EventHandler VideoSyncChanged;
+        public event EventHandler VideoSyncChanged;
     }
 }
