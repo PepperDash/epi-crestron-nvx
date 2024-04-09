@@ -89,7 +89,7 @@ namespace NvxEpi.Features.Routing
 
         public int SlotNumber => _device.DeviceId;
 
-        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput | eRoutingSignalType.SecondaryAudio;
+        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
 
         public string Name => _device.Name;
 
