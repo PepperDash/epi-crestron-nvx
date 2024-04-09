@@ -165,6 +165,10 @@ namespace NvxEpi.Devices
 
             mc.AddDeviceMessenger(secondaryAudioMessenger);
 
+            var infoMessenger = new EndpointInfoMessenger($"{Key}-endpointInfo", $"/device/{Key}", this);
+
+            mc.AddDeviceMessenger(infoMessenger);
+
             if (!(this is IHdmiInput hdmiInputDevice))
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "{key:l} does NOT implement IHdmiInput interface", this, Key);
