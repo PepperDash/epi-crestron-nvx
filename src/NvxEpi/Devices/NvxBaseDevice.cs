@@ -147,8 +147,6 @@ namespace NvxEpi.Devices
         protected void AddMcMessengers()
         {
 #if SERIES4
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Device Feedback Keys: {@feedbacks}", this, Feedbacks.Select(f => f.Key));
-
             var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
 
             if (mc == null)
