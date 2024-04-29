@@ -34,7 +34,7 @@ namespace NvxEpi.Factories
                 case "xiodirector80":
                     xio = new DmXioDirector80(config.Control.IpIdInt, Global.ControlSystem);
                     break;
-                case "xiodirector120":
+                case "xiodirector160":
                     xio = new DmXioDirector160(config.Control.IpIdInt, Global.ControlSystem);
                     break;
                 default:
