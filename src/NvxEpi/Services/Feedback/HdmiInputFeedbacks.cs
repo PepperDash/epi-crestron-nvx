@@ -9,8 +9,7 @@ namespace NvxEpi.Services.Feedback
         public const string Key = "Hdmi{0}SyncDetected";
 
         public static BoolFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
-        {
-            Debug.Console(1, "Getting SyncDetected Feedback for {0}", _inputNumber);
+        {            
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
                 return new BoolFeedback(() => false);
 
@@ -27,9 +26,7 @@ namespace NvxEpi.Services.Feedback
         public const string Key = "Hdmi{0}HdcpSupport";
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
-        {
-            Debug.Console(1, "Getting HdcpSupport for input {0}", _inputNumber);
-
+        {           
             if(device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
             {
                 return new StringFeedback(string.Format(Key, _inputNumber), () => string.Empty);
@@ -48,8 +45,7 @@ namespace NvxEpi.Services.Feedback
         public const string Key = "Hdmi{0}HdcpCapabilityValue";
 
         public static IntFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
-        {
-            Debug.Console(1, "Getting HdcpCapabilityValue Feedback for {0}", _inputNumber);
+        {           
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
                 return new IntFeedback(() => 0);
 
@@ -65,8 +61,7 @@ namespace NvxEpi.Services.Feedback
         public const string Key = "Hdmi{0}HdcpCapability";
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
-        {
-            Debug.Console(1, "Getting HdcpCapability Feedback for {0}", _inputNumber);
+        {           
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
                 return new StringFeedback(() => string.Empty);
 
@@ -84,7 +79,7 @@ namespace NvxEpi.Services.Feedback
 
         public static IntFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
         {
-            Debug.Console(1, "Getting HdcpState Feedback for {0}", _inputNumber);
+            
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
                 return new IntFeedback(() => 0);
 
@@ -103,7 +98,7 @@ namespace NvxEpi.Services.Feedback
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
         {
-            Debug.Console(1, "Getting CurrentResolution Feedback for {0}", _inputNumber);
+            
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
             {
                 return new StringFeedback(() => string.Empty);
@@ -127,7 +122,7 @@ namespace NvxEpi.Services.Feedback
 
         public static IntFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
         {
-            Debug.Console(1, "Getting AudioResolution Feedback for {0}", _inputNumber);
+            
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
             {
                 return new IntFeedback(() => 0);
@@ -147,7 +142,7 @@ namespace NvxEpi.Services.Feedback
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
         {
-            Debug.Console(1, "Getting AudioFormat Feedback for {0}", _inputNumber);
+            
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
             {
                 return new StringFeedback(() => string.Empty);
@@ -167,7 +162,7 @@ namespace NvxEpi.Services.Feedback
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
         {
-            Debug.Console(1, "Getting Colorspace Feedback for {0}", _inputNumber);
+            
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
             {
                 return new StringFeedback(() => string.Empty);
@@ -187,7 +182,7 @@ namespace NvxEpi.Services.Feedback
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
         {
-            Debug.Console(1, "Getting HdrType Feedback for {0}", _inputNumber);
+            
             if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
             {
                 return new StringFeedback(() => string.Empty);

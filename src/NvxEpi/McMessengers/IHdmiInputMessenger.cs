@@ -27,8 +27,7 @@ namespace NvxEpi.McMessengers
             AddAction("/fullStatus",(id, content) => SendFullStatus());
 
             foreach (var feedback in device.Feedbacks.Where((f) => f.Key.Contains("Hdmi1") || f.Key.Contains("Hdmi2")))
-            {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Feedback key: {key}", this, feedback.Key);
+            {                
                 feedback.OutputChange += (o, a) => UpdateStatus();
             }
         }
@@ -64,8 +63,7 @@ namespace NvxEpi.McMessengers
             var hdmiInputs = device.Hardware.HdmiIn == null
                 ? new Dictionary<string, HdmiInputState>()
                 : device.Hardware.HdmiIn.Keys.Select(hdmiIn =>
-                {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting Hdmi Input State for {input}",this, hdmiIn);
+                {                    
                     return new HdmiInputState(device, hdmiIn);
                 }).ToDictionary(hdmiInState => hdmiInState.Key, hdmiInputState => hdmiInputState);
 
