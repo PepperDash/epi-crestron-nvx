@@ -36,10 +36,7 @@ namespace NvxEpi.Devices
 
         public override bool CustomActivate()
         {
-            var hardware = base.Hardware as DmNvxD3x;
-            if (hardware == null)
-                throw new Exception("hardware built doesn't match");
-
+            var hardware = base.Hardware as DmNvxD3x ?? throw new Exception("hardware built doesn't match");
             Hardware = hardware;
             _hdmiOutput = new HdmiOutput(this);
 
@@ -97,9 +94,7 @@ namespace NvxEpi.Devices
         {
             try
             {
-                var switcher = outputSelector as IHandleInputSwitch;
-                if (switcher == null)
-                    throw new NullReferenceException("outputSelector");
+                var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
 
                 Debug.Console(1,
                     this,

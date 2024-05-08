@@ -5,10 +5,7 @@ using NvxEpi.Services.InputSwitching;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-
-#if SERIES4
 using MockDisplay = PepperDash.Essentials.Devices.Common.Displays.MockDisplay;
-#endif
 
 namespace NvxEpi.Application.Services
 {
@@ -25,14 +22,8 @@ namespace NvxEpi.Application.Services
 
         public static void AddTieLineForMockDisplay(MockDisplay dest, INvxDevice rx)
         {
-            var outputPort = rx.OutputPorts[SwitcherForHdmiOutput.Key];
-            if (outputPort == null)
-                throw new ArgumentNullException("outputPort");
-#if SERIES4
+            var outputPort = rx.OutputPorts[SwitcherForHdmiOutput.Key] ?? throw new ArgumentNullException("outputPort");
             TieLineCollection.Default.Add(new TieLine(outputPort, dest.InputPorts[RoutingPortNames.HdmiIn1], eRoutingSignalType.AudioVideo));
-#else
-            TieLineCollection.Default.Add(new TieLine(outputPort, dest.HdmiIn1, eRoutingSignalType.AudioVideo));
-#endif
         }
     }
 }

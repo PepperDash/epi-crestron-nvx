@@ -25,12 +25,7 @@ using NvxEpi.Abstractions.HdmiInput;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Core;
 using NvxEpi.Abstractions.HdmiOutput;
-
-
-#if SERIES4
 using NvxEpi.McMessengers;
-#endif
-
 
 namespace NvxEpi.Devices
 {
@@ -146,7 +141,6 @@ namespace NvxEpi.Devices
 
         protected void AddMcMessengers()
         {
-#if SERIES4
             var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
 
             if (mc == null)
@@ -189,7 +183,6 @@ namespace NvxEpi.Devices
             var hdmiOutputMessenger = new IHdmiOutputMessenger($"{Key}-hdmiOutputMessenger", $"/device/{Key}", hdmiOutputDevice);
 
             mc.AddDeviceMessenger(hdmiOutputMessenger);
-#endif
         }
 
         public StringFeedback CurrentAudioInput
