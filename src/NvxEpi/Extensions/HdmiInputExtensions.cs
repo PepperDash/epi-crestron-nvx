@@ -8,7 +8,7 @@ using PepperDash.Core;
 namespace NvxEpi.Extensions
 {
     public static class HdmiInputExtensions
-    {
+    {        
         public static void SetHdmi1HdcpCapability(this IHdmiInput device, ushort capability)
         {
             try

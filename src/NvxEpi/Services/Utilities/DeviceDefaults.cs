@@ -17,6 +17,7 @@ namespace NvxEpi.Services.Utilities
             device.Control.EnableAutomaticInitiation();
             if (!String.IsNullOrEmpty(props.MulticastVideoAddress))
             {
+                Debug.Console(0, "Setting multicast Video Address to {0}", props.MulticastVideoAddress);
                 device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
             }
 

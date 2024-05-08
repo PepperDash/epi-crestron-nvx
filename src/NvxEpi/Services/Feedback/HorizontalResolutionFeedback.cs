@@ -5,7 +5,7 @@ namespace NvxEpi.Services.Feedback
 {
     public class HorizontalResolutionFeedback
     {
-        public const string Key = "HdmiOutputResolution";
+        public const string Key = "HdmiOutResolution";
 
         public static IntFeedback GetFeedback(DmNvxBaseClass device)
         {

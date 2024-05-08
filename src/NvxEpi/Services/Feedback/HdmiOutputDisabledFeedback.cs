@@ -6,7 +6,7 @@ namespace NvxEpi.Services.Feedback
 {
     public class HdmiOutputDisabledFeedback
     {
-        public const string Key = "HdmiOutputDisabled";
+        public const string Key = "HdmiOutDisabled";
 
         public static BoolFeedback GetFeedback(DmNvxBaseClass device)
         {
@@ -22,7 +22,7 @@ namespace NvxEpi.Services.Feedback
 
     public class HdmiOutputEdidFeedback
     {
-        public const string Key = "HdmiOutputEdidManufacturer";
+        public const string Key = "HdmiOutEdidManufacturer";
 
         public static StringFeedback GetFeedback(DmNvxBaseClass device)
         {

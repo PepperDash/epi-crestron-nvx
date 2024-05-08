@@ -14,6 +14,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 
 namespace NvxEpi.Devices
 {
@@ -25,7 +26,7 @@ namespace NvxEpi.Devices
         IHdmiInput,
         IRouting
     {
-        private IHdmiInput _hdmiInput;
+        private IHdmiInput _hdmiInputs;
         private readonly IUsbStream _usbStream;
 
         public NvxE3X(DeviceConfig config, Func<DmNvxBaseClass> getHardware)
@@ -41,8 +42,9 @@ namespace NvxEpi.Devices
                 throw new Exception("hardware built doesn't match");
 
             Hardware = hardware;
-            _hdmiInput = new HdmiInput1(this);
+            _hdmiInputs = new HdmiInput(this);
 
+            AddMcMessengers();
             return base.CustomActivate();
         }
 
@@ -55,7 +57,7 @@ namespace NvxEpi.Devices
 
         public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
         {
-            get { return _hdmiInput.HdcpCapability; }
+            get { return _hdmiInputs.HdcpCapability; }
         }
 
         public CrestronCollection<IROutputPort> IROutputPorts
@@ -80,13 +82,45 @@ namespace NvxEpi.Devices
 
         public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
         {
-            get { return _hdmiInput.SyncDetected; }
+            get { return _hdmiInputs.SyncDetected; }
         }
 
         public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
         {
-            get { return _hdmiInput.CurrentResolution; }
+            get { return _hdmiInputs.CurrentResolution; }
         }
+
+        public ReadOnlyDictionary<uint, IntFeedback> AudioChannels {
+            get
+            {
+                return _hdmiInputs.AudioChannels;
+            }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> AudioFormat {
+            get
+            {
+                return _hdmiInputs.AudioFormat;
+            }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> ColorSpace {
+            get
+            {
+                return _hdmiInputs.ColorSpace;
+            }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdrType {
+            get
+            {
+                return _hdmiInputs.HdrType;
+            }
+        }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
+
+        public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {

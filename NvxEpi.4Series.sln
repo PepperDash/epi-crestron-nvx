@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34601.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NvxEpi.4Series", "src\NvxEpi\NvxEpi.4Series.csproj", "{A24B641A-8D55-412B-8522-C2F825B17BF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A24B641A-8D55-412B-8522-C2F825B17BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A24B641A-8D55-412B-8522-C2F825B17BF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A24B641A-8D55-412B-8522-C2F825B17BF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A24B641A-8D55-412B-8522-C2F825B17BF9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DA074D94-0A55-463E-8A97-3E45A81AD79A}
+	EndGlobalSection
+EndGlobal

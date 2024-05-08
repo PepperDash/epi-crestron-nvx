@@ -68,6 +68,11 @@ namespace NvxEpi.Devices
             get { return _hdmiOutput.EdidManufacturer; }
         }
 
+        public StringFeedback OutputResolution
+        {
+            get { return _hdmiOutput.OutputResolution; }
+        }
+
         public CrestronCollection<IROutputPort> IROutputPorts
         {
             get { return Hardware.IROutputPorts; }

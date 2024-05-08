@@ -6,6 +6,10 @@ using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 
+#if SERIES4
+using MockDisplay = PepperDash.Essentials.Devices.Common.Displays.MockDisplay;
+#endif
+
 namespace NvxEpi.Application.Services
 {
     public class ApplicationTieLineConnector
@@ -24,8 +28,11 @@ namespace NvxEpi.Application.Services
             var outputPort = rx.OutputPorts[SwitcherForHdmiOutput.Key];
             if (outputPort == null)
                 throw new ArgumentNullException("outputPort");
-
+#if SERIES4
+            TieLineCollection.Default.Add(new TieLine(outputPort, dest.InputPorts[RoutingPortNames.HdmiIn1], eRoutingSignalType.AudioVideo));
+#else
             TieLineCollection.Default.Add(new TieLine(outputPort, dest.HdmiIn1, eRoutingSignalType.AudioVideo));
+#endif
         }
     }
 }

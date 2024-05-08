@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectType>ProgramLibrary</ProjectType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>NvxEpi</RootNamespace>
+    <Deterministic>false</Deterministic>
+    <AssemblyTitle>NvxEpi</AssemblyTitle>
+    <Company>PepperDash Technologies</Company>
+    <Description>This software is a plugin designed to work as a part of PepperDash Essentials for Crestron control processors. This plugin allows for control Crestron NVX devices.</Description>
+    <Copyright>Copyright 2024</Copyright>
+    <Version>1.0.0-local</Version>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <OutputPath>4Series\bin\$(Configuration)\</OutputPath>
+    <Authors>PepperDash Technologies</Authors>
+    <PackageId>PepperDash.Essentials.Plugin.4Series.CrestronNvx</PackageId>
+    <PackageProjectUrl>https://github.com/PepperDash/epi-crestron-nvx</PackageProjectUrl>
+    <PackageTags>crestron 4series nvx</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.0.0-feature-mc-touchpanel-controller.5" />
+    <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2461" />
+  </ItemGroup>
+
+</Project>
