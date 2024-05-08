@@ -236,6 +236,6 @@ namespace NvxEpi.Devices
 
         public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
 
-        public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport => _hdmiInputs.HdcpSupport;
+        public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
     }
 }

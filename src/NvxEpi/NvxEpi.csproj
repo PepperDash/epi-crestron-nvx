@@ -133,9 +133,8 @@
     <Compile Include="Features\AutomaticRouting\AutomaticInputRouter.cs" />
     <Compile Include="Features\Config\NvxDirectorConfig.cs" />
     <Compile Include="Factories\NvxDirectorFactory.cs" />
-    <Compile Include="Features\Hdmi\Input\HdmiInput2.cs" />
+    <Compile Include="Features\Hdmi\Input\HdmiInput.cs" />
     <Compile Include="Features\Hdmi\Input\HdmiInputBase.cs" />
-    <Compile Include="Features\Hdmi\Input\HdmiInput1.cs" />
     <Compile Include="Features\Hdmi\Output\HdmiOutput.cs" />
     <Compile Include="Features\Hdmi\Output\VideowallModeOutput.cs" />
     <Compile Include="Features\InputSwitching\NaxInputSwitcher.cs" />
@@ -184,6 +183,7 @@
     <Compile Include="Services\Feedback\DmHdcpCapabilityValueFeedback.cs" />
     <Compile Include="Services\Feedback\DmSyncDetectedFeedback.cs" />
     <Compile Include="Services\Feedback\HdmiInputFeedbacks.cs" />
+    <Compile Include="Services\Feedback\HdmiOutputResolutionFeedback.cs" />
     <Compile Include="Services\Feedback\NaxInputValueFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputFeedback.cs" />
     <Compile Include="Services\Feedback\DanteInputValueFeedback.cs" />
