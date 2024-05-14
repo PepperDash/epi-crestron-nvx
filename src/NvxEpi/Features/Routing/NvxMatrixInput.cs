@@ -34,7 +34,7 @@ public class NvxMatrixInput : IRoutingInputSlot
 
     public BoolFeedback IsOnline => _device.IsOnline;
 
-    public bool VideoSyncDetected => _device is IHdmiInput inputDevice ? inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue) : false;
+    public bool VideoSyncDetected => _device is IHdmiInput inputDevice && inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue);
 
     public string Key => $"{_device.Key}";
 

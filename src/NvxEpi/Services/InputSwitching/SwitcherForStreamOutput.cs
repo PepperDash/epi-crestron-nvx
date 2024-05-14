@@ -34,8 +34,7 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
             SwitchVideo(routingInput);
 
             var deviceWithAudioSwitching = _device as ICurrentAudioInput;
-            if (deviceWithAudioSwitching != null) 
-                deviceWithAudioSwitching.SetAudioToInputAutomatic();
+            deviceWithAudioSwitching?.SetAudioToInputAutomatic();
 
             return;
         }
@@ -61,8 +60,7 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
 
     private void SwitchAudio(Enumeration<DeviceInputEnum> input)
     {
-        var deviceWithAudioSwitching = _device as ICurrentAudioInput;
-        if (deviceWithAudioSwitching == null) return;
+        if (_device is not ICurrentAudioInput deviceWithAudioSwitching) return;
 
         if (input == DeviceInputEnum.PrimaryAudio)
             deviceWithAudioSwitching.SetAudioToPrimaryStreamAudio();

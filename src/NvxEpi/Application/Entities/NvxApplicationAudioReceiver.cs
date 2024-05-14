@@ -58,12 +58,10 @@ public class NvxApplicationAudioReceiver : EssentialsDevice
 
         AddPostActivationAction(() =>
             {
-                var feedback = Device.Feedbacks[CurrentSecondaryAudioStream.RouteNameKey] as StringFeedback;
-                var audioSourceFeedback = Device.Feedbacks[AudioInputFeedback.Key] as StringFeedback;
-                if (feedback == null)
+                if (Device.Feedbacks[CurrentSecondaryAudioStream.RouteNameKey] is not StringFeedback feedback)
                     throw new NullReferenceException(CurrentSecondaryAudioStream.RouteNameKey);
 
-                if (audioSourceFeedback == null)
+                if (Device.Feedbacks[AudioInputFeedback.Key] is not StringFeedback audioSourceFeedback)
                     throw new NullReferenceException(AudioInputFeedback.Key);
 
                 var currentRouteFb = new IntFeedback(Key + "--appRouteAudioCurrentId",

@@ -24,8 +24,8 @@ public class CurrentVideoStream : VideoStream, ICurrentStream
     public CurrentVideoStream(INvxDeviceWithHardware device) : base(device)
     {
         _currentStreamId = IsTransmitter
-            ? new IntFeedback(() => default( int ))
-            : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
+            ? new IntFeedback(() => default)
+            : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default);
 
         _currentStreamName = IsTransmitter
             ? new StringFeedback(() => string.Empty)

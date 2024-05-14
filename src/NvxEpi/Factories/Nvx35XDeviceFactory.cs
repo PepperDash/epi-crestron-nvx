@@ -15,9 +15,7 @@ public class Nvx35XDeviceFactory : NvxBaseDeviceFactory<Nvx35X>
     {
         MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
 
-        if (_typeNames == null)
-        {
-            _typeNames = new List<string>
+        _typeNames ??= new List<string>
             {
                 "dmnvx350",
                 "dmnvx350c",
@@ -26,7 +24,6 @@ public class Nvx35XDeviceFactory : NvxBaseDeviceFactory<Nvx35X>
                 "dmnvx352",
                 "dmnvx352c",
             };
-        }
 
         TypeNames = _typeNames.ToList();
     }

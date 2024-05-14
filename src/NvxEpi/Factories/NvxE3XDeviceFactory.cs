@@ -15,16 +15,13 @@ public class NvxE3XDeviceFactory : NvxBaseDeviceFactory<NvxE3X>
     {
         MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
 
-        if (_typeNames == null)
-        {
-            _typeNames = new List<string>
+        _typeNames ??= new List<string>
             {
                 "dmnvxe30",
                 "dmnvxe30c",
                 "dmnvxe31",
                 "dmnvxe31c",
             };
-        }
 
         TypeNames = _typeNames.ToList();
     }

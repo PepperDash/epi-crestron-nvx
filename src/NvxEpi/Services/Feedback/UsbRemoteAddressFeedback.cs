@@ -31,8 +31,7 @@ public class UsbRemoteAddressFeedback
         {
             for (uint i = 0; i <= device.UsbInput.RemoteDeviceIdFeedbacks.Count; i++)
             {
-                StringOutputSig sig;
-                if (!device.UsbInput.RemoteDeviceIdFeedbacks.TryGetValue(i, out sig))
+                if (!device.UsbInput.RemoteDeviceIdFeedbacks.TryGetValue(i, out StringOutputSig sig))
                     continue;
 
                 dict.Add(i, new StringFeedback(Key + "-" + i, () => sig.StringValue));

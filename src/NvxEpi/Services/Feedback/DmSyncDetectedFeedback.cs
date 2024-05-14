@@ -9,8 +9,7 @@ public class DmSyncDetectedFeedback
 
     public static BoolFeedback GetFeedback(DmNvxBaseClass device)
     {
-        var dmDevice = device as DmNvxE760x;
-        if (dmDevice == null)
+        if (device is not DmNvxE760x dmDevice)
             return new BoolFeedback(() => false);
 
         var feedback = new BoolFeedback(Key,

@@ -115,8 +115,7 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
 
         if (string.IsNullOrEmpty(routingPortKey))
         {
-            var hdmiInput = Device as IHdmiInput;
-            if (hdmiInput == null)
+            if (Device is not IHdmiInput hdmiInput)
                 return;
 
             HdmiSyncDetected = hdmiInput.SyncDetected[1];
@@ -125,8 +124,7 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
         }
         else if (routingPortKey.Equals(DeviceInputEnum.Hdmi1.Name, StringComparison.OrdinalIgnoreCase))
         {
-            var hdmiInput = Device as IHdmiInput;
-            if (hdmiInput == null)
+            if (Device is not IHdmiInput hdmiInput)
                 return;
 
             HdmiSyncDetected = hdmiInput.SyncDetected[1];
@@ -135,8 +133,7 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
         }
         else if (routingPortKey.Equals(DeviceInputEnum.Hdmi2.Name, StringComparison.OrdinalIgnoreCase))
         {
-            var hdmiInput = Device as IHdmiInput;
-            if (hdmiInput == null)
+            if (Device is not IHdmiInput hdmiInput)
                 return;
 
             _useHdmiInput2 = true;
@@ -146,12 +143,10 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
         }
         else if (routingPortKey.Equals(DeviceInputEnum.Automatic.Name, StringComparison.OrdinalIgnoreCase))
         {
-            var hdmiInput = Device as IHdmiInput;
-            if (hdmiInput == null)
+            if (Device is not IHdmiInput hdmiInput)
                 return;
 
-            var hdmiSwitcher = Device as ICurrentVideoInput;
-            if (hdmiSwitcher == null)
+            if (Device is not ICurrentVideoInput hdmiSwitcher)
                 return;
 
             HdmiSyncDetected = hdmiInput.SyncDetected[1];
@@ -173,8 +168,7 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
 
     public void SetHdcpState(ushort state)
     {
-        var hdmiInput = Device as IHdmiInput;
-        if (hdmiInput == null)
+        if (Device is not IHdmiInput hdmiInput)
             return;
 
         if (_useHdmiInput2)

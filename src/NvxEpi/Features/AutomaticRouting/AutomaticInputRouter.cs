@@ -19,8 +19,7 @@ public class AutomaticInputRouter
 
         _hdmiInputDetected.Output.OutputChange += OnSyncDetected;
 
-        var stream = _currentVideoInput as IStream;
-        if (stream == null || _currentVideoInput.IsTransmitter)
+        if (_currentVideoInput is not IStream stream || _currentVideoInput.IsTransmitter)
             return;
 
         stream.IsStreamingVideo.OutputChange += OnSyncDetected;
@@ -28,25 +27,21 @@ public class AutomaticInputRouter
 
     private void OnSyncDetected(object sender, FeedbackEventArgs feedbackEventArgs)
     {
-        var currentVidoInput = _currentVideoInput as ICurrentVideoInput;
-        if (currentVidoInput == null)
+        if (_currentVideoInput is not ICurrentVideoInput currentVidoInput)
             return;
-
-        BoolFeedback hdmi1;
-        if (_currentVideoInput.SyncDetected.TryGetValue(1, out hdmi1))
+        if (_currentVideoInput.SyncDetected.TryGetValue(1, out _))
         {
             currentVidoInput.SetVideoToHdmiInput1();
             return;
         }
 
-        BoolFeedback hdmi2;
-        if (_currentVideoInput.SyncDetected.TryGetValue(2, out hdmi2))
+        if (_currentVideoInput.SyncDetected.TryGetValue(2, out _))
         {
             currentVidoInput.SetVideoToHdmiInput2();
             return;
         }
 
-        if (!(_currentVideoInput is IStream) || _currentVideoInput.IsTransmitter)
+        if (_currentVideoInput is not IStream || _currentVideoInput.IsTransmitter)
             return;
 
         currentVidoInput.SetVideoToStream();

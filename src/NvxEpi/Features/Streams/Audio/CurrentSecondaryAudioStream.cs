@@ -25,7 +25,7 @@ public class CurrentSecondaryAudioStream : SecondaryAudioStream, ICurrentSeconda
 
     public CurrentSecondaryAudioStream(INvxDeviceWithHardware device) : base(device)
     {
-        _currentSecondaryAudioStreamId = new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default( int ));
+        _currentSecondaryAudioStreamId = new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default);
         _currentSecondaryAudioStreamName = new StringFeedback(RouteNameKey, () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
 
         Feedbacks.Add(CurrentSecondaryAudioStreamId);

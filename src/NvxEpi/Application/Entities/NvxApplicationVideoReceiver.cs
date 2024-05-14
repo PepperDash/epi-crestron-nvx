@@ -98,14 +98,14 @@ public class NvxApplicationVideoReceiver : EssentialsDevice, IOnline
                 AspectRatioMode = new IntFeedback(() => 0);
                 EdidManufacturer = new StringFeedback(() => string.Empty);
 
-                if (!(Device is IHdmiOutput hdmiOut))
+                if (Device is not IHdmiOutput hdmiOut)
                     return;
 
                 DisabledByHdcp = hdmiOut.DisabledByHdcp;
                 HorizontalResolution = hdmiOut.HorizontalResolution;
                 EdidManufacturer = hdmiOut.EdidManufacturer;
 
-                if (!(Device is IVideowallMode aspect))
+                if (Device is not IVideowallMode aspect)
                     return;
 
                 AspectRatioMode = aspect.VideoAspectRatioMode;

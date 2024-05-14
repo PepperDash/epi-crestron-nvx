@@ -12,7 +12,7 @@ public class VideoAspectRatioModeFeedback
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiOut == null)
-            return new IntFeedback(() => default (int));
+            return new IntFeedback(() => default);
 
         var feedback = new IntFeedback(Key, () => (int) device.HdmiOut.VideoAttributes.AspectRatioModeFeedback);
         device.HdmiOut.VideoAttributes.AttributeChange += (stream, args) => feedback.FireUpdate();

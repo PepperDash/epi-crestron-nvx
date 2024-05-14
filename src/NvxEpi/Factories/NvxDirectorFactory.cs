@@ -25,21 +25,13 @@ public class NvxDirectorFactory : EssentialsPluginDeviceFactory<NvxXioDirector>
     {
         var config = JsonConvert.DeserializeObject<NvxDirectorConfig>(dc.Properties.ToString());
 
-        DmXioDirectorBase xio;
-        switch (dc.Type.ToLower())
+        DmXioDirectorBase xio = dc.Type.ToLower() switch
         {
-            case "xiodirector":
-                xio = new DmXioDirectorEnterprise(config.Control.IpIdInt, Global.ControlSystem);
-                break;
-            case "xiodirector80":
-                xio = new DmXioDirector80(config.Control.IpIdInt, Global.ControlSystem);
-                break;
-                case "xiodirector160":
-                xio = new DmXioDirector160(config.Control.IpIdInt, Global.ControlSystem);
-                break;
-            default:
-                throw new NotSupportedException(dc.Type);
-        }
+            "xiodirector" => new DmXioDirectorEnterprise(config.Control.IpIdInt, Global.ControlSystem),
+            "xiodirector80" => new DmXioDirector80(config.Control.IpIdInt, Global.ControlSystem),
+            "xiodirector160" => new DmXioDirector160(config.Control.IpIdInt, Global.ControlSystem),
+            _ => throw new NotSupportedException(dc.Type),
+        };
 
         xio.RegisterWithLogging(dc.Key);
         return new NvxXioDirector(dc.Key, dc.Name, xio);

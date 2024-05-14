@@ -41,9 +41,7 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
 
     public override bool Equals(object obj)
     {
-        var otherValue = obj as Enumeration<TEnum>;
-
-        if (otherValue == null)
+        if (obj is not Enumeration<TEnum> otherValue)
             return false;
 
         bool typeMatches = GetType().GetCType() == obj.GetType().GetCType();
@@ -56,8 +54,7 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
     {
         if (other == null) return 1;
 
-        var otherEnum = other as Enumeration<TEnum>;
-        if (otherEnum != null)
+        if (other is Enumeration<TEnum> otherEnum)
             return Value.CompareTo(otherEnum.Value);
 
         throw new ArgumentException("Object is not an Enum Class");
@@ -113,8 +110,7 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
         _lock.Enter();
         try
         {
-            if (_all == null)
-                _all = GetAllOptions();
+            _all ??= GetAllOptions();
         }
         finally
         {

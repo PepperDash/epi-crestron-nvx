@@ -103,8 +103,7 @@ public class UsbStream : IUsbStreamWithHardware
             return;
         }
 
-        var stream = device as ICurrentStream;
-        if (stream == null)
+        if (device is not ICurrentStream stream)
         {
             return;
         }
@@ -288,8 +287,7 @@ public class UsbStream : IUsbStreamWithHardware
         if (!isRemote || string.IsNullOrEmpty(defaultPair))
             return;
 
-        var local = DeviceManager.GetDeviceForKey(defaultPair) as IUsbStreamWithHardware;
-        if (local == null)
+        if (DeviceManager.GetDeviceForKey(defaultPair) is not IUsbStreamWithHardware local)
             return;
 
         local.AddRemoteUsbStreamToLocal(this);

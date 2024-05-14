@@ -137,23 +137,19 @@ public class NvxDeviceBridge : IBridgeAdvanced
         Debug.Console(2, feedback, "Linking to Trilist : {0} | Join : {1}", trilist.ID, join);
 
         var stringFeedback = feedback as StringFeedback;
-        if (stringFeedback != null)
-            stringFeedback.LinkInputSig(trilist.StringInput[join]);
+        stringFeedback?.LinkInputSig(trilist.StringInput[join]);
 
         var intFeedback = feedback as IntFeedback;
-        if (intFeedback != null)
-            intFeedback.LinkInputSig(trilist.UShortInput[join]);
+        intFeedback?.LinkInputSig(trilist.UShortInput[join]);
 
         var boolFeedback = feedback as BoolFeedback;
-        if (boolFeedback != null)
-            boolFeedback.LinkInputSig(trilist.BooleanInput[join]);
+        boolFeedback?.LinkInputSig(trilist.BooleanInput[join]);
     }
 
     public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
         var joinMap = new NvxDeviceJoinMap(joinStart);
-        if (bridge != null)
-            bridge.AddJoinMap(_device.Key, joinMap);
+        bridge?.AddJoinMap(_device.Key, joinMap);
 
         var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
         if (customJoins != null)
@@ -167,43 +163,38 @@ public class NvxDeviceBridge : IBridgeAdvanced
         LinkRouting(trilist, joinMap);
         LinkUsbRouting(trilist, joinMap);
 
-        var videoInput = _device as ICurrentVideoInput;
-        if (videoInput != null)
+        if (_device is ICurrentVideoInput videoInput)
             trilist.SetUShortSigAction(joinMap.VideoInput.JoinNumber, videoInput.SetVideoInput);
 
         var audioInput = _device as ICurrentAudioInput;
         if (audioInput != null)
             trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber, audioInput.SetAudioInput);
-            
-        var naxInput = _device as ICurrentNaxInput;
-        if (naxInput != null)
+
+        if (_device is ICurrentNaxInput naxInput)
             trilist.SetUShortSigAction(joinMap.NaxInput.JoinNumber, naxInput.SetNaxInput);
 
         var danteInput = _device as ICurrentDanteInput;
         if (audioInput != null)
             trilist.SetUShortSigAction(joinMap.DanteInput.JoinNumber, danteInput.SetDanteInput);
 
-        var stream = _device as IStreamWithHardware;
-        if (stream != null)
+        if (_device is IStreamWithHardware stream)
             trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, stream.SetStreamUrl);
 
-            
+
     }
 
     private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
     {
         if (!_device.IsTransmitter)
         {
-            var stream = _device as IStreamWithHardware;
-            if (stream != null)
+            if (_device is IStreamWithHardware stream)
             {
                 trilist.SetUShortSigAction(joinMap.VideoRoute.JoinNumber, source => PrimaryStreamRouter.Route(source, stream));
                 trilist.SetStringSigAction(joinMap.VideoRoute.JoinNumber,
                     name => PrimaryStreamRouter.Route(name, stream));
             }
         }
-        var secondaryAudio = _device as ISecondaryAudioStreamWithHardware;
-        if (secondaryAudio == null) return;
+        if (_device is not ISecondaryAudioStreamWithHardware secondaryAudio) return;
         trilist.SetUShortSigAction(joinMap.AudioRoute.JoinNumber, source => SecondaryAudioRouter.Route(source, secondaryAudio));
         trilist.SetStringSigAction(joinMap.AudioRoute.JoinNumber,
             name => SecondaryAudioRouter.Route(name, secondaryAudio));
@@ -211,8 +202,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
 
     private void LinkUsbRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
     {
-        var stream = _device as IUsbStreamWithHardware;
-        if (stream == null) return;
+        if (_device is not IUsbStreamWithHardware stream) return;
         trilist.SetUShortSigAction(joinMap.UsbRoute.JoinNumber, source =>
         {
             if (source == 0)
@@ -255,8 +245,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
 
     private void LinkHdmiInputs(BasicTriList trilist, NvxDeviceJoinMap joinMap)
     {
-        var hdmiInput = _device as IHdmiInput;
-        if (hdmiInput == null)
+        if (_device is not IHdmiInput hdmiInput)
             return;
 
         var hdmi1Fb = new BoolFeedback(() => hdmiInput.SyncDetected.ContainsKey(1));

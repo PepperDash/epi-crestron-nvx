@@ -12,10 +12,7 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline
 
     public NvxXioDirector(string key, string name, DmXioDirectorBase hardware) : base(key, name)
     {
-        if (hardware == null)
-            throw new ArgumentNullException("hardware");
-
-        _hardware = hardware;
+        _hardware = hardware ?? throw new ArgumentNullException("hardware");
         _isOnline = new BoolFeedback("BuildFeedbacks", () => _hardware.IsOnline);
         _hardware.OnlineStatusChange += (device, args) => _isOnline.FireUpdate();
     }

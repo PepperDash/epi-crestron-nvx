@@ -13,8 +13,7 @@ public class MulticastAddressFeedback
             () => device.Control.MulticastAddressFeedback.StringValue);
 
         device.BaseEvent += (@base, args) => feedback.FireUpdate();
-        var nvx35X = device as DmNvx35x;
-        if (nvx35X == null) 
+        if (device is not DmNvx35x nvx35X)
             return feedback;
 
         device.SourceReceive.StreamChange += (stream, args) => feedback.FireUpdate();

@@ -7,8 +7,7 @@ public class DmHdcpCapabilityValueFeedback
 {
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
-        var dmDevice = device as DmNvxE760x;
-        if (dmDevice == null)
+        if (device is not DmNvxE760x dmDevice)
             return new IntFeedback(() => 0);
 
         var feedback = new IntFeedback(Hdmi1HdcpCapabilityValueFeedback.Key,
@@ -24,8 +23,7 @@ public class DmHdcpCapabilityStateFeedback
 {
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
-        var dmDevice = device as DmNvxE760x;
-        if (dmDevice == null)
+        if (device is not DmNvxE760x dmDevice)
             return new IntFeedback(() => 0);
 
         var feedback = new IntFeedback(Hdmi1HdcpCapabilityValueFeedback.Key,

@@ -38,9 +38,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx350((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx350((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -55,9 +54,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx350C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx350C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -72,9 +70,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx351((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx351((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -89,9 +86,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx351C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx351C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -106,9 +102,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx352((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx352((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -123,9 +118,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx352C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx352C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -140,9 +134,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx360((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx360((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -157,9 +150,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx360C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx360C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -174,9 +166,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx363((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx363((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -191,9 +182,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvx363C((uint)props.DeviceId, domain, !props.DeviceIsTransmitter())
                             : new DmNvx363C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault(), !props.DeviceIsTransmitter());
                     };
@@ -208,9 +198,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxD30((uint)props.DeviceId, domain)
                             : new DmNvxD30((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
@@ -225,9 +214,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxD30C((uint)props.DeviceId, domain)
                             : new DmNvxD30C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
@@ -242,9 +230,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxE30((uint)props.DeviceId, domain)
                             : new DmNvxE30((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
@@ -259,9 +246,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxE30C((uint)props.DeviceId, domain)
                             : new DmNvxE30C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
@@ -276,9 +262,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxE31((uint)props.DeviceId, domain)
                             : new DmNvxE31((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
@@ -293,9 +278,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxE31C((uint)props.DeviceId, domain)
                             : new DmNvxE31C((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
@@ -310,9 +294,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxE760((uint)props.DeviceId, domain)
                             : new DmNvxE760((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
@@ -327,9 +310,8 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                     return () =>
                     {
                         var xio = GetDirector(props.ParentDeviceKey);
-                        DmXioDirectorBase.DmXioDomain domain;
 
-                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out domain)
+                        return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                             ? new DmNvxE760((uint)props.DeviceId, domain)
                             : new DmNvxE760((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                     };
