@@ -1,20 +1,19 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class NaxInputFeedback
 {
-    public class NaxInputFeedback
+    public const string Key = "NaxInput";
+
+    public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
-        public const string Key = "NaxInput";
+        var feedback = new StringFeedback(Key,
+            () => device.Control.ActiveDmNaxAudioSourceFeedback.ToString());
 
-        public static StringFeedback GetFeedback(DmNvxBaseClass device)
-        {
-            var feedback = new StringFeedback(Key,
-                () => device.Control.ActiveDmNaxAudioSourceFeedback.ToString());
+        device.BaseEvent += (@base, args) => feedback.FireUpdate();
 
-            device.BaseEvent += (@base, args) => feedback.FireUpdate();
-
-            return feedback;
-        }
+        return feedback;
     }
 }

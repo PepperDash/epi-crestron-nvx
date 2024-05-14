@@ -25,8 +25,8 @@ using PepperDash.Essentials.Core.Config;
 
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 
-namespace NvxEpi.Devices
-{
+namespace NvxEpi.Devices;
+
     public class Nvx35X :
         NvxBaseDevice, 
         IComPorts, 
@@ -52,10 +52,7 @@ namespace NvxEpi.Devices
 
         public override bool CustomActivate()
         {
-            var hardware = base.Hardware as DmNvx35x;
-            if (hardware == null)
-                throw new Exception("hardware built doesn't match");
-
+        var hardware = base.Hardware as DmNvx35x ?? throw new Exception("hardware built doesn't match");
             Hardware = hardware;
             var result = base.CustomActivate();
             //if (Debug.Level >= 0)
@@ -82,8 +79,7 @@ namespace NvxEpi.Devices
         public void MakeUsbRoute(IUsbStreamWithHardware hardware)
         {
             Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
-            var usbStream = _usbStream as UsbStream;
-            if (usbStream == null)
+        if (_usbStream is not UsbStream usbStream)
             {
                 Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
                 return;
@@ -176,10 +172,7 @@ namespace NvxEpi.Devices
         {
             try
             {
-                var switcher = outputSelector as IHandleInputSwitch;
-                if (switcher == null)
-                    throw new NullReferenceException("outputSelector");
-
+            var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
                 Debug.Console(1,
                     this,
                     "Executing switch : '{0}' | '{1}' | '{2}'",
@@ -237,5 +230,5 @@ namespace NvxEpi.Devices
         public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
 
         public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
-    }
+
 }

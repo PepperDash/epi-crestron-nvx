@@ -2,56 +2,55 @@
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class IsStreamingSecondaryAudioFeedback
 {
-    public class IsStreamingSecondaryAudioFeedback
+    public static readonly string Key = "IsStreamingSecondaryAudio";
+
+    public static BoolFeedback GetFeedbackForTransmitter(DmNvxBaseClass device)
     {
-        public static readonly string Key = "IsStreamingSecondaryAudio";
+        var feedback = new BoolFeedback(Key,
+            () =>
+                device.DmNaxRouting.DmNaxTransmit.StreamStatusFeedback == DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
+        
+        device.BaseEvent += (@base, args) => feedback.FireUpdate();
+        if (device.SecondaryAudio != null)
+            device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
 
-        public static BoolFeedback GetFeedbackForTransmitter(DmNvxBaseClass device)
+        if (device.DmNaxRouting.DmNaxTransmit != null)
         {
-            var feedback = new BoolFeedback(Key,
-                () =>
-                    device.DmNaxRouting.DmNaxTransmit.StreamStatusFeedback == DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
-            
-            device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            if (device.SecondaryAudio != null)
-                device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
-
-            if (device.DmNaxRouting.DmNaxTransmit != null)
-            {
-                device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
-                device.DmNaxRouting.DmNaxRoutingChange += (sender, args) => feedback.FireUpdate();
-            }
-            else
-            {
-                throw new NotSupportedException("NAX/Secondary Audio");
-            }
-
-            return feedback;
+            device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) => feedback.FireUpdate();
+            device.DmNaxRouting.DmNaxRoutingChange += (sender, args) => feedback.FireUpdate();
+        }
+        else
+        {
+            throw new NotSupportedException("NAX/Secondary Audio");
         }
 
-        public static BoolFeedback GetFeedbackForReceiver(DmNvxBaseClass device)
+        return feedback;
+    }
+
+    public static BoolFeedback GetFeedbackForReceiver(DmNvxBaseClass device)
+    {
+        var feedback = new BoolFeedback(Key,
+            () =>
+                device.DmNaxRouting.DmNaxReceive.StreamStatusFeedback == DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
+        
+        device.BaseEvent += (@base, args) => feedback.FireUpdate();
+        if (device.SecondaryAudio != null)
+            device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
+
+        if (device.DmNaxRouting.DmNaxTransmit != null)
         {
-            var feedback = new BoolFeedback(Key,
-                () =>
-                    device.DmNaxRouting.DmNaxReceive.StreamStatusFeedback == DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
-            
-            device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            if (device.SecondaryAudio != null)
-                device.SecondaryAudio.SecondaryAudioChange += (sender, args) => feedback.FireUpdate();
-
-            if (device.DmNaxRouting.DmNaxTransmit != null)
-            {
-                device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
-                device.DmNaxRouting.DmNaxRoutingChange += (@base, args) => feedback.FireUpdate();
-            }
-            else
-            {
-                throw new NotSupportedException("NAX/Secondary Audio");
-            }
-
-            return feedback;
+            device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
+            device.DmNaxRouting.DmNaxRoutingChange += (@base, args) => feedback.FireUpdate();
         }
+        else
+        {
+            throw new NotSupportedException("NAX/Secondary Audio");
+        }
+
+        return feedback;
     }
 }

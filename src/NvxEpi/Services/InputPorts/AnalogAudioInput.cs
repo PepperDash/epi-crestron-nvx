@@ -3,8 +3,8 @@ using NvxEpi.Abstractions;
 using NvxEpi.Enums;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.InputPorts
-{
+namespace NvxEpi.Services.InputPorts;
+
     public class AnalogAudioInput
     {
         public static void AddRoutingPort(INvxDevice device)
@@ -19,4 +19,3 @@ namespace NvxEpi.Services.InputPorts
             device.InputPorts.Add(port);
         }
     }
-}

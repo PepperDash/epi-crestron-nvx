@@ -1,11 +1,10 @@
 ﻿using NvxEpi.Abstractions.Hardware;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.InputSwitching
+namespace NvxEpi.Abstractions.InputSwitching;
+
+public interface ICurrentAudioInput : INvxDeviceWithHardware
 {
-    public interface ICurrentAudioInput : INvxDeviceWithHardware
-    {
-        StringFeedback CurrentAudioInput { get; }
-        IntFeedback CurrentAudioInputValue { get; }
-    }
+    StringFeedback CurrentAudioInput { get; }
+    IntFeedback CurrentAudioInputValue { get; }
 }

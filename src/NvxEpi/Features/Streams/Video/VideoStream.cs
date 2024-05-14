@@ -4,100 +4,99 @@ using NvxEpi.Abstractions.Stream;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Features.Streams.Video
+namespace NvxEpi.Features.Streams.Video;
+
+public class VideoStream : IStreamWithHardware
 {
-    public class VideoStream : IStreamWithHardware
+    private readonly INvxDeviceWithHardware _device;
+
+    private readonly StringFeedback _streamUrl;
+    private readonly BoolFeedback _isStreamingVideo;
+    private readonly StringFeedback _videoStreamStatus;
+    private readonly StringFeedback _multicastVideoAddress;
+
+    public VideoStream(INvxDeviceWithHardware device)
     {
-        private readonly INvxDeviceWithHardware _device;
+        _device = device;
 
-        private readonly StringFeedback _streamUrl;
-        private readonly BoolFeedback _isStreamingVideo;
-        private readonly StringFeedback _videoStreamStatus;
-        private readonly StringFeedback _multicastVideoAddress;
+        _streamUrl = StreamUrlFeedback.GetFeedback(Hardware);
+        _isStreamingVideo = IsStreamingVideoFeedback.GetFeedback(Hardware);
+        _videoStreamStatus = VideoStreamStatusFeedback.GetFeedback(Hardware);
+        _multicastVideoAddress = MulticastAddressFeedback.GetFeedback(Hardware);
 
-        public VideoStream(INvxDeviceWithHardware device)
-        {
-            _device = device;
+        Feedbacks.Add(_multicastVideoAddress);
+        Feedbacks.Add(_isStreamingVideo);
+        Feedbacks.Add(_videoStreamStatus);
+        Feedbacks.Add(_streamUrl);
+    }
 
-            _streamUrl = StreamUrlFeedback.GetFeedback(Hardware);
-            _isStreamingVideo = IsStreamingVideoFeedback.GetFeedback(Hardware);
-            _videoStreamStatus = VideoStreamStatusFeedback.GetFeedback(Hardware);
-            _multicastVideoAddress = MulticastAddressFeedback.GetFeedback(Hardware);
+    public int DeviceId
+    {
+        get { return _device.DeviceId; }
+    }
 
-            Feedbacks.Add(_multicastVideoAddress);
-            Feedbacks.Add(_isStreamingVideo);
-            Feedbacks.Add(_videoStreamStatus);
-            Feedbacks.Add(_streamUrl);
-        }
+    public IntFeedback DeviceMode
+    {
+        get { return _device.DeviceMode; }
+    }
 
-        public int DeviceId
-        {
-            get { return _device.DeviceId; }
-        }
+    public FeedbackCollection<Feedback> Feedbacks
+    {
+        get { return _device.Feedbacks; }
+    }
 
-        public IntFeedback DeviceMode
-        {
-            get { return _device.DeviceMode; }
-        }
+    public DmNvxBaseClass Hardware
+    {
+        get { return _device.Hardware; }
+    }
 
-        public FeedbackCollection<Feedback> Feedbacks
-        {
-            get { return _device.Feedbacks; }
-        }
+    public RoutingPortCollection<RoutingInputPort> InputPorts
+    {
+        get { return _device.InputPorts; }
+    }
 
-        public DmNvxBaseClass Hardware
-        {
-            get { return _device.Hardware; }
-        }
+    public BoolFeedback IsOnline
+    {
+        get { return _device.IsOnline; }
+    }
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts
-        {
-            get { return _device.InputPorts; }
-        }
+    public bool IsTransmitter
+    {
+        get { return _device.IsTransmitter; }
+    }
 
-        public BoolFeedback IsOnline
-        {
-            get { return _device.IsOnline; }
-        }
+    public string Key
+    {
+        get { return _device.Key; }
+    }
 
-        public bool IsTransmitter
-        {
-            get { return _device.IsTransmitter; }
-        }
+    public string Name
+    {
+        get { return _device.Name; }
+    }
 
-        public string Key
-        {
-            get { return _device.Key; }
-        }
+    public RoutingPortCollection<RoutingOutputPort> OutputPorts
+    {
+        get { return _device.OutputPorts; }
+    }
 
-        public string Name
-        {
-            get { return _device.Name; }
-        }
+    public BoolFeedback IsStreamingVideo
+    {
+        get { return _isStreamingVideo; }
+    }
 
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts
-        {
-            get { return _device.OutputPorts; }
-        }
+    public StringFeedback VideoStreamStatus
+    {
+        get { return _videoStreamStatus; }
+    }
 
-        public BoolFeedback IsStreamingVideo
-        {
-            get { return _isStreamingVideo; }
-        }
+    public StringFeedback StreamUrl
+    {
+        get { return _streamUrl; }
+    }
 
-        public StringFeedback VideoStreamStatus
-        {
-            get { return _videoStreamStatus; }
-        }
-
-        public StringFeedback StreamUrl
-        {
-            get { return _streamUrl; }
-        }
-
-        public StringFeedback MulticastAddress
-        {
-            get { return _multicastVideoAddress; }
-        }
+    public StringFeedback MulticastAddress
+    {
+        get { return _multicastVideoAddress; }
     }
 }

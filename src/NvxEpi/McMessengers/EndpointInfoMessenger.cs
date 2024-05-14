@@ -10,61 +10,60 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NvxEpi.McMessengers
+namespace NvxEpi.McMessengers;
+
+public class EndpointInfoMessenger:MessengerBase
 {
-    public class EndpointInfoMessenger:MessengerBase
+    private readonly NvxBaseDevice device;
+
+    private readonly StringFeedback deviceNameFeedback;
+    public EndpointInfoMessenger(string key, string path, NvxBaseDevice device): base(key, path, device)
     {
-        private readonly NvxBaseDevice device;
+        this.device = device;
 
-        private readonly StringFeedback deviceNameFeedback;
-        public EndpointInfoMessenger(string key, string path, NvxBaseDevice device): base(key, path, device)
+        deviceNameFeedback = device.Feedbacks.FirstOrDefault(fb => fb.Key == DeviceNameFeedback.Key) as StringFeedback;
+
+        if (deviceNameFeedback == null)
         {
-            this.device = device;
-
-            deviceNameFeedback = device.Feedbacks.FirstOrDefault(fb => fb.Key == DeviceNameFeedback.Key) as StringFeedback;
-
-            if (deviceNameFeedback == null)
-            {
-                return;
-            }
-
-            deviceNameFeedback.OutputChange += SendUpdate;
+            return;
         }
 
-        protected override void RegisterActions()
-        {
-            base.RegisterActions();
-
-            AddAction("/fullStatus", SendFullStatus);
-            
-        }
-
-        private void SendFullStatus(string id, JToken content)
-        {
-            PostStatusMessage(new EndpointInfoStateMessage
-            {
-                DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
-            });
-        }
-
-        private void SendUpdate(object sender, FeedbackEventArgs args)
-        {
-            PostStatusMessage(JToken.FromObject(new EndpointInfoUpdateMessage
-            {
-                DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
-            }));
-        }
+        deviceNameFeedback.OutputChange += SendUpdate;
     }
 
-    public class EndpointInfoStateMessage : DeviceStateMessageBase
+    protected override void RegisterActions()
     {
-        [JsonProperty("friendlyName")]
-        public string DeviceName { get; set; }
+        base.RegisterActions();
+
+        AddAction("/fullStatus", SendFullStatus);
+        
     }
 
-    public class EndpointInfoUpdateMessage 
+    private void SendFullStatus(string id, JToken content)
     {
-        [JsonProperty("friendlyName")]
-        public string DeviceName { get; set; }
+        PostStatusMessage(new EndpointInfoStateMessage
+        {
+            DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
+        });
     }
+
+    private void SendUpdate(object sender, FeedbackEventArgs args)
+    {
+        PostStatusMessage(JToken.FromObject(new EndpointInfoUpdateMessage
+        {
+            DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
+        }));
+    }
+}
+
+public class EndpointInfoStateMessage : DeviceStateMessageBase
+{
+    [JsonProperty("friendlyName")]
+    public string DeviceName { get; set; }
+}
+
+public class EndpointInfoUpdateMessage 
+{
+    [JsonProperty("friendlyName")]
+    public string DeviceName { get; set; }
 }

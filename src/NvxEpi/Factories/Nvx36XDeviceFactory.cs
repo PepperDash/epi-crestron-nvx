@@ -5,37 +5,36 @@ using NvxEpi.Features.Config;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace NvxEpi.Factories
+namespace NvxEpi.Factories;
+
+public class Nvx36XDeviceFactory : NvxBaseDeviceFactory<Nvx36X>
 {
-    public class Nvx36XDeviceFactory : NvxBaseDeviceFactory<Nvx36X>
+    private static IEnumerable<string> _typeNames;
+
+    public Nvx36XDeviceFactory()
     {
-        private static IEnumerable<string> _typeNames;
+        MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
 
-        public Nvx36XDeviceFactory()
+        if (_typeNames == null)
         {
-            MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
-
-            if (_typeNames == null)
+            _typeNames = new List<string>
             {
-                _typeNames = new List<string>
-                {
-                    "dmnvx360",
-                    "dmnvx360c",
-                    "dmnvx363",
-                    "dmnvx363c",
-                    "dmnvxe760",
-                    "dmnvxe760c",
-                };
-            }
-
-            TypeNames = _typeNames.ToList();
+                "dmnvx360",
+                "dmnvx360c",
+                "dmnvx363",
+                "dmnvx363c",
+                "dmnvxe760",
+                "dmnvxe760c",
+            };
         }
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            var props = NvxDeviceProperties.FromDeviceConfig(dc);
-            var deviceBuild = GetDeviceBuildAction(dc.Type, props);
-            return new Nvx36X(dc, deviceBuild, props.DeviceIsTransmitter());
-        }
+        TypeNames = _typeNames.ToList();
+    }
+
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        var props = NvxDeviceProperties.FromDeviceConfig(dc);
+        var deviceBuild = GetDeviceBuildAction(dc.Type, props);
+        return new Nvx36X(dc, deviceBuild, props.DeviceIsTransmitter());
     }
 }

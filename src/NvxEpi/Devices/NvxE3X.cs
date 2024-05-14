@@ -16,8 +16,8 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 
-namespace NvxEpi.Devices
-{
+namespace NvxEpi.Devices;
+
     public class NvxE3X : 
         NvxBaseDevice, 
         INvxE3XDeviceWithHardware, 
@@ -37,10 +37,7 @@ namespace NvxEpi.Devices
 
         public override bool CustomActivate()
         {
-            var hardware = base.Hardware as DmNvxE3x;
-            if (hardware == null)
-                throw new Exception("hardware built doesn't match");
-
+        var hardware = base.Hardware as DmNvxE3x ?? throw new Exception("hardware built doesn't match");
             Hardware = hardware;
             _hdmiInputs = new HdmiInput(this);
 
@@ -160,4 +157,3 @@ namespace NvxEpi.Devices
             SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
         }
     }
-}

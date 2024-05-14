@@ -5,8 +5,8 @@ using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Enums;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.InputPorts
-{
+namespace NvxEpi.Services.InputPorts;
+
     public class HdmiInput1Port
     {
         public static void AddRoutingPort(ICurrentVideoInput device)
@@ -75,4 +75,3 @@ namespace NvxEpi.Services.InputPorts
             }
         }
     }
-}

@@ -2,11 +2,10 @@
 using NvxEpi.Abstractions.HdmiInput;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.InputSwitching
+namespace NvxEpi.Abstractions.InputSwitching;
+
+public interface ICurrentVideoInput : INvxDeviceWithHardware
 {
-    public interface ICurrentVideoInput : INvxDeviceWithHardware
-    {
-        StringFeedback CurrentVideoInput { get; }
-        IntFeedback CurrentVideoInputValue { get; }
-    }
+    StringFeedback CurrentVideoInput { get; }
+    IntFeedback CurrentVideoInputValue { get; }
 }

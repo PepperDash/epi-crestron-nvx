@@ -15,8 +15,8 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
-namespace NvxEpi.Devices
-{
+namespace NvxEpi.Devices;
+
     public class NvxD3X : 
         NvxBaseDevice, 
         INvxD3XDeviceWithHardware, 
@@ -126,4 +126,3 @@ namespace NvxEpi.Devices
             SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
         }
     }
-}

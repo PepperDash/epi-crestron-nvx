@@ -2,22 +2,21 @@
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class Hdmi2HdcpCapabilityValueFeedback
 {
-    public class Hdmi2HdcpCapabilityValueFeedback
+    public const string Key = "Hdmi2HdcpCapabilityValue";
+
+    public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
-        public const string Key = "Hdmi2HdcpCapabilityValue";
+        if (device.HdmiIn == null || device.HdmiIn[2] == null)
+            return new IntFeedback(() => 0);
 
-        public static IntFeedback GetFeedback(DmNvxBaseClass device)
-        {
-            if (device.HdmiIn == null || device.HdmiIn[2] == null)
-                return new IntFeedback(() => 0);
+        var feedback = new IntFeedback(Key,
+            () => (int)device.HdmiIn[2].HdcpCapabilityFeedback);
 
-            var feedback = new IntFeedback(Key,
-                () => (int)device.HdmiIn[2].HdcpCapabilityFeedback);
-
-            device.HdmiIn[2].StreamChange += (stream, args) => feedback.FireUpdate();
-            return feedback;
-        }
+        device.HdmiIn[2].StreamChange += (stream, args) => feedback.FireUpdate();
+        return feedback;
     }
 }

@@ -4,6 +4,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>10</LangVersion>
     <RootNamespace>NvxEpi</RootNamespace>
     <Deterministic>false</Deterministic>
     <AssemblyTitle>NvxEpi</AssemblyTitle>
@@ -26,7 +28,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
-  </PropertyGroup>
+  </PropertyGroup>  
 
   <ItemGroup>
     <Compile Remove="Properties\**" />
@@ -36,7 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.0.0-feature-mc-touchpanel-controller.5" />
-    <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2461" />
+    <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2478" />
   </ItemGroup>
 
 </Project>

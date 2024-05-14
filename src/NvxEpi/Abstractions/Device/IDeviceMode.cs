@@ -1,9 +1,8 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Device
+namespace NvxEpi.Abstractions.Device;
+
+public interface IDeviceMode
 {
-    public interface IDeviceMode
-    {
-        IntFeedback DeviceMode { get; }
-    }
+    IntFeedback DeviceMode { get; }
 }

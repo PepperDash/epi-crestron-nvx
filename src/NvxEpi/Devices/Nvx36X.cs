@@ -30,8 +30,8 @@ using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 using NvxEpi.McMessengers;
 
 
-namespace NvxEpi.Devices
-{
+namespace NvxEpi.Devices;
+
     public class Nvx36X : 
         NvxBaseDevice, 
         IComPorts, 
@@ -92,7 +92,7 @@ namespace NvxEpi.Devices
         public void MakeUsbRoute(IUsbStreamWithHardware hardware)
         {
             Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
-            if (!(_usbStream is UsbStream usbStream))
+        if (_usbStream is not UsbStream usbStream)
             {
                 Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
                 return;
@@ -283,5 +283,5 @@ namespace NvxEpi.Devices
         public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
 
         public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
-    }
+
 }

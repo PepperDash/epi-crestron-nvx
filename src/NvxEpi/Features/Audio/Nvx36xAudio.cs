@@ -3,87 +3,86 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Features.Audio
+namespace NvxEpi.Features.Audio;
+
+public class Nvx36XAudio : IBasicVolumeWithFeedback
 {
-    public class Nvx36XAudio : IBasicVolumeWithFeedback
+    private readonly DmNvx36x _device;
+    private readonly IKeyed _parent;
+
+    public Nvx36XAudio(DmNvx36x device, IKeyed parent)
     {
-        private readonly DmNvx36x _device;
-        private readonly IKeyed _parent;
+        _device = device;
+        _parent = parent;
 
-        public Nvx36XAudio(DmNvx36x device, IKeyed parent)
+        MuteFeedback = new BoolFeedback("Muted", () => _device.Control.AudioMutedFeedback.BoolValue);
+
+        VolumeLevelFeedback = new IntFeedback("Volume", () =>
         {
-            _device = device;
-            _parent = parent;
+            var volume = _device.Control.AnalogAudioOutputVolumeFeedback.ShortValue;
+            var result = MapVolume(volume);
+            return result;
+        });
 
-            MuteFeedback = new BoolFeedback("Muted", () => _device.Control.AudioMutedFeedback.BoolValue);
+        _device.OnlineStatusChange += (@base, args) => MuteFeedback.FireUpdate();
+        _device.OnlineStatusChange += (@base, args) => VolumeLevelFeedback.FireUpdate();
 
-            VolumeLevelFeedback = new IntFeedback("Volume", () =>
-            {
-                var volume = _device.Control.AnalogAudioOutputVolumeFeedback.ShortValue;
-                var result = MapVolume(volume);
-                return result;
-            });
+        _device.BaseEvent += (@base, args) => MuteFeedback.FireUpdate();
+        _device.BaseEvent += (@base, args) => VolumeLevelFeedback.FireUpdate();
+    }
 
-            _device.OnlineStatusChange += (@base, args) => MuteFeedback.FireUpdate();
-            _device.OnlineStatusChange += (@base, args) => VolumeLevelFeedback.FireUpdate();
+    public static int MapVolume(short level)
+    {
+        const float inputMin = -800;
+        const float inputMax = 240;
 
-            _device.BaseEvent += (@base, args) => MuteFeedback.FireUpdate();
-            _device.BaseEvent += (@base, args) => VolumeLevelFeedback.FireUpdate();
-        }
+        const float outputMin = 0;
+        const float outputMax = ushort.MaxValue;
 
-        public static int MapVolume(short level)
-        {
-            const float inputMin = -800;
-            const float inputMax = 240;
+        var normalized = (level - inputMin) / (inputMax - inputMin);
+        var mappedValue = (int)(normalized * (outputMax - outputMin) + outputMin);
 
-            const float outputMin = 0;
-            const float outputMax = ushort.MaxValue;
+        return mappedValue;
+    }
 
-            var normalized = (level - inputMin) / (inputMax - inputMin);
-            var mappedValue = (int)(normalized * (outputMax - outputMin) + outputMin);
+    public void VolumeUp(bool pressRelease)
+    {
+        Debug.Console(0, _parent, "Volume press not implemented");
+    }
 
-            return mappedValue;
-        }
+    public void VolumeDown(bool pressRelease)
+    {
+        Debug.Console(0, _parent, "Volume press not implemented");
+    }
 
-        public void VolumeUp(bool pressRelease)
-        {
-            Debug.Console(0, _parent, "Volume press not implemented");
-        }
-
-        public void VolumeDown(bool pressRelease)
-        {
-            Debug.Console(0, _parent, "Volume press not implemented");
-        }
-
-        public void MuteToggle()
-        {
-            if (_device.Control.AudioMutedFeedback.BoolValue)
-            {
-                _device.Control.AudioUnmute();
-            }
-            else
-            {
-                _device.Control.AudioMute();
-            }
-        }
-
-        public void SetVolume(ushort level)
-        {
-            var volume = CrestronEnvironment.ScaleWithLimits(level, ushort.MaxValue, ushort.MinValue, 240, -800);
-            _device.Control.AnalogAudioOutputVolume.ShortValue = (short) volume;
-        }
-
-        public void MuteOn()
-        {
-            _device.Control.AudioMute();
-        }
-
-        public void MuteOff()
+    public void MuteToggle()
+    {
+        if (_device.Control.AudioMutedFeedback.BoolValue)
         {
             _device.Control.AudioUnmute();
         }
-
-        public IntFeedback VolumeLevelFeedback { get; private set; }
-        public BoolFeedback MuteFeedback { get; private set; }
+        else
+        {
+            _device.Control.AudioMute();
+        }
     }
+
+    public void SetVolume(ushort level)
+    {
+        var volume = CrestronEnvironment.ScaleWithLimits(level, ushort.MaxValue, ushort.MinValue, 240, -800);
+        _device.Control.AnalogAudioOutputVolume.ShortValue = (short) volume;
+    }
+
+    public void MuteOn()
+    {
+        _device.Control.AudioMute();
+    }
+
+    public void MuteOff()
+    {
+        _device.Control.AudioUnmute();
+    }
+
+    public IntFeedback VolumeLevelFeedback { get; private set; }
+    public BoolFeedback MuteFeedback { get; private set; }
 }

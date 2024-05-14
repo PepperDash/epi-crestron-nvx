@@ -9,15 +9,13 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Devices;
-using PepperDash.Essentials.AppServer.Messengers;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
-namespace NvxEpi.Features.Routing
-{
+namespace NvxEpi.Features.Routing;
+
     public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
     {
-        private static readonly NvxGlobalRouter _instance = new NvxGlobalRouter();
+    private static readonly NvxGlobalRouter _instance = new();
 
         public const string InstanceKey = "$NvxRouter";
         public const string RouteOff = "$off";
@@ -158,7 +156,7 @@ namespace NvxEpi.Features.Routing
                 return;
             }
 
-            if(!(outputSlot is NvxMatrixOutput output))
+        if(outputSlot is not NvxMatrixOutput output)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Output with key {key} is not NvxMatrixOutput", this, outputSlotKey);
                 return;
@@ -187,4 +185,3 @@ namespace NvxEpi.Features.Routing
             }
         }
     }
-}

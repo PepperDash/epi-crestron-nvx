@@ -1,10 +1,9 @@
 ﻿using NvxEpi.Abstractions.Hardware;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions
+namespace NvxEpi.Abstractions;
+
+public interface INvxDeviceWithHardware : INvxDevice, INvxHardware
 {
-    public interface INvxDeviceWithHardware : INvxDevice, INvxHardware
-    {
-        
-    }
+    
 }

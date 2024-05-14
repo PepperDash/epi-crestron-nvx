@@ -6,68 +6,64 @@ using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.InputSwitching
+namespace NvxEpi.Services.InputSwitching;
+
+public class SwitcherForAnalogAudioOutput : IHandleInputSwitch
 {
-    public class SwitcherForAnalogAudioOutput : IHandleInputSwitch
+    public const string Key = "AnalogAudioOutput";
+
+    private readonly ICurrentAudioInput _device;
+
+    public SwitcherForAnalogAudioOutput(ICurrentAudioInput device)
     {
-        public const string Key = "AnalogAudioOutput";
+        _device = device;
+    }
 
-        private readonly ICurrentAudioInput _device;
+    public void HandleSwitch(object input, eRoutingSignalType type)
+    {
+        var routingInput = input as DeviceInputEnum ?? throw new InvalidCastException("routing input");
+        Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
 
-        public SwitcherForAnalogAudioOutput(ICurrentAudioInput device)
-        {
-            _device = device;
-        }
+        if (routingInput == DeviceInputEnum.NoSwitch)
+            return;
 
-        public void HandleSwitch(object input, eRoutingSignalType type)
-        {
-            var routingInput = input as DeviceInputEnum;
-            if (routingInput == null)
-                throw new InvalidCastException("routing input");
+        if (type.Has(eRoutingSignalType.Audio))
+            SwitchAudio(routingInput);
 
-            Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
+        if (type.Has(eRoutingSignalType.Video))
+            throw new NotSupportedException("video"); 
+    }
 
-            if (routingInput == DeviceInputEnum.NoSwitch)
-                return;
+    private void SwitchAudio(Enumeration<DeviceInputEnum> input)
+    {
+        if (input == DeviceInputEnum.PrimaryAudio)
+            _device.SetAudioToPrimaryStreamAudio();
+        else if (input == DeviceInputEnum.Stream)
+            _device.SetAudioToPrimaryStreamAudio();
+        else if (input == DeviceInputEnum.SecondaryAudio)
+            _device.SetAudioToSecondaryStreamAudio();
+        else if (input == DeviceInputEnum.Hdmi1)
+            _device.SetAudioToHdmiInput1();
+        else if (input == DeviceInputEnum.Hdmi2)
+            _device.SetAudioToHdmiInput2();
+        else if (input == DeviceInputEnum.DmNaxAudio)
+            _device.SetAudioToSecondaryStreamAudio();
+        else
+            throw new NotSupportedException(input.Name);
+    }
 
-            if (type.Has(eRoutingSignalType.Audio))
-                SwitchAudio(routingInput);
+    public override string ToString()
+    {
+        return _device.Key + "-" + Key;
+    }
 
-            if (type.Has(eRoutingSignalType.Video))
-                throw new NotSupportedException("video"); 
-        }
-
-        private void SwitchAudio(Enumeration<DeviceInputEnum> input)
-        {
-            if (input == DeviceInputEnum.PrimaryAudio)
-                _device.SetAudioToPrimaryStreamAudio();
-            else if (input == DeviceInputEnum.Stream)
-                _device.SetAudioToPrimaryStreamAudio();
-            else if (input == DeviceInputEnum.SecondaryAudio)
-                _device.SetAudioToSecondaryStreamAudio();
-            else if (input == DeviceInputEnum.Hdmi1)
-                _device.SetAudioToHdmiInput1();
-            else if (input == DeviceInputEnum.Hdmi2)
-                _device.SetAudioToHdmiInput2();
-            else if (input == DeviceInputEnum.DmNaxAudio)
-                _device.SetAudioToSecondaryStreamAudio();
-            else
-                throw new NotSupportedException(input.Name);
-        }
-
-        public override string ToString()
-        {
-            return _device.Key + "-" + Key;
-        }
-
-        public static void AddRoutingPort(ICurrentAudioInput parent)
-        {
-            parent.OutputPorts.Add(new RoutingOutputPort(
-                Key, 
-                eRoutingSignalType.Audio, 
-                eRoutingPortConnectionType.LineAudio,
-                new SwitcherForAnalogAudioOutput(parent), 
-                parent));
-        }
+    public static void AddRoutingPort(ICurrentAudioInput parent)
+    {
+        parent.OutputPorts.Add(new RoutingOutputPort(
+            Key, 
+            eRoutingSignalType.Audio, 
+            eRoutingPortConnectionType.LineAudio,
+            new SwitcherForAnalogAudioOutput(parent), 
+            parent));
     }
 }

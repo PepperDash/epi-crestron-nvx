@@ -1,7 +1,6 @@
-﻿namespace NvxEpi.Abstractions.Device
+﻿namespace NvxEpi.Abstractions.Device;
+
+public interface ITransmitterReceiver : IDeviceMode
 {
-    public interface ITransmitterReceiver : IDeviceMode
-    {
-        bool IsTransmitter { get; }
-    }
+    bool IsTransmitter { get; }
 }

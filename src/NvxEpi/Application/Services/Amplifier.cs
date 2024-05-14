@@ -9,8 +9,8 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 
-namespace PepperDash.Essentials
-{
+namespace PepperDash.Essentials;
+
     public class Amplifier : EssentialsDevice, IRoutingSink
     {
         public event SourceInfoChangeHandler CurrentSourceChange;
@@ -28,13 +28,11 @@ namespace PepperDash.Essentials
 
                 var handler = CurrentSourceChange;
 
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.WillChange);
+            handler?.Invoke(_CurrentSourceInfo, ChangeType.WillChange);
 
                 _CurrentSourceInfo = value;
 
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.DidChange);
+            handler?.Invoke(_CurrentSourceInfo, ChangeType.DidChange);
             }
         }
         SourceListItem _CurrentSourceInfo;
@@ -69,4 +67,3 @@ namespace PepperDash.Essentials
             return new Amplifier(dc.Key, dc.Name);
         }
     }
-}

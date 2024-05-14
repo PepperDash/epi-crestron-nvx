@@ -1,7 +1,6 @@
-﻿namespace NvxEpi.Abstractions.Device
+﻿namespace NvxEpi.Abstractions.Device;
+
+public interface IDeviceId
 {
-    public interface IDeviceId
-    {
-        int DeviceId { get; }
-    }
+    int DeviceId { get; }
 }

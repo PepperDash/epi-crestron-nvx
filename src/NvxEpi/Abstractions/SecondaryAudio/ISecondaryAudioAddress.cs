@@ -1,11 +1,10 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.SecondaryAudio
+namespace NvxEpi.Abstractions.SecondaryAudio;
+
+public interface ISecondaryAudioAddress
 {
-    public interface ISecondaryAudioAddress
-    {
-        StringFeedback SecondaryAudioAddress { get; }
-        StringFeedback TxAudioAddress { get; }
-        StringFeedback RxAudioAddress { get; }
-    }
+    StringFeedback SecondaryAudioAddress { get; }
+    StringFeedback TxAudioAddress { get; }
+    StringFeedback RxAudioAddress { get; }
 }

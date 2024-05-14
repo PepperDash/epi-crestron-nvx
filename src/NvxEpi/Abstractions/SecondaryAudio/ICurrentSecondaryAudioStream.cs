@@ -1,10 +1,9 @@
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.SecondaryAudio
+namespace NvxEpi.Abstractions.SecondaryAudio;
+
+public interface ICurrentSecondaryAudioStream : ISecondaryAudioStreamWithHardware
 {
-    public interface ICurrentSecondaryAudioStream : ISecondaryAudioStreamWithHardware
-    {
-        StringFeedback CurrentSecondaryAudioStreamName { get; }
-        IntFeedback CurrentSecondaryAudioStreamId { get; }
-    }
+    StringFeedback CurrentSecondaryAudioStreamName { get; }
+    IntFeedback CurrentSecondaryAudioStreamId { get; }
 }

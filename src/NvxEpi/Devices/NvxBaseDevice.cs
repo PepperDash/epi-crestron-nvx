@@ -27,8 +27,8 @@ using PepperDash.Core;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.McMessengers;
 
-namespace NvxEpi.Devices
-{
+namespace NvxEpi.Devices;
+
     public abstract class NvxBaseDevice : 
         EssentialsBridgeableDevice, 
         ICurrentVideoInput, 
@@ -46,10 +46,10 @@ namespace NvxEpi.Devices
         private ICurrentNaxInput _naxSwitcher;
 
         private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
-            new RoutingPortCollection<RoutingInputPort>();
+        new();
 
         private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
-            new RoutingPortCollection<RoutingOutputPort>();
+        new();
 
         private string _hardwareName;
         private const string _showNvxCmd = "shownvxinfo";
@@ -71,10 +71,9 @@ namespace NvxEpi.Devices
             : base(config.Key, config.Name)
         {
             if (getHardware == null)
-                throw new ArgumentNullException("hardware");
+            throw new ArgumentNullException(nameof(getHardware));
 
-            if (_queue == null)
-                _queue = new GenericQueue("NvxDeviceBuildQueue", Thread.eThreadPriority.LowestPriority, 200);
+        _queue ??= new GenericQueue("NvxDeviceBuildQueue", Thread.eThreadPriority.LowestPriority, 200);
 
             Feedbacks = new FeedbackCollection<Feedback>();
             var props = NvxDeviceProperties.FromDeviceConfig(config);
@@ -132,8 +131,8 @@ namespace NvxEpi.Devices
             _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
 
             if (IsTransmitter || Hardware == null) return base.CustomActivate();
-            if (Hardware.Control.ServerUrlFeedback.StringValue != String.Empty)
-                Hardware.Control.ServerUrl.StringValue = String.Empty;
+        if (Hardware.Control.ServerUrlFeedback.StringValue != string.Empty)
+            Hardware.Control.ServerUrl.StringValue = string.Empty;
             Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
 
             return base.CustomActivate();
@@ -161,7 +160,7 @@ namespace NvxEpi.Devices
 
             mc.AddDeviceMessenger(infoMessenger);
 
-            if (!(this is IHdmiInput hdmiInputDevice))
+        if (this is not IHdmiInput hdmiInputDevice)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "{key:l} does NOT implement IHdmiInput interface", this, Key);
                 return;
@@ -174,7 +173,7 @@ namespace NvxEpi.Devices
 
             mc.AddDeviceMessenger(hdmiInputMessenger);
 
-            if (!(this is IHdmiOutput hdmiOutputDevice))
+        if (this is not IHdmiOutput hdmiOutputDevice)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Information,"{key:l} does NOT implement IHdmiOutput interface", this, Key);
                 return;
@@ -359,4 +358,3 @@ namespace NvxEpi.Devices
         public DeviceInfo DeviceInfo { get; private set; }
         public event DeviceInfoChangeHandler DeviceInfoChanged;
     }
-}

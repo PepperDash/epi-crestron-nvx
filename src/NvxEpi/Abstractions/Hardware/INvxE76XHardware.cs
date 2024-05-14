@@ -1,9 +1,8 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 
-namespace NvxEpi.Abstractions.Hardware
+namespace NvxEpi.Abstractions.Hardware;
+
+public interface INvxE76XHardware : INvxHardware
 {
-    public interface INvxE76XHardware : INvxHardware
-    {
-        new DmNvxE760x Hardware { get; }
-    }
+    new DmNvxE760x Hardware { get; }
 }

@@ -1,9 +1,8 @@
 ﻿using NvxEpi.Abstractions.Hardware;
 
-namespace NvxEpi.Abstractions.SecondaryAudio
+namespace NvxEpi.Abstractions.SecondaryAudio;
+
+public interface ISecondaryAudioStreamWithHardware : ISecondaryAudioStream, INvxHardware
 {
-    public interface ISecondaryAudioStreamWithHardware : ISecondaryAudioStream, INvxHardware
-    {
-        
-    }
+    
 }
