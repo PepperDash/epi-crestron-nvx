@@ -9,11 +9,7 @@ using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-
-
-#if SERIES4
 using MockDisplay = PepperDash.Essentials.Devices.Common.Displays.MockDisplay;
-#endif
 
 namespace NvxEpi.Application.Entities
 {
@@ -48,10 +44,7 @@ namespace NvxEpi.Application.Entities
 
             AddPostActivationAction(() =>
                 {
-                    var port = Device.OutputPorts[SwitcherForHdmiOutput.Key];
-                    if (port == null)
-                        throw new NullReferenceException("hdmi output routing port");
-
+                    var port = Device.OutputPorts[SwitcherForHdmiOutput.Key] ?? throw new NullReferenceException("hdmi output routing port");
                     TieLineCollection.Default.Add(new TieLine(port, sink.InputPorts[RoutingPortNames.HdmiIn1]));
                 });
 
@@ -66,9 +59,7 @@ namespace NvxEpi.Application.Entities
 
             AddPostActivationAction(() =>
                 {
-                    var feedback = Device.Feedbacks[CurrentVideoStream.RouteNameKey] as StringFeedback;
-                    if (feedback == null)
-                        throw new NullReferenceException(CurrentVideoStream.RouteNameKey);
+                    var feedback = Device.Feedbacks[CurrentVideoStream.RouteNameKey] as StringFeedback ?? throw new NullReferenceException(CurrentVideoStream.RouteNameKey);
 
                     var currentRouteFb = new IntFeedback(() =>
                         {
@@ -107,16 +98,14 @@ namespace NvxEpi.Application.Entities
                     AspectRatioMode = new IntFeedback(() => 0);
                     EdidManufacturer = new StringFeedback(() => string.Empty);
 
-                    var hdmiOut = Device as IHdmiOutput;
-                    if (hdmiOut == null)
+                    if (!(Device is IHdmiOutput hdmiOut))
                         return;
 
                     DisabledByHdcp = hdmiOut.DisabledByHdcp;
                     HorizontalResolution = hdmiOut.HorizontalResolution;
                     EdidManufacturer = hdmiOut.EdidManufacturer;
 
-                    var aspect = Device as IVideowallMode;
-                    if(aspect == null)
+                    if (!(Device is IVideowallMode aspect))
                         return;
 
                     AspectRatioMode = aspect.VideoAspectRatioMode;

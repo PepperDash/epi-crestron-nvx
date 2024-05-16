@@ -9,19 +9,13 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Devices;
-
-#if SERIES4
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-#endif
 
 namespace NvxEpi.Features.Routing
 {
-#if SERIES4
     public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
-#else
-    public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric
-#endif
+
     {
         private static readonly NvxGlobalRouter _instance = new NvxGlobalRouter();
 
@@ -46,15 +40,11 @@ namespace NvxEpi.Features.Routing
 
             AddPostActivationAction(BuildTieLines);
 
-#if SERIES4
             AddPostActivationAction(BuildMatrixRouting);
 
 
             InputSlots = new Dictionary<string, IRoutingInputSlot>();
-            OutputSlots = new Dictionary<string, IRoutingOutputSlot>();            
-
-            //AddPostActivationAction(BuildMobileControlMessenger);
-#endif
+            OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
         }
 
         public static NvxGlobalRouter Instance { get { return _instance; } }
@@ -109,7 +99,6 @@ namespace NvxEpi.Features.Routing
             throw new NotImplementedException("Execute Numeric Switch");
         }
 
-#if SERIES4
         public Dictionary<string, IRoutingInputSlot> InputSlots { get; private set; }
 
         public Dictionary<string, IRoutingOutputSlot> OutputSlots { get; private set; }
@@ -155,20 +144,6 @@ namespace NvxEpi.Features.Routing
             }
         }
 
-        private void BuildMobileControlMessenger()
-        {
-            var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
-
-            if(mc == null)
-            {
-                Debug.Console(0, this, "Unable to find mobile control device");
-                return;
-            }
-
-            var routingMessenger = new IMatrixRoutingMessenger($"{Key}-matrixRoutingMessenger", $"/device/{Key}", this);
-            mc.AddDeviceMessenger(routingMessenger);
-        }
-
         public void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type)
         {
             if(!InputSlots.TryGetValue(inputSlotKey, out var inputSlot))
@@ -211,6 +186,5 @@ namespace NvxEpi.Features.Routing
                 Routing.SecondaryAudioRouter.Route(inputSlot.SlotNumber, audioOutput);
             }
         }
-#endif
     }
 }

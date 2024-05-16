@@ -27,9 +27,8 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 
-#if SERIES4
 using NvxEpi.McMessengers;
-#endif
+
 
 namespace NvxEpi.Devices
 {
@@ -93,8 +92,7 @@ namespace NvxEpi.Devices
         public void MakeUsbRoute(IUsbStreamWithHardware hardware)
         {
             Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
-            var usbStream = _usbStream as UsbStream;
-            if (usbStream == null)
+            if (!(_usbStream is UsbStream usbStream))
             {
                 Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
                 return;
@@ -194,9 +192,7 @@ namespace NvxEpi.Devices
         {
             try
             {
-                var switcher = outputSelector as IHandleInputSwitch;
-                if (switcher == null)
-                    throw new NullReferenceException("outputSelector");
+                var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
 
                 Debug.Console(1,
                     this,
