@@ -35,8 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.0.0-feature-mc-touchpanel-controller.5" />
-    <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2461" />
+    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.0.1-update-essentials-version.2" />
+    <PackageReference Include="PepperDashEssentials" Version="2.0.0-beta-2490" />
   </ItemGroup>
 
 </Project>
