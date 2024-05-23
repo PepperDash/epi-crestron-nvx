@@ -1,20 +1,19 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class IsStreamingVideoFeedback
 {
-    public class IsStreamingVideoFeedback
+    public const string Key = "IsStreamingVideo";
+
+    public static BoolFeedback GetFeedback(DmNvxBaseClass device)
     {
-        public const string Key = "IsStreamingVideo";
+        var feedback = new BoolFeedback(Key,
+            () => device.Control.StartFeedback.BoolValue);
 
-        public static BoolFeedback GetFeedback(DmNvxBaseClass device)
-        {
-            var feedback = new BoolFeedback(Key,
-                () => device.Control.StartFeedback.BoolValue);
+        device.BaseEvent += (@base, args) => feedback.FireUpdate();
 
-            device.BaseEvent += (@base, args) => feedback.FireUpdate();
-
-            return feedback;
-        }
+        return feedback;
     }
 }

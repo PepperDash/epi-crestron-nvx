@@ -4,52 +4,46 @@ using NvxEpi.Abstractions.Stream;
 using NvxEpi.Extensions;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Features.AutomaticRouting
+namespace NvxEpi.Features.AutomaticRouting;
+
+public class AutomaticInputRouter
 {
-    public class AutomaticInputRouter
+    private readonly IHdmiInput _currentVideoInput;
+    private readonly BoolFeedbackOr _hdmiInputDetected = new();
+
+    public AutomaticInputRouter(IHdmiInput currentVideoInput)
     {
-        private readonly IHdmiInput _currentVideoInput;
-        private readonly BoolFeedbackOr _hdmiInputDetected = new BoolFeedbackOr();
+        _currentVideoInput = currentVideoInput;
+        foreach (var fb in currentVideoInput.SyncDetected.Values)
+            _hdmiInputDetected.AddOutputIn(fb);
 
-        public AutomaticInputRouter(IHdmiInput currentVideoInput)
+        _hdmiInputDetected.Output.OutputChange += OnSyncDetected;
+
+        if (_currentVideoInput is not IStream stream || _currentVideoInput.IsTransmitter)
+            return;
+
+        stream.IsStreamingVideo.OutputChange += OnSyncDetected;
+    }
+
+    private void OnSyncDetected(object sender, FeedbackEventArgs feedbackEventArgs)
+    {
+        if (_currentVideoInput is not ICurrentVideoInput currentVidoInput)
+            return;
+        if (_currentVideoInput.SyncDetected.TryGetValue(1, out _))
         {
-            _currentVideoInput = currentVideoInput;
-            foreach (var fb in currentVideoInput.SyncDetected.Values)
-                _hdmiInputDetected.AddOutputIn(fb);
-
-            _hdmiInputDetected.Output.OutputChange += OnSyncDetected;
-
-            var stream = _currentVideoInput as IStream;
-            if (stream == null || _currentVideoInput.IsTransmitter)
-                return;
-
-            stream.IsStreamingVideo.OutputChange += OnSyncDetected;
+            currentVidoInput.SetVideoToHdmiInput1();
+            return;
         }
 
-        private void OnSyncDetected(object sender, FeedbackEventArgs feedbackEventArgs)
+        if (_currentVideoInput.SyncDetected.TryGetValue(2, out _))
         {
-            var currentVidoInput = _currentVideoInput as ICurrentVideoInput;
-            if (currentVidoInput == null)
-                return;
-
-            BoolFeedback hdmi1;
-            if (_currentVideoInput.SyncDetected.TryGetValue(1, out hdmi1))
-            {
-                currentVidoInput.SetVideoToHdmiInput1();
-                return;
-            }
-
-            BoolFeedback hdmi2;
-            if (_currentVideoInput.SyncDetected.TryGetValue(2, out hdmi2))
-            {
-                currentVidoInput.SetVideoToHdmiInput2();
-                return;
-            }
-
-            if (!(_currentVideoInput is IStream) || _currentVideoInput.IsTransmitter)
-                return;
-
-            currentVidoInput.SetVideoToStream();
+            currentVidoInput.SetVideoToHdmiInput2();
+            return;
         }
+
+        if (_currentVideoInput is not IStream || _currentVideoInput.IsTransmitter)
+            return;
+
+        currentVidoInput.SetVideoToStream();
     }
 }

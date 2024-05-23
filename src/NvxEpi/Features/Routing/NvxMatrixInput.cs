@@ -5,39 +5,38 @@ using PepperDash.Essentials.Core.Routing;
 using System;
 using System.Linq;
 
-namespace NvxEpi.Features.Routing
+namespace NvxEpi.Features.Routing;
+
+public class NvxMatrixInput : IRoutingInputSlot
 {
-    public class NvxMatrixInput : IRoutingInputSlot
+    private readonly NvxBaseDevice _device;
+
+    public NvxMatrixInput(NvxBaseDevice device):base()
     {
-        private readonly NvxBaseDevice _device;
+        _device = device;
 
-        public NvxMatrixInput(NvxBaseDevice device):base()
+        if(_device is IHdmiInput hdmiInput)
         {
-            _device = device;
-
-            if(_device is IHdmiInput hdmiInput)
+            foreach(var feedback in  hdmiInput.SyncDetected)
             {
-                foreach(var feedback in  hdmiInput.SyncDetected)
-                {
-                    feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
-                }
+                feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
             }
-        }        
+        }
+    }        
 
-        public string TxDeviceKey => _device.Key;
+    public string TxDeviceKey => _device.Key;
 
-        public int SlotNumber => _device.DeviceId;
+    public int SlotNumber => _device.DeviceId;
 
-        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
+    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
 
-        public string Name => _device.Name;
+    public string Name => _device.Name;
 
-        public BoolFeedback IsOnline => _device.IsOnline;
+    public BoolFeedback IsOnline => _device.IsOnline;
 
-        public bool VideoSyncDetected => _device is IHdmiInput inputDevice ? inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue) : false;
+    public bool VideoSyncDetected => _device is IHdmiInput inputDevice && inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue);
 
-        public string Key => $"{_device.Key}";
+    public string Key => $"{_device.Key}";
 
-        public event EventHandler VideoSyncChanged;
-    }
+    public event EventHandler VideoSyncChanged;
 }

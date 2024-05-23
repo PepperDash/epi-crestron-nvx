@@ -8,33 +8,29 @@ using NvxEpi.Features.Config;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace NvxEpi.Factories
+namespace NvxEpi.Factories;
+
+public class NvxD3XDeviceFactory : NvxBaseDeviceFactory<NvxD3X>
 {
-    public class NvxD3XDeviceFactory : NvxBaseDeviceFactory<NvxD3X>
+    private static IEnumerable<string> _typeNames;
+
+    public NvxD3XDeviceFactory()
     {
-        private static IEnumerable<string> _typeNames;
-
-        public NvxD3XDeviceFactory()
-        {
-            MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
-            
-            if (_typeNames == null)
+        MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
+        
+        _typeNames ??= new List<string>
             {
-                _typeNames = new List<string>
-                {
-                    "dmnvxd30",
-                    "dmnvxd30c",
-                };
-            }
+                "dmnvxd30",
+                "dmnvxd30c",
+            };
 
-            TypeNames = _typeNames.ToList();
-        }
+        TypeNames = _typeNames.ToList();
+    }
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            var props = NvxDeviceProperties.FromDeviceConfig(dc);
-            var deviceBuild = GetDeviceBuildAction(dc.Type, props);
-            return new NvxD3X(dc, deviceBuild);
-        }
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        var props = NvxDeviceProperties.FromDeviceConfig(dc);
+        var deviceBuild = GetDeviceBuildAction(dc.Type, props);
+        return new NvxD3X(dc, deviceBuild);
     }
 }

@@ -4,6 +4,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>10</LangVersion>
     <RootNamespace>NvxEpi</RootNamespace>
     <Deterministic>false</Deterministic>
     <AssemblyTitle>NvxEpi</AssemblyTitle>
@@ -26,7 +28,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
-  </PropertyGroup>
+  </PropertyGroup>  
 
   <ItemGroup>
     <Compile Remove="Properties\**" />
@@ -35,8 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.0.1" />
-    <PackageReference Include="PepperDashEssentials" Version="2.0.0-beta-2490" />
+    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.1.1-routing-updates.3" />
+    <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2509" />
   </ItemGroup>
 
 </Project>

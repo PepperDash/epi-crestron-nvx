@@ -1,23 +1,22 @@
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class DanteInputFeedback
 {
-    public class DanteInputFeedback
+    public const string Key = "DanteInput";
+
+    public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
-        public const string Key = "DanteInput";
+        var feedback = new StringFeedback(() => string.Empty);
 
-        public static StringFeedback GetFeedback(DmNvxBaseClass device)
+        if (device.Control.DanteAes67Name != null)
         {
-            var feedback = new StringFeedback(() => string.Empty);
-
-            if (device.Control.DanteAes67Name != null)
-            {
-                feedback = new StringFeedback(Key, () => device.Control.ActiveDanteAudioSourceFeedback.ToString());
-                device.BaseEvent += (@base, args) => feedback.FireUpdate();
-            }
-            
-            return feedback;
+            feedback = new StringFeedback(Key, () => device.Control.ActiveDanteAudioSourceFeedback.ToString());
+            device.BaseEvent += (@base, args) => feedback.FireUpdate();
         }
+        
+        return feedback;
     }
 }

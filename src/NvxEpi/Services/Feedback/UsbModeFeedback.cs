@@ -7,20 +7,19 @@ using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class UsbModeFeedback
 {
-    public class UsbModeFeedback
+    public const string Key = "UsbMode";
+
+    public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
-        public const string Key = "UsbMode";
+        if (device.UsbInput == null)
+            return new StringFeedback(() => string.Empty);
 
-        public static StringFeedback GetFeedback(DmNvxBaseClass device)
-        {
-            if (device.UsbInput == null)
-                return new StringFeedback(() => string.Empty);
-
-            var feedback = new StringFeedback(Key, () => device.UsbInput.ModeFeedback.ToString());
-            device.UsbInput.UsbInputChange += (sender, args) => feedback.FireUpdate();
-            return feedback;
-        }
+        var feedback = new StringFeedback(Key, () => device.UsbInput.ModeFeedback.ToString());
+        device.UsbInput.UsbInputChange += (sender, args) => feedback.FireUpdate();
+        return feedback;
     }
 }

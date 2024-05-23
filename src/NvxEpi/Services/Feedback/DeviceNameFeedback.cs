@@ -1,15 +1,14 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
-{
-    public class DeviceNameFeedback
-    {
-        public const string Key = "DeviceName";
+namespace NvxEpi.Services.Feedback;
 
-        public static StringFeedback GetFeedback(string deviceName)
-        {
-            return new StringFeedback(Key, () => deviceName);
-        }
+public class DeviceNameFeedback
+{
+    public const string Key = "DeviceName";
+
+    public static StringFeedback GetFeedback(string deviceName)
+    {
+        return new StringFeedback(Key, () => deviceName);
     }
 }

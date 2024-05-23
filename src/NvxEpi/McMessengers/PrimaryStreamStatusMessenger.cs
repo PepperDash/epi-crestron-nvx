@@ -4,87 +4,86 @@ using NvxEpi.Devices;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.McMessengers
+namespace NvxEpi.McMessengers;
+
+public class PrimaryStreamStatusMessenger:MessengerBase
 {
-    public class PrimaryStreamStatusMessenger:MessengerBase
+    private readonly NvxBaseDevice device;
+    public PrimaryStreamStatusMessenger(string key, string messagePath, NvxBaseDevice device) : base(key, messagePath, device)
     {
-        private readonly NvxBaseDevice device;
-        public PrimaryStreamStatusMessenger(string key, string messagePath, NvxBaseDevice device) : base(key, messagePath, device)
-        {
-            this.device = device;
-        }
-
-        protected override void RegisterActions()
-        {
-            base.RegisterActions();
-
-            AddAction("/fullStatus", SendFullStatus);
-
-            device.IsStreamingVideo.OutputChange += HandleUpdate;
-            device.VideoStreamStatus.OutputChange += HandleUpdate;
-            device.StreamUrl.OutputChange += HandleUpdate;
-            device.MulticastAddress.OutputChange += HandleUpdate;
-        }
-
-        private void SendFullStatus(string id, JToken content) {
-            PostStatusMessage(new StreamStateMessage(device));
-        }
-
-        private void HandleUpdate(object sender, FeedbackEventArgs args)
-        {
-            PostStatusMessage(JToken.FromObject(new StreamUpdateMessage(device)));
-        }
+        this.device = device;
     }
 
-    public class StreamStateMessage : DeviceStateMessageBase
+    protected override void RegisterActions()
     {
-        [JsonIgnore]
-        private readonly NvxBaseDevice device;
+        base.RegisterActions();
 
-        [JsonProperty("isStreamingVideo")]
-        public bool IsStreamingVideo => device.IsStreamingVideo.BoolValue;
+        AddAction("/fullStatus", SendFullStatus);
 
-        [JsonProperty("videoStreamStatus")]
-        public string VideoStreamStatus => device.VideoStreamStatus.StringValue;
-
-        [JsonProperty("streamUrl")]
-        public string StreamUrl => device.StreamUrl.StringValue;
-
-        [JsonProperty("multicastAddress")]
-        public string MulticastAddress => device.MulticastAddress.StringValue;
-
-        [JsonProperty("isTransmitter")]
-        public bool IsTransmitter => device.IsTransmitter;
-
-        public StreamStateMessage(NvxBaseDevice device)
-        {
-            this.device = device;
-        }
+        device.IsStreamingVideo.OutputChange += HandleUpdate;
+        device.VideoStreamStatus.OutputChange += HandleUpdate;
+        device.StreamUrl.OutputChange += HandleUpdate;
+        device.MulticastAddress.OutputChange += HandleUpdate;
     }
 
-    public class StreamUpdateMessage
+    private void SendFullStatus(string id, JToken content) {
+        PostStatusMessage(new StreamStateMessage(device));
+    }
+
+    private void HandleUpdate(object sender, FeedbackEventArgs args)
     {
-        [JsonIgnore]
-        private readonly NvxBaseDevice device;
+        PostStatusMessage(JToken.FromObject(new StreamUpdateMessage(device)));
+    }
+}
 
-        [JsonProperty("isStreamingVideo")]
-        public bool IsStreamingVideo => device.IsStreamingVideo.BoolValue;
+public class StreamStateMessage : DeviceStateMessageBase
+{
+    [JsonIgnore]
+    private readonly NvxBaseDevice device;
 
-        [JsonProperty("videoStreamStatus")]
-        public string VideoStreamStatus => device.VideoStreamStatus.StringValue;
+    [JsonProperty("isStreamingVideo")]
+    public bool IsStreamingVideo => device.IsStreamingVideo.BoolValue;
 
-        [JsonProperty("streamUrl")]
-        public string StreamUrl => device.StreamUrl.StringValue;
+    [JsonProperty("videoStreamStatus")]
+    public string VideoStreamStatus => device.VideoStreamStatus.StringValue;
 
-        [JsonProperty("multicastAddress")]
-        public string MulticastAddress => device.MulticastAddress.StringValue;
+    [JsonProperty("streamUrl")]
+    public string StreamUrl => device.StreamUrl.StringValue;
 
-        [JsonProperty("isTransmitter")]
-        public bool IsTransmitter => device.IsTransmitter;
+    [JsonProperty("multicastAddress")]
+    public string MulticastAddress => device.MulticastAddress.StringValue;
 
-        public StreamUpdateMessage(NvxBaseDevice device)
-        {
-            this.device = device;
-        }
+    [JsonProperty("isTransmitter")]
+    public bool IsTransmitter => device.IsTransmitter;
+
+    public StreamStateMessage(NvxBaseDevice device)
+    {
+        this.device = device;
+    }
+}
+
+public class StreamUpdateMessage
+{
+    [JsonIgnore]
+    private readonly NvxBaseDevice device;
+
+    [JsonProperty("isStreamingVideo")]
+    public bool IsStreamingVideo => device.IsStreamingVideo.BoolValue;
+
+    [JsonProperty("videoStreamStatus")]
+    public string VideoStreamStatus => device.VideoStreamStatus.StringValue;
+
+    [JsonProperty("streamUrl")]
+    public string StreamUrl => device.StreamUrl.StringValue;
+
+    [JsonProperty("multicastAddress")]
+    public string MulticastAddress => device.MulticastAddress.StringValue;
+
+    [JsonProperty("isTransmitter")]
+    public bool IsTransmitter => device.IsTransmitter;
+
+    public StreamUpdateMessage(NvxBaseDevice device)
+    {
+        this.device = device;
     }
 }

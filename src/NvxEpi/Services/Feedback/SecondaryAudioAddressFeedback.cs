@@ -2,30 +2,29 @@
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class SecondaryAudioAddressFeedback
 {
-    public class SecondaryAudioAddressFeedback
+    public const string Key = "SecondaryAudioAddress";
+
+    public static StringFeedback GetFeedbackForTransmitter(DmNvxBaseClass device)
     {
-        public const string Key = "SecondaryAudioAddress";
+        var feedback = new StringFeedback(Key,
+            () => device.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue);
 
-        public static StringFeedback GetFeedbackForTransmitter(DmNvxBaseClass device)
-        {
-            var feedback = new StringFeedback(Key,
-                () => device.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue);
+        device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
 
-            device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
+        return feedback;
+    }
 
-            return feedback;
-        }
+    public static StringFeedback GetFeedbackForReceiver(DmNvxBaseClass device)
+    {
+        var feedback = new StringFeedback(Key,
+            () => device.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue);
 
-        public static StringFeedback GetFeedbackForReceiver(DmNvxBaseClass device)
-        {
-            var feedback = new StringFeedback(Key,
-                () => device.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue);
+        device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
 
-            device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (@base, args) => feedback.FireUpdate();
-
-            return feedback;
-        }
+        return feedback;
     }
 }

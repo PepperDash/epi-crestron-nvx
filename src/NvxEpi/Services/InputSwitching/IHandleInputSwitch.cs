@@ -1,9 +1,8 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.InputSwitching
+namespace NvxEpi.Services.InputSwitching;
+
+public interface IHandleInputSwitch
 {
-    public interface IHandleInputSwitch
-    {
-        void HandleSwitch(object input, eRoutingSignalType type);
-    }
+    void HandleSwitch(object input, eRoutingSignalType type);
 }

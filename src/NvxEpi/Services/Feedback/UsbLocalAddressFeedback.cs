@@ -3,22 +3,21 @@ using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
+namespace NvxEpi.Services.Feedback;
+
+public class UsbLocalAddressFeedback
 {
-    public class UsbLocalAddressFeedback
+    public const string Key = "UsbLocalId";
+
+    public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
-        public const string Key = "UsbLocalId";
+        if (device.UsbInput == null)
+            return new StringFeedback(() => string.Empty);
 
-        public static StringFeedback GetFeedback(DmNvxBaseClass device)
-        {
-            if (device.UsbInput == null)
-                return new StringFeedback(() => string.Empty);
+        var feedback = new StringFeedback(Key, () => device.UsbInput.LocalDeviceIdFeedback.StringValue);
 
-            var feedback = new StringFeedback(Key, () => device.UsbInput.LocalDeviceIdFeedback.StringValue);
+        device.UsbInput.UsbInputChange += (sender, args) => feedback.FireUpdate();
 
-            device.UsbInput.UsbInputChange += (sender, args) => feedback.FireUpdate();
-
-            return feedback;
-        }
+        return feedback;
     }
 }

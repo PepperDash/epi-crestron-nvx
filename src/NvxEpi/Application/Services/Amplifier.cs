@@ -9,64 +9,63 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials;
+
+public class Amplifier : EssentialsDevice, IRoutingSink
 {
-    public class Amplifier : EssentialsDevice, IRoutingSink
+    public event SourceInfoChangeHandler CurrentSourceChange;
+
+    public string CurrentSourceInfoKey { get; set; }
+    public SourceListItem CurrentSourceInfo
     {
-        public event SourceInfoChangeHandler CurrentSourceChange;
-
-        public string CurrentSourceInfoKey { get; set; }
-        public SourceListItem CurrentSourceInfo
+        get
         {
-            get
-            {
-                return _CurrentSourceInfo;
-            }
-            set
-            {
-                if (value == _CurrentSourceInfo) return;
-
-                var handler = CurrentSourceChange;
-
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.WillChange);
-
-                _CurrentSourceInfo = value;
-
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.DidChange);
-            }
+            return _CurrentSourceInfo;
         }
-        SourceListItem _CurrentSourceInfo;
-
-        public RoutingInputPort AudioIn { get; private set; }
-
-        public Amplifier(string key, string name)
-            : base(key, name)
+        set
         {
-            AudioIn = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio,
-                eRoutingPortConnectionType.None, null, this);
-            InputPorts = new RoutingPortCollection<RoutingInputPort> { AudioIn };
+            if (value == _CurrentSourceInfo) return;
+
+            var handler = CurrentSourceChange;
+
+            handler?.Invoke(_CurrentSourceInfo, ChangeType.WillChange);
+
+            _CurrentSourceInfo = value;
+
+            handler?.Invoke(_CurrentSourceInfo, ChangeType.DidChange);
         }
+    }
+    SourceListItem _CurrentSourceInfo;        
 
-        #region IRoutingInputs Members
+    public RoutingInputPort CurrentInputPort => AudioIn;
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
+    public RoutingInputPort AudioIn { get; private set; }
 
-        #endregion
+    public Amplifier(string key, string name)
+        : base(key, name)
+    {
+        AudioIn = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio,
+            eRoutingPortConnectionType.None, null, this);
+        InputPorts = new RoutingPortCollection<RoutingInputPort> { AudioIn };            
     }
 
-    public class AmplifierFactory : EssentialsDeviceFactory<Amplifier>
-    {
-        public AmplifierFactory()
-        {
-            TypeNames = new List<string>() { "amplifier" };
-        }
+    #region IRoutingInputs Members
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new Amplifier Device");
-            return new Amplifier(dc.Key, dc.Name);
-        }
+    public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
+
+    #endregion
+}
+
+public class AmplifierFactory : EssentialsDeviceFactory<Amplifier>
+{
+    public AmplifierFactory()
+    {
+        TypeNames = new List<string>() { "amplifier" };
+    }
+
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.Console(1, "Factory Attempting to create new Amplifier Device");
+        return new Amplifier(dc.Key, dc.Name);
     }
 }

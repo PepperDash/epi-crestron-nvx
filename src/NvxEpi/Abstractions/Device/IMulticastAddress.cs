@@ -1,9 +1,8 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Abstractions.Device
+namespace NvxEpi.Abstractions.Device;
+
+public interface IMulticastAddress
 {
-    public interface IMulticastAddress
-    {
-        StringFeedback MulticastAddress { get; }
-    }
+    StringFeedback MulticastAddress { get; }
 }

@@ -7,41 +7,40 @@ using Crestron.SimplSharpPro;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Features.Monitor
+namespace NvxEpi.Features.Monitor;
+
+public class NvxCommunicationMonitor : StatusMonitorBase
 {
-    public class NvxCommunicationMonitor : StatusMonitorBase
+    public readonly GenericBase Hardware;
+
+    public NvxCommunicationMonitor(IKeyed parent, long warningTime, long errorTime, GenericBase hardware) : base(parent, warningTime, errorTime)
     {
-        public readonly GenericBase Hardware;
+        Hardware = hardware;
+        hardware.OnlineStatusChange += (device, args) => CheckIfDeviceIsOnlineAndUpdate();
+    }
 
-        public NvxCommunicationMonitor(IKeyed parent, long warningTime, long errorTime, GenericBase hardware) : base(parent, warningTime, errorTime)
-        {
-            Hardware = hardware;
-            hardware.OnlineStatusChange += (device, args) => CheckIfDeviceIsOnlineAndUpdate();
-        }
+    public override void Start()
+    {
+        CheckIfDeviceIsOnlineAndUpdate();
+        IsOnlineFeedback.FireUpdate();
+    }
 
-        public override void Start()
-        {
-            CheckIfDeviceIsOnlineAndUpdate();
-            IsOnlineFeedback.FireUpdate();
-        }
+    public override void Stop()
+    {
+        StopErrorTimers();
+        Status = MonitorStatus.StatusUnknown;
+    }
 
-        public override void Stop()
+    public void CheckIfDeviceIsOnlineAndUpdate()
+    {
+        if (Hardware.IsOnline)
         {
+            Status = MonitorStatus.IsOk;
             StopErrorTimers();
-            Status = MonitorStatus.StatusUnknown;
         }
-
-        public void CheckIfDeviceIsOnlineAndUpdate()
+        else
         {
-            if (Hardware.IsOnline)
-            {
-                Status = MonitorStatus.IsOk;
-                StopErrorTimers();
-            }
-            else
-            {
-                StartErrorTimers();
-            }
+            StartErrorTimers();
         }
     }
 }

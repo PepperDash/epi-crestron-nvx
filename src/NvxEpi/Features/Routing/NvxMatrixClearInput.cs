@@ -2,24 +2,23 @@
 using PepperDash.Essentials.Core.Routing;
 using System;
 
-namespace NvxEpi.Features.Routing
+namespace NvxEpi.Features.Routing;
+
+public class NvxMatrixClearInput : IRoutingInputSlot
 {
-    public class NvxMatrixClearInput : IRoutingInputSlot
-    {
-        public string TxDeviceKey => string.Empty;
+    public string TxDeviceKey => string.Empty;
 
-        public int SlotNumber => 0;
+    public int SlotNumber => 0;
 
-        public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo;
+    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo;
 
-        public string Name => "None";
+    public string Name => "None";
 
-        public BoolFeedback IsOnline => new BoolFeedback(() => false);
+    public BoolFeedback IsOnline => new(() => false);
 
-        public bool VideoSyncDetected => false;
+    public bool VideoSyncDetected => false;
 
-        public string Key => "none";
+    public string Key => "none";
 
-        public event EventHandler VideoSyncChanged;
-    }
+    public event EventHandler VideoSyncChanged;
 }

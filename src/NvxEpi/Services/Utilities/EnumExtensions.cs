@@ -1,31 +1,30 @@
 ﻿using System;
 
-namespace NvxEpi.Services.Utilities
-{
-    public static class EnumExtensions
-    {
-        public static bool Has<T>(this Enum type, T value)
-        {
-            try
-            {
-                return (((int)(object)type & (int)(object)value) == (int)(object)value);
-            }
-            catch
-            {
-                return false;
-            }
-        }
+namespace NvxEpi.Services.Utilities;
 
-        public static bool Is<T>(this Enum type, T value)
+public static class EnumExtensions
+{
+    public static bool Has<T>(this Enum type, T value)
+    {
+        try
         {
-            try
-            {
-                return (int)(object)type == (int)(object)value;
-            }
-            catch
-            {
-                return false;
-            }
+            return (((int)(object)type & (int)(object)value) == (int)(object)value);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool Is<T>(this Enum type, T value)
+    {
+        try
+        {
+            return (int)(object)type == (int)(object)value;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

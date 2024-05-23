@@ -1,14 +1,13 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.Feedback
-{
-    public class StreamNameFeedback
-    {
-        public const string Key = "StreamName";
+namespace NvxEpi.Services.Feedback;
 
-        public static StringFeedback GetFeedback(string streamName)
-        {
-            return new StringFeedback(Key, () => streamName);
-        }
+public class StreamNameFeedback
+{
+    public const string Key = "StreamName";
+
+    public static StringFeedback GetFeedback(string streamName)
+    {
+        return new StringFeedback(Key, () => streamName);
     }
 }

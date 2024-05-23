@@ -9,71 +9,70 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NvxEpi.McMessengers
+namespace NvxEpi.McMessengers;
+
+public class SecondaryAudioStatusMessenger:MessengerBase
 {
-    public class SecondaryAudioStatusMessenger:MessengerBase
+    private readonly NvxBaseDevice device;
+    public SecondaryAudioStatusMessenger(string key, string path, NvxBaseDevice device):base(key, path, device)
     {
-        private readonly NvxBaseDevice device;
-        public SecondaryAudioStatusMessenger(string key, string path, NvxBaseDevice device):base(key, path, device)
-        {
-            this.device = device;
-        }
-
-        protected override void RegisterActions()
-        {
-            base.RegisterActions();
-
-            AddAction("/fullStatus", SendFullStatus);
-        }
-
-        private void SendFullStatus(string id, JToken content)
-        {
-            PostStatusMessage(new SecondaryAudioStateMessage(device));
-        }
-
-        private void SendUpdate(object sender, FeedbackEventArgs args)
-        {
-            PostStatusMessage(JToken.FromObject(new SecondaryAudioUpdateMessage(device)));
-        }
+        this.device = device;
     }
 
-    public class SecondaryAudioStateMessage : DeviceStateMessageBase
+    protected override void RegisterActions()
     {
-        [JsonIgnore]
-        private readonly NvxBaseDevice device;
+        base.RegisterActions();
 
-        [JsonProperty("isStreamingSecondaryAudio")]
-        public bool IsStreamingSecondaryAudio => device.IsStreamingSecondaryAudio.BoolValue;
-
-        [JsonProperty("secondaryAudioStreamStatus")]
-        public string SecondaryAudioStreamStatus => device.SecondaryAudioStreamStatus.StringValue;
-
-        [JsonProperty("secondaryAudioStreamUrl")]
-        public string SecondaryAudioStreamUrl => device.SecondaryAudioAddress.StringValue;
-
-        public SecondaryAudioStateMessage(NvxBaseDevice device)
-        {
-            this.device = device;
-        }
+        AddAction("/fullStatus", SendFullStatus);
     }
 
-    public class SecondaryAudioUpdateMessage : DeviceStateMessageBase
+    private void SendFullStatus(string id, JToken content)
     {
-        [JsonIgnore]
-        private readonly NvxBaseDevice device;
+        PostStatusMessage(new SecondaryAudioStateMessage(device));
+    }
 
-        [JsonProperty("isStreamingSecondaryAudio")]
-        public bool IsStreamingSecondaryAudio => device.IsStreamingSecondaryAudio.BoolValue;
+    private void SendUpdate(object sender, FeedbackEventArgs args)
+    {
+        PostStatusMessage(JToken.FromObject(new SecondaryAudioUpdateMessage(device)));
+    }
+}
 
-        [JsonProperty("secondaryAudioStreamStatus")]
-        public string SecondaryAudioStreamStatus => device.SecondaryAudioStreamStatus.StringValue;
+public class SecondaryAudioStateMessage : DeviceStateMessageBase
+{
+    [JsonIgnore]
+    private readonly NvxBaseDevice device;
 
-        [JsonProperty("secondaryAudioStreamUrl")]
-        public string SecondaryAudioStreamUrl => device.SecondaryAudioAddress.StringValue;
+    [JsonProperty("isStreamingSecondaryAudio")]
+    public bool IsStreamingSecondaryAudio => device.IsStreamingSecondaryAudio.BoolValue;
 
-        public SecondaryAudioUpdateMessage(NvxBaseDevice device)
-        {
-            this.device = device;
-        }
+    [JsonProperty("secondaryAudioStreamStatus")]
+    public string SecondaryAudioStreamStatus => device.SecondaryAudioStreamStatus.StringValue;
+
+    [JsonProperty("secondaryAudioStreamUrl")]
+    public string SecondaryAudioStreamUrl => device.SecondaryAudioAddress.StringValue;
+
+    public SecondaryAudioStateMessage(NvxBaseDevice device)
+    {
+        this.device = device;
+    }
+}
+
+public class SecondaryAudioUpdateMessage : DeviceStateMessageBase
+{
+    [JsonIgnore]
+    private readonly NvxBaseDevice device;
+
+    [JsonProperty("isStreamingSecondaryAudio")]
+    public bool IsStreamingSecondaryAudio => device.IsStreamingSecondaryAudio.BoolValue;
+
+    [JsonProperty("secondaryAudioStreamStatus")]
+    public string SecondaryAudioStreamStatus => device.SecondaryAudioStreamStatus.StringValue;
+
+    [JsonProperty("secondaryAudioStreamUrl")]
+    public string SecondaryAudioStreamUrl => device.SecondaryAudioAddress.StringValue;
+
+    public SecondaryAudioUpdateMessage(NvxBaseDevice device)
+    {
+        this.device = device;
     }
 }

@@ -6,64 +6,60 @@ using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.Services.InputSwitching
+namespace NvxEpi.Services.InputSwitching;
+
+public class SwitcherForSecondaryAudioOutput : IHandleInputSwitch
 {
-    public class SwitcherForSecondaryAudioOutput : IHandleInputSwitch
+    public const string Key = "SecondaryAudioOutput";
+
+    private readonly ICurrentNaxInput _device;
+
+    public SwitcherForSecondaryAudioOutput(ICurrentNaxInput device)
     {
-        public const string Key = "SecondaryAudioOutput";
+        _device = device;
+    }
 
-        private readonly ICurrentNaxInput _device;
+    public void HandleSwitch(object input, eRoutingSignalType type)
+    {
+        var routingInput = input as DeviceInputEnum ?? throw new InvalidCastException("routing input");
+        if (routingInput == DeviceInputEnum.NoSwitch)
+            return;
 
-        public SwitcherForSecondaryAudioOutput(ICurrentNaxInput device)
-        {
-            _device = device;
-        }
+        Debug.Console(1, _device, "Switching input on SecondaryAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
 
-        public void HandleSwitch(object input, eRoutingSignalType type)
-        {
-            var routingInput = input as DeviceInputEnum;
-            if (routingInput == null)
-                throw new InvalidCastException("routing input");
+        if (type.Has(eRoutingSignalType.Audio))
+            SwitchAudio(routingInput);
 
-            if (routingInput == DeviceInputEnum.NoSwitch)
-                return;
+        if (type.Has(eRoutingSignalType.Video))
+            throw new NotSupportedException("video"); 
+    }
 
-            Debug.Console(1, _device, "Switching input on SecondaryAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
+    private void SwitchAudio(Enumeration<DeviceInputEnum> input)
+    {
+        if (input == DeviceInputEnum.Hdmi1)
+            _device.SetNaxAudioToHdmiInput1();
+        else if (input == DeviceInputEnum.Hdmi2)
+            _device.SetNaxAudioToHdmiInput2();
+        else if (input == DeviceInputEnum.AnalogAudio)
+            _device.SetNaxAudioToInputAnalog();
+        else if (input == DeviceInputEnum.Automatic)
+            _device.SetNaxAudioToInputAutomatic();
+        else
+            throw new NotSupportedException(input.Name);
+    }
 
-            if (type.Has(eRoutingSignalType.Audio))
-                SwitchAudio(routingInput);
+    public override string ToString()
+    {
+        return _device.Key + "-" + Key;
+    }
 
-            if (type.Has(eRoutingSignalType.Video))
-                throw new NotSupportedException("video"); 
-        }
-
-        private void SwitchAudio(Enumeration<DeviceInputEnum> input)
-        {
-            if (input == DeviceInputEnum.Hdmi1)
-                _device.SetNaxAudioToHdmiInput1();
-            else if (input == DeviceInputEnum.Hdmi2)
-                _device.SetNaxAudioToHdmiInput2();
-            else if (input == DeviceInputEnum.AnalogAudio)
-                _device.SetNaxAudioToInputAnalog();
-            else if (input == DeviceInputEnum.Automatic)
-                _device.SetNaxAudioToInputAutomatic();
-            else
-                throw new NotSupportedException(input.Name);
-        }
-
-        public override string ToString()
-        {
-            return _device.Key + "-" + Key;
-        }
-
-        public static void AddRoutingPort(ICurrentNaxInput parent)
-        {
-            parent.OutputPorts.Add(new RoutingOutputPort(
-                Key, 
-                eRoutingSignalType.Audio, 
-                eRoutingPortConnectionType.LineAudio,
-                new SwitcherForSecondaryAudioOutput(parent), 
-                parent));
-        }
+    public static void AddRoutingPort(ICurrentNaxInput parent)
+    {
+        parent.OutputPorts.Add(new RoutingOutputPort(
+            Key, 
+            eRoutingSignalType.Audio, 
+            eRoutingPortConnectionType.LineAudio,
+            new SwitcherForSecondaryAudioOutput(parent), 
+            parent));
     }
 }
