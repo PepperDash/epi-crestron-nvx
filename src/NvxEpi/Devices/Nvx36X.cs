@@ -59,17 +59,6 @@ public class Nvx36X :
     {
         _config = NvxDeviceProperties.FromDeviceConfig(config);
         AddPreActivationAction(AddRoutingPorts);
-
-        Hardware.BaseEvent += (o, a) => {
-            var newRoute = this.HandleBaseEvent(a);
-
-            if(newRoute == null)
-            {
-                return;
-            }
-
-            RouteChanged?.Invoke(this, newRoute);
-        };
     }
 
     public override bool CustomActivate()
