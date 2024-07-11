@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using PepperDash.Core;
-using System.Linq;
-using NvxEpi.Abstractions;
-using NvxEpi.Services.TieLines;
-using NvxEpi.Services.Utilities;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Routing;
+﻿using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Devices;
+using NvxEpi.Services.TieLines;
+using NvxEpi.Services.Utilities;
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NvxEpi.Features.Routing;
 
@@ -68,6 +68,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
         var audioTransmitters = DeviceManager
             .AllDevices
             .OfType<INvxDevice>()
+            .Where(t => t.IsTransmitter)
             .ToList();
 
         TieLineConnector.AddTieLinesForAudioTransmitters(audioTransmitters);
@@ -75,6 +76,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
         var audioReceivers = DeviceManager
             .AllDevices
             .OfType<INvxDevice>()
+            .Where(t => !t.IsTransmitter)
             .ToList();
 
         TieLineConnector.AddTieLinesForAudioReceivers(audioReceivers);
@@ -144,19 +146,19 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
     public void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type)
     {
-        if(!InputSlots.TryGetValue(inputSlotKey, out var inputSlot))
+        if (!InputSlots.TryGetValue(inputSlotKey, out var inputSlot))
         {
             Debug.Console(0, this, "Unable to find input slot with key {0}", inputSlotKey);
             return;
         }
 
-        if(!OutputSlots.TryGetValue(outputSlotKey, out var outputSlot))
+        if (!OutputSlots.TryGetValue(outputSlotKey, out var outputSlot))
         {
             Debug.Console(0, this, "Unable to find output slot with key {0}", outputSlotKey);
             return;
         }
 
-        if(outputSlot is not NvxMatrixOutput output)
+        if (outputSlot is not NvxMatrixOutput output)
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Output with key {key} is not NvxMatrixOutput", this, outputSlotKey);
             return;
@@ -170,13 +172,13 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
             return;
         }
 
-        if(type.Has(eRoutingSignalType.Video))
+        if (type.Has(eRoutingSignalType.Video))
         {
-           // using namespace to qualify type as `Route` is a static method
-           Routing.PrimaryStreamRouter.Route(inputSlot.SlotNumber, outputDevice);                
+            // using namespace to qualify type as `Route` is a static method
+            Routing.PrimaryStreamRouter.Route(inputSlot.SlotNumber, outputDevice);
         }
 
-        if((type.Has(eRoutingSignalType.SecondaryAudio)
+        if ((type.Has(eRoutingSignalType.SecondaryAudio)
             || type.Has(eRoutingSignalType.Audio))
             && outputDevice is ISecondaryAudioStreamWithHardware audioOutput)
         {
