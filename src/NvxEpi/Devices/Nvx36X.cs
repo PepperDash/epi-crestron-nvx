@@ -11,7 +11,6 @@ using NvxEpi.Abstractions.Usb;
 using NvxEpi.Features.Audio;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
-using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Features.Streams.Usb;
 
@@ -22,12 +21,9 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
-
-using NvxEpi.McMessengers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using NvxEpi.Extensions;
@@ -67,7 +63,13 @@ public class Nvx36X :
         {
             var result = base.CustomActivate();
 
-            _audio = new Nvx36XAudio((DmNvx36x) Hardware, this);
+            if(Hardware is DmNvx36x nvx36x)
+            {
+                _audio = new Nvx36XAudio(nvx36x, this);
+            } else if(Hardware is DmNvxE760x nvxE760x) {
+                _audio = new NvxE760xAudio(nvxE760x, this);
+            }
+            
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInputs = new HdmiInput(this);
             _hdmiOutput = new VideowallModeOutput(this);

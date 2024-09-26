@@ -41,24 +41,41 @@ public class NvxE3X :
 
     public override bool CustomActivate()
     {
-        var hardware = base.Hardware as DmNvxE3x ?? throw new Exception("hardware built doesn't match");
-        Hardware = hardware;
-        _hdmiInputs = new HdmiInput(this);
+        try
+        {            
+            var hardware = base.Hardware as DmNvxE3x ?? throw new Exception("hardware built doesn't match");
+            Hardware = hardware;
 
-        AddMcMessengers();
+            var result = base.CustomActivate();
 
-        Hardware.BaseEvent += (o, a) => {
-            var newRoute = this.HandleBaseEvent(a);
+            _hdmiInputs = new HdmiInput(this);
 
-            if (newRoute == null)
+            AddMcMessengers();
+
+            if (Hardware == null)
             {
-                return;
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Hardware is null", this);
+                return base.CustomActivate();
             }
 
-            RouteChanged?.Invoke(this, newRoute);
-        };
+            Hardware.BaseEvent += (o, a) =>
+            {
+                var newRoute = this.HandleBaseEvent(a);
 
-        return base.CustomActivate();
+                if (newRoute == null)
+                {
+                    return;
+                }
+
+                RouteChanged?.Invoke(this, newRoute);
+            };
+
+            return result;
+        } catch(Exception ex)
+        {
+            Debug.LogMessage(ex, "Exception activating device", this);
+            return false;
+        }
     }
 
     public CrestronCollection<ComPort> ComPorts

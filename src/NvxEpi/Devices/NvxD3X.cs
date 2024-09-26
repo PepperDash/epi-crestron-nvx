@@ -42,6 +42,9 @@ public class NvxD3X :
     {
         var hardware = base.Hardware as DmNvxD3x ?? throw new Exception("hardware built doesn't match");
         Hardware = hardware;
+
+        var result = base.CustomActivate();
+
         _hdmiOutput = new HdmiOutput(this);
 
         Hardware.BaseEvent += (o, a) => {
@@ -55,7 +58,7 @@ public class NvxD3X :
             RouteChanged?.Invoke(this, newRoute);
         };
 
-        return base.CustomActivate();
+        return result;
     }
 
     public CrestronCollection<ComPort> ComPorts

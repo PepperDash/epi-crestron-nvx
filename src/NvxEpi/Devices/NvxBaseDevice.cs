@@ -102,13 +102,16 @@ public abstract class NvxBaseDevice :
 
     public override bool CustomActivate()
     {
-        Debug.Console(1, this, "Activating...");
-        DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
+        try
+        {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Activating...", this);
 
-        Feedbacks.AddRange(new Feedback[] 
-            {
+            DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
+
+            Feedbacks.AddRange(new Feedback[]
+                {
                 IsOnline,
-                new IntFeedback("DeviceId", () => DeviceId), 
+                new IntFeedback("DeviceId", () => DeviceId),
                 DeviceNameFeedback.GetFeedback(Name),
                 DeviceIpFeedback.GetFeedback(Hardware),
                 DeviceHostnameFeedback.GetFeedback(Hardware),
@@ -116,26 +119,31 @@ public abstract class NvxBaseDevice :
                 DanteInputFeedback.GetFeedback(Hardware),
                 DanteInputValueFeedback.GetFeedback(Hardware),
                 DeviceMode
-            });
+                });
 
-        _currentVideoStream = new CurrentVideoStream(this);
-        _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
-        _videoSwitcher = new VideoInputSwitcher(this);
-        _audioSwitcher = new AudioInputSwitcher(this);
-        _naxSwitcher = new NaxInputSwitcher(this);
+            _currentVideoStream = new CurrentVideoStream(this);
+            _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
+            _videoSwitcher = new VideoInputSwitcher(this);
+            _audioSwitcher = new AudioInputSwitcher(this);
+            _naxSwitcher = new NaxInputSwitcher(this);
 
-        RegisterForFeedback();
-        CommunicationMonitor.Start();
-        Hardware.Network.NetworkChange += (sender, args) => UpdateDeviceInfo();
+            RegisterForFeedback();
+            CommunicationMonitor.Start();
+            Hardware.Network.NetworkChange += (sender, args) => UpdateDeviceInfo();
 
-        _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
+            _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
 
-        if (IsTransmitter || Hardware == null) return base.CustomActivate();
-        if (Hardware.Control.ServerUrlFeedback.StringValue != string.Empty)
-            Hardware.Control.ServerUrl.StringValue = string.Empty;
-        Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
+            if (IsTransmitter || Hardware == null) return base.CustomActivate();
+            if (Hardware.Control.ServerUrlFeedback.StringValue != string.Empty)
+                Hardware.Control.ServerUrl.StringValue = string.Empty;
+            Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
 
-        return base.CustomActivate();
+            return base.CustomActivate();
+        } catch(Exception ex)
+        {
+            Debug.LogMessage(ex, "Exception in base custom activate", this);
+            return false;
+        }
     }
 
     protected void AddMcMessengers()
