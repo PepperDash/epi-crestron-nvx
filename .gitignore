@@ -354,3 +354,5 @@ MigrationBackup/
 .ionide/
 *.projectinfo
 *.projectinfo~Stashed changes
+*.yml
+*.sln
