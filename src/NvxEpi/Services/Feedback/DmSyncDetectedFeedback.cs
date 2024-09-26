@@ -5,7 +5,7 @@ namespace NvxEpi.Services.Feedback;
 
 public class DmSyncDetectedFeedback
 {
-    public const string Key = "Hdmi1SyncDetected";
+    public const string Key = "DmInSyncDetected";
 
     public static BoolFeedback GetFeedback(DmNvxBaseClass device)
     {
