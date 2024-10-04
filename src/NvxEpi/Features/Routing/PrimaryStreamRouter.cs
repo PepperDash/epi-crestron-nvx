@@ -66,7 +66,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
             var rx = outputSelector as IStreamWithHardware ?? throw new ArgumentNullException("rx");            
 
-            if (inputSelector is not IStream tx)
+            if (inputSelector is not IStream tx || inputSelector is null)
             {
                 rx.ClearStream();
 
@@ -89,7 +89,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
         }
         catch (Exception ex)
         {
-            Debug.Console(0, this, "Error executing route : '{0}'", ex.Message);
+            Debug.LogMessage(ex, "Error executing route!", this);
         }
     }
 
