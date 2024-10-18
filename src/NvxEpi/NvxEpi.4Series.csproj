@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.2.0-routing-updates.2" />
+    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.3.1-auth-request-issues.2" />
     <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2567" />
   </ItemGroup>
 
