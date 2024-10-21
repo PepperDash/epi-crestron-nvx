@@ -198,15 +198,15 @@ public class Nvx35X :
             Debug.Console(1,
                 this,
                 "Executing switch : '{0}' | '{1}' | '{2}'",
-                inputSelector.ToString(),
-                outputSelector.ToString(),
+                inputSelector?.ToString() ?? "{null}",
+                outputSelector?.ToString() ?? "{null}",
                 signalType.ToString());
 
             switcher.HandleSwitch(inputSelector, signalType);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
+            Debug.Console(1, this, "Error executing switch!: {0}", ex);
         }
     }
 

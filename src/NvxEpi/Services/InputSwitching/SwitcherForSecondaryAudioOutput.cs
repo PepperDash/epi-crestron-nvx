@@ -21,6 +21,11 @@ public class SwitcherForSecondaryAudioOutput : IHandleInputSwitch
 
     public void HandleSwitch(object input, eRoutingSignalType type)
     {
+        if (input is null)
+        {
+            return;
+        }
+        
         var routingInput = input as DeviceInputEnum ?? throw new InvalidCastException("routing input");
         if (routingInput == DeviceInputEnum.NoSwitch)
             return;
