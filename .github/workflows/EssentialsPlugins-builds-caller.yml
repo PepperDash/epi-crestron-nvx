@@ -9,7 +9,7 @@ jobs:
     uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-checkCommitMessage.yml@development
     secrets: inherit
   call-update-readme:
-    uses: PepperDash/readme-automation/.github/workflows/update-readme.yml@development
+    uses: PepperDash/workflow-templates/.github/workflows/update-readme.yml@development
     secrets: inherit
     needs: checkCommitMessage
     with:
