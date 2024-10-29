@@ -2,15 +2,24 @@ name: Build Essentials Plugin
 
 on:
   push:
-    branches:
-      - '**'
-
+    branches-ignore:
+      - 'robot-docs'
 jobs:
-  getVersion:
-    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-getversion.yml@main
+  checkCommitMessage:
+    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-checkCommitMessage.yml@development
     secrets: inherit
+  call-update-readme:
+    uses: PepperDash/readme-automation/.github/workflows/update-readme.yml@development
+    secrets: inherit
+    needs: checkCommitMessage
+    with:
+      target-branch: ${{ github.ref_name }}
+  getVersion:
+    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-getversion.yml@development
+    secrets: inherit
+    needs: checkCommitMessage
   build-4Series:
-    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-4Series-builds.yml@main
+    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-4Series-builds.yml@development
     secrets: inherit
     needs: getVersion
     if: needs.getVersion.outputs.newVersion == 'true'
