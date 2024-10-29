@@ -119,3 +119,177 @@ TX-1 to RX-1, you would send a value of 1 to the Video Source input of RX-1.
 5. Add and test Dante Audio routing.
 
 ## Feature Requests
+<!-- START Interfaces Implemented -->
+### Interfaces Implemented
+
+- IStream
+- ISecondaryAudioStream
+- IRoutingNumeric
+- IBridgeAdvanced
+- ICurrentVideoInput
+- ICurrentAudioInput
+- ICurrentStream
+- ICurrentSecondaryAudioStream
+- ICurrentNaxInput
+- ICommunicationMonitor
+- IDeviceInfoProvider
+- IComPorts
+- IIROutputPorts
+- IUsbStreamWithHardware
+- IHdmiInput
+- IVideowallMode
+- IRoutingWithFeedback
+- ICec
+- IBasicVolumeWithFeedback
+- INvxD3XDeviceWithHardware
+- IHdmiOutput
+- INvxE3XDeviceWithHardware
+- INvxDirector
+- IOnline
+- INvx35XDeviceWithHardware
+- ISecondaryAudioStreamWithHardware
+- IStreamWithHardware
+- IMatrixRouting
+- IRoutingInputSlot
+- IRoutingOutputSlot
+- IRouting
+- ICurrentDanteInput
+- INvxApplicationBuilder
+- IRoutingSink
+- IHandleInputSwitch
+- IQueueMessage
+- IKeyed
+<!-- END Interfaces Implemented -->
+<!-- START Base Classes -->
+### Base Classes
+
+- EssentialsDevice
+- EssentialsBridgeableDevice
+- NvxBaseDevice
+- StatusMonitorBase
+- SecondaryAudioStream
+- VideoStream
+- HdmiOutput
+- HdmiInputBase
+- Enumeration<AudioOutputEnum>
+- Enumeration<NaxInputEnum>
+- Enumeration<VideoInputEnum>
+- Enumeration<StreamingStatusEnum>
+- Enumeration<AudioInputEnum>
+- Enumeration<VideoOutputEnum>
+- Enumeration<HdcpCapabilityEnum>
+- Enumeration<DeviceInputEnum>
+- Enumeration<DeviceModeEnum>
+- NvxBaseDeviceFactory<Nvx36X>
+- NvxBaseDeviceFactory<Nvx35X>
+- NvxBaseDeviceFactory<NvxE3X>
+- NvxBaseDeviceFactory<NvxD3X>
+- NvxBaseDeviceFactory<NvxMockDevice>
+- JoinMapBaseAdvanced
+- MessengerBase
+<!-- END Base Classes -->
+<!-- START Supported Types -->
+### Supported Types
+
+- amplifier
+<!-- END Supported Types -->
+<!-- START Minimum Essentials Framework Versions -->
+
+<!-- END Minimum Essentials Framework Versions -->
+<!-- START Public Methods -->
+### Public Methods
+
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
+- public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+- public void UpdateDeviceInfo()
+- public void ClearCurrentUsbRoute()
+- public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ClearCurrentUsbRoute()
+- public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void CheckIfDeviceIsOnlineAndUpdate()
+- public void UpdateCurrentRoute()
+- public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+- public void ClearCurrentUsbRoute()
+- public void ClearRemoteUsbRoute()
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
+- public void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public int CompareTo(Enumeration<TEnum> other)
+- public int CompareTo(object other)
+- public void SetHdcpState(ushort state)
+- public EssentialsDevice Build()
+- public void SetAudioFollowsVideoTrue()
+- public void SetAudioFollowsVideoFalse()
+- public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void Dispatch()
+<!-- END Public Methods -->
+<!-- START Join Maps -->
+
+<!-- END Join Maps -->
+<!-- START Config Example -->
+### Config Example
+
+```json
+{
+    "key": "GeneratedKey",
+    "uid": 1,
+    "name": "GeneratedName",
+    "type": "amplifier",
+    "group": "Group",
+    "properties": {
+        "transmitters": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "VideoName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        },
+        "receivers": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "VideoName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        },
+        "audioTransmitters": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "AudioName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        },
+        "audioReceivers": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "AudioName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        }
+    }
+}
+```
+<!-- END Config Example -->
