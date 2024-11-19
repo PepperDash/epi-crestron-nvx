@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using Newtonsoft.Json;
 using NvxEpi.Devices;
 using NvxEpi.Features.Config;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -34,6 +35,6 @@ public class NvxDirectorFactory : EssentialsPluginDeviceFactory<NvxXioDirector>
         };
 
         xio.RegisterWithLogging(dc.Key);
-        return new NvxXioDirector(dc.Key, dc.Name, xio);
+        return new NvxXioDirector(dc, xio);
     }
 }
