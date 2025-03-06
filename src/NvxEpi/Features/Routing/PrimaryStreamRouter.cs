@@ -62,11 +62,16 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
         try
         {
             if (signalType.Is(eRoutingSignalType.Audio))
-                throw new ArgumentException("signal type must include video");
+            {
+                Debug.LogMessage(
+                    Serilog.Events.LogEventLevel.Information,
+                    "Executing switch, but its audio only... this route will include video... GOOD LUCK!",
+                    this);
+            }
 
-            var rx = outputSelector as IStreamWithHardware ?? throw new ArgumentNullException("rx");            
+            var rx = outputSelector as IStreamWithHardware ?? throw new ArgumentNullException("rx");
 
-            if (inputSelector is not IStream tx)
+            if (inputSelector is not IStream tx || inputSelector is null)
             {
                 rx.ClearStream();
 
@@ -89,7 +94,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
         }
         catch (Exception ex)
         {
-            Debug.Console(0, this, "Error executing route : '{0}'", ex.Message);
+            Debug.LogMessage(ex, "Error executing route!", this);
         }
     }
 

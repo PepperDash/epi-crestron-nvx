@@ -1,5 +1,6 @@
 ﻿using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Devices;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using System;
@@ -14,14 +15,36 @@ public class NvxMatrixInput : IRoutingInputSlot
     public NvxMatrixInput(NvxBaseDevice device):base()
     {
         _device = device;
-
-        if(_device is IHdmiInput hdmiInput)
+        
+        try
         {
-            foreach(var feedback in  hdmiInput.SyncDetected)
+            if (_device is not IHdmiInput hdmiInput)
             {
+                return;
+            }
+
+            if (hdmiInput.SyncDetected == null)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Input is null", device);
+
+                return;
+            }
+
+            foreach (var feedback in hdmiInput.SyncDetected)
+            {
+                if (feedback.Value == null)
+                {
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Sync Feedback {feedbackKey} is null", device, feedback.Key);
+                    continue;
+                }
+
                 feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
             }
+        } catch (Exception ex)
+        {
+            Debug.LogMessage(ex, "Exception creating Matrix Input", device);
         }
+        
     }        
 
     public string TxDeviceKey => _device.Key;

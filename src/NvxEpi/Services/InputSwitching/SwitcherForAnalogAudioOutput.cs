@@ -21,6 +21,11 @@ public class SwitcherForAnalogAudioOutput : IHandleInputSwitch
 
     public void HandleSwitch(object input, eRoutingSignalType type)
     {
+        if (input is null)
+        {
+            return;
+        }
+        
         var routingInput = input as DeviceInputEnum ?? throw new InvalidCastException("routing input");
         Debug.Console(1, _device, "Switching input on AnalogAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
 

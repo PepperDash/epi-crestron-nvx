@@ -21,6 +21,11 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
 
     public void HandleSwitch(object input, eRoutingSignalType type)
     {
+        if (input is null)
+        {
+            return;
+        }
+
         if (!_device.IsTransmitter)
             throw new NotSupportedException("receiver");
 
