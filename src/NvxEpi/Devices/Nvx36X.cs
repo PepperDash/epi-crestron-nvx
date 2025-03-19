@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -7,6 +8,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Extensions;
 using NvxEpi.Features.Audio;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
@@ -24,240 +26,274 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices
 {
-    public class Nvx36X : 
-        NvxBaseDevice, 
-        IComPorts, 
-        IIROutputPorts,
-        IUsbStreamWithHardware, 
-        IHdmiInput, 
-        IVideowallMode, 
-        IRouting, 
-        ICec,
-        IBasicVolumeWithFeedback
-    {
-        private IBasicVolumeWithFeedback _audio;
-        private IHdmiInput _hdmiInput;
-        private IVideowallMode _hdmiOutput;
-        private IUsbStreamWithHardware _usbStream;
-        private readonly NvxDeviceProperties _config;
+	public class Nvx36X :
+		NvxBaseDevice,
+		IComPorts,
+		IIROutputPorts,
+		IUsbStreamWithHardware,
+		IHdmiInput,
+		IVideowallMode,
+		IRouting,
+		ICec,
+		IBasicVolumeWithFeedback
+	{
+		private IBasicVolumeWithFeedback _audio;
+		private IHdmiInput _hdmiInputs;
+		private IVideowallMode _hdmiOutput;
+		private IUsbStreamWithHardware _usbStream;
+		private readonly NvxDeviceProperties _config;
 
-        public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
-            : base(config, getHardware, isTransmitter)
-        {
-            _config = NvxDeviceProperties.FromDeviceConfig(config);
-            AddPreActivationAction(AddRoutingPorts);
-        }
+		public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
+			: base(config, getHardware, isTransmitter)
+		{
+			_config = NvxDeviceProperties.FromDeviceConfig(config);
+			if (_config == null)
+			{
+				Debug.Console(0, this, "Nvx36X: _config is null");
+			}
+			AddPreActivationAction(AddRoutingPorts);
+		}
 
-        public override bool CustomActivate()
-        {
-            try
-            {
-                var result = base.CustomActivate();
+		public override bool CustomActivate()
+		{
+			try
+			{
+				var result = base.CustomActivate();
 
-                _audio = new Nvx36XAudio((DmNvx36x) Hardware, this);
-                _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
-                _hdmiInput = new HdmiInput1(this);
-                _hdmiOutput = new VideowallModeOutput(this);
 
-                Feedbacks.AddRange(new [] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
+				if (Hardware is DmNvx36x)
+				{
+					_audio = new Nvx36XAudio((DmNvx36x)Hardware, this);
+				}
+				else if (Hardware is DmNvxE760x)
+				{
+					_audio = new NvxE760XAudio((DmNvxE760x)Hardware, this);
+				}
 
-                if (_config.EnableAutoRoute)
-                    // ReSharper disable once ObjectCreationAsStatement
-                    new AutomaticInputRouter(_hdmiInput);
+				_usbStream = UsbStream.GetUsbStream(this, _config.Usb);
+				_hdmiInputs = new HdmiInput1(this);
+				_hdmiOutput = new VideowallModeOutput(this);
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(0, this, "Caught an exception in activate:{0}", ex);
-                throw;
-            }
-        }
+				Feedbacks.AddRange(new[]
+				{
+					(Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback
+				});
 
-        public void ClearCurrentUsbRoute()
-        {
-            _usbStream.ClearCurrentUsbRoute();
-        }
+				if (_config.EnableAutoRoute)
+					// ReSharper disable once ObjectCreationAsStatement
+					new AutomaticInputRouter(_hdmiInputs);
 
-        public void MakeUsbRoute(IUsbStreamWithHardware hardware)
-        {
-            Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
-            var usbStream = _usbStream as UsbStream;
-            if (usbStream == null)
-            {
-                Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
-                return;
-            }
-            usbStream.MakeUsbRoute(hardware);
-        }
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Debug.Console(0, this, "NvxCustomActivate: Exception.Message:{0}", ex.Message);
+				Debug.Console(0, this, "NvxCustomActivate: Exception.StackTrace: {0}", ex.StackTrace);
+				if (ex.InnerException != null) Debug.Console(0, this, "NvxCustomActivate: Exception.InnerException: {0}", ex.InnerException);
+				throw;
+			}
+		}
 
-        public CrestronCollection<ComPort> ComPorts
-        {
-            get { return Hardware.ComPorts; }
-        }
+		public void ClearCurrentUsbRoute()
+		{
+			_usbStream.ClearCurrentUsbRoute();
+		}
 
-        public BoolFeedback DisabledByHdcp
-        {
-            get { return _hdmiOutput.DisabledByHdcp; }
-        }
+		public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+		{
+			Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
+			var usbStream = _usbStream as UsbStream;
+			if (usbStream == null)
+			{
+				Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
+				return;
+			}
+			usbStream.MakeUsbRoute(hardware);
+		}
 
-        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
-        {
-            get { return _hdmiInput.HdcpCapability; }
-        }
+		public CrestronCollection<ComPort> ComPorts
+		{
+			get { return Hardware.ComPorts; }
+		}
 
-        public IntFeedback HorizontalResolution
-        {
-            get { return _hdmiOutput.HorizontalResolution; }
-        }
+		public BoolFeedback DisabledByHdcp
+		{
+			get { return _hdmiOutput.DisabledByHdcp; }
+		}
 
-        public StringFeedback EdidManufacturer
-        {
-            get { return _hdmiOutput.EdidManufacturer; }
-        }
+		public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
+		{
+			get { return _hdmiInputs.HdcpCapability; }
+		}
 
-        public IntFeedback VideoAspectRatioMode
-        {
-            get { return _hdmiOutput.VideoAspectRatioMode; }
-        }
+		public IntFeedback HorizontalResolution
+		{
+			get { return _hdmiOutput.HorizontalResolution; }
+		}
 
-        public CrestronCollection<IROutputPort> IROutputPorts
-        {
-            get { return Hardware.IROutputPorts; }
-        }
+		public StringFeedback EdidManufacturer
+		{
+			get { return _hdmiOutput.EdidManufacturer; }
+		}
 
-        public bool IsRemote
-        {
-            get { return _usbStream.IsRemote; }
-        }
+		public IntFeedback VideoAspectRatioMode
+		{
+			get { return _hdmiOutput.VideoAspectRatioMode; }
+		}
 
-        public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
-        {
-            get { return _usbStream.UsbRemoteIds; }
-        }
+		public CrestronCollection<IROutputPort> IROutputPorts
+		{
+			get { return Hardware.IROutputPorts; }
+		}
 
-        public int NumberOfComPorts
-        {
-            get { return Hardware.NumberOfComPorts; }
-        }
+		public bool IsRemote
+		{
+			get { return _usbStream.IsRemote; }
+		}
 
-        public int NumberOfIROutputPorts
-        {
-            get { return Hardware.NumberOfIROutputPorts; }
-        }
+		public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
+		{
+			get { return _usbStream.UsbRemoteIds; }
+		}
 
-        public Cec StreamCec
-        {
-            get { return Hardware.HdmiOut.StreamCec; }
-        }
+		public int NumberOfComPorts
+		{
+			get { return Hardware.NumberOfComPorts; }
+		}
 
-        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
-        {
-            get { return _hdmiInput.SyncDetected; }
-        }
+		public int NumberOfIROutputPorts
+		{
+			get { return Hardware.NumberOfIROutputPorts; }
+		}
 
-        public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
-        {
-            get { return _hdmiInput.CurrentResolution; }
-        }
+		public Cec StreamCec
+		{
+			get { return Hardware.HdmiOut.StreamCec; }
+		}
 
-        public IntFeedback VideowallMode
-        {
-            get { return _hdmiOutput.VideowallMode; }
-        }
+		public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
+		{
+			get { return _hdmiInputs.SyncDetected; }
+		}
 
-        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
-        {
-            try
-            {
-                var switcher = outputSelector as IHandleInputSwitch;
-                if (switcher == null)
-                    throw new NullReferenceException("outputSelector");
+		public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
+		{
+			get { return _hdmiInputs.CurrentResolution; }
+		}
 
-                Debug.Console(1,
-                    this,
-                    "Executing switch : '{0}' | '{1}' | '{2}'",
-                    inputSelector.ToString(),
-                    outputSelector.ToString(),
-                    signalType.ToString());
+		public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInputs.AudioChannels; } }
 
-                switcher.HandleSwitch(inputSelector, signalType);
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
-            }
-        }
+		public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInputs.AudioFormat; } }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-        {
-            var deviceBridge = new NvxDeviceBridge(this);
-            deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
-        }
+		public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInputs.ColorSpace; } }
 
-        private void AddRoutingPorts()
-        {
-            HdmiInput1Port.AddRoutingPort(this);
-            SecondaryAudioInput.AddRoutingPort(this);
-            AnalogAudioInput.AddRoutingPort(this);
+		public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInputs.HdrType; } }
 
-            SwitcherForHdmiOutput.AddRoutingPort(this);
-            SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
-            SwitcherForAnalogAudioOutput.AddRoutingPort(this);
+		public IntFeedback VideowallMode
+		{
+			get { return _hdmiOutput.VideowallMode; }
+		}
 
-            if (IsTransmitter)
-            {
-                SwitcherForStreamOutput.AddRoutingPort(this);
-            }
-            else
-            {
-                StreamInput.AddRoutingPort(this);
-            }
-        }
+		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+		{
+			try
+			{
+				var switcher = outputSelector as IHandleInputSwitch;
+				if (switcher == null)
+					throw new NullReferenceException("outputSelector");
 
-        public StringFeedback UsbLocalId
-        {
-            get { return _usbStream.UsbLocalId; }
-        }
+				Debug.Console(1,
+					this,
+					"Executing switch : '{0}' | '{1}' | '{2}'",
+					inputSelector.ToString() ?? "",
+					outputSelector.ToString() ?? "",
+					signalType.ToString());
 
-        public void VolumeUp(bool pressRelease)
-        {
-            _audio.VolumeUp(pressRelease);
-        }
+				switcher.HandleSwitch(inputSelector, signalType);
+			}
+			catch (Exception ex)
+			{
+				Debug.Console(1, this, "Error executing switch! ex.Message: {0}", ex.Message);
+				Debug.Console(2, this, "Error executing switch! ex.StackTrace: {0}", ex.StackTrace);
+				if (ex.InnerException != null) Debug.Console(2, this, "Error executing switch! ex.InnerException: {0}", ex.InnerException);
+			}
+		}
 
-        public void VolumeDown(bool pressRelease)
-        {
-            _audio.VolumeDown(pressRelease);
-        }
+		public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+		{
+			var deviceBridge = new NvxDeviceBridge(this);
+			deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
+		}
 
-        public void MuteToggle()
-        {
-            _audio.MuteToggle();
-        }
+		private void AddRoutingPorts()
+		{
+			HdmiInput1Port.AddRoutingPort(this);
+			SecondaryAudioInput.AddRoutingPort(this);
+			AnalogAudioInput.AddRoutingPort(this);
 
-        public void SetVolume(ushort level)
-        {
-            _audio.SetVolume(level);
-        }
+			SwitcherForHdmiOutput.AddRoutingPort(this);
+			SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
+			SwitcherForAnalogAudioOutput.AddRoutingPort(this);
 
-        public void MuteOn()
-        {
-            _audio.MuteOn();
-        }
+			if (IsTransmitter)
+			{
+				SwitcherForStreamOutput.AddRoutingPort(this);
+			}
+			else
+			{
+				StreamInput.AddRoutingPort(this);
+			}
+		}
 
-        public void MuteOff()
-        {
-            _audio.MuteOff();
-        }
+		public StringFeedback UsbLocalId
+		{
+			get { return _usbStream.UsbLocalId; }
+		}
 
-        public IntFeedback VolumeLevelFeedback
-        {
-            get { return _audio.VolumeLevelFeedback; }
-        }
+		public void VolumeUp(bool pressRelease)
+		{
+			_audio.VolumeUp(pressRelease);
+		}
 
-        public BoolFeedback MuteFeedback
-        {
-            get { return _audio.MuteFeedback; }
-        }
-    }
+		public void VolumeDown(bool pressRelease)
+		{
+			_audio.VolumeDown(pressRelease);
+		}
+
+		public void MuteToggle()
+		{
+			_audio.MuteToggle();
+		}
+
+		public void SetVolume(ushort level)
+		{
+			_audio.SetVolume(level);
+		}
+
+		public void MuteOn()
+		{
+			_audio.MuteOn();
+		}
+
+		public void MuteOff()
+		{
+			_audio.MuteOff();
+		}
+
+		public IntFeedback VolumeLevelFeedback
+		{
+			get { return _audio.VolumeLevelFeedback; }
+		}
+
+		public BoolFeedback MuteFeedback
+		{
+			get { return _audio.MuteFeedback; }
+		}
+
+		public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
+
+		public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
+
+		public List<RouteSwitchDescriptor> CurrentRoutes = new List<RouteSwitchDescriptor>();
+	}
 }

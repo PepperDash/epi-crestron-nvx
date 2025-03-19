@@ -61,13 +61,14 @@ namespace NvxEpi.Application.Entities
                 {
                     try
                     {
-
                         LinkRoutingInputPort(config.NvxRoutingPort);
                         LinkInputValues(config.NvxRoutingPort);
                     }
                     catch (Exception ex)
                     {
-                        Debug.Console(0, this, "Caught an exception:{0}", ex);
+                        Debug.Console(0, this, "Caught an exception, message:{0}", ex.Message);
+						Debug.Console(0, this, "Caught an exception, stackTrace:{0}", ex.StackTrace);
+						if (ex.InnerException != null) Debug.Console(0, this, "Caught an exception, message:{0}", ex.InnerException);
                     }
                 });
         }

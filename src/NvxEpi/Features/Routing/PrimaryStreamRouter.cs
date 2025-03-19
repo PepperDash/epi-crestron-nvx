@@ -28,8 +28,11 @@ namespace NvxEpi.Features.Routing
         {
             try
             {
-                if (signalType.Is(eRoutingSignalType.Audio))
-                    throw new ArgumentException("signal type must include video");
+	            if (signalType.Is(eRoutingSignalType.Audio))
+	            {
+		            //throw new ArgumentException("signal type must include video");
+					Debug.Console(1, this, "Executing switch, but its audio only... this route will include video... GOOOD LUCK!");
+	            }
 
                 var rx = outputSelector as IStreamWithHardware;
                 if (rx == null)
@@ -54,7 +57,10 @@ namespace NvxEpi.Features.Routing
             }
             catch (Exception ex)
             {
-                Debug.Console(0, this, "Error executing route : '{0}'", ex.Message);
+				Debug.Console(1, this, "Error executing route ex.Message: {0}", ex.Message);
+				Debug.Console(2, this, "Error executing route ex.StackTrace: {0}", ex.StackTrace);
+	            if (ex.InnerException != null)
+		            Debug.Console(2, this, "Error executing route ex.InnerException: {0}", ex.InnerException);
             }
         }
 

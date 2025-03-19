@@ -1,4 +1,5 @@
-﻿
+﻿using NvxEpi.Enums;
+
 namespace NvxEpi.Device.Enums
 {
     public class HdcpCapabilityEnum : Enumeration<HdcpCapabilityEnum>

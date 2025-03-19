@@ -21,6 +21,8 @@ namespace NvxEpi.Services.InputSwitching
 
         public void HandleSwitch(object input, eRoutingSignalType type)
         {
+	        if (input == null) return;
+
             var routingInput = input as DeviceInputEnum;
             if (routingInput == null)
                 throw new InvalidCastException("routing input");

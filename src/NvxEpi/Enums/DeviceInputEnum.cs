@@ -1,4 +1,5 @@
-﻿namespace NvxEpi.Enums
+﻿
+namespace NvxEpi.Enums
 {
     public class DeviceInputEnum : Enumeration<DeviceInputEnum>
     {

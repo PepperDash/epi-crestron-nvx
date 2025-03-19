@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -17,113 +18,163 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Devices
 {
-    public class NvxE3X : 
-        NvxBaseDevice, 
-        INvxE3XDeviceWithHardware, 
-        IComPorts, 
-        IIROutputPorts,
-        IHdmiInput,
-        IRouting
-    {
-        private IHdmiInput _hdmiInput;
-        private readonly IUsbStream _usbStream;
+	public class NvxE3X :
+		NvxBaseDevice,
+		INvxE3XDeviceWithHardware,
+		IComPorts,
+		IIROutputPorts,
+		IHdmiInput,
+		IRouting
+	{
+		private IHdmiInput _hdmiInputs;
+		private readonly IUsbStream _usbStream;
 
-        public NvxE3X(DeviceConfig config, Func<DmNvxBaseClass> getHardware)
-            : base(config, getHardware, true)
-        {
-            AddPreActivationAction(AddRoutingPorts);
-        }
+		public NvxE3X(DeviceConfig config, Func<DmNvxBaseClass> getHardware)
+			: base(config, getHardware, true)
+		{
+			AddPreActivationAction(AddRoutingPorts);
+		}
 
-        public override bool CustomActivate()
-        {
-            var hardware = base.Hardware as DmNvxE3x;
-            if (hardware == null)
-                throw new Exception("hardware built doesn't match");
+		public override bool CustomActivate()
+		{
+			var result = false;
+			try
+			{
+				var hardware = base.Hardware as DmNvxE3x;
+				if (hardware == null)
+					throw new Exception("hardware built doesn't match");
 
-            Hardware = hardware;
-            _hdmiInput = new HdmiInput1(this);
+				Hardware = hardware;
+				result = base.CustomActivate();
 
-            return base.CustomActivate();
-        }
+				_hdmiInputs = new HdmiInput1(this);
 
-        public CrestronCollection<ComPort> ComPorts
-        {
-            get { return Hardware.ComPorts; }
-        }
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Debug.Console(0, this, "Exception activating device");
+				return result;
+			}
 
-        public new DmNvxE3x Hardware { get; private set; }
+		}
 
-        public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
-        {
-            get { return _hdmiInput.HdcpCapability; }
-        }
+		public CrestronCollection<ComPort> ComPorts
+		{
+			get { return Hardware.ComPorts; }
+		}
 
-        public CrestronCollection<IROutputPort> IROutputPorts
-        {
-            get { return Hardware.IROutputPorts; }
-        }
+		public new DmNvxE3x Hardware { get; private set; }
 
-        public bool IsRemote
-        {
-            get { return _usbStream.IsRemote; }
-        }
+		public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
+		{
+			get { return _hdmiInputs.HdcpCapability; }
+		}
 
-        public int NumberOfComPorts
-        {
-            get { return Hardware.NumberOfComPorts; }
-        }
+		public CrestronCollection<IROutputPort> IROutputPorts
+		{
+			get { return Hardware.IROutputPorts; }
+		}
 
-        public int NumberOfIROutputPorts
-        {
-            get { return Hardware.NumberOfIROutputPorts; }
-        }
+		public bool IsRemote
+		{
+			get { return _usbStream.IsRemote; }
+		}
 
-        public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
-        {
-            get { return _hdmiInput.SyncDetected; }
-        }
+		public int NumberOfComPorts
+		{
+			get { return Hardware.NumberOfComPorts; }
+		}
 
-        public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
-        {
-            get { return _hdmiInput.CurrentResolution; }
-        }
+		public int NumberOfIROutputPorts
+		{
+			get { return Hardware.NumberOfIROutputPorts; }
+		}
 
-        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
-        {
-            try
-            {
-                var switcher = outputSelector as IHandleInputSwitch;
-                if (switcher == null)
-                    throw new NullReferenceException("outputSelector");
+		public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
+		{
+			get { return _hdmiInputs.SyncDetected; }
+		}
 
-                Debug.Console(1,
-                    this,
-                    "Executing switch : '{0}' | '{1}' | '{2}'",
-                    inputSelector.ToString(),
-                    outputSelector.ToString(),
-                    signalType.ToString());
+		public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
+		{
+			get { return _hdmiInputs.CurrentResolution; }
+		}
 
-                switcher.HandleSwitch(inputSelector, signalType);
-            }
-            catch (Exception ex)
-            {
-                Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
-            }
-        }
+		public ReadOnlyDictionary<uint, IntFeedback> AudioChannels
+		{
+			get
+			{
+				return _hdmiInputs.AudioChannels;
+			}
+		}
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-        {
-            var deviceBridge = new NvxDeviceBridge(this);
-            deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
-        }
+		public ReadOnlyDictionary<uint, StringFeedback> AudioFormat
+		{
+			get
+			{
+				return _hdmiInputs.AudioFormat;
+			}
+		}
 
-        private void AddRoutingPorts()
-        {
-            HdmiInput1Port.AddRoutingPort(this);
-            SwitcherForStreamOutput.AddRoutingPort(this);
-            AnalogAudioInput.AddRoutingPort(this);
-            SecondaryAudioInput.AddRoutingPort(this);
-            SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
-        }
-    }
+		public ReadOnlyDictionary<uint, StringFeedback> ColorSpace
+		{
+			get
+			{
+				return _hdmiInputs.ColorSpace;
+			}
+		}
+
+		public ReadOnlyDictionary<uint, StringFeedback> HdrType
+		{
+			get
+			{
+				return _hdmiInputs.HdrType;
+			}
+		}
+
+		public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
+
+		public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
+
+		public List<RouteSwitchDescriptor> CurrentRoutes = new List<RouteSwitchDescriptor>();
+
+		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+		{
+			try
+			{
+				var switcher = outputSelector as IHandleInputSwitch;
+				if (switcher == null)
+					throw new NullReferenceException("outputSelector");
+
+				Debug.Console(1,
+					this,
+					"Executing switch : '{0}' | '{1}' | '{2}'",
+					inputSelector.ToString(),
+					outputSelector.ToString(),
+					signalType.ToString());
+
+				switcher.HandleSwitch(inputSelector, signalType);
+			}
+			catch (Exception ex)
+			{
+				Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
+			}
+		}
+
+		public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+		{
+			var deviceBridge = new NvxDeviceBridge(this);
+			deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
+		}
+
+		private void AddRoutingPorts()
+		{
+			HdmiInput1Port.AddRoutingPort(this);
+			SwitcherForStreamOutput.AddRoutingPort(this);
+			AnalogAudioInput.AddRoutingPort(this);
+			SecondaryAudioInput.AddRoutingPort(this);
+			SwitcherForSecondaryAudioOutput.AddRoutingPort(this);
+		}
+	}
 }
