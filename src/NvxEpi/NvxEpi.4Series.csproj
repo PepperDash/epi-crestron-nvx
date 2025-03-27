@@ -11,11 +11,11 @@
     <AssemblyTitle>NvxEpi</AssemblyTitle>
     <Company>PepperDash Technologies</Company>
     <Description>This software is a plugin designed to work as a part of PepperDash Essentials for Crestron control processors. This plugin allows for control Crestron NVX devices.</Description>
-    <Copyright>Copyright 2024</Copyright>
+    <Copyright>Copyright 2025</Copyright>
     <Version>1.0.0-local</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <InformationalVersion>$(Version)</InformationalVersion>
-    <OutputPath>4Series\bin\$(Configuration)\</OutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
     <Authors>PepperDash Technologies</Authors>
     <PackageId>PepperDash.Essentials.Plugin.4Series.CrestronNvx</PackageId>
     <PackageProjectUrl>https://github.com/PepperDash/epi-crestron-nvx</PackageProjectUrl>
@@ -36,9 +36,10 @@
     <None Remove="Properties\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="PepperDash.Essentials.Plugin.MobileControl.Messengers" Version="4.3.1-auth-request-issues.2" />
-    <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2567" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="PepperDashEssentials" Version="2.1.0" >
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
 </Project>
