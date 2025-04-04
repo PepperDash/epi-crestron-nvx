@@ -175,8 +175,8 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Trying execute switch secondary audio route: {input} {output}", NvxGlobalRouter.Instance.SecondaryAudioRouter, inputSelector, outputSelector);
 
-            if (!signalType.Has(eRoutingSignalType.Audio))
-                throw new ArgumentException("signal type must include audio");
+            if (!signalType.Has(eRoutingSignalType.Audio) && !signalType.Has(eRoutingSignalType.SecondaryAudio))
+                throw new ArgumentException("signal type must include audio or secondary audio");
 
             var rx = outputSelector as ISecondaryAudioStream ?? throw new ArgumentNullException("rx");
 
