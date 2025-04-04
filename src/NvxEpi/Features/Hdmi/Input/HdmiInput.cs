@@ -1,6 +1,8 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Services.Feedback;
+using PepperDash.Core;
+using System;
 using System.Linq;
 
 namespace NvxEpi.Features.Hdmi.Input;
@@ -10,56 +12,91 @@ public class HdmiInput : HdmiInputBase
     public HdmiInput(INvxDeviceWithHardware device)
         : base(device)
     {
-        foreach (var inputNumber in device.Hardware.HdmiIn.Keys)
+        try
         {
-            var capability = (device.Hardware is DmNvxE760x)
-                ? DmHdcpCapabilityValueFeedback.GetFeedback(device.Hardware)
-                : HdmiHdcpCapabilityValueFeedback.GetFeedback(device.Hardware, inputNumber);
+            if (device.Hardware is DmNvxE760x)
+            {
 
-            _capability.Add(inputNumber, capability);
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Hardware is DmNvxE760x", this);
+                var capability = DmHdcpCapabilityValueFeedback.GetFeedback(device.Hardware);
 
-            var sync = (device.Hardware is DmNvxE760x)
-                ? DmSyncDetectedFeedback.GetFeedback(device.Hardware)
-                : HdmiSyncDetectedFeedback.GetFeedback(device.Hardware, inputNumber);
-            _sync.Add(inputNumber, sync);
+                var sync = DmSyncDetectedFeedback.GetFeedback(device.Hardware);
 
-            var inputResolution = HdmiCurrentResolutionFeedback.GetFeedback(device.Hardware, inputNumber);
+                _capability.Add(1, capability);
+                _sync.Add(1, sync);
 
-            _currentResolution.Add(inputNumber, inputResolution);
+                Feedbacks.Add(capability);
+                Feedbacks.Add(sync);
 
-            var capabilityString = HdmiHdcpCapabilityFeedback.GetFeedback(device.Hardware, inputNumber);
+                return;
+            }
+        } catch (Exception ex)
+        {
+            Debug.LogMessage(ex, "Exception getting DmNVXE760x information", this);
+        }
 
-            _capabilityString.Add(inputNumber, capabilityString);
+        try
+        {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Hardware is NOT DmNvxE760x", this);
 
-            var audioChannels = HdmiAudioChannelsFeedback.GetFeedback(device.Hardware, inputNumber);
+            foreach (var inputNumber in device.Hardware.HdmiIn.Keys)
+            {
+                try
+                {
+                    var capability = HdmiHdcpCapabilityValueFeedback.GetFeedback(device.Hardware, inputNumber);
 
-            _audioChannels.Add(inputNumber, audioChannels);
+                    _capability.Add(inputNumber, capability);
 
-            var audioFormat = HdmiAudioFormatFeedback.GetFeedback(device.Hardware, inputNumber);
+                    var sync = HdmiSyncDetectedFeedback.GetFeedback(device.Hardware, inputNumber);
 
-            _audioFormat.Add(inputNumber, audioFormat);
+                    _sync.Add(inputNumber, sync);
 
-            var colorSpace = HdmiColorSpaceFeedback.GetFeedback(device.Hardware, inputNumber);
+                    var inputResolution = HdmiCurrentResolutionFeedback.GetFeedback(device.Hardware, inputNumber);
 
-            _colorSpace.Add(inputNumber, colorSpace);
+                    _currentResolution.Add(inputNumber, inputResolution);
 
-            var hdrType = HdmiHdrTypeFeedback.GetFeedback(device.Hardware, inputNumber);
+                    var capabilityString = HdmiHdcpCapabilityFeedback.GetFeedback(device.Hardware, inputNumber);
 
-            _hdrType.Add(inputNumber, hdrType);
+                    _capabilityString.Add(inputNumber, capabilityString);
 
-            var hdcpSupport = HdmiHdcpSupportFeedback.GetFeedback(device.Hardware, inputNumber);
+                    var audioChannels = HdmiAudioChannelsFeedback.GetFeedback(device.Hardware, inputNumber);
 
-            _hdcpSupport.Add(inputNumber, hdcpSupport);
+                    _audioChannels.Add(inputNumber, audioChannels);
 
-            Feedbacks.Add(hdcpSupport);
-            Feedbacks.Add(capability);
-            Feedbacks.Add(sync);
-            Feedbacks.Add(inputResolution);
-            Feedbacks.Add(capabilityString);
-            Feedbacks.Add(audioChannels);
-            Feedbacks.Add(audioFormat);
-            Feedbacks.Add(colorSpace);
-            Feedbacks.Add(hdrType);
+                    var audioFormat = HdmiAudioFormatFeedback.GetFeedback(device.Hardware, inputNumber);
+
+                    _audioFormat.Add(inputNumber, audioFormat);
+
+                    var colorSpace = HdmiColorSpaceFeedback.GetFeedback(device.Hardware, inputNumber);
+
+                    _colorSpace.Add(inputNumber, colorSpace);
+
+                    var hdrType = HdmiHdrTypeFeedback.GetFeedback(device.Hardware, inputNumber);
+
+                    _hdrType.Add(inputNumber, hdrType);
+
+                    var hdcpSupport = HdmiHdcpSupportFeedback.GetFeedback(device.Hardware, inputNumber);
+
+                    _hdcpSupport.Add(inputNumber, hdcpSupport);
+
+                    Feedbacks.Add(hdcpSupport);
+                    Feedbacks.Add(capability);
+                    Feedbacks.Add(sync);
+                    Feedbacks.Add(inputResolution);
+                    Feedbacks.Add(capabilityString);
+                    Feedbacks.Add(audioChannels);
+                    Feedbacks.Add(audioFormat);
+                    Feedbacks.Add(colorSpace);
+                    Feedbacks.Add(hdrType);
+                }
+                catch(Exception ex)
+                {
+                    Debug.LogMessage(ex, "Exception getting information for HDMI {inputNumber}", this, inputNumber);
+                }
+            }
+        }
+        catch (Exception ex) {
+            Debug.LogMessage(ex, "Exception getting HDMI Input information", this);
         }
     }
 }

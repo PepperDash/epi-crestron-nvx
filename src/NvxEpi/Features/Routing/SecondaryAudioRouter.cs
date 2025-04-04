@@ -173,16 +173,24 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
     {
         try
         {
-            Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying execute switch secondary audio route: {0} {1}", inputSelector, outputSelector);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Trying execute switch secondary audio route: {input} {output}", NvxGlobalRouter.Instance.SecondaryAudioRouter, inputSelector, outputSelector);
+
             if (!signalType.Has(eRoutingSignalType.Audio))
                 throw new ArgumentException("signal type must include audio");
 
             var rx = outputSelector as ISecondaryAudioStream ?? throw new ArgumentNullException("rx");
+
+            if(inputSelector is null)
+            {
+                rx.ClearSecondaryStream();
+                return;
+            }
+
             rx.RouteSecondaryAudio(inputSelector as ISecondaryAudioStream);
         }
         catch (Exception ex)
         {
-            Debug.Console(0, this, "Error executing route : '{0}'", ex.Message);
+            Debug.LogMessage(ex, "Error executing route!", this);
             throw;
         }
     }

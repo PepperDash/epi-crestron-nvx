@@ -41,24 +41,41 @@ public class NvxE3X :
 
     public override bool CustomActivate()
     {
-        var hardware = base.Hardware as DmNvxE3x ?? throw new Exception("hardware built doesn't match");
-        Hardware = hardware;
-        _hdmiInputs = new HdmiInput(this);
+        try
+        {            
+            var hardware = base.Hardware as DmNvxE3x ?? throw new Exception("hardware built doesn't match");
+            Hardware = hardware;
 
-        AddMcMessengers();
+            var result = base.CustomActivate();
 
-        Hardware.BaseEvent += (o, a) => {
-            var newRoute = this.HandleBaseEvent(a);
+            _hdmiInputs = new HdmiInput(this);
 
-            if (newRoute == null)
+            AddMcMessengers();
+
+            if (Hardware == null)
             {
-                return;
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Hardware is null", this);
+                return base.CustomActivate();
             }
 
-            RouteChanged?.Invoke(this, newRoute);
-        };
+            Hardware.BaseEvent += (o, a) =>
+            {
+                var newRoute = this.HandleBaseEvent(a);
 
-        return base.CustomActivate();
+                if (newRoute == null)
+                {
+                    return;
+                }
+
+                RouteChanged?.Invoke(this, newRoute);
+            };
+
+            return result;
+        } catch(Exception ex)
+        {
+            Debug.LogMessage(ex, "Exception activating device", this);
+            return false;
+        }
     }
 
     public CrestronCollection<ComPort> ComPorts
@@ -141,19 +158,25 @@ public class NvxE3X :
     {
         try
         {
-            var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
-            Debug.Console(1,
-                this,
-                "Executing switch : '{0}' | '{1}' | '{2}'",
-                inputSelector.ToString(),
-                outputSelector.ToString(),
-                signalType.ToString());
+            if(outputSelector is not IHandleInputSwitch switcher)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Unable to execute switch. OutputSelector is not IHandleInputSwitch {outputSelectorType}", this, outputSelector.ToString());
+                return;
+            }                     
+            
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Switching {input} to {output} type {type}", inputSelector, outputSelector, signalType.ToString());
 
+            if(inputSelector is null)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Device is DmNvxE3x. 'None' input not available", this);
+                return;
+            }
+            
             switcher.HandleSwitch(inputSelector, signalType);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error executing switch! : {0}", ex.Message);
+            Debug.LogMessage(ex, "Error executing switch!", this);
         }
     }
 

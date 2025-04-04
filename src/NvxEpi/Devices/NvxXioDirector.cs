@@ -8,10 +8,11 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Devices;
 
-public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline
+public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline, ICommunicationMonitor
 {
     private readonly BoolFeedback _isOnline;
     private readonly DmXioDirectorBase _hardware;
+    public StatusMonitorBase CommunicationMonitor { get; private set; }
 
     public NvxXioDirector(DeviceConfig config, DmXioDirectorBase hardware) : base(config.Key, config.Name)
     {
@@ -32,6 +33,15 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline
         _hardware = hardware ?? throw new ArgumentNullException("hardware");
         _isOnline = new BoolFeedback("BuildFeedbacks", () => _hardware.IsOnline);
         _hardware.OnlineStatusChange += (device, args) => _isOnline.FireUpdate();
+
+        AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, _hardware));
+    }
+
+    public override bool CustomActivate()
+    {
+        CommunicationMonitor.Start();
+
+        return base.CustomActivate();
     }
 
     public BoolFeedback IsOnline

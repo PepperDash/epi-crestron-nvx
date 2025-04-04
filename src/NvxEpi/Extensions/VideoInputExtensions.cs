@@ -33,8 +33,7 @@ public static class VideoInputExtensions
     public static void SetVideoToHdmiInput1(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
-        {
-            Debug.Console(1, device, "Device is unable to use method 'SetVideoToHdmiInput1'");
+        {            
             return;
         }
         Debug.Console(1, device, "Switching Video Input to : 'Hdmi1'");
@@ -44,8 +43,7 @@ public static class VideoInputExtensions
     public static void SetVideoToHdmiInput2(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
-        {
-            Debug.Console(1, device, "Device is unable to use method 'SetVideoToHdmiInput2'");
+        {       
             return;
         }
         Debug.Console(1, device, "Switching Video Input to : 'Hdmi2'");
@@ -55,8 +53,7 @@ public static class VideoInputExtensions
     public static void SetVideoToInputNone(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
-        {
-            Debug.Console(1, device, "Device is unable to use method 'SetVideoToInputNone'");
+        {            
             return;
         }
         Debug.Console(1, device, "Switching Video Input to : 'Disable'");
@@ -66,8 +63,7 @@ public static class VideoInputExtensions
     public static void SetVideoToStream(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x || device.IsTransmitter)
-        {
-            Debug.Console(1, device, "Device is unable to use method 'SetVideoToStream'");
+        {            
             return;
         }
 
