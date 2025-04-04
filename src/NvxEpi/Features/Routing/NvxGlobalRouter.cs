@@ -90,7 +90,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
         if (signalType.Has(eRoutingSignalType.Video))
             PrimaryStreamRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
 
-        if (signalType.Has(eRoutingSignalType.Audio))
+        if (signalType.Has(eRoutingSignalType.Audio) || signalType.Has(eRoutingSignalType.SecondaryAudio))
             SecondaryAudioRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
     }
 
