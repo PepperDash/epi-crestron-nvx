@@ -1,6 +1,7 @@
 ﻿using System;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Hardware;
+using NvxEpi.Features.Monitor;
 using NvxEpi.Features.Config;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
