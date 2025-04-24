@@ -29,6 +29,8 @@ public class NvxDeviceProperties
 public class NvxMockDeviceProperties
 {
     public int DeviceId { get; set; }
+
+    public string Mode { get; set; }
     public string StreamUrl { get; set; }
     public string MulticastVideoAddress { get; set; }
     public string MulticastAudioAddress { get; set; }
@@ -37,6 +39,12 @@ public class NvxMockDeviceProperties
 internal static class NvxDevicePropertiesExt
 {
     public static bool DeviceIsTransmitter(this NvxDeviceProperties props)
+    {
+        return !string.IsNullOrEmpty(props.Mode) &&
+                    props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool DeviceIsTransmitter(this NvxMockDeviceProperties props)
     {
         return !string.IsNullOrEmpty(props.Mode) &&
                     props.Mode.Equals("tx", StringComparison.OrdinalIgnoreCase);
