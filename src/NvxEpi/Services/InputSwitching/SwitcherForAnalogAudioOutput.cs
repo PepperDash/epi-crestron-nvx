@@ -32,7 +32,7 @@ public class SwitcherForAnalogAudioOutput : IHandleInputSwitch
         if (routingInput == DeviceInputEnum.NoSwitch)
             return;
 
-        if (type.Has(eRoutingSignalType.Audio))
+        if (type.Has(eRoutingSignalType.Audio) || type.Has(eRoutingSignalType.SecondaryAudio))
             SwitchAudio(routingInput);
 
         if (type.Has(eRoutingSignalType.Video))
