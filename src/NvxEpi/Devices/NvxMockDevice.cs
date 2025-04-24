@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
@@ -9,11 +10,13 @@ using NvxEpi.Features.Config;
 using NvxEpi.JoinMaps;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
+using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using static Crestron.SimplSharpPro.Lighting.ZumWired.ZumNetBridgeRoom.ZumWiredRoomInterface;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices;
@@ -28,7 +31,7 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
 
     private string _streamUrl;
 
-    public NvxMockDevice(DeviceConfig dc)
+    public NvxMockDevice(DeviceConfig dc, bool isTransmitter)
         : base(dc.Key, dc.Name)
     {
         var props = dc.Properties.ToObject<NvxMockDeviceProperties>();
@@ -41,10 +44,10 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
         Feedbacks = new FeedbackCollection<Feedback>();
 
         DeviceId = props.DeviceId;
-        IsTransmitter = true;
+        IsTransmitter = isTransmitter;
         _streamUrl = !string.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : string.Empty;
         BuildFeedbacks(props);
-        BuildInputPorts();
+        BuildRoutingPorts();
     }
 
     private void BuildFeedbacks(NvxMockDeviceProperties props)
@@ -83,9 +86,9 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
                 MulticastAddress,
                 TxAudioAddress
             });
-    }
+    }    
 
-    private void BuildInputPorts()
+    private void BuildRoutingPorts()
     {
         InputPorts.Add(
             new RoutingInputPort(
@@ -98,26 +101,52 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
         InputPorts.Add(
             new RoutingInputPort(
                 DeviceInputEnum.SecondaryAudio.Name,
-                eRoutingSignalType.Audio,
+                eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
                 eRoutingPortConnectionType.Streaming,
                 DeviceInputEnum.SecondaryAudio,
                 this));
 
-        OutputPorts.Add(
-            new RoutingOutputPort(
-                SwitcherForStreamOutput.Key,
-                eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Streaming,
-                null,
-                this));
+
 
         OutputPorts.Add(
             new RoutingOutputPort(
                 SwitcherForSecondaryAudioOutput.Key,
-                eRoutingSignalType.Audio,
+                eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
                 eRoutingPortConnectionType.LineAudio,
                 null,
                 this));
+
+        OutputPorts.Add(new RoutingOutputPort(
+            SwitcherForHdmiOutput.Key,
+            eRoutingSignalType.AudioVideo,
+            eRoutingPortConnectionType.Hdmi,
+            null,
+            this));
+        
+
+        if (IsTransmitter)
+        {
+            OutputPorts.Add(
+             new RoutingOutputPort(
+                 SwitcherForStreamOutput.Key,
+                 eRoutingSignalType.AudioVideo,
+                 eRoutingPortConnectionType.Streaming,
+                 null,
+                 this));
+        }
+        else
+        {            
+
+            InputPorts.Add(new RoutingInputPort(
+            DeviceInputEnum.Stream.Name,
+            eRoutingSignalType.AudioVideo,
+            eRoutingPortConnectionType.Streaming,
+            DeviceInputEnum.Stream,
+            this)
+            {
+                FeedbackMatchObject = eSfpVideoSourceTypes.Stream
+            });
+        }
     }
 
     public override bool CustomActivate()

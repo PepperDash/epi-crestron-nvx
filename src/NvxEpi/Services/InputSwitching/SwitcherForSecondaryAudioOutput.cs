@@ -62,7 +62,7 @@ public class SwitcherForSecondaryAudioOutput : IHandleInputSwitch
     {
         parent.OutputPorts.Add(new RoutingOutputPort(
             Key, 
-            eRoutingSignalType.Audio, 
+            eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
             eRoutingPortConnectionType.LineAudio,
             new SwitcherForSecondaryAudioOutput(parent), 
             parent));

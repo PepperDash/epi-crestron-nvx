@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using NvxEpi.Devices;
+using NvxEpi.Features.Config;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -15,6 +16,7 @@ public class NvxMockDeviceFactory : NvxBaseDeviceFactory<NvxMockDevice>
 
     public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
-        return new NvxMockDevice(dc);
+        var props = dc.Properties.ToObject<NvxMockDeviceProperties>();
+        return new NvxMockDevice(dc, props.DeviceIsTransmitter());
     }
 }
