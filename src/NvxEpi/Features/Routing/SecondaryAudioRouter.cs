@@ -207,7 +207,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(int txId, int rxId)
     {
-        Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txId & rxId: {0} {1}", txId, rxId);
+        Debug.LogInformation(NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txId & rxId: {0} {1}", txId, rxId);
         if (rxId == 0)
             return;
 
@@ -226,7 +226,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(int txId, ISecondaryAudioStream rx)
     {
-        Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txId & address: {0} {1}", txId, rx.RxAudioAddress);
+        Debug.LogInformation(NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txId & address: {0} {1}", txId, rx.RxAudioAddress);
         if (txId == 0)
         {
             rx.ClearSecondaryStream();
@@ -242,7 +242,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(string txName, ISecondaryAudioStream rx)
     {
-        Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txName & address: {0} {1}", txName, rx.RxAudioAddress);
+        Debug.LogInformation(NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txName & address: {0} {1}", txName, rx.RxAudioAddress);
         if (string.IsNullOrEmpty(txName))
             return;
 

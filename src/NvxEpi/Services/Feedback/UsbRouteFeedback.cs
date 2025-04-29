@@ -56,7 +56,7 @@ public static class UsbRouteFeedback
             ? "00"
             : device.UsbInput.RemoteDeviceIdFeedback.StringValue;
 
-        Debug.Console(2, "{1} :: remoteDeviceId = {0}", remoteDeviceId, deviceIp);
+        Debug.LogInformation("{1} :: remoteDeviceId = {0}", remoteDeviceId, deviceIp);
         if (remoteDeviceId.Equals(UsbStreamExt.ClearUsbValue)) return 0;
 
         var remoteEndpoint = DeviceManager.AllDevices.OfType<NvxBaseDevice>()
@@ -78,7 +78,7 @@ public static class UsbRouteFeedback
         sb.AppendFormat("Local USB Address :: {0}" + Newline, remoteEndpoint.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue);
         sb.AppendFormat("Remote USB Address :: {0}" + Newline, remoteEndpoint.Hardware.UsbInput.RemoteDeviceIdFeedback.StringValue);
 
-        Debug.Console(2, remoteEndpoint, sb.ToString());
+        Debug.LogInformation(remoteEndpoint, sb.ToString());
 
 
         var macAddress = remoteEndpoint.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;

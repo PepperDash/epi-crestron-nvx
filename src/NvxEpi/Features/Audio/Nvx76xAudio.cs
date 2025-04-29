@@ -47,12 +47,12 @@ public class NvxE760xAudio : IBasicVolumeWithFeedback
 
     public void VolumeUp(bool pressRelease)
     {
-        Debug.Console(0, _parent, "Volume press not implemented");
+        Debug.LogMessage(0, _parent, "Volume press not implemented");
     }
 
     public void VolumeDown(bool pressRelease)
     {
-        Debug.Console(0, _parent, "Volume press not implemented");
+        Debug.LogMessage(0, _parent, "Volume press not implemented");
     }
 
     public void MuteToggle()

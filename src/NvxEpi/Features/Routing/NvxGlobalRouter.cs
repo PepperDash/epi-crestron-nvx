@@ -124,15 +124,15 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
                .OfType<NvxBaseDevice>()
                .Where(t =>
                {
-                   Debug.Console(0, this, $"{t.Key} is transmitter: {t.IsTransmitter}");
+                   Debug.LogMessage(0, this, $"{t.Key} is transmitter: {t.IsTransmitter}");
                    return !t.IsTransmitter;
                }).ToList();
 
-            Debug.Console(2, this, $"Receiver count: {transmitters.Count}");
+            Debug.LogInformation(this, $"Receiver count: {transmitters.Count}");
 
             OutputSlots = transmitters.Select((t) =>
             {
-                Debug.Console(0, this, $"Getting NvxMatrixOutput for {t.Key}");
+                Debug.LogMessage(0, this, $"Getting NvxMatrixOutput for {t.Key}");
 
                 return new NvxMatrixOutput(t);
             }).Cast<IRoutingOutputSlot>().ToDictionary(t => t.Key, t => t);
@@ -148,13 +148,13 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
     {
         if (!InputSlots.TryGetValue(inputSlotKey, out var inputSlot))
         {
-            Debug.Console(0, this, "Unable to find input slot with key {0}", inputSlotKey);
+            Debug.LogMessage(0, this, "Unable to find input slot with key {0}", inputSlotKey);
             return;
         }
 
         if (!OutputSlots.TryGetValue(outputSlotKey, out var outputSlot))
         {
-            Debug.Console(0, this, "Unable to find output slot with key {0}", outputSlotKey);
+            Debug.LogMessage(0, this, "Unable to find output slot with key {0}", outputSlotKey);
             return;
         }
 
@@ -168,7 +168,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         if (outputDevice == null)
         {
-            Debug.Console(0, this, "Unable to get device to route");
+            Debug.LogMessage(0, this, "Unable to get device to route");
             return;
         }
 

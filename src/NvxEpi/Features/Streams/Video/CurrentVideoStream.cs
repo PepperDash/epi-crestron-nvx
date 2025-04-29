@@ -60,11 +60,11 @@ public class CurrentVideoStream : VideoStream, ICurrentStream
 
             if (_current == null)
             {
-                Debug.Console(2, this, "Current stream address: {0} device ID: {1}", "0.0.0.0", 0);
+                Debug.LogInformation(this, "Current stream address: {0} device ID: {1}", "0.0.0.0", 0);
             }
             else
             {
-                Debug.Console(2, this, "Current stream address: {0} device ID: {1}", _current.MulticastAddress, _current.DeviceId);
+                Debug.LogInformation(this, "Current stream address: {0} device ID: {1}", _current.MulticastAddress, _current.DeviceId);
             }
 
             CurrentStreamId.FireUpdate();
@@ -72,7 +72,7 @@ public class CurrentVideoStream : VideoStream, ICurrentStream
         }
         catch (Exception ex)
         {
-            Debug.Console(1,
+            Debug.LogWarning(
                 this,
                 "Error getting current video route : {0}\r{1}\r{2}",
                 ex.Message,

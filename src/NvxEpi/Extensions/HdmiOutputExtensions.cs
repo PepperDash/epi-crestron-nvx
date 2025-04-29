@@ -17,20 +17,20 @@ public static class HdmiOutputExtensions
             var modeToSet = (eAspectRatioMode) mode;
 
 
-            Debug.Console(1, device, "Setting Video Aspect Ratio to '{0}'", modeToSet.ToString());
+            Debug.LogInformation(device, "Setting Video Aspect Ratio to '{0}'", modeToSet.ToString());
             device.Hardware.HdmiOut.VideoAttributes.AspectRatioMode = modeToSet;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Aspect Ratio : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Aspect Ratio : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Aspect Ratio : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Aspect Ratio : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Aspect Ratio Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Aspect Ratio Capability : {0}", ex.Message);
         }
     }
 
@@ -39,7 +39,7 @@ public static class HdmiOutputExtensions
         if (device.IsTransmitter)
             return;
 
-        Debug.Console(1, device, "Setting videowall mode to : '{0}'", value);
+        Debug.LogInformation(device, "Setting videowall mode to : '{0}'", value);
         if (device.Hardware.HdmiOut != null)
             device.Hardware.HdmiOut.VideoWallMode.UShortValue = value;
     }
