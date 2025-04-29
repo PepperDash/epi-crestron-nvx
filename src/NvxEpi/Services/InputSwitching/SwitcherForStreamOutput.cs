@@ -33,7 +33,7 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
         if (routingInput == DeviceInputEnum.NoSwitch)
             return;
 
-        Debug.Console(1, _device, "Switching input on Stream Output: '{0}' : '{1}'", routingInput.Name, type.ToString());
+        Debug.LogInformation(_device, "Switching input on Stream Output: '{0}' : '{1}'", routingInput.Name, type.ToString());
         if (type.Is(eRoutingSignalType.AudioVideo))
         {
             SwitchVideo(routingInput);

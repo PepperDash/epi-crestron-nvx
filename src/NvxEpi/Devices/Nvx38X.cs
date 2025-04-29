@@ -31,7 +31,7 @@ using NvxEpi.Extensions;
 
 namespace NvxEpi.Devices;
 
-public class Nvx36X : 
+public class Nvx38X : 
     NvxBaseDevice, 
     IComPorts, 
     IIROutputPorts,
@@ -50,7 +50,7 @@ public class Nvx36X :
 
     public event RouteChangedEventHandler RouteChanged;
 
-    public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
+    public Nvx38X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
         : base(config, getHardware, isTransmitter)
     {
         _config = NvxDeviceProperties.FromDeviceConfig(config);
@@ -63,11 +63,9 @@ public class Nvx36X :
         {
             var result = base.CustomActivate();
 
-            if(Hardware is DmNvx36x nvx36x)
+            if(Hardware is DmNvx38x nvx38x)
             {
-                _audio = new Nvx36XAudio(nvx36x, this);
-            } else if(Hardware is DmNvxE760x nvxE760x) {
-                _audio = new NvxE760xAudio(nvxE760x, this);
+                _audio = new Nvx38XAudio(nvx38x, this);
             }
             
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);

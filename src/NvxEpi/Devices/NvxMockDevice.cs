@@ -37,7 +37,7 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
         var props = dc.Properties.ToObject<NvxMockDeviceProperties>();
         if (props == null)
         {
-            Debug.Console(1, this, "************ PROPS IS NULL ************");
+            Debug.LogWarning(this, "************ PROPS IS NULL ************");
             throw new NullReferenceException("props");
         }
 
@@ -169,12 +169,12 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
 
     public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
     {
-        Debug.Console(2, this, "Executing switch : {0}", signalType);
+        Debug.LogInformation(this, "Executing switch : {0}", signalType);
     }
 
     public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
     {
-        Debug.Console(2, this, "Executing switch : {0}", type);
+        Debug.LogInformation(this, "Executing switch : {0}", type);
     }
 
     public FeedbackCollection<Feedback> Feedbacks { get; private set; }

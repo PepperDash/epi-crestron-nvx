@@ -17,7 +17,7 @@ public static class DeviceDefaults
         device.Control.EnableAutomaticInitiation();
         if (!string.IsNullOrEmpty(props.MulticastVideoAddress))
         {
-            Debug.Console(0, "Setting multicast Video Address to {0}", props.MulticastVideoAddress);
+            Debug.LogMessage(0, "Setting multicast Video Address to {0}", props.MulticastVideoAddress);
             device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
         }
 
@@ -36,7 +36,7 @@ public static class DeviceDefaults
             }
             catch (Exception ex)
             {
-                Debug.Console(1, "Cannot set device to video input:{0} | {1}", props.DefaultVideoInput, ex.Message);
+                Debug.LogWarning("Cannot set device to video input:{0} | {1}", props.DefaultVideoInput, ex.Message);
             }
         }
 
@@ -50,7 +50,7 @@ public static class DeviceDefaults
             }
             catch (Exception ex)
             {
-                Debug.Console(1, "Cannot set device to audio input:{0} | {1}", props.DefaultVideoInput, ex.Message);
+                Debug.LogWarning("Cannot set device to audio input:{0} | {1}", props.DefaultVideoInput, ex.Message);
             }
         }
     }

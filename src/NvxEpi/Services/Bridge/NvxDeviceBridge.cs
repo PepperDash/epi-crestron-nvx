@@ -134,7 +134,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
 
     private static void LinkFeedback(BasicTriList trilist, IKeyed feedback, uint join)
     {
-        Debug.Console(2, feedback, "Linking to Trilist : {0} | Join : {1}", trilist.ID, join);
+        Debug.LogInformation(feedback, "Linking to Trilist : {0} | Join : {1}", trilist.ID, join);
 
         var stringFeedback = feedback as StringFeedback;
         stringFeedback?.LinkInputSig(trilist.StringInput[join]);

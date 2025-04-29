@@ -45,7 +45,7 @@ public class IHdmiInputMessenger : MessengerBase
             PostStatusMessage(message);
         } catch(Exception e)
         {
-            Debug.Console(5, this, "Exception sending message {exception}", e);
+            Debug.LogError(this, "Exception sending message {exception}", e);
         }
     }
 

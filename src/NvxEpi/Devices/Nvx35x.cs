@@ -61,7 +61,7 @@ public class Nvx35X :
         Hardware = hardware;
         var result = base.CustomActivate();
         //if (Debug.Level >= 0)
-        //    Debug.Console(0, this, "{0}", JsonConvert.SerializeObject(_config, Formatting.Indented));
+        //    Debug.LogMessage(0, this, "{0}", JsonConvert.SerializeObject(_config, Formatting.Indented));
 
         _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
         _hdmiInputs = new HdmiInput(this);            
@@ -100,10 +100,10 @@ public class Nvx35X :
 
     public void MakeUsbRoute(IUsbStreamWithHardware hardware)
     {
-        Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
+        Debug.LogMessage(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
         if (_usbStream is not UsbStream usbStream)
         {
-            Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
+            Debug.LogMessage(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
             return;
         }
         usbStream.MakeUsbRoute(hardware);
@@ -195,7 +195,7 @@ public class Nvx35X :
         try
         {
             var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
-            Debug.Console(1,
+            Debug.LogInformation(
                 this,
                 "Executing switch : '{0}' | '{1}' | '{2}'",
                 inputSelector?.ToString() ?? "{null}",
@@ -206,7 +206,7 @@ public class Nvx35X :
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error executing switch!: {0}", ex);
+            Debug.LogWarning(this, "Error executing switch!: {0}", ex);
         }
     }
 

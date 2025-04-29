@@ -18,14 +18,14 @@ public static class HdmiInputExtensions
             if (device.Hardware is DmNvxE760x)
             {
                 capabilityToSet = (eHdcpCapabilityType)capability;
-                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
+                Debug.LogInformation(device, "Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
                 var hardware = device.Hardware as DmNvxE760x;
                 hardware.DmIn.HdcpCapability = capabilityToSet;
             }
             else if (device.Hardware.HdmiIn != null && device.Hardware.HdmiIn[1] != null)
             {
                 capabilityToSet = (eHdcpCapabilityType) capability;
-                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
+                Debug.LogInformation(device, "Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
                 device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
             }
             else
@@ -35,15 +35,15 @@ public static class HdmiInputExtensions
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
     }
 
@@ -54,20 +54,20 @@ public static class HdmiInputExtensions
             if (device.Hardware.HdmiIn[1] == null)
                 throw new NotSupportedException("hdmi1");
 
-            Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capability.ToString());
+            Debug.LogInformation(device, "Setting Hdmi1 Capability to '{0}'", capability.ToString());
             device.Hardware.HdmiIn[1].HdcpCapability = capability;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
     }
 
@@ -80,20 +80,20 @@ public static class HdmiInputExtensions
 
             var capabilityToSet = (eHdcpCapabilityType) capability;
 
-            Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}'", capabilityToSet.ToString());
+            Debug.LogInformation(device, "Setting Hdmi2 Capability to '{0}'", capabilityToSet.ToString());
             device.Hardware.HdmiIn[2].HdcpCapability = capabilityToSet;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi2 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi2 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi2 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi2 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi2 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi2 Capability : {0}", ex.Message);
         }
     }
 
@@ -104,20 +104,20 @@ public static class HdmiInputExtensions
             if (device.Hardware.HdmiIn[2] == null)
                 throw new NotSupportedException("hdmi1");
 
-            Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}'", capability.ToString());
+            Debug.LogInformation(device, "Setting Hdmi2 Capability to '{0}'", capability.ToString());
             device.Hardware.HdmiIn[2].HdcpCapability = capability;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            Debug.LogWarning(device, "Error setting Hdmi1 Capability : {0}", ex.Message);
         }
     }
 }
