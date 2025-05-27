@@ -36,10 +36,8 @@
     <None Remove="Properties\**" />
   </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="PepperDashEssentials" Version="2.4.5">
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</PackageReference>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PepperDashEssentials" Version="2.4.7" />
+  </ItemGroup>
 
 </Project>

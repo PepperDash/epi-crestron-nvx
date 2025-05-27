@@ -36,7 +36,7 @@ public static class VideoInputExtensions
         {            
             return;
         }
-        Debug.Console(1, device, "Switching Video Input to : 'Hdmi1'");
+        Debug.LogWarning(device, "Switching Video Input to : 'Hdmi1'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
     }
 
@@ -46,7 +46,7 @@ public static class VideoInputExtensions
         {       
             return;
         }
-        Debug.Console(1, device, "Switching Video Input to : 'Hdmi2'");
+        Debug.LogInformation(device, "Switching Video Input to : 'Hdmi2'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
     }
 
@@ -56,7 +56,7 @@ public static class VideoInputExtensions
         {            
             return;
         }
-        Debug.Console(1, device, "Switching Video Input to : 'Disable'");
+        Debug.LogInformation(device, "Switching Video Input to : 'Disable'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
     }
 
@@ -67,13 +67,13 @@ public static class VideoInputExtensions
             return;
         }
 
-        Debug.Console(1, device, "Switching Video Input to : 'Stream'");
+        Debug.LogInformation(device, "Switching Video Input to : 'Stream'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
     }
 
     public static void SetVideoToAutomatic(this ICurrentVideoInput device)
     {
-        Debug.Console(1, device, "Switching Video Input to : 'Automatic'");
+        Debug.LogInformation(device, "Switching Video Input to : 'Automatic'");
         device.Hardware.Control.EnableAutomaticInputRouting();
     }
 }

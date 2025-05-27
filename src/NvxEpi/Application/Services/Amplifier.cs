@@ -65,7 +65,7 @@ public class AmplifierFactory : EssentialsDeviceFactory<Amplifier>
 
     public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
-        Debug.Console(1, "Factory Attempting to create new Amplifier Device");
+        Debug.LogInformation("Factory Attempting to create new Amplifier Device");
         return new Amplifier(dc.Key, dc.Name);
     }
 }
