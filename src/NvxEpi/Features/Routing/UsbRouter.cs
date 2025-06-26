@@ -15,6 +15,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
         AddPostActivationAction(AddFeedbackMatchObjects);
+        AddPostActivationAction(AddRoutingPorts);
     }
 
     public event RouteChangedEventHandler RouteChanged;
@@ -55,6 +56,21 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         remoteDevice.MakeUsbRoute(localDevice);
 
         UpdateCurrentRoutes(localDevice, remoteDevice);
+    }
+
+    public void TestUsbRoute(string inputPortKey, string outputPortKey)
+    {
+        var inputPort = InputPorts[inputPortKey];
+
+        var outputPort = OutputPorts[outputPortKey];
+
+        if(outputPort == null)
+        {
+            this.LogError("Unable to find device port for {outputPortKey}", outputPortKey);
+            return;
+        }
+
+        ExecuteSwitch(inputPort?.Selector ?? null, outputPort.Selector, eRoutingSignalType.UsbInput);
     }
 
     private void UpdateCurrentRoutes(IUsbStreamWithHardware local, IUsbStreamWithHardware remote)
@@ -169,9 +185,8 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         }
     }
 
-    public override bool CustomActivate()
+    private void AddRoutingPorts()
     {
-
         // Local devices in NVX world are the USB peripherals like keyboards or touchscreen
         var usbRemoteDevices = DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>().Where(usb => usb.IsRemote);
 
@@ -193,6 +208,12 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
             var inputPort = new RoutingInputPort($"{localDevice.Key}-UsbLocal", eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput, eRoutingPortConnectionType.UsbC, localDevice, this);
             InputPorts.Add(inputPort);
         }
+    }
+
+    public override bool CustomActivate()
+    {
+
+
 
         return base.CustomActivate();
     }

@@ -30,7 +30,7 @@ public static class UsbStreamExt
             // Thread.Sleep(500);
 
             var remoteId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
-            var localId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+            var localId = local.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
 
             var remoteRemoteIds = remote.Hardware.UsbInput.RemoteDeviceIds;
             var localRemoteIds = local.Hardware.UsbInput.RemoteDeviceIds;

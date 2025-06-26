@@ -38,6 +38,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         DeviceManager.AddDevice(PrimaryStreamRouter);
         DeviceManager.AddDevice(SecondaryAudioRouter);
+        DeviceManager.AddDevice(UsbRouter);
 
         AddPostActivationAction(BuildTieLines);
 
