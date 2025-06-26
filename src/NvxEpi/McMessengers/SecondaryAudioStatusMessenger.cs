@@ -3,15 +3,26 @@ using Newtonsoft.Json.Linq;
 using NvxEpi.Devices;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
+using System.Timers;
 
 namespace NvxEpi.McMessengers;
 
 public class SecondaryAudioStatusMessenger:MessengerBase
 {
     private readonly NvxBaseDevice device;
+
+    private readonly Timer debounceTimer;
     public SecondaryAudioStatusMessenger(string key, string path, NvxBaseDevice device):base(key, path, device)
     {
         this.device = device;
+
+        debounceTimer = new Timer(1000)
+        {
+            Enabled = false,
+            AutoReset = false,
+        };
+
+        debounceTimer.Elapsed += (o, a) => SendUpdate(o, null);
     }
 
     protected override void RegisterActions()
@@ -19,6 +30,16 @@ public class SecondaryAudioStatusMessenger:MessengerBase
         base.RegisterActions();
 
         AddAction("/fullStatus", SendFullStatus);
+
+        device.IsStreamingSecondaryAudio.OutputChange += Debounce;
+        device.SecondaryAudioStreamStatus.OutputChange += Debounce;
+        device.SecondaryAudioAddress.OutputChange += Debounce;
+    }
+
+    private void Debounce(object sender, FeedbackEventArgs e)
+    {
+        debounceTimer.Stop();
+        debounceTimer.Start();
     }
 
     private void SendFullStatus(string id, JToken content)
