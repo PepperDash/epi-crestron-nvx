@@ -24,11 +24,14 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
     public IRouting PrimaryStreamRouter { get; private set; }
     public IRouting SecondaryAudioRouter { get; private set; }
 
+    public IRouting UsbRouter { get; private set; }
+
     private NvxGlobalRouter()
         : base(InstanceKey)
     {
         PrimaryStreamRouter = new PrimaryStreamRouter(Key + "-PrimaryStream");
         SecondaryAudioRouter = new SecondaryAudioRouter(Key + "-SecondaryAudio");
+        UsbRouter = new UsbRouter(Key + "-Usb");
 
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
         OutputPorts = new RoutingPortCollection<RoutingOutputPort>();

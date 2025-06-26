@@ -1,6 +1,7 @@
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Abstractions.Usb;
 using NvxEpi.Enums;
 using NvxEpi.Features.Routing;
 using NvxEpi.Services.InputSwitching;
