@@ -2,10 +2,12 @@
 using Newtonsoft.Json.Linq;
 using NvxEpi.Abstractions.HdmiInput;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Timers;
 
 namespace NvxEpi.McMessengers;
 
@@ -13,9 +15,19 @@ public class IHdmiInputMessenger : MessengerBase
 {
     private readonly IHdmiInput device;
 
+    private readonly Timer debounceTimer;
+
     public IHdmiInputMessenger(string key, string messagePath, IHdmiInput device) : base(key, messagePath, device)
     {
         this.device = device;
+
+        debounceTimer = new Timer(1000)
+        {
+            Enabled = false,
+            AutoReset = false,
+        };
+
+        debounceTimer.Elapsed += (o, a) => UpdateStatus();
     }
 
     protected override void RegisterActions()
@@ -26,7 +38,11 @@ public class IHdmiInputMessenger : MessengerBase
 
         foreach (var feedback in device.Feedbacks.Where((f) => f.Key.Contains("Hdmi1") || f.Key.Contains("Hdmi2")))
         {
-            feedback.OutputChange += (o, a) => UpdateStatus();
+            feedback.OutputChange += (o, a) => {
+                // Debounce the status update to avoid flooding the server with messages
+                debounceTimer.Stop();
+                debounceTimer.Start();
+            };
         }
     }
 
@@ -45,7 +61,7 @@ public class IHdmiInputMessenger : MessengerBase
             PostStatusMessage(message);
         } catch(Exception e)
         {
-            Debug.Console(5, this, "Exception sending message {exception}", e);
+            this.LogError(e, "Exception sending message {exception}");
         }
     }
 

@@ -3,15 +3,26 @@ using Newtonsoft.Json.Linq;
 using NvxEpi.Devices;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
+using System.Timers;
 
 namespace NvxEpi.McMessengers;
 
 public class PrimaryStreamStatusMessenger:MessengerBase
 {
     private readonly NvxBaseDevice device;
+
+    private readonly Timer debounceTimer;
     public PrimaryStreamStatusMessenger(string key, string messagePath, NvxBaseDevice device) : base(key, messagePath, device)
     {
         this.device = device;
+
+        debounceTimer = new Timer(1000)
+        {
+            Enabled = false,
+            AutoReset = false,
+        };
+
+        debounceTimer.Elapsed += (o, a) => HandleUpdate(o, null);
     }
 
     protected override void RegisterActions()
@@ -20,10 +31,17 @@ public class PrimaryStreamStatusMessenger:MessengerBase
 
         AddAction("/fullStatus", SendFullStatus);
 
-        device.IsStreamingVideo.OutputChange += HandleUpdate;
-        device.VideoStreamStatus.OutputChange += HandleUpdate;
-        device.StreamUrl.OutputChange += HandleUpdate;
-        device.MulticastAddress.OutputChange += HandleUpdate;
+        device.IsStreamingVideo.OutputChange += Debounce;
+        device.VideoStreamStatus.OutputChange += Debounce;
+        device.StreamUrl.OutputChange += Debounce;
+        device.MulticastAddress.OutputChange += Debounce;
+    }
+
+    private void Debounce(object sender, FeedbackEventArgs args)
+    {
+        // Debounce the status update to avoid flooding the server with messages
+        debounceTimer.Stop();
+        debounceTimer.Start();
     }
 
     private void SendFullStatus(string id, JToken content) {
