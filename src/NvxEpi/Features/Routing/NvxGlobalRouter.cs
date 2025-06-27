@@ -96,6 +96,9 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         if (signalType.Has(eRoutingSignalType.Audio) || signalType.Has(eRoutingSignalType.SecondaryAudio))
             SecondaryAudioRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
+
+        if(signalType.HasFlag(eRoutingSignalType.UsbInput) || signalType.HasFlag(eRoutingSignalType.UsbOutput))
+            UsbRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
     }
 
     public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
