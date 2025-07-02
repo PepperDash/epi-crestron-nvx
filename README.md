@@ -6,9 +6,8 @@
 
 Navigate to the BUILDS folder in the repository.  Place the .cplz file into the Plugins folder for Essentials and reset the application.
 
-### __IMPORTANT:__
-
-The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
+> [!IMPORTANT]
+> The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
 
 <strong>This plugin does not currently support E30/D30 encoders and decoders.  They will throw null reference exeptions.  This is in development.</strong>
 
@@ -119,3 +118,79 @@ TX-1 to RX-1, you would send a value of 1 to the Video Source input of RX-1.
 5. Add and test Dante Audio routing.
 
 ## Feature Requests
+
+## NVX Router
+
+When using the `nvxRouter` the following `nvxRoutingPort` types are available.
+
+```
+stream
+hdmi1
+hdmi2
+analogAudio
+primaryAudio
+secondaryAudio
+danteAudio
+dmNaxAudio
+automatic
+noSwitch
+```
+
+### NVX Router Config Example
+
+```json
+{
+    "key": "NvxRouter",
+    "name": "NvxRouter",
+    "type": "dynNvx",
+    "group": "nvx",
+    "properties": {
+        "transmitters": {
+            "1"  : { "deviceKey": "nvxTx1" , "videoName": "Input 1" , "nvxRoutingPort": "hdmi1" },
+            "2"  : { "deviceKey": "nvxTx2" , "videoName": "Input 2" , "nvxRoutingPort": "hdmi1" },
+            "3"  : { "deviceKey": "nvxTx3" , "videoName": "Input 3" , "nvxRoutingPort": "hdmi1" },
+            "4"  : { "deviceKey": "nvxTx4" , "videoName": "Input 4" , "nvxRoutingPort": "hdmi1" }
+        },
+        "receivers": {
+            "1"  : { "deviceKey": "nvxRx1" , "videoName": "Output 1"      },
+            "2"  : { "deviceKey": "nvxRx2" , "videoName": "Output 2"      },
+            "3"  : { "deviceKey": "nvxRx3" , "videoName": "Output 3"      },
+            "4"  : { "deviceKey": "nvxRx4" , "videoName": "Output 4"      }
+        },
+        "audioTransmitters": {
+            "1" : { "deviceKey": "nvxTx1" , "audioName": "Input 1" , "nvxRoutingPort": "hdmi1"       },
+            "2" : { "deviceKey": "nvxTx2" , "audioName": "Input 2" , "nvxRoutingPort": "hdmi1"       },
+            "3" : { "deviceKey": "nvxTx3" , "audioName": "Input 3" , "nvxRoutingPort": "hdmi1"       },
+            "4" : { "deviceKey": "nvxTx4" , "audioName": "Input 4" , "nvxRoutingPort": "analogAudio" }
+        },
+        "audioReceivers": {
+            "1"  : { "deviceKey": "nvxTx1" , "audioName": "Output 1"  },
+            "2"  : { "deviceKey": "nvxTx2" , "audioName": "Output 2"  },
+            "3"  : { "deviceKey": "nvxTx3" , "audioName": "Output 3"  },
+            "4"  : { "deviceKey": "nvxTx4" , "audioName": "Output 4"  }
+        }
+    }
+}
+```
+
+## USB Routing
+
+- Local = `PC`
+- Remote = `Keyboard/Mouse`
+
+### NVX Plugin Device ID Offsets
+
+- Encoder-to-Decoder: `0 + deviceId`
+- Decoder-to-Decoder: `1000 + deviceId`
+
+### NVX TX USB Configuration Object
+
+```json
+"usb": { "mode": "{local OR remote}", "followVideo": false, "isLayer3": false}
+```
+
+### NVX RX USB Configuration Object
+
+```json
+"usb": { "mode": "{local OR remote}", "followVideo": false, "isLayer3": false }
+```
