@@ -107,6 +107,11 @@ public abstract class NvxBaseDevice :
 
             debounceTimer.Enabled = false;
             PortInformationChanged?.Invoke(this, EventArgs.Empty);
+
+            foreach (var port in NetworkPorts)
+            {
+                this.LogInformation("Port {portNumber} port name: {portName} portDescription: {portDescription}\r\nvlanName: {vlanName} systemName: {systemName} systemDescription: {systemDescription} managementAddress: {managementAddress}", port.DevicePortIndex, port.PortName, port.PortDescription, port.VlanName, port.SystemName, port.SystemNameDescription, port.IpManagementAddress);
+            }
         };
     }
 
@@ -114,13 +119,10 @@ public abstract class NvxBaseDevice :
     {
         Hardware.Network.NetworkChange += (sender, args) =>
         {
+            this.LogDebug("event Id: {eventId}", args.EventId);
+
             debounceTimer.Stop();
             debounceTimer.Start();
-
-            foreach (var port in NetworkPorts)
-            {
-                this.LogInformation("Port {portNumber} port name: {portName} portDescription: {portDescription}\r\nvlanName: {vlanName} systemName: {systemName} systemDescription: {systemDescription} managementAddress: {managementAddress}", port.DevicePortIndex, port.PortName, port.PortDescription, port.VlanName, port.SystemName, port.SystemNameDescription, port.IpManagementAddress);
-            }
         };
     }
 
