@@ -26,6 +26,10 @@ using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Core;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.McMessengers;
+using System.Collections.Generic;
+using NvxEpi.Abstractions.Device;
+using PepperDash.Core.Logging;
+using System.Timers;
 
 namespace NvxEpi.Devices;
 
@@ -37,7 +41,8 @@ public abstract class NvxBaseDevice :
     ICurrentSecondaryAudioStream, 
     ICurrentNaxInput,
     ICommunicationMonitor,
-    IDeviceInfoProvider
+    IDeviceInfoProvider,
+    INvxNetworkPortInformation
 {
     private ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
     private ICurrentStream _currentVideoStream;
@@ -58,6 +63,8 @@ public abstract class NvxBaseDevice :
     public readonly string DefaultMulticastRoute;
 
     private static IQueue<IQueueMessage> _queue;
+
+    private Timer debounceTimer;
 
     static NvxBaseDevice()
     {
@@ -90,6 +97,31 @@ public abstract class NvxBaseDevice :
         AddPreActivationAction(() => Hardware = getHardware());
         AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, Hardware));
         AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
+        AddPostActivationAction(() => RegisterForNetworkChangeFeedback());
+
+        debounceTimer = new Timer(1000) { Enabled = false, AutoReset = false };
+
+        debounceTimer.Elapsed += (sender, args) =>
+        {
+            this.LogInformation("Network change detected, updating network port information");
+
+            debounceTimer.Enabled = false;
+            PortInformationChanged?.Invoke(this, EventArgs.Empty);
+        };
+    }
+
+    private void RegisterForNetworkChangeFeedback()
+    {
+        Hardware.Network.NetworkChange += (sender, args) =>
+        {
+            debounceTimer.Stop();
+            debounceTimer.Start();
+
+            foreach (var port in NetworkPorts)
+            {
+                this.LogInformation("Port {portNumber} port name: {portName} portDescription: {portDescription}\r\nvlanName: {vlanName} systemName: {systemName} systemDescription: {systemDescription} managementAddress: {managementAddress}", port.DevicePortIndex, port.PortName, port.PortDescription, port.VlanName, port.SystemName, port.SystemNameDescription, port.IpManagementAddress);
+            }
+        };
     }
 
     private void SetDeviceName()
@@ -364,5 +396,10 @@ public abstract class NvxBaseDevice :
     }
 
     public DeviceInfo DeviceInfo { get; private set; }
+
+    public List<NvxNetworkPortInformation> NetworkPorts => Hardware.Network.LldpPort.Values.Select(port => new NvxNetworkPortInformation(port, port.Number)).ToList();
+
     public event DeviceInfoChangeHandler DeviceInfoChanged;
+
+    public event EventHandler PortInformationChanged;
 }
