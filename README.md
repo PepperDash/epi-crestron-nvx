@@ -1,16 +1,14 @@
 # PepperDash NVX Plugin
 
-> The NVX plugin endeavors to provide device control and routing over Crestron NVX type devices without the need for an XIO director.
+The NVX plugin endeavors to provide device control and routing over Crestron NVX type devices without the need for an XIO director.
 
-## Installation
+## Essentials Version
 
-Navigate to the BUILDS folder in the repository.  Place the .cplz file into the Plugins folder for Essentials and reset the application.
+The NVX plugin current requires Essentials 2.7.4 or later.
 
 ### __IMPORTANT:__
 
 The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
-
-<strong>This plugin does not currently support E30/D30 encoders and decoders.  They will throw null reference exeptions.  This is in development.</strong>
 
 ## Join Map
 
@@ -109,13 +107,3 @@ will throw an exception.  Many default values are set based on this property.  A
 TX-1 to RX-1, you would send a value of 1 to the Video Source input of RX-1.
 5. Multicast Video Address = Sets the local multicast Video address that a transmitter will attempt to stream to.  This address __must__ have an even number as the last Octet and is recommended to fall within a locally scoped mulitcast address range. Recommended reading : [http://www.tcpipguide.com/free/t_IPMulticastAddressing.htm]
 6. Multicast Audio Address = Sets the local multicast Audio address that a transmitter will attempt to stream the secondary audio to.  In most cases set this to be +1 of the Multicast Video address.
-
-## Planned Updates
-
-1. Add a name property in the config file to set the device to.
-2. Add a "Friendly Name" property in the config file to show for client facing UI purposes.
-3. Add XIO director support.
-4. Add a "Virtual Routing" plugin to mimic DynDM API to make easy drop in changes.
-5. Add and test Dante Audio routing.
-
-## Feature Requests
