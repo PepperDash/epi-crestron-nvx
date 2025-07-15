@@ -27,18 +27,21 @@ public class UsbRemoteAddressFeedback
     {
         var dict = new Dictionary<uint, StringFeedback>();
 
-        if (device.UsbInput != null)
+        if(device.UsbInput == null)
         {
-            for (uint i = 0; i <= device.UsbInput.RemoteDeviceIdFeedbacks.Count; i++)
-            {
-                if (!device.UsbInput.RemoteDeviceIdFeedbacks.TryGetValue(i, out StringOutputSig sig))
-                    continue;
-
-                dict.Add(i, new StringFeedback(Key + "-" + i, () => sig.StringValue));
-            }
-
-            device.UsbInput.UsbInputChange += (sender, args) => dict.Values.ToList().ForEach(x => x.FireUpdate());
+            return new ReadOnlyDictionary<uint, StringFeedback>(dict);
         }
+
+        for (uint i = 0; i <= device.UsbInput.RemoteDeviceIdFeedbacks.Count; i++)
+        {
+            if (!device.UsbInput.RemoteDeviceIdFeedbacks.TryGetValue(i, out StringOutputSig sig))
+                continue;
+
+            dict.Add(i, new StringFeedback(Key + "-" + i, () => sig.StringValue));
+        }
+
+        device.UsbInput.UsbInputChange += (sender, args) => dict.Values.ToList().ForEach(x => x.FireUpdate());
+        
 
         return new ReadOnlyDictionary<uint, StringFeedback>(dict);
     }

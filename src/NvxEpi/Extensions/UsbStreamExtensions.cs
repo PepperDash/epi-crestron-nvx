@@ -3,7 +3,9 @@ using System.Linq;
 using Crestron.SimplSharp.Net;
 using NvxEpi.Abstractions.Usb;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
+using System.Threading;
 
 namespace NvxEpi.Extensions;
 
@@ -15,157 +17,114 @@ public static class UsbStreamExt
     {
         try
         {
+            // A local device can be linked to up to 7 remote devices, but a remote device can only have one local device.
+
             if (local.IsRemote)
                 throw new NotSupportedException(local.Key);
 
             if (!remote.IsRemote)
                 throw new NotSupportedException(remote.Key);
 
-            /*
-             * This doesn't work because we're comparing references, not values of the feedbacks
-            if (local.UsbRemoteIds.ContainsValue(remote.UsbLocalId))
-                return;
-             */
-            Debug.LogInformation(remote, "Automatic Pairing is {0}.", remote.Hardware.UsbInput.AutomaticUsbPairingEnabledFeedback.BoolValue ? "Enabled" : "Disabled");
+            remote.LogDebug("Automatic Pairing is {automaticPairing}.", remote.Hardware.UsbInput.AutomaticUsbPairingEnabledFeedback.BoolValue ? "Enabled" : "Disabled");
 
-            Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
+            // Thread.Sleep(500);
 
-            if (local.UsbRemoteIds.Any((x) => x.Value.StringValue.Equals(remote.UsbLocalId.StringValue)))
+            var remoteId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+            var localId = local.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+
+            var remoteRemoteIds = remote.Hardware.UsbInput.RemoteDeviceIds;
+            var localRemoteIds = local.Hardware.UsbInput.RemoteDeviceIds;
+
+            // Check if the remote id is already in the local's list of remote ids. A remote device can only have one local device, so if the remote id is already in the local's list, but not paired with it
+            // we need to find what other local device(s) are paired with that remote device and clear the remote id from those local devices.
+            if (localRemoteIds.Values.Any((x) => x.StringValue.Equals(remoteId)))
             {
-                var results =
-                    DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>()
-                        .Where(x => !x.IsRemote)
-                        .Where(
-                            o =>
-                            o.UsbRemoteIds.Any((x) => x.Value.StringValue.Equals(remote.UsbLocalId.StringValue))).ToList();
 
-                Debug.LogInformation("Found {0} Hosts with client {1} connected", results.Count(), remote.UsbLocalId);
-                foreach (var usb in results)
+                // Get a list of all devices that are local and are currently paired with the remote device
+                var pairedLocalUsbDevices = DeviceManager.AllDevices
+                    .OfType<IUsbStreamWithHardware>()
+                    .Where(x => !x.IsRemote && x.Hardware.UsbInput.RemoteDeviceIds.Values.Any((y) => y.StringValue.Equals(remoteId))).ToList();
+
+                remote.LogVerbose("Found {hostCount} Hosts with client {remoteId} connected", pairedLocalUsbDevices.Count, remoteId);
+
+                // If we have a local device that has the same remote id as the one we're trying to add, we need to clear the remote device id from that local device
+                foreach (var localUsb in pairedLocalUsbDevices)
                 {
-                    var localUsb = usb;
-                    Debug.LogInformation("Clearing clients from {0}", localUsb.UsbLocalId);
-                    if (localUsb.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
-                        localUsb.Hardware.UsbInput.RemovePairing();
-                    localUsb.Hardware.UsbInput.RemoteDeviceId.StringValue = ClearUsbValue;
-                    foreach (var remoteId in localUsb.UsbRemoteIds)
-                    {
-                        if (remoteId.Value == remote.UsbLocalId)
-                        {
-                            localUsb.Hardware.UsbInput.RemoteDeviceIds[remoteId.Key].StringValue = ClearUsbValue;
-                        }
-                    }
-                    if(localUsb.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
-                        localUsb.Hardware.UsbInput.RemovePairing();
-                }
-                Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
+                    local.LogVerbose("Clearing clients from {localId}", localUsb.UsbLocalId);
 
-                Debug.LogInformation(remote, "Remote {0} already added to list. Setting remote to {1}",
-                    remote.UsbLocalId, local.UsbLocalId);
-                remote.Hardware.UsbInput.RemoteDeviceId.StringValue = ClearUsbValue;
+                    if (localUsb.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
+                    {
+                        localUsb.Hardware.UsbInput.RemovePairing();
+                    }
+
+                    foreach (var usbRemoteId in localUsb.Hardware.UsbInput.RemoteDeviceIds.Values.Where(sig => sig.StringValue.Equals(remoteId)))
+                    {
+                        // Clear the remote device id if it matches the one we're trying to add
+                        
+                        usbRemoteId.StringValue = ClearUsbValue;
+                        
+                    }
+                }
+                // Thread.Sleep(500);
+
+                remote.LogVerbose("Remote {remoteId} already added to list. Setting remote to {localId}",
+                    remoteId, localId);
+
                 if (remote.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                     remote.Hardware.UsbInput.RemovePairing();
-                Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
 
+                // Thread.Sleep(500);
+
+                // The remoteDeviceId sig is the equivalent of the RemoteDeviceIds[1]
                 remote.Hardware.UsbInput.RemoteDeviceId.StringValue = local.UsbLocalId.StringValue;
-                local.Hardware.UsbInput.RemoteDeviceId.StringValue = remote.UsbLocalId.StringValue;
-                Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
-                Debug.LogInformation(remote, "There are {0} devices in RemoteIds", remote.Hardware.UsbInput.RemoteDeviceIds.Count);
-                foreach (var connection in remote.Hardware.UsbInput.RemoteDeviceIds)
-                {
-                    Debug.LogInformation(remote, connection.StringValue);
-                }
-                Debug.LogInformation(local, "There are {0} devices in RemoteIds", local.Hardware.UsbInput.RemoteDeviceIds.Count);
-                foreach (var connection in local.Hardware.UsbInput.RemoteDeviceIds)
-                {
-                    Debug.LogInformation(local, connection.StringValue);
-                }
-                Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
+
                 if (remote.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                     remote.Hardware.UsbInput.Pair();
                 if (local.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                     local.Hardware.UsbInput.Pair();
-                Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
+
+                // Thread.Sleep(500);
 
                 return;
             }
+
             if (local.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                 local.Hardware.UsbInput.RemovePairing();
             if (remote.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                 remote.Hardware.UsbInput.RemovePairing();
-            Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
 
-
-            foreach (var remoteId in local.Hardware.UsbInput.RemoteDeviceIds)
+            // Clear all remote device ids for both local and remote devices. This removes ALL existing pairings and allows us to set the new pairing.
+            foreach (var id in local.Hardware.UsbInput.RemoteDeviceIds)
             {
-                remoteId.StringValue = ClearUsbValue;
-            }
-            foreach (var remoteId in remote.Hardware.UsbInput.RemoteDeviceIds)
-            {
-                remoteId.StringValue = ClearUsbValue;
+                id.StringValue = ClearUsbValue;
             }
 
-            Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
-            /*
-            var indexLocal =
-                local.UsbRemoteIds.FirstOrDefault(
-                    x => string.IsNullOrEmpty(x.Value.StringValue) || x.Value.StringValue.Equals(ClearUsbValue));
-
-            var indexRemote =
-                remote.UsbRemoteIds.FirstOrDefault(
-                    x => string.IsNullOrEmpty(x.Value.StringValue) || x.Value.StringValue.Equals(ClearUsbValue));
-
-            if (indexLocal.Value == null)
+            foreach (var id in remote.Hardware.UsbInput.RemoteDeviceIds)
             {
-                Debug.LogMessage(0, remote, "Cannot pair to: {0}, it doesn't support any more connections", local.Key);
-                return;
+                id.StringValue = ClearUsbValue;
             }
-            if (indexRemote.Value == null)
-            {
-                Debug.LogMessage(0, remote, "Cannot pair to: {0}, it doesn't support any more connections", remote.Key);
-                return;
-            }
-            /*
-            var localSig = local
-                .Hardware
-                .UsbInput
-                .RemoteDeviceIds[1];
-            var remoteSig = remote
-                .Hardware
-                .UsbInput
-                .RemoteDeviceIds[1];
 
-            if (localSig == null)
-            {
-                Debug.LogMessage(0, local, "Somehow local sig and index:{0} doesn't exist", indexLocal.Key);
-                return;
-            }
-            if (remoteSig == null)
-            {
-                Debug.LogMessage(0, remote, "Somehow remote sig and index:{0} doesn't exist", indexRemote.Key);
-                return;
-            }
-             * */
+            // Thread.Sleep(500);
 
-            //Debug.LogMessage(0, local, "Setting Remote Id: {0} to {1}", 1, remote.UsbLocalId.StringValue);
-            Debug.LogInformation(local, "Setting Remote Id to {0}", remote.UsbLocalId.StringValue);
+            local.LogDebug("Setting Remote Id to {remoteId}", remoteId);
+
             local.Hardware.UsbInput.RemoteDeviceId.StringValue = remote.UsbLocalId.StringValue;
-            //localSig.StringValue = remote.UsbLocalId.StringValue;
-            //Debug.LogMessage(0, remote, "Setting Remote Id: {0} to {1}", 1, local.UsbLocalId.StringValue);
-            Debug.LogInformation(remote, "Setting Remote Id to {0}", local.UsbLocalId.StringValue);
+
+            remote.LogDebug("Setting Remote Id to {localId}", localId);
+
             remote.Hardware.UsbInput.RemoteDeviceId.StringValue = local.UsbLocalId.StringValue;
-            //remoteSig.StringValue = local.UsbLocalId.StringValue;
-            Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(500);
+
+            // Thread.Sleep(500);
           
             if (local.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                 local.Hardware.UsbInput.Pair();
             if (remote.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                 remote.Hardware.UsbInput.Pair();
-            Crestron.SimplSharpPro.CrestronThread.Thread.Sleep(1000);
-
+            // Thread.Sleep(1000);
         }
         catch (Exception ex)
         {
-            Debug.LogMessage(0, local, "Error adding remote stream to local : {0}", ex.Message);
+            local.LogError(ex, "Error adding remote USB stream to local");
         }   
     }
 }

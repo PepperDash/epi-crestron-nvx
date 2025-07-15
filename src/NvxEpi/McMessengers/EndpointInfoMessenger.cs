@@ -13,6 +13,7 @@ public class EndpointInfoMessenger:MessengerBase
     private readonly StringFeedback deviceNameFeedback;
     public EndpointInfoMessenger(string key, string path, NvxBaseDevice device): base(key, path, device)
     {
+
         deviceNameFeedback = device.Feedbacks.FirstOrDefault(fb => fb.Key == DeviceNameFeedback.Key) as StringFeedback;
 
         if (deviceNameFeedback == null)

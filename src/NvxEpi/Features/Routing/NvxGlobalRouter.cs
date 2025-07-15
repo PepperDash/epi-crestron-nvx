@@ -24,17 +24,21 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
     public IRouting PrimaryStreamRouter { get; private set; }
     public IRouting SecondaryAudioRouter { get; private set; }
 
+    public IRouting UsbRouter { get; private set; }
+
     private NvxGlobalRouter()
         : base(InstanceKey)
     {
         PrimaryStreamRouter = new PrimaryStreamRouter(Key + "-PrimaryStream");
         SecondaryAudioRouter = new SecondaryAudioRouter(Key + "-SecondaryAudio");
+        UsbRouter = new UsbRouter(Key + "-Usb");
 
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
         OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
         DeviceManager.AddDevice(PrimaryStreamRouter);
         DeviceManager.AddDevice(SecondaryAudioRouter);
+        DeviceManager.AddDevice(UsbRouter);
 
         AddPostActivationAction(BuildTieLines);
 
@@ -92,6 +96,9 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         if (signalType.Has(eRoutingSignalType.Audio) || signalType.Has(eRoutingSignalType.SecondaryAudio))
             SecondaryAudioRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
+
+        if(signalType.HasFlag(eRoutingSignalType.UsbInput) || signalType.HasFlag(eRoutingSignalType.UsbOutput))
+            UsbRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
     }
 
     public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)

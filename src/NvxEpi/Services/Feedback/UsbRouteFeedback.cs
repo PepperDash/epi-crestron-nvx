@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXml;
@@ -15,6 +16,7 @@ using NvxEpi.Devices;
 using NvxEpi.Extensions;
 using NvxEpi.Features.Routing;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback;
@@ -33,7 +35,14 @@ public static class UsbRouteFeedback
 
         device.UsbInput.UsbInputChange += (s, a) =>
         {
-            if (a.EventId != UsbInputEventIds.RemoteDeviceIdFeedbackEventId) return;
+            if (a.EventId != UsbInputEventIds.RemoteDeviceIdFeedbackEventId && a.EventId != UsbInputEventIds.PairedEventId) return;
+
+            // NVX Routing via the plugin does not currently support more than one remote/local USB device pair. Essentials is only concerned with the first remote ID
+            if (a.Index > 1)
+            {
+                return;
+            }
+
             usbRoute = ReturnRoute(device);
             usbRouteFb.FireUpdate();
         };
@@ -56,7 +65,7 @@ public static class UsbRouteFeedback
             ? "00"
             : device.UsbInput.RemoteDeviceIdFeedback.StringValue;
 
-        Debug.LogInformation("{1} :: remoteDeviceId = {0}", remoteDeviceId, deviceIp);
+        Debug.LogVerbose("Current USB remote ID: {remoteDeviceId}", remoteDeviceId);
         if (remoteDeviceId.Equals(UsbStreamExt.ClearUsbValue)) return 0;
 
         var remoteEndpoint = DeviceManager.AllDevices.OfType<NvxBaseDevice>()
@@ -70,16 +79,14 @@ public static class UsbRouteFeedback
         {
             return 0;
         }
+        var sb = new StringBuilder();
+        sb.AppendFormat("Device ID: {0}" + Newline, remoteEndpoint.DeviceId);
+        sb.AppendFormat("IsTransmitter: {0}" + Newline, remoteEndpoint.IsTransmitter);
+        sb.AppendFormat("IP Address: {0}" + Newline, remoteEndpoint.Hardware.Network.IpAddressFeedback.StringValue);
+        sb.AppendFormat("Local USB Address: {0}" + Newline, remoteEndpoint.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue);
+        sb.AppendFormat("Remote USB Address: {0}" + Newline, remoteEndpoint.Hardware.UsbInput.RemoteDeviceIdFeedback.StringValue);
 
-        var sb = new StringBuilder(Newline);
-        sb.AppendFormat("Device ID :: {0}" + Newline, remoteEndpoint.DeviceId);
-        sb.AppendFormat("IsTransmitter :: {0}" + Newline, remoteEndpoint.IsTransmitter);
-        sb.AppendFormat("IP Address :: {0}" + Newline, remoteEndpoint.Hardware.Network.IpAddressFeedback.StringValue);
-        sb.AppendFormat("Local USB Address :: {0}" + Newline, remoteEndpoint.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue);
-        sb.AppendFormat("Remote USB Address :: {0}" + Newline, remoteEndpoint.Hardware.UsbInput.RemoteDeviceIdFeedback.StringValue);
-
-        Debug.LogInformation(remoteEndpoint, sb.ToString());
-
+        remoteEndpoint.LogVerbose(sb.ToString());
 
         var macAddress = remoteEndpoint.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
         //var isTransmitter = remoteEndpoint.Hardware.Control.DeviceModeFeedback == eDeviceMode.Transmitter;

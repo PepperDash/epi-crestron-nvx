@@ -11,6 +11,7 @@ using NvxEpi.Extensions;
 using NvxEpi.Features.Config;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Streams.Usb;
@@ -28,23 +29,17 @@ public class UsbStream : IUsbStreamWithHardware
                 FollowVideo = false,
                 IsLayer3 = false
             };
-                //if (Debug.Level >= 0)
-                //    Debug.LogMessage(0, device.Key, JsonConvert.SerializeObject(props, Formatting.Indented));
             
-            Debug.LogInformation(device, "Mode : \"{0}\", Default : \"{1}\", FollowVideo = \"{2}\"", props.Mode, props.Default, props.FollowVideo);
+            device.LogDebug("Mode : {mode}, Default : {default}, FollowVideo = {followVideo}", props.Mode, props.Default, props.FollowVideo);
+
 
             return props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase)
                 ? new UsbStream(device, false, props.FollowVideo, props.Default, props.IsLayer3)
                 : new UsbStream(device, true, props.FollowVideo, props.Default, props.IsLayer3);
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
-            Debug.LogMessage(0, "Cannot set usb mode, argument not resolved:{0}", ex.Message);
-            throw;
-        }
-        catch (Exception e)
-        {
-            Debug.LogMessage(0, "Exception in GetUsbStream : {0}", e.Message);
+            device.LogError(ex, "Exception in GetUsbStream");
             throw;
         }
     }
@@ -124,13 +119,14 @@ public class UsbStream : IUsbStreamWithHardware
     {
         if (hardware == null || hardware.Hardware.UsbInput == null)
         {
-            Debug.LogMessage(0, this, "Unable to make USB Route - hardware is null");
+            this.LogInformation("Unable to make USB Route - hardware is null");
             return;
         }
 
-        Debug.LogMessage(0, this, "Trying USB Route {0}", hardware.UsbLocalId.StringValue);
+        this.LogInformation("Trying USB Route {0}", hardware.UsbLocalId.StringValue);
         
         ClearCurrentUsbRoute();
+
         if (string.IsNullOrEmpty(hardware.UsbLocalId.StringValue)) return;
 
 
