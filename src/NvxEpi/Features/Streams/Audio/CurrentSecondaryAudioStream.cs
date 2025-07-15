@@ -93,7 +93,7 @@ public class CurrentSecondaryAudioStream : SecondaryAudioStream, ICurrentSeconda
         }
         catch (Exception ex)
         {
-            Debug.Console(1,
+            Debug.LogWarning(
                 this,
                 "Error getting current audio route : {0}\r{1}\r{2}",
                 ex.Message,

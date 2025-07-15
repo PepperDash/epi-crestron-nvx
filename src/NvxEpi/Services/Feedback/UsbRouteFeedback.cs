@@ -79,7 +79,6 @@ public static class UsbRouteFeedback
         {
             return 0;
         }
-
         var sb = new StringBuilder();
         sb.AppendFormat("Device ID: {0}" + Newline, remoteEndpoint.DeviceId);
         sb.AppendFormat("IsTransmitter: {0}" + Newline, remoteEndpoint.IsTransmitter);

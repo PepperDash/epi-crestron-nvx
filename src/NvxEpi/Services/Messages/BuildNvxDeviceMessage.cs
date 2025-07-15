@@ -30,7 +30,7 @@ public class BuildNvxDeviceMessage : IQueueMessage, IKeyed
 
         if (result != eDeviceRegistrationUnRegistrationResponse.Success)
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Device registration failed! '{0}'", _device.RegistrationFailureReason.ToString());
+            Debug.LogError(this, "Device registration failed! '{0}'", _device.RegistrationFailureReason.ToString());
             throw new Exception(_device.RegistrationFailureReason.ToString());
         }
     }

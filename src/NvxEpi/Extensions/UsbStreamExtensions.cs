@@ -39,6 +39,7 @@ public static class UsbStreamExt
             // we need to find what other local device(s) are paired with that remote device and clear the remote id from those local devices.
             if (localRemoteIds.Values.Any((x) => x.StringValue.Equals(remoteId)))
             {
+
                 // Get a list of all devices that are local and are currently paired with the remote device
                 var pairedLocalUsbDevices = DeviceManager.AllDevices
                     .OfType<IUsbStreamWithHardware>()
@@ -64,7 +65,6 @@ public static class UsbStreamExt
                         
                     }
                 }
-
                 // Thread.Sleep(500);
 
                 remote.LogVerbose("Remote {remoteId} already added to list. Setting remote to {localId}",

@@ -32,6 +32,7 @@ public class UsbStream : IUsbStreamWithHardware
             
             device.LogDebug("Mode : {mode}, Default : {default}, FollowVideo = {followVideo}", props.Mode, props.Default, props.FollowVideo);
 
+
             return props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase)
                 ? new UsbStream(device, false, props.FollowVideo, props.Default, props.IsLayer3)
                 : new UsbStream(device, true, props.FollowVideo, props.Default, props.IsLayer3);
@@ -93,7 +94,7 @@ public class UsbStream : IUsbStreamWithHardware
 
         if (!followStream || IsTransmitter)
         {
-            Debug.Console(1, device, "Will not Follow Stream!");
+            Debug.LogWarning(device, "Will not Follow Stream!");
             return;
         }
 
@@ -132,18 +133,18 @@ public class UsbStream : IUsbStreamWithHardware
         /*else*/
         if (IsRemote && !hardware.IsRemote)
         {
-            Debug.Console(1, this, "Routing to Local from New Route : {0}!", hardware.Name);
+            Debug.LogInformation(this, "Routing to Local from New Route : {0}!", hardware.Name);
 
             hardware.AddRemoteUsbStreamToLocal(this);
         }
         else if (!IsRemote && hardware.IsRemote)
         {
-            Debug.Console(1, this, "Routing to Remote from New Route : {0}!", hardware.Name);
+            Debug.LogInformation(this, "Routing to Remote from New Route : {0}!", hardware.Name);
 
             this.AddRemoteUsbStreamToLocal(hardware);
         }
         else
-            Debug.Console(1, this, "Cannot route usb to device : {0}", hardware.Key);
+            Debug.LogWarning(this, "Cannot route usb to device : {0}", hardware.Key);
     }
 
     private void FollowCurrentRoute(string streamUrl)
@@ -161,15 +162,15 @@ public class UsbStream : IUsbStreamWithHardware
             {
                 if (x.StreamUrl == null)
                 {
-                    Debug.Console(1, this, "StreamUrl Is Null!");
+                    Debug.LogWarning(this, "StreamUrl Is Null!");
                     return false;
                 }
                 if (string.IsNullOrEmpty(x.StreamUrl.StringValue))
                 {
-                    Debug.Console(1, this, "StreamUrl Is Empty!");
+                    Debug.LogWarning(this, "StreamUrl Is Empty!");
                     return false;
                 }
-                Debug.Console(1, this, "StreamUrl Is Valid!");
+                Debug.LogInformation(this, "StreamUrl Is Valid!");
 
                 return x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl);
             }) as IUsbStreamWithHardware;
@@ -180,23 +181,23 @@ public class UsbStream : IUsbStreamWithHardware
         ClearCurrentUsbRoute();
         /*else*/ if (IsRemote && !currentRoute.IsRemote)
         {
-            Debug.Console(1, this, "Routing to Local from CurrentRoute : {0}!", currentRoute.Name);
+            Debug.LogInformation(this, "Routing to Local from CurrentRoute : {0}!", currentRoute.Name);
 
             currentRoute.AddRemoteUsbStreamToLocal(this);
         }
         else if (!IsRemote && currentRoute.IsRemote)
         {
-            Debug.Console(1, this, "Routing to Remote from CurrentRoute : {0}!", currentRoute.Name);
+            Debug.LogInformation(this, "Routing to Remote from CurrentRoute : {0}!", currentRoute.Name);
 
             this.AddRemoteUsbStreamToLocal(currentRoute);
         }
         else
-            Debug.Console(1, this, "Cannot follow usb on device : {0}", currentRoute.Key);
+            Debug.LogWarning(this, "Cannot follow usb on device : {0}", currentRoute.Key);
     }
 
     public void ClearCurrentUsbRoute()
     {
-        Debug.Console(1, this, "Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
+        Debug.LogInformation(this, "Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
         Hardware.UsbInput.RemoteDeviceId.StringValue = UsbStreamExt.ClearUsbValue;
         foreach (var usb in Hardware.UsbInput.RemoteDeviceIds)
         {
@@ -262,12 +263,12 @@ public class UsbStream : IUsbStreamWithHardware
 
         if (inputSig == null)
         {
-            Debug.Console(0, local, "Somehow input sig and index:{0} doesn't exist", index);
+            Debug.LogMessage(0, local, "Somehow input sig and index:{0} doesn't exist", index);
             return;
         }
          */
 
-        Debug.Console(1, local, "Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
+        Debug.LogInformation(local, "Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
         local.Hardware.UsbInput.RemoteDeviceId.StringValue = UsbStreamExt.ClearUsbValue;
         foreach (var usb in local.Hardware.UsbInput.RemoteDeviceIds)
         {

@@ -12,7 +12,7 @@ public static class StreamExtensions
         if (device.IsTransmitter)
             return;
 
-        Debug.Console(1, device, "Clearing stream");
+        Debug.LogInformation(device, "Clearing stream");
         device.Hardware.Control.ServerUrl.StringValue = string.Empty;
     }
 
@@ -30,7 +30,7 @@ public static class StreamExtensions
         if (!tx.IsTransmitter)
             throw new ArgumentException("tx");
 
-        Debug.Console(1, device, "Routing device stream : '{0}'", tx.Name);
+        Debug.LogInformation(device, "Routing device stream : '{0}'", tx.Name);
         tx.StreamUrl.FireUpdate();
 
         if (string.IsNullOrEmpty(tx.StreamUrl.StringValue))
@@ -44,11 +44,11 @@ public static class StreamExtensions
         if (device.IsTransmitter)
             return;
 
-        Debug.Console(1, device, "Setting stream: '{0}'", url);
+        Debug.LogInformation(device, "Setting stream: '{0}'", url);
         device.Hardware.Control.ServerUrl.StringValue = url;
         if (device.Hardware is DmNvxD3x)
         {
-            Debug.Console(1, device, "Device is DmNvxE3x type, not able to route VideoSource");
+            Debug.LogWarning(device, "Device is DmNvxE3x type, not able to route VideoSource");
         }
         else
         {
