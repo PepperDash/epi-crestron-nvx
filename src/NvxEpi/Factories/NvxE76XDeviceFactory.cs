@@ -7,20 +7,18 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Factories;
 
-public class Nvx36XDeviceFactory : NvxBaseDeviceFactory<Nvx36X>
+public class NvxE76XDeviceFactory : NvxBaseDeviceFactory<NvxE76x>
 {
     private static IEnumerable<string> _typeNames;
 
-    public Nvx36XDeviceFactory()
+    public NvxE76XDeviceFactory()
     {
         MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
 
         _typeNames ??= new List<string>
             {
-                "dmnvx360",
-                "dmnvx360c",
-                "dmnvx363",
-                "dmnvx363c",
+                "dmnvxe760",
+                "dmnvxe760c",
             };
 
         TypeNames = _typeNames.ToList();
@@ -30,6 +28,6 @@ public class Nvx36XDeviceFactory : NvxBaseDeviceFactory<Nvx36X>
     {
         var props = NvxDeviceProperties.FromDeviceConfig(dc);
         var deviceBuild = GetDeviceBuildAction(dc.Type, props);
-        return new Nvx36X(dc, deviceBuild, props.DeviceIsTransmitter());
+        return new NvxE76x(dc, deviceBuild, props.DeviceIsTransmitter());
     }
 }

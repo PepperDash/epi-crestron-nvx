@@ -1,4 +1,5 @@
-﻿using NvxEpi.Abstractions.HdmiInput;
+﻿using NvxEpi.Abstractions.DmInput;
+using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Devices;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -18,28 +19,53 @@ public class NvxMatrixInput : IRoutingInputSlot
         
         try
         {
-            if (_device is not IHdmiInput hdmiInput)
+            if (_device is IHdmiInput hdmiInput)
             {
-                return;
-            }
-
-            if (hdmiInput.SyncDetected == null)
-            {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Input is null", device);
-
-                return;
-            }
-
-            foreach (var feedback in hdmiInput.SyncDetected)
-            {
-                if (feedback.Value == null)
+                if (hdmiInput.SyncDetected == null)
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Sync Feedback {feedbackKey} is null", device, feedback.Key);
-                    continue;
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Input is null", device);
+
+                    return;
                 }
 
-                feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
+                foreach (var feedback in hdmiInput.SyncDetected)
+                {
+                    if (feedback.Value == null)
+                    {
+                        Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Sync Feedback {feedbackKey} is null", device, feedback.Key);
+                        continue;
+                    }
+
+                    feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
+                }
+
+                return;
             }
+
+            if (_device is IDmInput input)
+            {
+                if (input.SyncDetected == null)
+                {
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Input is null", device);
+
+                    return;
+                }
+
+                foreach (var feedback in input.SyncDetected)
+                {
+                    if (feedback.Value == null)
+                    {
+                        Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Sync Feedback {feedbackKey} is null", device, feedback.Key);
+                        continue;
+                    }
+
+                    feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
+                }
+
+                return;
+            }
+
+
         } catch (Exception ex)
         {
             Debug.LogMessage(ex, "Exception creating Matrix Input", device);
@@ -57,7 +83,7 @@ public class NvxMatrixInput : IRoutingInputSlot
 
     public BoolFeedback IsOnline => _device.IsOnline;
 
-    public bool VideoSyncDetected => _device is IHdmiInput inputDevice && inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue);
+    public bool VideoSyncDetected => (_device is IHdmiInput inputDevice && inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue)) || (_device is IDmInput dmDevice && dmDevice.SyncDetected.Any(fb => fb.Value.BoolValue));
 
     public string Key => $"{_device.Key}";
 

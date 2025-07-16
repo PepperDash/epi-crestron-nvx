@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using NvxEpi.Abstractions.Device;
 using PepperDash.Core.Logging;
 using System.Timers;
+using NvxEpi.Abstractions.DmInput;
 
 namespace NvxEpi.Devices;
 
@@ -202,18 +203,20 @@ public abstract class NvxBaseDevice :
 
         mc.AddDeviceMessenger(infoMessenger);
 
-        if (this is not IHdmiInput hdmiInputDevice)
+
+        if (this is IHdmiInput hdmiInputDevice)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "{key:l} does NOT implement IHdmiInput interface", this, Key);
-            return;
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Generating HDMI Input messenger for {key:l}", this, Key);
+            var hdmiInputMessenger = new IHdmiInputMessenger($"{Key}-hdmiInputMessenger", $"/device/{Key}", hdmiInputDevice);
+            mc.AddDeviceMessenger(hdmiInputMessenger);
         }
 
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Generating HDMI Input messenger for {key:l}", this, Key);
-
-        
-        var hdmiInputMessenger = new IHdmiInputMessenger($"{Key}-hdmiInputMessenger", $"/device/{Key}", hdmiInputDevice);
-
-        mc.AddDeviceMessenger(hdmiInputMessenger);
+        if (this is IDmInput dmInputDevice)
+        {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Generating DM Input messenger for {key:l}", this, Key);
+            var dmInputMessenger = new IDmInputMessenger($"{Key}-hdmiInputMessenger", $"/device/{Key}", dmInputDevice);
+            mc.AddDeviceMessenger(dmInputMessenger);
+        }
 
         if (this is not IHdmiOutput hdmiOutputDevice)
         {

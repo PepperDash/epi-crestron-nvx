@@ -15,6 +15,7 @@ public class DeviceInputEnum : Enumeration<DeviceInputEnum>
     public static readonly DeviceInputEnum SecondaryAudio = new(5, "SecondaryAudio");
     public static readonly DeviceInputEnum DanteAudio = new(6, "DanteAudio");
     public static readonly DeviceInputEnum DmNaxAudio = new(7, "DmNaxAudio");
+    public static readonly DeviceInputEnum Dm1 = new(8, "Dm1");
     public static readonly DeviceInputEnum Automatic = new(98, "Automatic");
     public static readonly DeviceInputEnum NoSwitch = new(99, "NoSwitch");
 }
