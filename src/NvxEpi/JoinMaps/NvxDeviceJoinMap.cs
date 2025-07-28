@@ -456,7 +456,7 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
     public JoinDataComplete PortVlanName = new(
         new JoinData
             {
-                JoinNumber = 43,
+                JoinNumber = 51,
                 JoinSpan = 5
             },
         new JoinMetadata
@@ -470,7 +470,7 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
     public JoinDataComplete PortIpManagementAddress = new(  
         new JoinData
             {
-                JoinNumber = 24,
+                JoinNumber = 61,
                 JoinSpan = 1
             },
         new JoinMetadata
@@ -484,7 +484,7 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
     public JoinDataComplete PortSystemName = new(
         new JoinData
             {
-                JoinNumber = 25,
+                JoinNumber = 71,
                 JoinSpan = 1
             },
         new JoinMetadata
@@ -498,7 +498,7 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
     public JoinDataComplete PortSystemNameDescription = new(
         new JoinData
             {
-                JoinNumber = 26,
+                JoinNumber = 81,
                 JoinSpan = 1
             },
         new JoinMetadata
