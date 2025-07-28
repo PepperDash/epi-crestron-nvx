@@ -471,7 +471,7 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
         new JoinData
             {
                 JoinNumber = 61,
-                JoinSpan = 1
+                JoinSpan = 5
             },
         new JoinMetadata
             {
@@ -485,7 +485,7 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
         new JoinData
             {
                 JoinNumber = 71,
-                JoinSpan = 1
+                JoinSpan = 5
             },
         new JoinMetadata
             {
@@ -499,7 +499,7 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
         new JoinData
             {
                 JoinNumber = 81,
-                JoinSpan = 1
+                JoinSpan = 5
             },
         new JoinMetadata
             {
