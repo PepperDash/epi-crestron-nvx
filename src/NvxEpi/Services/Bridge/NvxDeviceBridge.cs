@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Abstractions;
@@ -14,6 +15,7 @@ using NvxEpi.Features.Streams.Audio;
 using NvxEpi.Features.Streams.Video;
 using NvxEpi.JoinMaps;
 using NvxEpi.Services.Feedback;
+using Org.BouncyCastle.Tls;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -162,6 +164,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
         LinkVideowallMode(trilist, joinMap);
         LinkRouting(trilist, joinMap);
         LinkUsbRouting(trilist, joinMap);
+        LinkNetworkPorts(trilist, joinMap);
 
         if (_device is ICurrentVideoInput videoInput)
             trilist.SetUShortSigAction(joinMap.VideoInput.JoinNumber, videoInput.SetVideoInput);
@@ -183,7 +186,43 @@ public class NvxDeviceBridge : IBridgeAdvanced
 
     }
 
-    private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
+    private void LinkNetworkPorts(BasicTriList trilist, NvxDeviceJoinMap joinMap)
+    {
+        if (_device is not INvxNetworkPortInformation networkPortInformation)
+            return;
+
+        var networkPorts = networkPortInformation.NetworkPorts;
+        if (networkPorts == null || networkPorts.Count == 0)
+            return;
+
+        var portCount = networkPorts.Count;
+
+        trilist.SetUshort(joinMap.PortCount.JoinNumber, (ushort)portCount);
+
+        UpdateNetworkPortJoins(trilist, joinMap, networkPortInformation);
+
+        networkPortInformation.PortInformationChanged += (sender, args) =>
+        {            
+            UpdateNetworkPortJoins(trilist, joinMap, networkPortInformation);
+        };
+  }
+
+  private void UpdateNetworkPortJoins(BasicTriList trilist, NvxDeviceJoinMap joinMap, INvxNetworkPortInformation networkPortInformation)
+  {      
+      for (uint i = 0; i < joinMap.PortIndex.JoinSpan; i++)
+      {
+          var port = networkPortInformation.NetworkPorts[(int)i];
+          trilist.SetUshort(joinMap.PortIndex.JoinNumber + i, (ushort)port.DevicePortIndex);
+          trilist.SetString(joinMap.PortName.JoinNumber + i, port.PortName);
+          trilist.SetString(joinMap.PortDescription.JoinNumber + i, port.PortDescription);
+          trilist.SetString(joinMap.PortVlanName.JoinNumber + i, port.VlanName);
+          trilist.SetString(joinMap.PortIpManagementAddress.JoinNumber + i, port.IpManagementAddress);
+          trilist.SetString(joinMap.PortSystemName.JoinNumber + i, port.SystemName);
+          trilist.SetString(joinMap.PortSystemNameDescription.JoinNumber + i, port.SystemNameDescription);
+      }
+  }
+
+  private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
     {
         if (!_device.IsTransmitter)
         {
