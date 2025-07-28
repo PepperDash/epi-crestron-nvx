@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Abstractions;
@@ -221,7 +222,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
 
     private void UpdateNetworkPortJoins(BasicTriList trilist, NvxDeviceJoinMap joinMap, INvxNetworkPortInformation networkPortInformation)
     {
-        for (uint i = 0; i < joinMap.PortIndex.JoinSpan; i++)
+        for (uint i = 0; i < Math.Min(joinMap.PortIndex.JoinSpan, networkPortInformation.NetworkPorts.Count); i++)
         {
             var port = networkPortInformation.NetworkPorts[(int)i];
             trilist.SetUshort(joinMap.PortIndex.JoinNumber + i, (ushort)port.DevicePortIndex);
