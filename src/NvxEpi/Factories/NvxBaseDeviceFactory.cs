@@ -10,7 +10,7 @@ namespace NvxEpi.Factories;
 
 public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T> where T : EssentialsDevice
 {
-    public const string MinumumEssentialsVersion = "2.7.4";
+    public const string MinumumEssentialsVersion = "2.12.3";
 
     static NvxBaseDeviceFactory()
     {

@@ -5,23 +5,22 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
-using NvxEpi.Extensions;
 using NvxEpi.Features.Config;
 using NvxEpi.JoinMaps;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
-using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using static Crestron.SimplSharpPro.Lighting.ZumWired.ZumNetBridgeRoom.ZumWiredRoomInterface;
+using PepperDash.Essentials.Core.Devices;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices;
 
-public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced
+public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced
 {
     private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
         new();
@@ -32,12 +31,12 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
     private string _streamUrl;
 
     public NvxMockDevice(DeviceConfig dc, bool isTransmitter)
-        : base(dc.Key, dc.Name)
+        : base(dc)
     {
         var props = dc.Properties.ToObject<NvxMockDeviceProperties>();
         if (props == null)
         {
-            Debug.Console(1, this, "************ PROPS IS NULL ************");
+            this.LogError("************ PROPS IS NULL ************");
             throw new NullReferenceException("props");
         }
 
@@ -53,7 +52,7 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
     private void BuildFeedbacks(NvxMockDeviceProperties props)
     {
         IsOnline = new BoolFeedback("IsOnline", () => true);
-        DeviceMode = new IntFeedback(() => 0);
+        DeviceMode = new IntFeedback("DeviceMode", () => 0);
         StreamUrl = new StringFeedback("StreamUrl", () => _streamUrl);
 
         MulticastAddress = new StringFeedback("MulticastVideoAddress",
@@ -86,7 +85,7 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
                 MulticastAddress,
                 TxAudioAddress
             });
-    }    
+    }
 
     private void BuildRoutingPorts()
     {
@@ -122,7 +121,7 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
             eRoutingPortConnectionType.Hdmi,
             null,
             this));
-        
+
 
         if (IsTransmitter)
         {
@@ -135,7 +134,7 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
                  this));
         }
         else
-        {            
+        {
 
             InputPorts.Add(new RoutingInputPort(
             DeviceInputEnum.Stream.Name,
@@ -153,7 +152,7 @@ public class NvxMockDevice : EssentialsDevice, IStream, ISecondaryAudioStream, I
     {
         Feedbacks.ToList().ForEach(x => x.FireUpdate());
 
-        
+
         return base.CustomActivate();
     }
 
