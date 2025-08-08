@@ -13,7 +13,7 @@ public class Nvx36XDeviceFactory : NvxBaseDeviceFactory<Nvx36X>
 
     public Nvx36XDeviceFactory()
     {
-        MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
+        MinimumEssentialsFrameworkVersion = MinimumEssentialsVersion;
 
         _typeNames ??= new List<string>
             {

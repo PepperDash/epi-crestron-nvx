@@ -19,7 +19,7 @@ public class NvxApplicationFactory : EssentialsPluginDeviceFactory<NvxApplicatio
 
     public NvxApplicationFactory()
     {
-        MinimumEssentialsFrameworkVersion = NvxBaseDeviceFactory<NvxBaseDevice>.MinumumEssentialsVersion;
+        MinimumEssentialsFrameworkVersion = NvxBaseDeviceFactory<NvxBaseDevice>.MinimumEssentialsVersion;
         TypeNames = _typeNames.ToList();
     }
 

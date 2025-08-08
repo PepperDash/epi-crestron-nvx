@@ -10,7 +10,7 @@ public class NvxMockDeviceFactory : NvxBaseDeviceFactory<NvxMockDevice>
 {
     public NvxMockDeviceFactory()
     {
-        MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
+        MinimumEssentialsFrameworkVersion = MinimumEssentialsVersion;
         TypeNames = new List<string> {"MockNvxDevice"};
     }
 
