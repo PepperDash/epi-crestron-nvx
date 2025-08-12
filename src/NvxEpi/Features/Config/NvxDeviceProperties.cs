@@ -26,14 +26,12 @@ public class NvxDeviceProperties
     public string DefaultMulticastSource { get; set; }
 }
 
-public class NvxMockDeviceProperties
+public class NvxMockDeviceProperties : BaseStreamingDeviceProperties
 {
     public int DeviceId { get; set; }
 
     public string Mode { get; set; }
     public string StreamUrl { get; set; }
-    public string MulticastVideoAddress { get; set; }
-    public string MulticastAudioAddress { get; set; }
 }
 
 internal static class NvxDevicePropertiesExt

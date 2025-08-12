@@ -396,6 +396,118 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
                 Description = "Video Aspect Ratio Mode"
             });
 
+    [JoinName("PortCount")]
+    public JoinDataComplete PortCount = new(
+        new JoinData
+            {
+                JoinNumber = 20,
+                JoinSpan = 1
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog,
+                Description = "Port Count"
+            });
+
+    [JoinName("PortIndex")]
+    public JoinDataComplete PortIndex = new(
+        new JoinData
+            {
+                JoinNumber = 21,
+                JoinSpan = 5
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog,
+                Description = "Network Port Index"
+            });
+
+    [JoinName("PortName")]
+    public JoinDataComplete PortName = new(
+        new JoinData
+            {
+                JoinNumber = 31,
+                JoinSpan = 5
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Network Port Name"
+            });
+
+    [JoinName("PortDescription")]
+    public JoinDataComplete PortDescription = new(
+        new JoinData
+            {
+                JoinNumber = 41,
+                JoinSpan = 5
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Network Port Description"
+            });
+    
+    [JoinName("PortVlanName")]
+    public JoinDataComplete PortVlanName = new(
+        new JoinData
+            {
+                JoinNumber = 51,
+                JoinSpan = 5
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Network Port VLAN Name"
+            });
+
+    [JoinName("PortIpManagementAddress")]
+    public JoinDataComplete PortIpManagementAddress = new(  
+        new JoinData
+            {
+                JoinNumber = 61,
+                JoinSpan = 5
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Network Port IP Management Address"
+            });
+
+    [JoinName("PortSystemName")]
+    public JoinDataComplete PortSystemName = new(
+        new JoinData
+            {
+                JoinNumber = 71,
+                JoinSpan = 5
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Network Port System Name"
+            });
+    
+    [JoinName("PortSystemNameDescription")]
+    public JoinDataComplete PortSystemNameDescription = new(
+        new JoinData
+            {
+                JoinNumber = 81,
+                JoinSpan = 5
+            },
+        new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Network Port System Name Description"
+            });
+
     public NvxDeviceJoinMap(uint joinStart)
-        : base(joinStart, typeof (NvxDeviceJoinMap)) { }
+        : base(joinStart, typeof(NvxDeviceJoinMap)) { }
 }
