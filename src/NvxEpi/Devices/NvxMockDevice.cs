@@ -22,60 +22,75 @@ namespace NvxEpi.Devices;
 
 public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced
 {
+    private NvxMockDeviceProperties properties;
     private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
         new();
 
     private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
         new();
 
-    private string _streamUrl;
+    private string _streamUrl => !string.IsNullOrEmpty(properties.StreamUrl) ? properties.StreamUrl : string.Empty;
 
     public NvxMockDevice(DeviceConfig dc, bool isTransmitter)
         : base(dc)
     {
-        var props = dc.Properties.ToObject<NvxMockDeviceProperties>();
-        if (props == null)
+        properties = dc.Properties.ToObject<NvxMockDeviceProperties>();
+        if (properties == null)
         {
             this.LogError("************ PROPS IS NULL ************");
-            throw new NullReferenceException("props");
+            throw new NullReferenceException("properties");
         }
 
         Feedbacks = new FeedbackCollection<Feedback>();
 
-        DeviceId = props.DeviceId;
+        DeviceId = properties.DeviceId;
         IsTransmitter = isTransmitter;
-        _streamUrl = !string.IsNullOrEmpty(props.StreamUrl) ? props.StreamUrl : string.Empty;
-        BuildFeedbacks(props);
+        BuildFeedbacks();
         BuildRoutingPorts();
     }
 
-    private void BuildFeedbacks(NvxMockDeviceProperties props)
+    protected override void CustomSetConfig(DeviceConfig config)
+    {
+        properties = config.Properties.ToObject<NvxMockDeviceProperties>();
+        if (properties == null)
+        {
+            this.LogError("************ PROPS IS NULL ************");
+            throw new NullReferenceException("properties");
+        }
+
+        foreach (var feedback in Feedbacks)
+        {
+            feedback.FireUpdate();
+        }
+    }
+
+    private void BuildFeedbacks()
     {
         IsOnline = new BoolFeedback("IsOnline", () => true);
         DeviceMode = new IntFeedback("DeviceMode", () => 0);
         StreamUrl = new StringFeedback("StreamUrl", () => _streamUrl);
 
         MulticastAddress = new StringFeedback("MulticastVideoAddress",
-            () => !string.IsNullOrEmpty(props.MulticastVideoAddress) ? props.MulticastVideoAddress : string.Empty);
+            () => !string.IsNullOrEmpty(properties.MulticastVideoAddress) ? properties.MulticastVideoAddress : string.Empty);
 
-        IsStreamingVideo = new BoolFeedback(() => !string.IsNullOrEmpty(props.StreamUrl));
+        IsStreamingVideo = new BoolFeedback("isStreamingVideo", () => !string.IsNullOrEmpty(properties.StreamUrl));
 
-        VideoStreamStatus = new StringFeedback(
-            () => !string.IsNullOrEmpty(props.StreamUrl) ? "Streaming" : string.Empty);
+        VideoStreamStatus = new StringFeedback("videoStreamStatus",
+            () => !string.IsNullOrEmpty(properties.StreamUrl) ? "Streaming" : string.Empty);
 
-        SecondaryAudioAddress = new StringFeedback(
-            () => !string.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : string.Empty);
+        SecondaryAudioAddress = new StringFeedback("secondaryAudioAddress",
+            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? properties.MulticastAudioAddress : string.Empty);
 
-        TxAudioAddress = new StringFeedback("MulticastAudio",
-            () => !string.IsNullOrEmpty(props.MulticastAudioAddress) ? props.MulticastAudioAddress : string.Empty);
+        TxAudioAddress = new StringFeedback("txAudioAddress",
+            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? properties.MulticastAudioAddress : string.Empty);
 
-        RxAudioAddress = new StringFeedback(() => string.Empty);
+        RxAudioAddress = new StringFeedback("rxAudioAddress", () => string.Empty);
 
-        IsStreamingSecondaryAudio = new BoolFeedback(
-            () => !string.IsNullOrEmpty(props.MulticastAudioAddress));
+        IsStreamingSecondaryAudio = new BoolFeedback("isStreamingSecondaryAudio",
+            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress));
 
-        SecondaryAudioStreamStatus = new StringFeedback(
-            () => !string.IsNullOrEmpty(props.MulticastAudioAddress) ? "Streaming" : string.Empty);
+        SecondaryAudioStreamStatus = new StringFeedback("secondaryAudioStreamStatus",
+            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? "Streaming" : string.Empty);
 
         Feedbacks.AddRange(new Feedback[]
             {
@@ -193,17 +208,11 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
 
     private void SetStreamUrl(string url)
     {
-        if (url.Equals(_streamUrl))
+        if (url.Equals(properties.StreamUrl))
             return;
 
-        _streamUrl = url;
+        properties.StreamUrl = url;
         StreamUrl.FireUpdate();
-
-        /*foreach (
-            var rx in
-                DeviceManager.AllDevices.OfType<IStreamWithHardware>()
-                             .Where(x => !x.IsTransmitter && x.StreamUrl.StringValue.Equals(oldUrl)))
-            rx.RouteStream(this);*/
     }
 
     public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -213,5 +222,7 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
         trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetStreamUrl);
+
+
     }
 }
