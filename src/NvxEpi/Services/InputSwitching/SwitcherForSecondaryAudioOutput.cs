@@ -30,7 +30,7 @@ public class SwitcherForSecondaryAudioOutput : IHandleInputSwitch
         if (routingInput == DeviceInputEnum.NoSwitch)
             return;
 
-        Debug.LogInformation(_device, "Switching input on SecondaryAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
+        Debug.LogInformation(_device, "Switching input on SecondaryAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
 
         if (type.Has(eRoutingSignalType.Audio) || type.Has(eRoutingSignalType.SecondaryAudio))
             SwitchAudio(routingInput);
