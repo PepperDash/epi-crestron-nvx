@@ -50,7 +50,7 @@ public static class DeviceDefaults
             }
             catch (Exception ex)
             {
-                Debug.LogWarning("Cannot set device to audio input:{0} | {1}", props.DefaultVideoInput, ex.Message);
+                Debug.LogWarning("Cannot set device to audio input:{0} | {1}", props.DefaultAudioInput, ex.Message);
             }
         }
     }
