@@ -29,7 +29,7 @@ public class SwitcherForHdmiOutput : IHandleInputSwitch
             throw new NotSupportedException("transmitter");
 
         var routingInput = input as DeviceInputEnum;
-        Debug.LogInformation(_device, "Switching input on HdmiOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
+        Debug.LogInformation(_device, "Switching input on HdmiOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
 
         if (type.Is(eRoutingSignalType.AudioVideo))
         {
