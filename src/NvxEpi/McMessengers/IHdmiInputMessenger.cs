@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Timers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NvxEpi.Abstractions.HdmiInput;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Timers;
 
 namespace NvxEpi.McMessengers;
 
@@ -34,11 +34,12 @@ public class IHdmiInputMessenger : MessengerBase
     {
         base.RegisterActions();
 
-        AddAction("/fullStatus",(id, content) => SendFullStatus());
+        AddAction("/fullStatus", (id, content) => SendFullStatus());
 
         foreach (var feedback in device.Feedbacks.Where((f) => f.Key.Contains("Hdmi1") || f.Key.Contains("Hdmi2")))
         {
-            feedback.OutputChange += (o, a) => {
+            feedback.OutputChange += (o, a) =>
+            {
                 // Debounce the status update to avoid flooding the server with messages
                 debounceTimer.Stop();
                 debounceTimer.Start();
@@ -53,32 +54,36 @@ public class IHdmiInputMessenger : MessengerBase
 
         var message = new HdmiInputFullState
         {
+            SyncDetected = hdmiInputs.Any(h => h.Value.SyncDetected),
             HdmiInputs = hdmiInputs,
         };
 
         try
         {
             PostStatusMessage(message);
-        } catch(Exception e)
+        }
+        catch (Exception e)
         {
             this.LogError(e, "Exception sending message {exception}");
         }
     }
 
     private void UpdateStatus()
-    {           
-        PostStatusMessage(JToken.FromObject(new {
+    {
+        PostStatusMessage(JToken.FromObject(new
+        {
+            syncDetected = GetInputState().Any(h => h.Value.SyncDetected),
             hdmiInputs = GetInputState()
         }));
     }
 
     private Dictionary<string, HdmiInputState> GetInputState()
-    {            
+    {
         var hdmiInputs = device.Hardware.HdmiIn == null
             ? new Dictionary<string, HdmiInputState>()
             : device.Hardware.HdmiIn.Keys.Select(hdmiIn =>
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting Hdmi Input State for {input}",this, hdmiIn);
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting Hdmi Input State for {input}", this, hdmiIn);
                 return new HdmiInputState(device, hdmiIn);
             }).ToDictionary(hdmiInState => hdmiInState.Key, hdmiInputState => hdmiInputState);
 
@@ -86,8 +91,13 @@ public class IHdmiInputMessenger : MessengerBase
     }
 }
 
-public class HdmiInputFullState: DeviceStateMessageBase
+public class HdmiInputFullState : DeviceStateMessageBase
 {
+    /// <summary>
+    /// Whether or not sync is detected on any input
+    /// </summary>
+    [JsonProperty("syncDetected")]
+    public bool SyncDetected { get; set; }
     [JsonProperty("hdmiInputs")]
     public Dictionary<string, HdmiInputState> HdmiInputs { get; set; }
 }
@@ -99,7 +109,7 @@ public class HdmiInputState
     [JsonIgnore]
     public string Key => $"HdmiIn{input}";
 
-    [JsonProperty("hdcpCapability")]        
+    [JsonProperty("hdcpCapability")]
     public string HdcpCapability => device.HdcpCapabilityString[input].StringValue;
 
     [JsonProperty("hdcpSupport")]

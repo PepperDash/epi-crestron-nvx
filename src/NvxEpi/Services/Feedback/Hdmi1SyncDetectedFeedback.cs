@@ -10,9 +10,9 @@ public class Hdmi1SyncDetectedFeedback
     public static BoolFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiIn == null || device.HdmiIn[1] == null)
-            return new BoolFeedback(() => false);
+            return new BoolFeedback(Key, () => false);
 
-        var feedback = new BoolFeedback(Key, 
+        var feedback = new BoolFeedback(Key,
             () => device.HdmiIn[1].SyncDetectedFeedback.BoolValue);
 
         device.HdmiIn[1].StreamChange += (stream, args) => feedback.FireUpdate();
