@@ -29,7 +29,7 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
         new();
 
-    private string _streamUrl => !string.IsNullOrEmpty(properties.StreamUrl) ? properties.StreamUrl : string.Empty;
+    private string _streamUrl => properties != null && !string.IsNullOrEmpty(properties.StreamUrl) ? properties.StreamUrl : string.Empty;
 
     public NvxMockDevice(DeviceConfig dc, bool isTransmitter)
         : base(dc)
@@ -222,7 +222,6 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
         trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetStreamUrl);
-
 
     }
 }
