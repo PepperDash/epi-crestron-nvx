@@ -31,7 +31,6 @@ public class NvxMockDeviceProperties : BaseStreamingDeviceProperties
     public int DeviceId { get; set; }
 
     public string Mode { get; set; }
-    public string StreamUrl { get; set; }
 }
 
 internal static class NvxDevicePropertiesExt
