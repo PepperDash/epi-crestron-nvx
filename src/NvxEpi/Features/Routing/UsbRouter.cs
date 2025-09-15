@@ -2,6 +2,7 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Features.Streams.Usb;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
@@ -37,13 +38,14 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         var remoteDevice = outputSelector as IUsbStreamWithHardware;
 
         // clear the route if the local device is null
-        if (localDevice == null && remoteDevice != null ) { 
+        if (localDevice == null && remoteDevice != null)
+        {
             remoteDevice.ClearCurrentUsbRoute();
             return;
         }
 
         //nothing to route if both selectors are null
-        if(localDevice == null && remoteDevice == null)
+        if (localDevice == null && remoteDevice == null)
         {
             this.LogError("Both input and output selectors are null. No routing action taken.");
             return;
@@ -64,7 +66,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
         var outputPort = OutputPorts[outputPortKey];
 
-        if(outputPort == null)
+        if (outputPort == null)
         {
             this.LogError("Unable to find device port for {outputPortKey}", outputPortKey);
             return;
@@ -156,8 +158,9 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
         var ports = InputPorts.OfType<RoutingInputPort>();
 
-        foreach (var port in ports) {
-            if(port.Selector is not IUsbStreamWithHardware device)
+        foreach (var port in ports)
+        {
+            if (port.Selector is not IUsbStreamWithHardware device)
             {
                 this.LogError("Input port {portKey} does not have a valid USB device selector.", port.Key);
                 continue;
@@ -208,6 +211,9 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
             var inputPort = new RoutingInputPort($"{localDevice.Key}-UsbLocal", eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput, eRoutingPortConnectionType.UsbC, localDevice, this);
             InputPorts.Add(inputPort);
         }
+
+        var clearRoutePort = new RoutingInputPort("None", eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput, eRoutingPortConnectionType.UsbC, null, this);
+        InputPorts.Add(clearRoutePort);
     }
 
     public override bool CustomActivate()

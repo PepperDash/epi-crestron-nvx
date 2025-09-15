@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using NvxEpi.Abstractions;
@@ -15,11 +16,16 @@ using NvxEpi.Features.Streams.Video;
 using NvxEpi.JoinMaps;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 
 namespace NvxEpi.Services.Bridge;
 
+/// <summary>
+/// Bridge for NvxDevice, providing methods to link device properties and feedbacks to a BasicTriList.
+/// This class implements the IBridgeAdvanced interface to facilitate advanced EISC API interactions.
+/// </summary>
 public class NvxDeviceBridge : IBridgeAdvanced
 {
     private readonly INvxDevice _device;
@@ -134,7 +140,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
 
     private static void LinkFeedback(BasicTriList trilist, IKeyed feedback, uint join)
     {
-        Debug.Console(2, feedback, "Linking to Trilist : {0} | Join : {1}", trilist.ID, join);
+        feedback.LogVerbose("Linking to EISC : {ipId} | Join : {joinStart}", trilist.ID, join);
 
         var stringFeedback = feedback as StringFeedback;
         stringFeedback?.LinkInputSig(trilist.StringInput[join]);
@@ -146,6 +152,15 @@ public class NvxDeviceBridge : IBridgeAdvanced
         boolFeedback?.LinkInputSig(trilist.BooleanInput[join]);
     }
 
+    /// <summary>
+    /// Links the device properties and feedbacks to a BasicTriList for EISC API interactions.
+    /// This method sets up the necessary joins and feedbacks for the device, allowing for remote control
+    /// and monitoring through the Crestron system.
+    /// </summary>
+    /// <param name="trilist"></param>
+    /// <param name="joinStart"></param>
+    /// <param name="joinMapKey"></param>
+    /// <param name="bridge"></param>
     public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
         var joinMap = new NvxDeviceJoinMap(joinStart);
@@ -162,6 +177,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
         LinkVideowallMode(trilist, joinMap);
         LinkRouting(trilist, joinMap);
         LinkUsbRouting(trilist, joinMap);
+        LinkNetworkPorts(trilist, joinMap);
 
         if (_device is ICurrentVideoInput videoInput)
             trilist.SetUShortSigAction(joinMap.VideoInput.JoinNumber, videoInput.SetVideoInput);
@@ -181,6 +197,42 @@ public class NvxDeviceBridge : IBridgeAdvanced
             trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, stream.SetStreamUrl);
 
 
+    }
+
+    private void LinkNetworkPorts(BasicTriList trilist, NvxDeviceJoinMap joinMap)
+    {
+        if (_device is not INvxNetworkPortInformation networkPortInformation)
+            return;
+
+        var networkPorts = networkPortInformation.NetworkPorts;
+        if (networkPorts == null || networkPorts.Count == 0)
+            return;
+
+        var portCount = networkPorts.Count;
+
+        trilist.SetUshort(joinMap.PortCount.JoinNumber, (ushort)portCount);
+
+        UpdateNetworkPortJoins(trilist, joinMap, networkPortInformation);
+
+        networkPortInformation.PortInformationChanged += (sender, args) =>
+        {
+            UpdateNetworkPortJoins(trilist, joinMap, networkPortInformation);
+        };
+    }
+
+    private void UpdateNetworkPortJoins(BasicTriList trilist, NvxDeviceJoinMap joinMap, INvxNetworkPortInformation networkPortInformation)
+    {
+        for (uint i = 0; i < Math.Min(joinMap.PortIndex.JoinSpan, networkPortInformation.NetworkPorts.Count); i++)
+        {
+            var port = networkPortInformation.NetworkPorts[(int)i];
+            trilist.SetUshort(joinMap.PortIndex.JoinNumber + i, (ushort)port.DevicePortIndex);
+            trilist.SetString(joinMap.PortName.JoinNumber + i, port.PortName);
+            trilist.SetString(joinMap.PortDescription.JoinNumber + i, port.PortDescription);
+            trilist.SetString(joinMap.PortVlanName.JoinNumber + i, port.VlanName);
+            trilist.SetString(joinMap.PortIpManagementAddress.JoinNumber + i, port.IpManagementAddress);
+            trilist.SetString(joinMap.PortSystemName.JoinNumber + i, port.SystemName);
+            trilist.SetString(joinMap.PortSystemNameDescription.JoinNumber + i, port.SystemNameDescription);
+        }
     }
 
     private void LinkRouting(BasicTriList trilist, NvxDeviceJoinMap joinMap)
@@ -211,13 +263,13 @@ public class NvxDeviceBridge : IBridgeAdvanced
                 return;
             }
 
-            var isRx = source/1000 >= 1;
+            var isRx = source / 1000 >= 1;
 
             if (isRx)
             {
                 var receiver =
                     DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>()
-                        .FirstOrDefault(device => !device.IsTransmitter && device.DeviceId == source%1000);
+                        .FirstOrDefault(device => !device.IsTransmitter && device.DeviceId == source % 1000);
                 if (receiver == null) return;
                 stream.MakeUsbRoute(receiver);
                 return;
