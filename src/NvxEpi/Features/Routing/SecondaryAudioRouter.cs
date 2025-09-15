@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DM;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
@@ -35,7 +35,8 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
             Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating match object for {key}", this, input.Key);
 
-            tx.Hardware.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (o, a) => {
+            tx.Hardware.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (o, a) =>
+            {
                 if (a.EventId != DMOutputEventIds.MulticastAddressEventId) return;
 
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating Feedback match object for {input}", this, input.Key);
@@ -55,7 +56,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
         _receivers ??= GetReceiverDictionary();
 
-        new [] {_transmitters.Values, _receivers.Values}
+        new[] { _transmitters.Values, _receivers.Values }
             .SelectMany(x => x)
             .ToList()
             .ForEach(device =>
@@ -113,7 +114,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
     }
 
     private void HandleRouteUpdate(IStreamWithHardware device, BaseEventArgs args)
-    {       
+    {
         switch (args.EventId)
         {
             case DMInputEventIds.DmNaxAudioSourceFeedbackEventId:
@@ -180,7 +181,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
             var rx = outputSelector as ISecondaryAudioStream ?? throw new ArgumentNullException("rx");
 
-            if(inputSelector is null)
+            if (inputSelector is null)
             {
                 rx.ClearSecondaryStream();
                 return;
@@ -280,7 +281,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
                 .AllDevices
                 .OfType<ISecondaryAudioStream>()
                 .Where(device => device.IsTransmitter)
-                .ToDictionary(device => device.Name, stream => stream);
+                .ToDictionary(device => device.Key, stream => stream);
     }
 
     private static Dictionary<string, ISecondaryAudioStream> GetReceiverDictionary()
@@ -290,6 +291,6 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
                 .AllDevices
                 .OfType<ISecondaryAudioStream>()
                 .Where(device => !device.IsTransmitter)
-                .ToDictionary(device => device.Name, stream => stream);
+                .ToDictionary(device => device.Key, stream => stream);
     }
 }
