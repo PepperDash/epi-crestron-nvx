@@ -36,10 +36,39 @@
     <None Remove="Properties\**" />
   </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="PepperDashEssentials" Version="2.7.4">
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</PackageReference>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.157" />
+    <PackageReference Include="PepperDashEssentials" Version="2.15.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Buffers">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Diagnostics.DiagnosticSource">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Formats.Asn1">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.Formats.Asn1.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="websocket-sharp">
+      <HintPath>..\..\..\Essentials\output\PepperDashCore.2.15.1-local.net472 - Copy.clz\websocket-sharp.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>

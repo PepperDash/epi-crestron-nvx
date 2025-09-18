@@ -29,6 +29,9 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using NvxEpi.Extensions;
 using NvxEpi.McMessengers;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using ScreenInfo = PepperDash.Essentials.Core.DeviceTypeInterfaces.ScreenInfo;
+using LayoutInfo = PepperDash.Essentials.Core.DeviceTypeInterfaces.LayoutInfo;
+using WindowConfig = PepperDash.Essentials.Core.DeviceTypeInterfaces.WindowConfig;
 
 
 namespace NvxEpi.Devices;
@@ -50,7 +53,8 @@ public class Nvx38X :
     private IVideowallMode _hdmiOutput;
     private IUsbStreamWithHardware _usbStream;
     private readonly NvxDeviceProperties _config;
-    private readonly DmNvx38x _device;
+    private DmNvx38x _device;
+    private readonly DmNvxMultiviewControlsSetup _deviceControls;
     public Dictionary<uint, ScreenInfo> Screens { get; private set; }
     public FeedbackCollection<StringFeedback> ScreenNamesFeedbacks { get; private set; }
     public FeedbackCollection<BoolFeedback> ScreenEnablesFeedbacks { get; private set; }
@@ -66,6 +70,85 @@ public class Nvx38X :
     {
         _config = NvxDeviceProperties.FromDeviceConfig(config);
         AddPreActivationAction(AddRoutingPorts);
+        
+        // Initialize multiview controls and screen layout dictionaries
+        _screenLayouts = new Dictionary<uint, Nvx38xLayouts>();
+        LayoutNames = new Dictionary<uint, string>();
+        
+        AddPreActivationAction(InitializeMultiviewFeatures);
+    }
+
+    private void InitializeMultiviewFeatures()
+    {
+        // Initialize screens dictionary - DM-NVX-384 supports a single screen output
+        Screens = new Dictionary<uint, ScreenInfo>();
+        ScreenNamesFeedbacks = new FeedbackCollection<StringFeedback>();
+        ScreenEnablesFeedbacks = new FeedbackCollection<BoolFeedback>();
+        LayoutNamesFeedbacks = new FeedbackCollection<StringFeedback>();
+
+        // Initialize default screen configuration for DM-NVX-38X
+        var mainScreen = new ScreenInfo
+        {
+            Name = "Main Display",
+            Enabled = true,
+            Layouts = new Dictionary<uint, LayoutInfo>
+            {
+                [0] = new LayoutInfo { LayoutIndex = 0, LayoutName = "Automatic", LayoutType = "auto", Windows = new Dictionary<uint, WindowConfig>() },
+                [1] = new LayoutInfo { LayoutIndex = 1, LayoutName = "Full Screen", LayoutType = "fullscreen", Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Main Window", Input = "Input1" }
+                    }
+                },
+                [2] = new LayoutInfo { LayoutIndex = 2, LayoutName = "Picture in Picture", LayoutType = "pip", Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Main Window", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "PiP Window", Input = "Input2" }
+                    }
+                },
+                [3] = new LayoutInfo { LayoutIndex = 3, LayoutName = "Side by Side", LayoutType = "sidebyside", Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Left Window", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Right Window", Input = "Input2" }
+                    }
+                },
+                [4] = new LayoutInfo { LayoutIndex = 4, LayoutName = "Three Up", LayoutType = "threeup", Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Main Window", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Upper Window", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Lower Window", Input = "Input3" }
+                    }
+                },
+                [5] = new LayoutInfo { LayoutIndex = 5, LayoutName = "Quad View", LayoutType = "quadview", Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Top Left", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Top Right", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Bottom Left", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Bottom Right", Input = "Input4" }
+                    }
+                },
+                [6] = new LayoutInfo { LayoutIndex = 6, LayoutName = "Three Small One Large", LayoutType = "threesmallonelarge", Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Large Window", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Small Window 1", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Small Window 2", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Small Window 3", Input = "Input4" }
+                    }
+                }
+            }
+        };
+
+        Screens.Add(1, mainScreen);
+
+        // Initialize feedbacks
+        ScreenNamesFeedbacks.Add(new StringFeedback($"ScreenName{1}", () => mainScreen.Name));
+        ScreenEnablesFeedbacks.Add(new BoolFeedback($"ScreenEnabled{1}", () => mainScreen.Enabled));
+
+        // Initialize layout name feedbacks
+        foreach (var layout in mainScreen.Layouts)
+        {
+            LayoutNames.Add(layout.Key, layout.Value.LayoutName);
+            LayoutNamesFeedbacks.Add(new StringFeedback($"LayoutName{layout.Key}", () => layout.Value.LayoutName));
+        }
     }
 
     public override bool CustomActivate()
@@ -77,6 +160,8 @@ public class Nvx38X :
             if (Hardware is DmNvx38x nvx38x)
             {
                 _audio = new Nvx38XAudio(nvx38x, this);
+                // Initialize the multiview hardware reference
+                _device = nvx38x;
             }
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
@@ -91,6 +176,15 @@ public class Nvx38X :
 
             AddMcMessengers();
 
+            // Add the IHasScreensWithLayouts messenger for multiview support
+            var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
+            if (mc != null)
+            {
+                var screensMessenger = new IHasScreensWithLayoutsMessenger($"{Key}-screens", $"/device/{Key}", this);
+                mc.AddDeviceMessenger(screensMessenger);
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Added IHasScreensWithLayouts messenger for {0}", this, Key);
+            }
+
             Hardware.BaseEvent += (o, a) =>
             {
                 var newRoute = this.HandleBaseEvent(a);
@@ -103,16 +197,14 @@ public class Nvx38X :
                 RouteChanged?.Invoke(this, newRoute);
             };
 
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Debug.LogMessage(0, this, "Caught an exception in activate:{0}", ex);
-            throw;
-        }
+        return result;
     }
-
-    public void ClearCurrentUsbRoute()
+    catch (Exception ex)
+    {
+        Debug.LogMessage(0, this, "Caught an exception in activate:{0}", ex);
+        throw;
+    }
+}    public void ClearCurrentUsbRoute()
     {
         _usbStream.ClearCurrentUsbRoute();
     }
@@ -317,16 +409,21 @@ public class Nvx38X :
     #region Methods        
 
     /// <summary>
-    /// Set the default window routes for the HD-WP-4K-401-C.
+    /// Set the default window routes for the DM-NVX-384.
     /// </summary>
     public void DefaultWindowRoutes()
     {
+        // For DM-NVX-384, we need to implement the proper multiview API
+        // This is a placeholder implementation that logs the action
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting default window routes for DM-NVX-384", this);
         
-        _HdWpChassis.HdWpWindowLayout.SetVideoSource(1, WindowLayout.eVideoSourceType.Input1);
-        _HdWpChassis.HdWpWindowLayout.SetVideoSource(2, WindowLayout.eVideoSourceType.Input2);
-        _HdWpChassis.HdWpWindowLayout.SetVideoSource(3, WindowLayout.eVideoSourceType.Input3);
-        _HdWpChassis.HdWpWindowLayout.SetVideoSource(4, WindowLayout.eVideoSourceType.Input4);
-        _HdWpChassis.HdWpWindowLayout.AudioSource = WindowLayout.eAudioSourceType.Auto;
+        // TODO: Replace with actual DM-NVX-384 multiview API calls
+        
+        // Placeholder: Apply default layout (full screen with first input)
+        if (_device != null)
+        {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "DM-NVX-384 hardware initialized", this);
+        }
     }
 
     /// <summary>
@@ -363,7 +460,10 @@ public class Nvx38X :
                 Debug.LogDebug(this, "Invalid layout value: {0}. Valid range 0 - 6.", layout);
                 return;
         }
-        _HdWpChassis.HdWpWindowLayout.Layout = _layoutType;
+        
+        // TODO: Replace with actual DM-NVX-384 multiview API calls
+        // _HdWpChassis.HdWpWindowLayout.Layout = _layoutType;
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting layout {0} for DM-NVX-384", this, _layoutType);
 
         //Reset AV Routes when SetWindowLayout is called
         //DefaultWindowRoutes();
@@ -375,7 +475,9 @@ public class Nvx38X :
     /// <param name="layout"></param>
     public void SetWindowLayout(WindowLayout.eLayoutType layout)
     {
-        _HdWpChassis.HdWpWindowLayout.Layout = layout;
+        // TODO: Replace with actual DM-NVX-384 multiview API calls  
+        // _HdWpChassis.HdWpWindowLayout.Layout = layout;
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting layout {0} for DM-NVX-384", this, layout);
 
         //Reset AV Routes when SetWindowLayout is called
         DefaultWindowRoutes();
@@ -401,6 +503,9 @@ public class Nvx38X :
             return;
         }
 
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, 
+            "[ApplyLayout] Applying layout '{0}' ({1}) to screen '{2}' for DM-NVX-384", 
+            this, layout.LayoutName, layout.LayoutType, screenId);
 
         foreach (var window in layout.Windows)
         {
@@ -432,7 +537,8 @@ public class Nvx38X :
 
             if (source.HasValue)
             {
-                _HdWpChassis.HdWpWindowLayout.SetVideoSource(windowId, source.Value);
+                // TODO: Replace with actual DM-NVX-384 multiview API calls
+                // _HdWpChassis.HdWpWindowLayout.SetVideoSource(windowId, source.Value);
                 Debug.LogVerbose(this, $"[ApplyLayout] Set window {windowId} to {inputKey} ({window.Value.Label}).");
             }
             else
@@ -528,7 +634,7 @@ public class Nvx38X :
             public event EventHandler ItemUpdated;
 
             /// <summary>
-            /// Constructor for the HD-WP-4K-401-C layout, full parameters
+            /// Constructor for the Nvx38x layout, full parameters
             /// </summary>
             /// <param name="key"></param>
             /// <param name="name"></param>
@@ -546,12 +652,25 @@ public class Nvx38X :
 
             public void Select()
             {
-                //_parent.RecallPreset((ushort)0, (ushort)Id);
-                _parent.ApplyLayout((uint)screenIndex, (uint)Id);
+                // The parent should be the Nvx38X device, not the hardware
+                // Cast _parent to Nvx38X and call ApplyLayout
+                if (_parent is DmNvx38x)
+                {
+                    // We need to get the actual Nvx38X device instance
+                    var nvx38xDevice = DeviceManager.AllDevices.OfType<Nvx38X>()
+                        .FirstOrDefault(d => d._device == _parent);
+                    
+                    if (nvx38xDevice != null)
+                    {
+                        nvx38xDevice.ApplyLayout((uint)screenIndex, (uint)Id);
+                    }
+                    else
+                    {
+                        Debug.LogError("Could not find Nvx38X device for layout selection");
+                    }
+                }
             }
         }
-
-
     }
     #endregion
 }
