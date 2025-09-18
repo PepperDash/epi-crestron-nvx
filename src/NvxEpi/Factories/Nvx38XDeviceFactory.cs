@@ -19,6 +19,8 @@ public class Nvx38XDeviceFactory : NvxBaseDeviceFactory<Nvx38X>
             {
                 "dmnvx384",
                 "dmnvx384c",
+                "dmnvx385",
+                "dmnvx385c",
             };
 
         TypeNames = _typeNames.ToList();

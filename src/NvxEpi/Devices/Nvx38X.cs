@@ -27,26 +27,37 @@ using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using NvxEpi.Extensions;
+using NvxEpi.McMessengers;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 
 namespace NvxEpi.Devices;
 
-public class Nvx38X : 
-    NvxBaseDevice, 
-    IComPorts, 
+public class Nvx38X :
+    NvxBaseDevice,
+    IComPorts,
     IIROutputPorts,
-    IUsbStreamWithHardware, 
-    IHdmiInput, 
-    IVideowallMode, 
-    IRoutingWithFeedback, 
+    IUsbStreamWithHardware,
+    IHdmiInput,
+    IVideowallMode,
+    IRoutingWithFeedback,
     ICec,
-    IBasicVolumeWithFeedback
+    IBasicVolumeWithFeedback,
+    IHasScreensWithLayouts
 {
     private IBasicVolumeWithFeedback _audio;
     private IHdmiInput _hdmiInputs;
     private IVideowallMode _hdmiOutput;
     private IUsbStreamWithHardware _usbStream;
     private readonly NvxDeviceProperties _config;
+    private readonly DmNvx38x _device;
+    public Dictionary<uint, ScreenInfo> Screens { get; private set; }
+    public FeedbackCollection<StringFeedback> ScreenNamesFeedbacks { get; private set; }
+    public FeedbackCollection<BoolFeedback> ScreenEnablesFeedbacks { get; private set; }
+    public FeedbackCollection<StringFeedback> LayoutNamesFeedbacks { get; private set; }
+    private Dictionary<uint, string> LayoutNames { get; set; }
+
+    private readonly Dictionary<uint, Nvx38xLayouts> _screenLayouts = new Dictionary<uint, Nvx38xLayouts>();
 
     public event RouteChangedEventHandler RouteChanged;
 
@@ -63,16 +74,16 @@ public class Nvx38X :
         {
             var result = base.CustomActivate();
 
-            if(Hardware is DmNvx38x nvx38x)
+            if (Hardware is DmNvx38x nvx38x)
             {
                 _audio = new Nvx38XAudio(nvx38x, this);
             }
-            
+
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInputs = new HdmiInput(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            Feedbacks.AddRange(new [] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
+            Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
 
             if (_config.EnableAutoRoute)
                 // ReSharper disable once ObjectCreationAsStatement
@@ -80,7 +91,8 @@ public class Nvx38X :
 
             AddMcMessengers();
 
-            Hardware.BaseEvent += (o, a) => {
+            Hardware.BaseEvent += (o, a) =>
+            {
                 var newRoute = this.HandleBaseEvent(a);
 
                 if (newRoute == null)
@@ -298,7 +310,248 @@ public class Nvx38X :
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }        
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
+
+    #region Methods        
+
+    /// <summary>
+    /// Set the default window routes for the HD-WP-4K-401-C.
+    /// </summary>
+    public void DefaultWindowRoutes()
+    {
+        
+        _HdWpChassis.HdWpWindowLayout.SetVideoSource(1, WindowLayout.eVideoSourceType.Input1);
+        _HdWpChassis.HdWpWindowLayout.SetVideoSource(2, WindowLayout.eVideoSourceType.Input2);
+        _HdWpChassis.HdWpWindowLayout.SetVideoSource(3, WindowLayout.eVideoSourceType.Input3);
+        _HdWpChassis.HdWpWindowLayout.SetVideoSource(4, WindowLayout.eVideoSourceType.Input4);
+        _HdWpChassis.HdWpWindowLayout.AudioSource = WindowLayout.eAudioSourceType.Auto;
+    }
+
+    /// <summary>
+    /// Change the current window layout using values from 0-6. 
+    /// </summary>
+    /// <param name="layout">Values from 0 - 6</param>
+    public void SetWindowLayout(uint layout)
+    {
+        WindowLayout.eLayoutType _layoutType;
+        switch (layout)
+        {
+            case 0:
+                _layoutType = WindowLayout.eLayoutType.Automatic;
+                break;
+            case 1:
+                _layoutType = WindowLayout.eLayoutType.Fullscreen;
+                break;
+            case 2:
+                _layoutType = WindowLayout.eLayoutType.PictureInPicture;
+                break;
+            case 3:
+                _layoutType = WindowLayout.eLayoutType.SideBySide;
+                break;
+            case 4:
+                _layoutType = WindowLayout.eLayoutType.ThreeUp;
+                break;
+            case 5:
+                _layoutType = WindowLayout.eLayoutType.Quadview;
+                break;
+            case 6:
+                _layoutType = WindowLayout.eLayoutType.ThreeSmallOneLarge;
+                break;
+            default:
+                Debug.LogDebug(this, "Invalid layout value: {0}. Valid range 0 - 6.", layout);
+                return;
+        }
+        _HdWpChassis.HdWpWindowLayout.Layout = _layoutType;
+
+        //Reset AV Routes when SetWindowLayout is called
+        //DefaultWindowRoutes();
+    }
+
+    /// <summary>
+    /// Set the window layout using the WindowLayout.eLayoutType enum.
+    /// </summary>
+    /// <param name="layout"></param>
+    public void SetWindowLayout(WindowLayout.eLayoutType layout)
+    {
+        _HdWpChassis.HdWpWindowLayout.Layout = layout;
+
+        //Reset AV Routes when SetWindowLayout is called
+        DefaultWindowRoutes();
+    }
+
+
+    /// <summary>
+    /// Apply a specific layout to a screen by its ID and layout index.
+    /// </summary>
+    /// <param name="screenId"></param>
+    /// <param name="layoutIndex"></param>
+    public void ApplyLayout(uint screenId, uint layoutIndex)
+    {
+        if (!Screens.TryGetValue(screenId, out var screen))
+        {
+            Debug.LogError(this, $"[ApplyLayout] Screen '{screenId}' not found.");
+            return;
+        }
+
+        if (!screen.Layouts.TryGetValue(layoutIndex, out var layout))
+        {
+            Debug.LogError(this, $"[ApplyLayout] Layout '{layoutIndex}' not found for screen '{screenId}'.");
+            return;
+        }
+
+
+        foreach (var window in layout.Windows)
+        {
+            uint windowId = window.Key;
+            string inputKey = window.Value.Input?.ToLower();
+
+            if (string.IsNullOrEmpty(inputKey))
+            {
+                Debug.LogError(this, $"[ApplyLayout] Missing input for window {windowId}.");
+                continue;
+            }
+
+            WindowLayout.eVideoSourceType? source = null;
+            switch (inputKey)
+            {
+                case "input1":
+                    source = WindowLayout.eVideoSourceType.Input1;
+                    break;
+                case "input2":
+                    source = WindowLayout.eVideoSourceType.Input2;
+                    break;
+                case "input3":
+                    source = WindowLayout.eVideoSourceType.Input3;
+                    break;
+                case "input4":
+                    source = WindowLayout.eVideoSourceType.Input4;
+                    break;
+            }
+
+            if (source.HasValue)
+            {
+                _HdWpChassis.HdWpWindowLayout.SetVideoSource(windowId, source.Value);
+                Debug.LogVerbose(this, $"[ApplyLayout] Set window {windowId} to {inputKey} ({window.Value.Label}).");
+            }
+            else
+            {
+                Debug.LogError(this, $"[ApplyLayout] Invalid input '{inputKey}' for window {windowId}.");
+            }
+        }
+
+        SetWindowLayout((uint)layout.LayoutIndex);
+
+        // Send layout data via messenger
+        var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
+        if (mc != null)
+        {
+            var messenger = new IHasScreensWithLayoutsMessenger($"{Key}-screens", $"/device/{Key}", this);
+            mc.AddDeviceMessenger(messenger);
+            messenger.SendCurrentLayoutStatus(screenId, layout);
+        }
+    }
+    #endregion
+
+    #region Layouts
+    
+    class Nvx38xLayouts : ISelectableItems<uint>, IKeyName
+    {
+        private Dictionary<uint, ISelectableItem> _items = new Dictionary<uint, ISelectableItem>();
+        public Dictionary<uint, ISelectableItem> Items
+        {
+            get => _items;
+            set
+            {
+                _items = value;
+                ItemsUpdated?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private uint _currentItem;
+        public uint CurrentItem
+        {
+            get => _currentItem;
+            set
+            {
+                _currentItem = value;
+                CurrentItemChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public string Name { get; private set; }
+
+        public string Key { get; private set; }
+
+        public event EventHandler ItemsUpdated;
+        public event EventHandler CurrentItemChanged;
+
+        /// <summary>
+        /// Constructor for the Nvx38x layouts, full parameters
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="name"></param>
+        /// <param name="items"></param>
+        public Nvx38xLayouts(string key, string name, Dictionary<uint, ISelectableItem> items)
+        {
+            Items = items;
+            Key = key;
+            Name = name;
+        }
+
+        public class Nvx38xLayout : ISelectableItem
+        {
+            public string Key { get; private set; }
+            public string Name { get; private set; }
+
+            private DmNvx38x _parent;
+
+            private bool _isSelected;
+
+            public int Id { get; set; }
+            public bool IsSelected
+            {
+                get { return _isSelected; }
+                set
+                {
+                    if (_isSelected == value) return;
+                    _isSelected = value;
+                    var handler = ItemUpdated;
+                    if (handler != null)
+                        handler(this, EventArgs.Empty);
+                }
+            }
+
+            private readonly int screenIndex;
+
+            public event EventHandler ItemUpdated;
+
+            /// <summary>
+            /// Constructor for the HD-WP-4K-401-C layout, full parameters
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="name"></param>
+            /// <param name="screenIndex"></param>
+            /// <param name="id"></param>
+            /// <param name="parent"></param>
+            public Nvx38xLayout(string key, string name, int screenIndex, int id, DmNvx38x parent)
+            {
+                Key = key;
+                Name = name;
+                this.screenIndex = screenIndex;
+                Id = id;
+                _parent = parent;
+            }
+
+            public void Select()
+            {
+                //_parent.RecallPreset((ushort)0, (ushort)Id);
+                _parent.ApplyLayout((uint)screenIndex, (uint)Id);
+            }
+        }
+
+
+    }
+    #endregion
 }
