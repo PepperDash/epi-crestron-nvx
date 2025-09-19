@@ -36,6 +36,8 @@ public class IHdmiInputMessenger : MessengerBase
 
         AddAction("/fullStatus", (id, content) => SendFullStatus());
 
+        AddAction("/inputStatus", (id, content) => SendFullStatus());
+
         foreach (var feedback in device.Feedbacks.Where((f) => f.Key.Contains("Hdmi1") || f.Key.Contains("Hdmi2")))
         {
             feedback.OutputChange += (o, a) =>
