@@ -92,48 +92,230 @@ public class Nvx38X :
             Name = "Main Display",
             Enabled = true,
             Layouts = new Dictionary<uint, LayoutInfo>
-            {
-                [0] = new LayoutInfo { LayoutIndex = 0, LayoutName = "Automatic", LayoutType = "auto", Windows = new Dictionary<uint, WindowConfig>() },
-                [1] = new LayoutInfo { LayoutIndex = 1, LayoutName = "Full Screen", LayoutType = "fullscreen", Windows = new Dictionary<uint, WindowConfig>
+            {               
+                [1] = new LayoutInfo
+                {
+                    LayoutIndex = 0,
+                    LayoutName = "Full Screen",
+                    LayoutType = "fullScreen",
+                    Windows = new Dictionary<uint, WindowConfig>
                     {
-                        [1] = new WindowConfig { Label = "Main Window", Input = "Input1" }
+                        [1] = new WindowConfig { Label = "Full Screen", Input = "Input1" }
                     }
                 },
-                [2] = new LayoutInfo { LayoutIndex = 2, LayoutName = "Picture in Picture", LayoutType = "pip", Windows = new Dictionary<uint, WindowConfig>
+                [2] = new LayoutInfo { LayoutIndex = 201, LayoutName = "Side By Side", LayoutType = "sideBySide", Windows = new Dictionary<uint, WindowConfig>
                     {
-                        [1] = new WindowConfig { Label = "Main Window", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "PiP Window", Input = "Input2" }
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
                     }
                 },
-                [3] = new LayoutInfo { LayoutIndex = 3, LayoutName = "Side by Side", LayoutType = "sidebyside", Windows = new Dictionary<uint, WindowConfig>
+                [3] = new LayoutInfo
+                {
+                    LayoutIndex = 202,
+                    LayoutName = "PIP Small Top Left",
+                    LayoutType = "pipSmallTopLeft",
+                    Windows = new Dictionary<uint, WindowConfig>
                     {
-                        [1] = new WindowConfig { Label = "Left Window", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Right Window", Input = "Input2" }
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
                     }
                 },
-                [4] = new LayoutInfo { LayoutIndex = 4, LayoutName = "Three Up", LayoutType = "threeup", Windows = new Dictionary<uint, WindowConfig>
+                [4] = new LayoutInfo
+                {
+                    LayoutIndex = 203,
+                    LayoutName = "PIP Small Top Right",
+                    LayoutType = "pipSmallTopRight",
+                    Windows = new Dictionary<uint, WindowConfig>
                     {
-                        [1] = new WindowConfig { Label = "Main Window", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Upper Window", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Lower Window", Input = "Input3" }
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
                     }
                 },
-                [5] = new LayoutInfo { LayoutIndex = 5, LayoutName = "Quad View", LayoutType = "quadview", Windows = new Dictionary<uint, WindowConfig>
+                [5] = new LayoutInfo
+                {
+                    LayoutIndex = 204,
+                    LayoutName = "PIP Small Bottom Left",
+                    LayoutType = "pipSmallBottomLeft",
+                    Windows = new Dictionary<uint, WindowConfig>
                     {
-                        [1] = new WindowConfig { Label = "Top Left", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Top Right", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Bottom Left", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Bottom Right", Input = "Input4" }
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
                     }
                 },
-                [6] = new LayoutInfo { LayoutIndex = 6, LayoutName = "Three Small One Large", LayoutType = "threesmallonelarge", Windows = new Dictionary<uint, WindowConfig>
+                [6] = new LayoutInfo
+                {
+                    LayoutIndex = 205,
+                    LayoutName = "PIP Small Bottom Right",
+                    LayoutType = "pipSmallBottomRight",
+                    Windows = new Dictionary<uint, WindowConfig>
                     {
-                        [1] = new WindowConfig { Label = "Large Window", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Small Window 1", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Small Window 2", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Small Window 3", Input = "Input4" }
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
                     }
-                }
+                },
+                [7] = new LayoutInfo
+                {
+                    LayoutIndex = 301,
+                    LayoutName = "1 Top, 2 Bottom",
+                    LayoutType = "oneTopTwoBottom",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
+                    }
+                },
+                [8] = new LayoutInfo
+                {
+                    LayoutIndex = 302,
+                    LayoutName = "2 Top, 1 Bottom",
+                    LayoutType = "twoTopOneBottom",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
+                    }
+                },
+                [9] = new LayoutInfo
+                {
+                    LayoutIndex = 303,
+                    LayoutName = "1 Left, 2 Right",
+                    LayoutType = "oneLeftTwoRight",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
+                    }
+                },
+                [10] = new LayoutInfo
+                {
+                    LayoutIndex = 401,
+                    LayoutName = "2 Top, 2 Bottom",
+                    LayoutType = "twoTopTwoBottom",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" }
+                    }
+                },
+                [11] = new LayoutInfo
+                {
+                    LayoutIndex = 402,
+                    LayoutName = "1 Left, 3 Right",
+                    LayoutType = "oneLeftThreeRight",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
+                    }
+                },
+                [12] = new LayoutInfo
+                {
+                    LayoutIndex = 501,
+                    LayoutName = "1 Large Left, 4 Right",
+                    LayoutType = "oneLargeLeftFourRight",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
+                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" }
+                    }
+                },
+                [13] = new LayoutInfo
+                {
+                    LayoutIndex = 502,
+                    LayoutName = "4 Left, 1 Large Right",
+                    LayoutType = "fourLeftOneLargeRight",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
+                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" }
+                    }
+                },
+                [14] = new LayoutInfo
+                {
+                    LayoutIndex = 503,
+                    LayoutName = "1 Large Left, 4 Right",
+                    LayoutType = "oneLargeLeftFourRight",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
+                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" }
+                    }
+                },
+                [15] = new LayoutInfo
+                {
+                    LayoutIndex = 601,
+                    LayoutName = "3 Top, 3 Bottom",
+                    LayoutType = "threeTopThreeBottom",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
+                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
+                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
+                    }
+                },
+                [16] = new LayoutInfo
+                {
+                    LayoutIndex = 602,
+                    LayoutName = "1 Large Left, 5 Stacked",
+                    LayoutType = "oneLargeLeftFiveStacked",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
+                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
+                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
+                    }
+                },
+                [17] = new LayoutInfo
+                {
+                    LayoutIndex = 603,
+                    LayoutName = "5 Around, 1 Large Bottom Left",
+                    LayoutType = "fiveAroundOneLargeBottomLeft",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
+                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
+                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
+                    }
+                },
+                [18] = new LayoutInfo
+                {
+                    LayoutIndex = 604,
+                    LayoutName = "5 Around, 1 Large Top Left",
+                    LayoutType = "fiveAroundOneLargeTopLeft",
+                    Windows = new Dictionary<uint, WindowConfig>
+                    {
+                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
+                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
+                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
+                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
+                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
+                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
+                    }
+                },
             }
         };
 
