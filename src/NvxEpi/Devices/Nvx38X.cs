@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -8,31 +6,32 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Extensions;
 using NvxEpi.Features.Audio;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Features.Streams.Usb;
-
+using NvxEpi.JoinMaps;
+using NvxEpi.McMessengers;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
+using NvxEpi.Services.WindowLayout;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using Feedback = PepperDash.Essentials.Core.Feedback;
-
-using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
-using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using NvxEpi.Extensions;
-using NvxEpi.McMessengers;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using ScreenInfo = PepperDash.Essentials.Core.DeviceTypeInterfaces.ScreenInfo;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Feedback = PepperDash.Essentials.Core.Feedback;
+using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 using LayoutInfo = PepperDash.Essentials.Core.DeviceTypeInterfaces.LayoutInfo;
+using ScreenInfo = PepperDash.Essentials.Core.DeviceTypeInterfaces.ScreenInfo;
 using WindowConfig = PepperDash.Essentials.Core.DeviceTypeInterfaces.WindowConfig;
-
 
 namespace NvxEpi.Devices;
 
@@ -48,39 +47,237 @@ public class Nvx38X :
     IBasicVolumeWithFeedback,
     IHasScreensWithLayouts
 {
+    #region Fields
+
     private IBasicVolumeWithFeedback _audio;
     private IHdmiInput _hdmiInputs;
     private IVideowallMode _hdmiOutput;
     private IUsbStreamWithHardware _usbStream;
     private readonly NvxDeviceProperties _config;
     private DmNvx38x _device;
-    private readonly DmNvxMultiviewControlsSetup _deviceControls;
+    private readonly Dictionary<uint, Nvx38xLayouts> _screenLayouts = new Dictionary<uint, Nvx38xLayouts>();
+    private Dictionary<uint, string> LayoutNames { get; set; }
+    #endregion
+
+    #region Properties
+
     public Dictionary<uint, ScreenInfo> Screens { get; private set; }
     public FeedbackCollection<StringFeedback> ScreenNamesFeedbacks { get; private set; }
     public FeedbackCollection<BoolFeedback> ScreenEnablesFeedbacks { get; private set; }
     public FeedbackCollection<StringFeedback> LayoutNamesFeedbacks { get; private set; }
-    private Dictionary<uint, string> LayoutNames { get; set; }
+    public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 
-    private readonly Dictionary<uint, Nvx38xLayouts> _screenLayouts = new Dictionary<uint, Nvx38xLayouts>();
+    #endregion
+
+    #region Events
 
     public event RouteChangedEventHandler RouteChanged;
+
+    #endregion
+
+    #region Constructor
 
     public Nvx38X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
         : base(config, getHardware, isTransmitter)
     {
         _config = NvxDeviceProperties.FromDeviceConfig(config);
         AddPreActivationAction(AddRoutingPorts);
-        
+
         // Initialize multiview controls and screen layout dictionaries
-        _screenLayouts = new Dictionary<uint, Nvx38xLayouts>();
         LayoutNames = new Dictionary<uint, string>();
-        
+
         AddPreActivationAction(InitializeMultiviewFeatures);
     }
 
+    #endregion
+
+    #region Generic Methods
+
+    public void ClearCurrentUsbRoute()
+    {
+        _usbStream.ClearCurrentUsbRoute();
+    }
+
+    public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+    {
+        Debug.LogMessage(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
+        if (_usbStream is not UsbStream usbStream)
+        {
+            Debug.LogMessage(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
+            return;
+        }
+        usbStream.MakeUsbRoute(hardware);
+    }
+
+    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+    {
+        try
+        {
+            var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
+
+            Debug.LogInformation(
+                this,
+                "Executing switch : '{0}' | '{1}' | '{2}'",
+                inputSelector?.ToString() ?? "{null}",
+                outputSelector?.ToString() ?? "{null}",
+                signalType.ToString());
+
+            switcher.HandleSwitch(inputSelector, signalType);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning(this, "Error executing switch!: {0}", ex);
+        }
+    }
+
+    public void VolumeUp(bool pressRelease)
+    {
+        _audio.VolumeUp(pressRelease);
+    }
+
+    public void VolumeDown(bool pressRelease)
+    {
+        _audio.VolumeDown(pressRelease);
+    }
+
+    public void MuteToggle()
+    {
+        _audio.MuteToggle();
+    }
+
+    public void SetVolume(ushort level)
+    {
+        _audio.SetVolume(level);
+    }
+
+    public void MuteOn()
+    {
+        _audio.MuteOn();
+    }
+
+    public void MuteOff()
+    {
+        _audio.MuteOff();
+    }
+
+    #endregion
+
+    #region Interface Properties
+
+    public CrestronCollection<ComPort> ComPorts
+    {
+        get { return Hardware.ComPorts; }
+    }
+
+    public BoolFeedback DisabledByHdcp
+    {
+        get { return _hdmiOutput.DisabledByHdcp; }
+    }
+
+    public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
+    {
+        get { return _hdmiInputs.HdcpCapability; }
+    }
+
+    public IntFeedback HorizontalResolution
+    {
+        get { return _hdmiOutput.HorizontalResolution; }
+    }
+
+    public StringFeedback EdidManufacturer
+    {
+        get { return _hdmiOutput.EdidManufacturer; }
+    }
+
+    public StringFeedback OutputResolution
+    {
+        get { return _hdmiOutput.OutputResolution; }
+    }
+
+    public IntFeedback VideoAspectRatioMode
+    {
+        get { return _hdmiOutput.VideoAspectRatioMode; }
+    }
+
+    public CrestronCollection<IROutputPort> IROutputPorts
+    {
+        get { return Hardware.IROutputPorts; }
+    }
+
+    public bool IsRemote
+    {
+        get { return _usbStream.IsRemote; }
+    }
+
+    public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
+    {
+        get { return _usbStream.UsbRemoteIds; }
+    }
+
+    public int NumberOfComPorts
+    {
+        get { return Hardware.NumberOfComPorts; }
+    }
+
+    public int NumberOfIROutputPorts
+    {
+        get { return Hardware.NumberOfIROutputPorts; }
+    }
+
+    public Cec StreamCec
+    {
+        get { return Hardware.HdmiOut.StreamCec; }
+    }
+
+    public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
+    {
+        get { return _hdmiInputs.SyncDetected; }
+    }
+
+    public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
+    {
+        get { return _hdmiInputs.CurrentResolution; }
+    }
+
+    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInputs.AudioChannels; } }
+
+    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInputs.AudioFormat; } }
+
+    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInputs.ColorSpace; } }
+
+    public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInputs.HdrType; } }
+
+    public IntFeedback VideowallMode
+    {
+        get { return _hdmiOutput.VideowallMode; }
+    }
+
+    public StringFeedback UsbLocalId
+    {
+        get { return _usbStream.UsbLocalId; }
+    }
+
+    public IntFeedback VolumeLevelFeedback
+    {
+        get { return _audio.VolumeLevelFeedback; }
+    }
+
+    public BoolFeedback MuteFeedback
+    {
+        get { return _audio.MuteFeedback; }
+    }
+
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
+
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
+
+    #endregion
+
+    #region InitializeMultiviewFeatures
+
     private void InitializeMultiviewFeatures()
     {
-        // Initialize screens dictionary - DM-NVX-384 supports a single screen output
+        // Initialize screens dictionary - DM-NVX-38x supports a single screen output
         Screens = new Dictionary<uint, ScreenInfo>();
         ScreenNamesFeedbacks = new FeedbackCollection<StringFeedback>();
         ScreenEnablesFeedbacks = new FeedbackCollection<BoolFeedback>();
@@ -92,7 +289,7 @@ public class Nvx38X :
             Name = "Main Display",
             Enabled = true,
             Layouts = new Dictionary<uint, LayoutInfo>
-            {               
+            {
                 [1] = new LayoutInfo
                 {
                     LayoutIndex = 0,
@@ -103,7 +300,12 @@ public class Nvx38X :
                         [1] = new WindowConfig { Label = "Full Screen", Input = "Input1" }
                     }
                 },
-                [2] = new LayoutInfo { LayoutIndex = 201, LayoutName = "Side By Side", LayoutType = "sideBySide", Windows = new Dictionary<uint, WindowConfig>
+                [2] = new LayoutInfo
+                {
+                    LayoutIndex = 201,
+                    LayoutName = "Side By Side",
+                    LayoutType = "sideBySide",
+                    Windows = new Dictionary<uint, WindowConfig>
                     {
                         [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
                         [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
@@ -333,6 +535,10 @@ public class Nvx38X :
         }
     }
 
+    #endregion
+
+    #region Override Method - CustomActivate
+
     public override bool CustomActivate()
     {
         try
@@ -344,6 +550,9 @@ public class Nvx38X :
                 _audio = new Nvx38XAudio(nvx38x, this);
                 // Initialize the multiview hardware reference
                 _device = nvx38x;
+
+                // Initialize multiview controls
+                InitializeMultiviewControls();
             }
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
@@ -379,143 +588,69 @@ public class Nvx38X :
                 RouteChanged?.Invoke(this, newRoute);
             };
 
-        return result;
-    }
-    catch (Exception ex)
-    {
-        Debug.LogMessage(0, this, "Caught an exception in activate:{0}", ex);
-        throw;
-    }
-}    public void ClearCurrentUsbRoute()
-    {
-        _usbStream.ClearCurrentUsbRoute();
-    }
-
-    public void MakeUsbRoute(IUsbStreamWithHardware hardware)
-    {
-        Debug.LogMessage(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
-        if (_usbStream is not UsbStream usbStream)
-        {
-            Debug.LogMessage(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
-            return;
-        }
-        usbStream.MakeUsbRoute(hardware);
-    }
-
-    public CrestronCollection<ComPort> ComPorts
-    {
-        get { return Hardware.ComPorts; }
-    }
-
-    public BoolFeedback DisabledByHdcp
-    {
-        get { return _hdmiOutput.DisabledByHdcp; }
-    }
-
-    public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
-    {
-        get { return _hdmiInputs.HdcpCapability; }
-    }
-
-    public IntFeedback HorizontalResolution
-    {
-        get { return _hdmiOutput.HorizontalResolution; }
-    }
-
-    public StringFeedback EdidManufacturer
-    {
-        get { return _hdmiOutput.EdidManufacturer; }
-    }
-
-    public StringFeedback OutputResolution
-    {
-        get { return _hdmiOutput.OutputResolution; }
-    }
-
-    public IntFeedback VideoAspectRatioMode
-    {
-        get { return _hdmiOutput.VideoAspectRatioMode; }
-    }
-
-    public CrestronCollection<IROutputPort> IROutputPorts
-    {
-        get { return Hardware.IROutputPorts; }
-    }
-
-    public bool IsRemote
-    {
-        get { return _usbStream.IsRemote; }
-    }
-
-    public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
-    {
-        get { return _usbStream.UsbRemoteIds; }
-    }
-
-    public int NumberOfComPorts
-    {
-        get { return Hardware.NumberOfComPorts; }
-    }
-
-    public int NumberOfIROutputPorts
-    {
-        get { return Hardware.NumberOfIROutputPorts; }
-    }
-
-    public Cec StreamCec
-    {
-        get { return Hardware.HdmiOut.StreamCec; }
-    }
-
-    public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
-    {
-        get { return _hdmiInputs.SyncDetected; }
-    }
-
-    public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
-    {
-        get { return _hdmiInputs.CurrentResolution; }
-    }
-
-    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInputs.AudioChannels; } }
-
-    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInputs.AudioFormat; } }
-
-    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInputs.ColorSpace; } }
-
-    public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInputs.HdrType; } }
-
-    public IntFeedback VideowallMode
-    {
-        get { return _hdmiOutput.VideowallMode; }
-    }
-
-    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
-    {
-        try
-        {
-            var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
-
-            Debug.LogInformation(
-                this,
-                "Executing switch : '{0}' | '{1}' | '{2}'",
-                inputSelector?.ToString() ?? "{null}",
-                outputSelector?.ToString() ?? "{null}",
-                signalType.ToString());
-
-            switcher.HandleSwitch(inputSelector, signalType);
+            return result;
         }
         catch (Exception ex)
         {
-            Debug.LogWarning(this, "Error executing switch!: {0}", ex);
+            Debug.LogMessage(0, this, "Caught an exception in activate:{0}", ex);
+            throw;
         }
     }
+
+    #endregion
+
+    #region Override Method - LinkToApi
 
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
+
+        // Add to LinkToApi method after existing links
+        if (_device is IHasScreensWithLayouts multiviewDevice)
+        {
+            LinkMultiviewSupport(trilist, joinMap, multiviewDevice);
+        }
     }
+
+    private void LinkMultiviewSupport(BasicTriList trilist, NvxDeviceJoinMap joinMap, IHasScreensWithLayouts device)
+    {
+        // Layout selection
+        trilist.SetUShortSigAction(joinMap.LayoutSelect.JoinNumber, layoutId =>
+        {
+            if (device is Nvx38X nvx38x)
+            {
+                nvx38x.ApplyLayout(1, layoutId); // Screen 1, specified layout
+            }
+        });
+
+        // Window source assignments
+        for (uint window = 1; window <= 6; window++)
+        {
+            var windowNum = window;
+            trilist.SetUShortSigAction(joinMap.WindowVideoSource.JoinNumber + windowNum - 1, sourceId =>
+            {
+                if (device is Nvx38X nvx38x && sourceId >= 1 && sourceId <= 6)
+                {
+                    var sourceType = (WindowLayout.eVideoSourceType)sourceId;
+                    nvx38x.SetWindowVideoSource(windowNum, sourceType);
+                }
+            });
+        }
+
+        // Layout type selection (0-6)
+        trilist.SetUShortSigAction(joinMap.LayoutType.JoinNumber, layoutType =>
+        {
+            if (device is Nvx38X nvx38x)
+            {
+                nvx38x.SetWindowLayout(layoutType);
+            }
+        });
+    }
+
+    #endregion
+
+    #region AddRoutingPorts
 
     private void AddRoutingPorts()
     {
@@ -537,134 +672,127 @@ public class Nvx38X :
         }
     }
 
-    public StringFeedback UsbLocalId
-    {
-        get { return _usbStream.UsbLocalId; }
-    }
+    #endregion
 
-    public void VolumeUp(bool pressRelease)
-    {
-        _audio.VolumeUp(pressRelease);
-    }
-
-    public void VolumeDown(bool pressRelease)
-    {
-        _audio.VolumeDown(pressRelease);
-    }
-
-    public void MuteToggle()
-    {
-        _audio.MuteToggle();
-    }
-
-    public void SetVolume(ushort level)
-    {
-        _audio.SetVolume(level);
-    }
-
-    public void MuteOn()
-    {
-        _audio.MuteOn();
-    }
-
-    public void MuteOff()
-    {
-        _audio.MuteOff();
-    }
-
-    public IntFeedback VolumeLevelFeedback
-    {
-        get { return _audio.VolumeLevelFeedback; }
-    }
-
-    public BoolFeedback MuteFeedback
-    {
-        get { return _audio.MuteFeedback; }
-    }
-
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
-
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
-
-    public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
-
-    #region Methods        
+    #region Multiview/Layout Methods
 
     /// <summary>
-    /// Set the default window routes for the DM-NVX-384.
+    /// Change the current window layout using values from 1-18. 
     /// </summary>
-    public void DefaultWindowRoutes()
-    {
-        // For DM-NVX-384, we need to implement the proper multiview API
-        // This is a placeholder implementation that logs the action
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting default window routes for DM-NVX-384", this);
-        
-        // TODO: Replace with actual DM-NVX-384 multiview API calls
-        
-        // Placeholder: Apply default layout (full screen with first input)
-        if (_device != null)
-        {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "DM-NVX-384 hardware initialized", this);
-        }
-    }
-
-    /// <summary>
-    /// Change the current window layout using values from 0-6. 
-    /// </summary>
-    /// <param name="layout">Values from 0 - 6</param>
+    /// <param name="layout">Values from 1 - 18</param>
     public void SetWindowLayout(uint layout)
     {
-        WindowLayout.eLayoutType _layoutType;
+        Nvx38xWindowLayout.ExtendedLayoutType _layoutType;
         switch (layout)
         {
-            case 0:
-                _layoutType = WindowLayout.eLayoutType.Automatic;
-                break;
             case 1:
-                _layoutType = WindowLayout.eLayoutType.Fullscreen;
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.Fullscreen;
                 break;
             case 2:
-                _layoutType = WindowLayout.eLayoutType.PictureInPicture;
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.SideBySide;
                 break;
             case 3:
-                _layoutType = WindowLayout.eLayoutType.SideBySide;
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.PipSmallTopLeft;
                 break;
             case 4:
-                _layoutType = WindowLayout.eLayoutType.ThreeUp;
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.PipSmallTopRight;
                 break;
             case 5:
-                _layoutType = WindowLayout.eLayoutType.Quadview;
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.PipSmallBottomLeft;
                 break;
             case 6:
-                _layoutType = WindowLayout.eLayoutType.ThreeSmallOneLarge;
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.PipSmallBottomRight;
+                break;
+            case 7:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.OneTopTwoBottom;
+                break;
+            case 8:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.TwoTopOneBottom;
+                break;
+            case 9:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.OneLeftTwoRight;
+                break;
+            case 10:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.TwoTopTwoBottom;
+                break;
+            case 11:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.OneLeftThreeRight;
+                break;
+            case 12:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.OneLargeLeftFourRight;
+                break;
+            case 13:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.FourLeftOneLargeRight;
+                break;
+            case 14:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.OneLargeLeftFourRight;
+                break;
+            case 15:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.ThreeTopThreeBottom;
+                break;
+            case 16:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.OneLargeLeftFiveStacked;
+                break;
+            case 17:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.FiveAroundOneLargeBottomLeft;
+                break;
+            case 18:
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.FiveAroundOneLargeTopLeft;
                 break;
             default:
-                Debug.LogDebug(this, "Invalid layout value: {0}. Valid range 0 - 6.", layout);
+                Debug.LogDebug(this, "Invalid layout value: {0}. Valid range 1 - 18.", layout);
                 return;
         }
-        
-        // TODO: Replace with actual DM-NVX-384 multiview API calls
-        // _HdWpChassis.HdWpWindowLayout.Layout = _layoutType;
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting layout {0} for DM-NVX-384", this, _layoutType);
-
-        //Reset AV Routes when SetWindowLayout is called
-        //DefaultWindowRoutes();
+        var layoutSig = _device.MultiviewControlsSetup.MultiViewWindowControls.Layout;
+        layoutSig.UShortValue = (ushort)_layoutType;
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Set layout {0} for DM-NVX-38x", this, layout);
     }
 
     /// <summary>
-    /// Set the window layout using the WindowLayout.eLayoutType enum.
+    /// Set the window layout using the Nvx38xWindowLayout.ExtendedLayoutType enum.
     /// </summary>
     /// <param name="layout"></param>
-    public void SetWindowLayout(WindowLayout.eLayoutType layout)
+    public void SetWindowLayout(Nvx38xWindowLayout.ExtendedLayoutType layout)
     {
-        // TODO: Replace with actual DM-NVX-384 multiview API calls  
-        // _HdWpChassis.HdWpWindowLayout.Layout = layout;
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting layout {0} for DM-NVX-384", this, layout);
-
-        //Reset AV Routes when SetWindowLayout is called
-        DefaultWindowRoutes();
+        if(Screens != null)
+        {
+            try
+            {
+                Nvx38xWindowLayout.ExtendedLayoutType _layoutType = layout;
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Set ExtendedLayoutType {0} for DM-NVX-38x", this, layout);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(this, "Error setting ExtendedLayoutType for DM-NVX-38x: {0}", ex.Message);
+            }
+        }
+        else
+        {
+            Debug.LogError(this, "DM-NVX-38x multiview hardware not available");
+        }
     }
 
+    /// <summary>
+    /// Set video source for a specific window in the multiview layout.
+    /// </summary>
+    /// <param name="windowId">Window ID (1-6)</param>
+    /// <param name="sourceType">Video source type</param>
+    public void SetWindowVideoSource(uint windowId, WindowLayout.eVideoSourceType sourceType)
+    {
+        if (Screens != null)
+        {
+            var windowVideoSource = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values
+                .FirstOrDefault(w => w.WindowId == windowId);
+
+
+            //_device.HdWpChassis.HdWpWindowLayout.SetVideoSource(windowId, sourceType);
+            Debug.LogInformation(this, "Set window {0} to source {1}", windowId, sourceType);
+        }
+        else
+        {
+            Debug.LogError(this, "DM-NVX-38x multiview hardware not available");
+        }
+    }
 
     /// <summary>
     /// Apply a specific layout to a screen by its ID and layout index.
@@ -685,10 +813,17 @@ public class Nvx38X :
             return;
         }
 
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, 
-            "[ApplyLayout] Applying layout '{0}' ({1}) to screen '{2}' for DM-NVX-384", 
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Information,
+            "[ApplyLayout] Applying layout '{0}' ({1}) to screen '{2}' for DM-NVX-384",
             this, layout.LayoutName, layout.LayoutType, screenId);
 
+        // First set the layout
+        if (layout.LayoutIndex >= 0)
+        {
+            SetWindowLayout((uint)layout.LayoutIndex);
+        }
+
+        // Then configure individual windows
         foreach (var window in layout.Windows)
         {
             uint windowId = window.Key;
@@ -700,27 +835,20 @@ public class Nvx38X :
                 continue;
             }
 
-            WindowLayout.eVideoSourceType? source = null;
-            switch (inputKey)
+            Nvx38xWindowLayout.ExtendedVideoSourceType? source = inputKey switch
             {
-                case "input1":
-                    source = WindowLayout.eVideoSourceType.Input1;
-                    break;
-                case "input2":
-                    source = WindowLayout.eVideoSourceType.Input2;
-                    break;
-                case "input3":
-                    source = WindowLayout.eVideoSourceType.Input3;
-                    break;
-                case "input4":
-                    source = WindowLayout.eVideoSourceType.Input4;
-                    break;
-            }
+                "input1" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input1,
+                "input2" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input2,
+                "input3" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input3,
+                "input4" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input4,
+                "input5" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input5,
+                "input6" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input6,
+                _ => null
+            };
 
             if (source.HasValue)
             {
-                // TODO: Replace with actual DM-NVX-384 multiview API calls
-                // _HdWpChassis.HdWpWindowLayout.SetVideoSource(windowId, source.Value);
+                SetWindowVideoSource(windowId, source.Value);
                 Debug.LogVerbose(this, $"[ApplyLayout] Set window {windowId} to {inputKey} ({window.Value.Label}).");
             }
             else
@@ -728,8 +856,6 @@ public class Nvx38X :
                 Debug.LogError(this, $"[ApplyLayout] Invalid input '{inputKey}' for window {windowId}.");
             }
         }
-
-        SetWindowLayout((uint)layout.LayoutIndex);
 
         // Send layout data via messenger
         var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
@@ -740,10 +866,30 @@ public class Nvx38X :
             messenger.SendCurrentLayoutStatus(screenId, layout);
         }
     }
+
+    /// <summary>
+    /// Get current layout feedback from the hardware
+    /// </summary>
+    /// <returns>Current layout type</returns>
+    public Nvx38xWindowLayout.ExtendedLayoutType GetCurrentLayout()
+    {
+        // TODO: Implement feedback retrieval from hardware
+    }
+
+    /// <summary>
+    /// Get current video source for a specific window
+    /// </summary>
+    /// <param name="windowId">Window ID</param>
+    /// <returns>Current video source type</returns>
+    public Nvx38xWindowLayout.ExtendedVideoSourceType GetWindowVideoSource(uint windowId)
+    {
+        // TODO: Implement feedback retrieval from hardware
+    }
+
     #endregion
 
     #region Layouts
-    
+
     class Nvx38xLayouts : ISelectableItems<uint>, IKeyName
     {
         private Dictionary<uint, ISelectableItem> _items = new Dictionary<uint, ISelectableItem>();
@@ -793,7 +939,7 @@ public class Nvx38X :
             public string Key { get; private set; }
             public string Name { get; private set; }
 
-            private DmNvx38x _parent;
+            private Nvx38X _parentDevice;
 
             private bool _isSelected;
 
@@ -822,37 +968,30 @@ public class Nvx38X :
             /// <param name="name"></param>
             /// <param name="screenIndex"></param>
             /// <param name="id"></param>
-            /// <param name="parent"></param>
-            public Nvx38xLayout(string key, string name, int screenIndex, int id, DmNvx38x parent)
+            /// <param name="parentDevice"></param>
+            public Nvx38xLayout(string key, string name, int screenIndex, int id, Nvx38X parentDevice)
             {
                 Key = key;
                 Name = name;
                 this.screenIndex = screenIndex;
                 Id = id;
-                _parent = parent;
+                _parentDevice = parentDevice;
             }
 
             public void Select()
             {
-                // The parent should be the Nvx38X device, not the hardware
-                // Cast _parent to Nvx38X and call ApplyLayout
-                if (_parent is DmNvx38x)
+                if (_parentDevice != null)
                 {
-                    // We need to get the actual Nvx38X device instance
-                    var nvx38xDevice = DeviceManager.AllDevices.OfType<Nvx38X>()
-                        .FirstOrDefault(d => d._device == _parent);
-                    
-                    if (nvx38xDevice != null)
-                    {
-                        nvx38xDevice.ApplyLayout((uint)screenIndex, (uint)Id);
-                    }
-                    else
-                    {
-                        Debug.LogError("Could not find Nvx38X device for layout selection");
-                    }
+                    _parentDevice.ApplyLayout((uint)screenIndex, (uint)Id);
+                    Debug.LogInformation(_parentDevice, "Applied layout {0} ({1}) to screen {2}", Name, Id, screenIndex);
+                }
+                else
+                {
+                    Debug.LogError("Parent device not available for layout selection");
                 }
             }
         }
     }
+
     #endregion
 }
