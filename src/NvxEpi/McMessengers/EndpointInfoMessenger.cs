@@ -1,17 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NvxEpi.Devices;
 using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
-using System.Linq;
 
 namespace NvxEpi.McMessengers;
 
-public class EndpointInfoMessenger:MessengerBase
-{    
+public class EndpointInfoMessenger : MessengerBase
+{
     private readonly StringFeedback deviceNameFeedback;
-    public EndpointInfoMessenger(string key, string path, NvxBaseDevice device): base(key, path, device)
+    public EndpointInfoMessenger(string key, string path, NvxBaseDevice device) : base(key, path, device)
     {
 
         deviceNameFeedback = device.Feedbacks.FirstOrDefault(fb => fb.Key == DeviceNameFeedback.Key) as StringFeedback;
@@ -29,7 +29,7 @@ public class EndpointInfoMessenger:MessengerBase
         base.RegisterActions();
 
         AddAction("/fullStatus", SendFullStatus);
-        
+        AddAction("/endpointInfo", SendFullStatus);
     }
 
     private void SendFullStatus(string id, JToken content)
@@ -37,7 +37,7 @@ public class EndpointInfoMessenger:MessengerBase
         PostStatusMessage(new EndpointInfoStateMessage
         {
             DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
-        });
+        }, id);
     }
 
     private void SendUpdate(object sender, FeedbackEventArgs args)
@@ -55,7 +55,7 @@ public class EndpointInfoStateMessage : DeviceStateMessageBase
     public string DeviceName { get; set; }
 }
 
-public class EndpointInfoUpdateMessage 
+public class EndpointInfoUpdateMessage
 {
     [JsonProperty("friendlyName")]
     public string DeviceName { get; set; }
