@@ -34,7 +34,9 @@ public class IHdmiInputMessenger : MessengerBase
     {
         base.RegisterActions();
 
-        AddAction("/fullStatus", (id, content) => SendFullStatus());
+        AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+
+        AddAction("/inputStatus", (id, content) => SendFullStatus(id));
 
         foreach (var feedback in device.Feedbacks.Where((f) => f.Key.Contains("Hdmi1") || f.Key.Contains("Hdmi2")))
         {
@@ -47,7 +49,7 @@ public class IHdmiInputMessenger : MessengerBase
         }
     }
 
-    private void SendFullStatus()
+    private void SendFullStatus(string id = null)
     {
         var hdmiInputs = GetInputState();
 
@@ -60,7 +62,7 @@ public class IHdmiInputMessenger : MessengerBase
 
         try
         {
-            PostStatusMessage(message);
+            PostStatusMessage(message, id);
         }
         catch (Exception e)
         {

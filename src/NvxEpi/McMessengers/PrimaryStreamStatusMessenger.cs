@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Timers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NvxEpi.Devices;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
-using System.Timers;
 
 namespace NvxEpi.McMessengers;
 
-public class PrimaryStreamStatusMessenger:MessengerBase
+public class PrimaryStreamStatusMessenger : MessengerBase
 {
     private readonly NvxBaseDevice device;
 
@@ -30,6 +30,7 @@ public class PrimaryStreamStatusMessenger:MessengerBase
         base.RegisterActions();
 
         AddAction("/fullStatus", SendFullStatus);
+        AddAction("/videoStreamStatus", SendFullStatus);
 
         device.IsStreamingVideo.OutputChange += Debounce;
         device.VideoStreamStatus.OutputChange += Debounce;
@@ -44,8 +45,9 @@ public class PrimaryStreamStatusMessenger:MessengerBase
         debounceTimer.Start();
     }
 
-    private void SendFullStatus(string id, JToken content) {
-        PostStatusMessage(new StreamStateMessage(device));
+    private void SendFullStatus(string id, JToken content)
+    {
+        PostStatusMessage(new StreamStateMessage(device), id);
     }
 
     private void HandleUpdate(object sender, FeedbackEventArgs args)
