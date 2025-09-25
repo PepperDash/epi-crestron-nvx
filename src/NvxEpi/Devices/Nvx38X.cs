@@ -346,7 +346,7 @@ public class Nvx38X :
                 () => GetWindowLabel(windowId)));
         }
 
-        // Only add default screen if we're being constructed with multiview config
+        // Only add default screen if constructed with multiview config
         // Don't add default screen for basic constructor - let it remain empty
         // This prevents the device from being treated as multiview-capable when it shouldn't be
         
@@ -517,38 +517,57 @@ public class Nvx38X :
 
             // Use join map properties instead of hardcoded numbers
             var enterJoinNumber = joinMap.MultiviewEnter.JoinNumber;
-            var enabledFeedbackJoin = joinMap.MultiviewEnabledFeedback.JoinNumber;
-            var disabledFeedbackJoin = joinMap.MultiviewDisabledFeedback.JoinNumber;
+            var enabledFeedbackJoin = joinMap.MultiviewEnable.JoinNumber;
+            var disabledFeedbackJoin = joinMap.MultiviewDisable.JoinNumber;
             var layoutJoin = joinMap.MultiviewLayout.JoinNumber;
             var audioSourceJoin = joinMap.MultiviewAudioSource.JoinNumber;
 
             // Multiview Controls: Enter
             trilist.SetBoolSigAction((uint)enterJoinNumber, value =>
+            {                    
+                    MultiviewControlsEnterState(value);
+                Debug.LogDebug(this, "Multiview [Enter] triggered from bridge");
+            });
+
+            // Multiview Controls: Enable
+            trilist.SetBoolSigAction((uint)enabledFeedbackJoin, value =>
             {
                 if (value)
-                {
-                    Debug.LogDebug(this, "Multiview Enter command received");
-                    EnterMultiviewMode();
+                {                    
+                    _device.MultiviewControlsSetup.Enable();
+                    Debug.LogDebug(this, "Multiview [Enable] triggered from bridge");
                 }
             });
 
-            // Layout Control
+            // Multiview Controls: Disable
+            trilist.SetBoolSigAction((uint)enabledFeedbackJoin, value =>
+            {
+                if (value)
+                {                    
+                    _device.MultiviewControlsSetup.Disable();
+                    Debug.LogDebug(this, "Multiview [Disable] triggered from bridge");
+                }
+            });
+
+            // Multiview Controls: Layout
             trilist.SetUShortSigAction((uint)layoutJoin, layoutValue =>
-            {
-                Debug.LogDebug(this, "Multiview layout selection: {0}", layoutValue);
+            {                
                 SetMultiviewLayout(layoutValue);
+                Debug.LogDebug(this, "Multiview [Layout] {0} triggered from bridge", layoutValue);
             });
 
-            // Audio Source Control  
+            // Multiview Controls: Audio Source  
             trilist.SetUShortSigAction((uint)audioSourceJoin, audioSource =>
-            {
-                Debug.LogDebug(this, "Multiview audio source selection: {0}", audioSource);
+            {                
                 SetMultiviewAudioSource(audioSource);
+                Debug.LogDebug(this, "Multiview [Audio Source] {0} triggered from bridge", audioSource);
             });
 
-            // Link feedback - multiview enabled/disabled status
+            // Link feedback
             MultiviewEnabledFeedback?.LinkInputSig(trilist.BooleanInput[(uint)enabledFeedbackJoin]);
             MultiviewDisabledFeedback?.LinkInputSig(trilist.BooleanInput[(uint)disabledFeedbackJoin]);
+            MultiviewLayoutFeedback?.LinkInputSig(trilist.UShortInput[(uint)layoutJoin]);
+            MultiviewAudioSourceFeedback?.LinkInputSig(trilist.UShortInput[(uint)audioSourceJoin]);
 
             // Link stream URL feedbacks for 6 windows
             if (MultiviewWindowStreamUrlFeedbacks?.Count >= 1 && MultiviewWindowStreamUrlFeedbacks[0] != null)
@@ -582,7 +601,7 @@ public class Nvx38X :
         }
         catch (Exception ex)
         {
-            Debug.LogError(this, "Error linking multiview controls: {0}", ex.Message);
+            Debug.LogError(this, $"Error linking multiview controls: {ex.Message}");
         }
     }
 
@@ -986,19 +1005,23 @@ public class Nvx38X :
     #region Multiview Control Methods
 
     /// <summary>
-    /// Enters multiview mode on the device
+    /// Updates the state of the Multiview controls to either enter or exit.
     /// </summary>
-    public void EnterMultiviewMode()
+    /// <remarks>This method sets the state of the Multiview controls by updating the corresponding property
+    /// in the device's Multiview configuration. If an error occurs during the operation, it is logged for debugging
+    /// purposes.</remarks>
+    /// <param name="enter">A value indicating whether to enable (<see langword="true"/>) or disable (<see langword="false"/>) the Multiview
+    /// controls enter state.</param>
+    public void MultiviewControlsEnterState(bool requestedButtonState)
     {
         try
         {
-            Debug.LogDebug(this, "EnterMultiviewMode called - implementing hardware control");
-            // TODO: Implement actual hardware control when API is available
-            // This method should trigger the multiview mode on the hardware
+            var _deviceButtonState = _device.MultiviewControlsSetup.MultiViewWindowControls.Enter;
+            _deviceButtonState.BoolValue = requestedButtonState;
         }
         catch (Exception ex)
         {
-            Debug.LogError(this, "Error enabling multiview mode: {0}", ex.Message);
+            Debug.LogError(this, $"Error setting Multiview controls [Enter] state: {ex.Message}");
         }
     }
 
