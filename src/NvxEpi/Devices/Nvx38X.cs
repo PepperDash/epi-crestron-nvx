@@ -1,4 +1,4 @@
-﻿using Crestron.SimplSharp;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -88,7 +88,7 @@ public class Nvx38X :
         // Initialize multiview controls and screen layout dictionaries
         LayoutNames = new Dictionary<uint, string>();
 
-        Screens = new Dictionary<uint, ScreenInfo>(multiviewProps.Screens);
+        Screens = new Dictionary<uint, ScreenInfo>(multiviewProps?.Screens ?? new Dictionary<uint, ScreenInfo>());
 
         ScreenNamesFeedbacks = new FeedbackCollection<StringFeedback>();
         ScreenEnablesFeedbacks = new FeedbackCollection<BoolFeedback>();
@@ -107,7 +107,7 @@ public class Nvx38X :
 
             ScreenNamesFeedbacks.Add(new StringFeedback("ScreenName-" + screenKey, () => screen.Name));
             ScreenEnablesFeedbacks.Add(new BoolFeedback("ScreenEnable-" + screenKey, () => screen.Enabled));
-            LayoutNamesFeedbacks.Add(new StringFeedback("LayoutNames-" + screenKey, () => LayoutNames[screenKey]));
+            LayoutNamesFeedbacks.Add(new StringFeedback("LayoutNames-" + screenKey, () => LayoutNames.ContainsKey(screenKey) ? LayoutNames[screenKey] : string.Empty));
 
             foreach (var layout in screen.Layouts)
             {
@@ -124,6 +124,20 @@ public class Nvx38X :
 
     public Nvx38X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter) : base(config, getHardware, isTransmitter)
     {
+        _config = NvxDeviceProperties.FromDeviceConfig(config);
+        AddPreActivationAction(AddRoutingPorts);
+        
+        // Initialize collections for basic constructor
+        ScreenNamesFeedbacks = new FeedbackCollection<StringFeedback>();
+        ScreenEnablesFeedbacks = new FeedbackCollection<BoolFeedback>();
+        LayoutNamesFeedbacks = new FeedbackCollection<StringFeedback>();
+        LayoutNames = new Dictionary<uint, string>();
+        MultiviewWindowStreamUrlFeedbacks = new FeedbackCollection<StringFeedback>();
+        MultiviewWindowLabelFeedbacks = new FeedbackCollection<StringFeedback>();
+        Screens = new Dictionary<uint, ScreenInfo>();
+        
+        AddPreActivationAction(InitializeMultiviewFeatures);
+        AddPostActivationAction(AddFeedbackCollections);
     }
 
     #endregion
@@ -132,7 +146,7 @@ public class Nvx38X :
 
     public void ClearCurrentUsbRoute()
     {
-        _usbStream.ClearCurrentUsbRoute();
+        _usbStream?.ClearCurrentUsbRoute();
     }
 
     public void MakeUsbRoute(IUsbStreamWithHardware hardware)
@@ -169,32 +183,32 @@ public class Nvx38X :
 
     public void VolumeUp(bool pressRelease)
     {
-        _audio.VolumeUp(pressRelease);
+        _audio?.VolumeUp(pressRelease);
     }
 
     public void VolumeDown(bool pressRelease)
     {
-        _audio.VolumeDown(pressRelease);
+        _audio?.VolumeDown(pressRelease);
     }
 
     public void MuteToggle()
     {
-        _audio.MuteToggle();
+        _audio?.MuteToggle();
     }
 
     public void SetVolume(ushort level)
     {
-        _audio.SetVolume(level);
+        _audio?.SetVolume(level);
     }
 
     public void MuteOn()
     {
-        _audio.MuteOn();
+        _audio?.MuteOn();
     }
 
     public void MuteOff()
     {
-        _audio.MuteOff();
+        _audio?.MuteOff();
     }
 
     #endregion
@@ -208,32 +222,32 @@ public class Nvx38X :
 
     public BoolFeedback DisabledByHdcp
     {
-        get { return _hdmiOutput.DisabledByHdcp; }
+        get { return _hdmiOutput?.DisabledByHdcp; }
     }
 
     public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
     {
-        get { return _hdmiInputs.HdcpCapability; }
+        get { return _hdmiInputs?.HdcpCapability; }
     }
 
     public IntFeedback HorizontalResolution
     {
-        get { return _hdmiOutput.HorizontalResolution; }
+        get { return _hdmiOutput?.HorizontalResolution; }
     }
 
     public StringFeedback EdidManufacturer
     {
-        get { return _hdmiOutput.EdidManufacturer; }
+        get { return _hdmiOutput?.EdidManufacturer; }
     }
 
     public StringFeedback OutputResolution
     {
-        get { return _hdmiOutput.OutputResolution; }
+        get { return _hdmiOutput?.OutputResolution; }
     }
 
     public IntFeedback VideoAspectRatioMode
     {
-        get { return _hdmiOutput.VideoAspectRatioMode; }
+        get { return _hdmiOutput?.VideoAspectRatioMode; }
     }
 
     public CrestronCollection<IROutputPort> IROutputPorts
@@ -243,12 +257,12 @@ public class Nvx38X :
 
     public bool IsRemote
     {
-        get { return _usbStream.IsRemote; }
+        get { return _usbStream?.IsRemote ?? false; }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> UsbRemoteIds
     {
-        get { return _usbStream.UsbRemoteIds; }
+        get { return _usbStream?.UsbRemoteIds; }
     }
 
     public int NumberOfComPorts
@@ -268,45 +282,45 @@ public class Nvx38X :
 
     public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
     {
-        get { return _hdmiInputs.SyncDetected; }
+        get { return _hdmiInputs?.SyncDetected; }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
     {
-        get { return _hdmiInputs.CurrentResolution; }
+        get { return _hdmiInputs?.CurrentResolution; }
     }
 
-    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInputs.AudioChannels; } }
+    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInputs?.AudioChannels; } }
 
-    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInputs.AudioFormat; } }
+    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInputs?.AudioFormat; } }
 
-    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInputs.ColorSpace; } }
+    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInputs?.ColorSpace; } }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInputs.HdrType; } }
+    public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInputs?.HdrType; } }
 
     public IntFeedback VideowallMode
     {
-        get { return _hdmiOutput.VideowallMode; }
+        get { return _hdmiOutput?.VideowallMode; }
     }
 
     public StringFeedback UsbLocalId
     {
-        get { return _usbStream.UsbLocalId; }
+        get { return _usbStream?.UsbLocalId; }
     }
 
     public IntFeedback VolumeLevelFeedback
     {
-        get { return _audio.VolumeLevelFeedback; }
+        get { return _audio?.VolumeLevelFeedback; }
     }
 
     public BoolFeedback MuteFeedback
     {
-        get { return _audio.MuteFeedback; }
+        get { return _audio?.MuteFeedback; }
     }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs?.HdcpCapabilityString; } }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs?.HdcpSupport; } }
 
     #endregion
 
@@ -314,17 +328,9 @@ public class Nvx38X :
 
     private void InitializeMultiviewFeatures()
     {
-       
-        MultiviewEnabledFeedback = new BoolFeedback("MultiviewEnabledFeedback", () => _device.MultiviewControlsSetup.EnabledFeedback.BoolValue);
-        MultiviewDisabledFeedback = new BoolFeedback("MultiviewDisabledFeedback", () => _device.MultiviewControlsSetup.DisabledFeedback.BoolValue);
-        MultiviewLayoutFeedback = new IntFeedback("MultiviewLayoutFeedback", () => _device.MultiviewControlsSetup.MultiViewWindowControls.LayoutFeedback.UShortValue);
-        MultiviewAudioSourceFeedback = new IntFeedback("MultiviewAudioSourceFeedback", () => _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSourceFeedback.UShortValue);
-
-        // Initialize multiview window feedbacks
+        // Initialize multiview window feedbacks if available
         for (uint windowId = 1; windowId <= 6; windowId++)
         {
-            var windowIndex = (int)windowId - 1;
-
             MultiviewWindowStreamUrlFeedbacks.Add(new StringFeedback(
                 $"MultiviewWindow{windowId}StreamUrl",
                 () => GetWindowStreamUrl(windowId)));
@@ -334,255 +340,26 @@ public class Nvx38X :
                 () => GetWindowLabel(windowId)));
         }
 
-        // Initialize default screen configuration for DM-NVX-38X
-        var mainScreen = new ScreenInfo
+        // If no screens are configured, add a minimal default screen
+        if (Screens == null || !Screens.Any())
         {
-            Name = "Main Display",
-            Enabled = true,
-            Layouts = new Dictionary<uint, LayoutInfo>
+            var mainScreen = new ScreenInfo
             {
-                [1] = new LayoutInfo
+                Name = "Main Display", 
+                Enabled = true,
+                Layouts = new Dictionary<uint, LayoutInfo>
                 {
-                    LayoutIndex = 0,
-                    LayoutName = "Full Screen",
-                    LayoutType = "fullScreen",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Full Screen", Input = "Input1" }
-                    }
-                },
-                [2] = new LayoutInfo
-                {
-                    LayoutIndex = 201,
-                    LayoutName = "Side By Side",
-                    LayoutType = "sideBySide",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
-                    }
-                },
-                [3] = new LayoutInfo
-                {
-                    LayoutIndex = 202,
-                    LayoutName = "PIP Small Top Left",
-                    LayoutType = "pipSmallTopLeft",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
-                    }
-                },
-                [4] = new LayoutInfo
-                {
-                    LayoutIndex = 203,
-                    LayoutName = "PIP Small Top Right",
-                    LayoutType = "pipSmallTopRight",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
-                    }
-                },
-                [5] = new LayoutInfo
-                {
-                    LayoutIndex = 204,
-                    LayoutName = "PIP Small Bottom Left",
-                    LayoutType = "pipSmallBottomLeft",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
-                    }
-                },
-                [6] = new LayoutInfo
-                {
-                    LayoutIndex = 205,
-                    LayoutName = "PIP Small Bottom Right",
-                    LayoutType = "pipSmallBottomRight",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" }
-                    }
-                },
-                [7] = new LayoutInfo
-                {
-                    LayoutIndex = 301,
-                    LayoutName = "1 Top, 2 Bottom",
-                    LayoutType = "oneTopTwoBottom",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
-                    }
-                },
-                [8] = new LayoutInfo
-                {
-                    LayoutIndex = 302,
-                    LayoutName = "2 Top, 1 Bottom",
-                    LayoutType = "twoTopOneBottom",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
-                    }
-                },
-                [9] = new LayoutInfo
-                {
-                    LayoutIndex = 303,
-                    LayoutName = "1 Left, 2 Right",
-                    LayoutType = "oneLeftTwoRight",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
-                    }
-                },
-                [10] = new LayoutInfo
-                {
-                    LayoutIndex = 401,
-                    LayoutName = "2 Top, 2 Bottom",
-                    LayoutType = "twoTopTwoBottom",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" }
-                    }
-                },
-                [11] = new LayoutInfo
-                {
-                    LayoutIndex = 402,
-                    LayoutName = "1 Left, 3 Right",
-                    LayoutType = "oneLeftThreeRight",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" }
-                    }
-                },
-                [12] = new LayoutInfo
-                {
-                    LayoutIndex = 501,
-                    LayoutName = "1 Large Left, 4 Right",
-                    LayoutType = "oneLargeLeftFourRight",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
-                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" }
-                    }
-                },
-                [13] = new LayoutInfo
-                {
-                    LayoutIndex = 502,
-                    LayoutName = "4 Left, 1 Large Right",
-                    LayoutType = "fourLeftOneLargeRight",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
-                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" }
-                    }
-                },
-                [14] = new LayoutInfo
-                {
-                    LayoutIndex = 503,
-                    LayoutName = "1 Large Left, 4 Right",
-                    LayoutType = "oneLargeLeftFourRight",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
-                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" }
-                    }
-                },
-                [15] = new LayoutInfo
-                {
-                    LayoutIndex = 601,
-                    LayoutName = "3 Top, 3 Bottom",
-                    LayoutType = "threeTopThreeBottom",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
-                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
-                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
-                    }
-                },
-                [16] = new LayoutInfo
-                {
-                    LayoutIndex = 602,
-                    LayoutName = "1 Large Left, 5 Stacked",
-                    LayoutType = "oneLargeLeftFiveStacked",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
-                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
-                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
-                    }
-                },
-                [17] = new LayoutInfo
-                {
-                    LayoutIndex = 603,
-                    LayoutName = "5 Around, 1 Large Bottom Left",
-                    LayoutType = "fiveAroundOneLargeBottomLeft",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
-                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
-                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
-                    }
-                },
-                [18] = new LayoutInfo
-                {
-                    LayoutIndex = 604,
-                    LayoutName = "5 Around, 1 Large Top Left",
-                    LayoutType = "fiveAroundOneLargeTopLeft",
-                    Windows = new Dictionary<uint, WindowConfig>
-                    {
-                        [1] = new WindowConfig { Label = "Window 1", Input = "Input1" },
-                        [2] = new WindowConfig { Label = "Window 2", Input = "Input2" },
-                        [3] = new WindowConfig { Label = "Window 3", Input = "Input3" },
-                        [4] = new WindowConfig { Label = "Window 4", Input = "Input4" },
-                        [5] = new WindowConfig { Label = "Window 5", Input = "Input5" },
-                        [6] = new WindowConfig { Label = "Window 6", Input = "Input6" }
-                    }
-                },
-            }
-        };
+                    [1] = new LayoutInfo { LayoutIndex = 0, LayoutName = "Full Screen", LayoutType = "fullScreen" }
+                }
+            };
 
-        Screens.Add(1, mainScreen);
-
-        // Initialize feedbacks
-        ScreenNamesFeedbacks.Add(new StringFeedback($"ScreenName{1}", () => mainScreen.Name));
-        ScreenEnablesFeedbacks.Add(new BoolFeedback($"ScreenEnabled{1}", () => mainScreen.Enabled));
-
-        // Initialize layout name feedbacks
-        foreach (var layout in mainScreen.Layouts)
-        {
-            LayoutNames.Add(layout.Key, layout.Value.LayoutName);
-            LayoutNamesFeedbacks.Add(new StringFeedback($"LayoutName{layout.Key}", () => layout.Value.LayoutName));
+            Screens = new Dictionary<uint, ScreenInfo> { { 1, mainScreen } };
+            
+            // Initialize feedbacks for default screen
+            ScreenNamesFeedbacks.Add(new StringFeedback("ScreenName1", () => mainScreen.Name));
+            ScreenEnablesFeedbacks.Add(new BoolFeedback("ScreenEnabled1", () => mainScreen.Enabled));
+            LayoutNames[1] = "Full Screen";
+            LayoutNamesFeedbacks.Add(new StringFeedback("LayoutName1", () => "Full Screen"));
         }
     }
 
@@ -599,18 +376,29 @@ public class Nvx38X :
             if (Hardware is DmNvx38x nvx38x)
             {
                 _audio = new Nvx38XAudio(nvx38x, this);
-                // Initialize the multiview hardware reference
-                _device = nvx38x; 
+                _device = nvx38x;
+                
+                // Initialize multiview feedbacks if hardware supports it
+                if (_device?.MultiviewControlsSetup != null)
+                {
+                    MultiviewEnabledFeedback = new BoolFeedback("MultiviewEnabledFeedback", () => _device.MultiviewControlsSetup.EnabledFeedback.BoolValue);
+                    MultiviewDisabledFeedback = new BoolFeedback("MultiviewDisabledFeedback", () => _device.MultiviewControlsSetup.DisabledFeedback.BoolValue);
+                    MultiviewLayoutFeedback = new IntFeedback("MultiviewLayoutFeedback", () => _device.MultiviewControlsSetup.MultiViewWindowControls.LayoutFeedback.UShortValue);
+                    MultiviewAudioSourceFeedback = new IntFeedback("MultiviewAudioSourceFeedback", () => _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSourceFeedback.UShortValue);
+                    
+                    // Register for multiview events
+                    _device.MultiviewControlsSetup.MultiViewWindowControls.PropertyChange += MultiviewWindowLayoutControlsChange;
+                }
             }
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInputs = new HdmiInput(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
+            if (_audio != null)
+                Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
 
             if (_config.EnableAutoRoute)
-                // ReSharper disable once ObjectCreationAsStatement
                 new AutomaticInputRouter(_hdmiInputs);
 
             AddMcMessengers();
@@ -662,18 +450,29 @@ public class Nvx38X :
 
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
-        // Use the specialized multiview joinMap for NVX-38X
-        var joinMap = new Nvx38xMultiviewJoinMap(joinStart);
+        // Only use multiview joinMap if this device has multiview screens configured
+        if (Screens != null && Screens.Any())
+        {
+            try
+            {
+                // Use the specialized multiview joinMap for NVX-38X
+                var joinMap = new Nvx38xMultiviewJoinMap(joinStart);
 
-        // Register the joinMap with the bridge
-        bridge?.AddJoinMap(Key, joinMap);
+                // Register the joinMap with the bridge
+                bridge?.AddJoinMap(Key, joinMap);
 
-        // Link the base NVX functionality
+                // Link the multiview-specific functionality
+                LinkMultiviewControls(trilist, joinMap);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(this, "Error creating multiview joinMap: {0}", ex.Message);
+            }
+        }
+
+        // Always link the base NVX functionality
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
-
-        // Link the multiview-specific functionality
-        LinkMultiviewControls(trilist, joinMap);
     }
 
     private void LinkMultiviewControls(BasicTriList trilist, Nvx38xMultiviewJoinMap joinMap)
@@ -685,29 +484,19 @@ public class Nvx38X :
             // Multiview Controls: Enter
             trilist.SetBoolSigAction(joinMap.MultiviewEnter.JoinNumber, value =>
             {
-                if (value)
+                if (value && _device?.MultiviewControlsSetup?.MultiViewWindowControls?.Enter != null)
                 {
-                    if (_device != null &&
-                        _device.MultiviewControlsSetup != null &&
-                        _device.MultiviewControlsSetup.MultiViewWindowControls != null &&
-                        _device.MultiviewControlsSetup.MultiViewWindowControls.Enter != null)
-                    {
-                        _device.MultiviewControlsSetup.MultiViewWindowControls.Enter.BoolValue = true;
-                        Debug.LogDebug(this, "Multiview Enter triggered");
-                    }
+                    _device.MultiviewControlsSetup.MultiViewWindowControls.Enter.BoolValue = true;
+                    Debug.LogDebug(this, "Multiview Enter triggered");
                 }
-                else
-                    if (_device != null &&
-                        _device.MultiviewControlsSetup != null &&
-                        _device.MultiviewControlsSetup.MultiViewWindowControls != null &&
-                        _device.MultiviewControlsSetup.MultiViewWindowControls.Enter != null)
+                else if (!value && _device?.MultiviewControlsSetup?.MultiViewWindowControls?.Enter != null)
                 {
                     _device.MultiviewControlsSetup.MultiViewWindowControls.Enter.BoolValue = false;
                     Debug.LogDebug(this, "Multiview Enter released");
                 }
             });
 
-            // Multiview Controls: Enable Press
+            // Multiview Controls: Enable/Disable
             trilist.SetBoolSigAction(joinMap.MultiviewEnabled.JoinNumber, value =>
             {
                 if (value)
@@ -717,10 +506,6 @@ public class Nvx38X :
                 }
             });
 
-            // Multiview Controls: Enable Feedback
-            MultiviewEnabledFeedback?.LinkInputSig(trilist.BooleanInput[joinMap.MultiviewEnabled.JoinNumber]);
-
-            // Multiview Controls: Disable Press
             trilist.SetBoolSigAction(joinMap.MultiviewDisabled.JoinNumber, value =>
             {
                 if (value)
@@ -730,10 +515,11 @@ public class Nvx38X :
                 }
             });
 
-            // Multiview Controls: Disabled Feedback
+            // Feedbacks
+            MultiviewEnabledFeedback?.LinkInputSig(trilist.BooleanInput[joinMap.MultiviewEnabled.JoinNumber]);
             MultiviewDisabledFeedback?.LinkInputSig(trilist.BooleanInput[joinMap.MultiviewDisabled.JoinNumber]);
 
-            // Multiview Controls: Set Layout
+            // Layout Control
             trilist.SetUShortSigAction(joinMap.MultiviewLayout.JoinNumber, layoutValue =>
             {
                 if (layoutValue >= 1 && layoutValue <= 18)
@@ -743,29 +529,24 @@ public class Nvx38X :
                 }
             });
 
-            // Multiview Controls: Layout Feedback
             MultiviewLayoutFeedback?.LinkInputSig(trilist.UShortInput[joinMap.MultiviewLayoutFeedback.JoinNumber]);
 
-            // Multiview Controls: Set Audio Source
+            // Audio Source Control
             trilist.SetUShortSigAction(joinMap.MultiviewAudioSource.JoinNumber, audioSource =>
-            {   
-                if (_device != null &&
-                    _device.MultiviewControlsSetup != null &&
-                    _device.MultiviewControlsSetup.MultiViewWindowControls != null &&
-                    _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSource != null)
+            {
+                if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.AudioSource != null)
                 {
                     _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSource.UShortValue = audioSource;
                     Debug.LogDebug(this, "Multiview audio source set to: {0}", audioSource);
                 }
             });
 
-            // Multiview Controls: Audio Source Feedback
             MultiviewAudioSourceFeedback?.LinkInputSig(trilist.UShortInput[joinMap.MultiviewAudioSourceFeedback.JoinNumber]);
 
             // Window Stream URL Controls and Feedbacks
             for (uint windowId = 1; windowId <= 6; windowId++)
             {
-                var windowIndex = windowId; // Capture for closure
+                var windowIndex = windowId;
 
                 // Stream URL Control
                 var streamUrlJoin = joinMap.GetWindowStreamUrlJoin(windowIndex);
@@ -835,12 +616,11 @@ public class Nvx38X :
 
     #region Multiview Methods
 
-    /// <summary>
-    /// Change the current window layout using values from 1-18. Call from ApplyLayout() only.
-    /// </summary>
-    /// <param name="layout">Values from 1 - 18</param>
     private void SetWindowLayout(uint layout)
     {
+        if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.Layout == null)
+            return;
+
         Nvx38xWindowLayout.ExtendedLayoutType _layoutType;
         switch (layout)
         {
@@ -902,58 +682,12 @@ public class Nvx38X :
                 Debug.LogDebug(this, "Invalid layout value: {0}. Valid range 1 - 18.", layout);
                 return;
         }
+        
         var layoutSig = _device.MultiviewControlsSetup.MultiViewWindowControls.Layout;
         layoutSig.UShortValue = (ushort)_layoutType;
         Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Set layout {0} for DM-NVX-38x", this, layout);
     }
 
-    /// <summary>
-    /// Set the window layout using the Nvx38xWindowLayout.ExtendedLayoutType enum.
-    /// </summary>
-    /// <param name="layout"></param>
-    public void SetWindowLayout(Nvx38xWindowLayout.ExtendedLayoutType layout)
-    {
-        if(Screens != null)
-        {
-            try
-            {
-                Nvx38xWindowLayout.ExtendedLayoutType _layoutType = layout;
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Set ExtendedLayoutType {0} for DM-NVX-38x", this, layout);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError(this, "Error setting ExtendedLayoutType for DM-NVX-38x: {0}", ex.Message);
-            }
-        }
-        else
-        {
-            Debug.LogError(this, "DM-NVX-38x multiview hardware not available");
-        }
-    }
-
-    /// <summary>
-    /// Set video source for a specific window in the multiview layout.
-    /// </summary>
-    /// <param name="windowId">Window ID (1-6)</param>
-    /// <param name="sourceType">Video source type</param>
-    public void SetWindowVideoSource(uint windowId, WindowLayout.eVideoSourceType sourceType)
-    {
-        if (Screens != null)
-        {
-            // throw not implemented exception as device does not support this method
-            throw new NotImplementedException("SetWindowVideoSource with WindowLayout.eVideoSourceType is not implemented for DM-NVX-38x");
-        }
-        else
-        {
-            Debug.LogError(this, "DM-NVX-38x multiview hardware not available");
-        }
-    }
-
-    /// <summary>
-    /// Set video source for a specific window in the multiview layout. What calls this method?
-    /// </summary>
-    /// <param name="windowId">Window ID (1-6)</param>
-    /// <param name="sourceType">Video source type</param>
     public void SetWindowVideoSourceStreamUrl(uint windowId, string streamUrl)
     {
         try
@@ -964,25 +698,16 @@ public class Nvx38X :
                 return;
             }
 
-            if (string.IsNullOrEmpty(streamUrl))
-            {
-                Debug.LogWarning(this, "Stream URL is null or empty for window {0}", windowId);
-                return;
-            }
-
             if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.WindowDetails != null)
             {
-                // Find the window details for the specified window ID
                 var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values
                     .FirstOrDefault(w => w.Number == windowId);
 
                 if (windowDetail != null)
                 {
-                    // Set the stream URL for the window
-                    windowDetail.StreamUrl.StringValue = streamUrl;
+                    windowDetail.StreamUrl.StringValue = streamUrl ?? string.Empty;
                     Debug.LogDebug(this, "Set window {0} to stream URL: {1}", windowId, streamUrl);
 
-                    // Update the internal tracking array
                     if (MultiviewWindowStreamUrlFeedbacks != null && windowId <= MultiviewWindowStreamUrlFeedbacks.Count)
                     {
                         MultiviewWindowStreamUrlFeedbacks[(int)windowId - 1]?.FireUpdate();
@@ -995,7 +720,7 @@ public class Nvx38X :
             }
             else
             {
-                Debug.LogError(this, "DM-NVX-38x multiview window controls not available");
+                Debug.LogVerbose(this, "DM-NVX-38x multiview window controls not available");
             }
         }
         catch (Exception ex)
@@ -1004,21 +729,6 @@ public class Nvx38X :
         }
     }
 
-    /// <summary>
-    /// Clear the video source for a specific window.
-    /// </summary>
-    /// <param name="windowId">Window ID (1-6)</param>
-    public void ClearWindowVideoSource(uint windowId)
-    {
-        var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values.FirstOrDefault(w => w.Number == windowId);
-        SetWindowVideoSourceStreamUrl(windowId, string.Empty);
-    }
-
-    /// <summary>
-    /// Set the label for a specific window.
-    /// </summary>
-    /// <param name="windowId">Window ID (1-6)</param>
-    /// <param name="label">Label to assign to the window</param>
     public void SetWindowLabel(uint windowId, string label)
     {
         try
@@ -1031,16 +741,14 @@ public class Nvx38X :
 
             if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.WindowDetails != null)
             {
-                var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values.FirstOrDefault(w => w.Number == windowId);
-                var windowDetailText = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values.FirstOrDefault(w => w.Number == windowId)?.Text.StringValue;
+                var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values
+                    .FirstOrDefault(w => w.Number == windowId);
 
                 if (windowDetail != null)
                 {
-                    // Set the window label
-                    windowDetailText = label;
+                    windowDetail.Text.StringValue = label ?? string.Empty;
                     Debug.LogDebug(this, "Set window {0} label to: {1}", windowId, label);
 
-                    // Update the internal tracking array
                     if (MultiviewWindowLabelFeedbacks != null && windowId <= MultiviewWindowLabelFeedbacks.Count)
                     {
                         MultiviewWindowLabelFeedbacks[(int)windowId - 1]?.FireUpdate();
@@ -1053,7 +761,7 @@ public class Nvx38X :
             }
             else
             {
-                Debug.LogError(this, "DM-NVX-38x multiview window controls not available");
+                Debug.LogVerbose(this, "DM-NVX-38x multiview window controls not available");
             }
         }
         catch (Exception ex)
@@ -1062,22 +770,6 @@ public class Nvx38X :
         }
     }
 
-    /// <summary>
-    /// Clears the label of the specified window by setting it to an empty string.
-    /// </summary>
-    /// <remarks>This method effectively removes any existing label associated with the specified
-    /// window.</remarks>
-    /// <param name="windowId">The unique identifier of the window whose label is to be cleared.</param>
-    public void ClearWindowLabel(uint windowId)
-    {
-        SetWindowLabel(windowId, string.Empty);
-    }
-
-    /// <summary>
-    /// Apply a specific layout to a screen by its ID and layout index.
-    /// </summary>
-    /// <param name="screenId"></param>
-    /// <param name="layoutIndex"></param>
     public void ApplyLayout(uint screenId, uint layoutIndex)
     {
         if (!Screens.TryGetValue(screenId, out var screen))
@@ -1093,16 +785,14 @@ public class Nvx38X :
         }
 
         Debug.LogMessage(Serilog.Events.LogEventLevel.Information,
-            "[ApplyLayout] Applying layout '{0}' ({1}) to screen '{2}' for DM-NVX-384",
+            "[ApplyLayout] Applying layout '{0}' ({1}) to screen '{2}' for DM-NVX-38x",
             this, layout.LayoutName, layout.LayoutType, screenId);
 
-        // First set the layout
         if (layout.LayoutIndex >= 0)
         {
-            SetWindowLayout((uint)layout.LayoutIndex);
+            SetWindowLayout((uint)layoutIndex); // Use layoutIndex instead of layout.LayoutIndex
         }
 
-        // Send layout data via messenger
         var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
         if (mc != null)
         {
@@ -1112,38 +802,19 @@ public class Nvx38X :
         }
     }
 
-    /// <summary>
-    /// Get the current stream URL for a specific window.
-    /// </summary>
-    /// <param name="windowId">Window ID (1-6)</param>
-    /// <returns>Current stream URL or empty string if not found</returns>
     public string GetWindowStreamUrl(uint windowId)
     {
         try
         {
             if (windowId < 1 || windowId > 6)
-            {
-                Debug.LogError(this, "Invalid window ID: {0}. Valid range is 1-6", windowId);
                 return string.Empty;
-            }
 
             if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.WindowDetails != null)
             {
                 var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values
                     .FirstOrDefault(w => w.Number == windowId);
 
-                if (windowDetail != null)
-                {
-                    return windowDetail.StreamUrl.StringValue ?? string.Empty;
-                }
-                else
-                {
-                    Debug.LogVerbose(this, "Window detail not found for window ID: {0}", windowId);
-                }
-            }
-            else
-            {
-                Debug.LogVerbose(this, "DM-NVX-38x multiview window controls not available");
+                return windowDetail?.StreamUrl.StringValue ?? string.Empty;
             }
 
             return string.Empty;
@@ -1155,38 +826,19 @@ public class Nvx38X :
         }
     }
 
-    /// <summary>
-    /// Get the current label for a specific window.
-    /// </summary>
-    /// <param name="windowId">Window ID (1-6)</param>
-    /// <returns>Current window label or empty string if not found</returns>
     public string GetWindowLabel(uint windowId)
     {
         try
         {
             if (windowId < 1 || windowId > 6)
-            {
-                Debug.LogError(this, "Invalid window ID: {0}. Valid range is 1-6", windowId);
                 return string.Empty;
-            }
 
             if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.WindowDetails != null)
             {
                 var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values
                     .FirstOrDefault(w => w.Number == windowId);
 
-                if (windowDetail != null)
-                {
-                    return windowDetail.Text.StringValue ?? string.Empty;
-                }
-                else
-                {
-                    Debug.LogVerbose(this, "Window detail not found for window ID: {0}", windowId);
-                }
-            }
-            else
-            {
-                Debug.LogVerbose(this, "DM-NVX-38x multiview window controls not available");
+                return windowDetail?.Text.StringValue ?? string.Empty;
             }
 
             return string.Empty;
@@ -1227,18 +879,11 @@ public class Nvx38X :
         }
 
         public string Name { get; private set; }
-
         public string Key { get; private set; }
 
         public event EventHandler ItemsUpdated;
         public event EventHandler CurrentItemChanged;
 
-        /// <summary>
-        /// Constructor for the Nvx38x layouts, full parameters
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="name"></param>
-        /// <param name="items"></param>
         public Nvx38xLayouts(string key, string name, Dictionary<uint, ISelectableItem> items)
         {
             Items = items;
@@ -1250,11 +895,8 @@ public class Nvx38X :
         {
             public string Key { get; private set; }
             public string Name { get; private set; }
-
             private Nvx38X _parentDevice;
-
             private bool _isSelected;
-
             public int Id { get; set; }
             public bool IsSelected
             {
@@ -1263,24 +905,13 @@ public class Nvx38X :
                 {
                     if (_isSelected == value) return;
                     _isSelected = value;
-                    var handler = ItemUpdated;
-                    if (handler != null)
-                        handler(this, EventArgs.Empty);
+                    ItemUpdated?.Invoke(this, EventArgs.Empty);
                 }
             }
 
             private readonly int screenIndex;
-
             public event EventHandler ItemUpdated;
 
-            /// <summary>
-            /// Constructor for the Nvx38x layout, full parameters
-            /// </summary>
-            /// <param name="key"></param>
-            /// <param name="name"></param>
-            /// <param name="screenIndex"></param>
-            /// <param name="id"></param>
-            /// <param name="parentDevice"></param>
             public Nvx38xLayout(string key, string name, int screenIndex, int id, Nvx38X parentDevice)
             {
                 Key = key;
@@ -1309,56 +940,27 @@ public class Nvx38X :
 
     #region FeedbackCollection Methods
 
-    //Add arrays of collections
     public void AddCollectionsToList(params FeedbackCollection<BoolFeedback>[] newFbs)
     {
-        foreach (FeedbackCollection<BoolFeedback> fbCollection in newFbs)
+        foreach (var fbCollection in newFbs)
         {
-            foreach (var item in newFbs)
-            {
-                AddCollectionToList(item);
-            }
-        }
-    }
-    public void AddCollectionsToList(params FeedbackCollection<IntFeedback>[] newFbs)
-    {
-        foreach (FeedbackCollection<IntFeedback> fbCollection in newFbs)
-        {
-            foreach (var item in newFbs)
-            {
-                AddCollectionToList(item);
-            }
+            AddCollectionToList(fbCollection);
         }
     }
 
     public void AddCollectionsToList(params FeedbackCollection<StringFeedback>[] newFbs)
     {
-        foreach (FeedbackCollection<StringFeedback> fbCollection in newFbs)
+        foreach (var fbCollection in newFbs)
         {
-            foreach (var item in newFbs)
-            {
-                AddCollectionToList(item);
-            }
+            AddCollectionToList(fbCollection);
         }
     }
 
-    //Add Collections
     public void AddCollectionToList(FeedbackCollection<BoolFeedback> newFbs)
     {
         foreach (var f in newFbs)
         {
             if (f == null) continue;
-
-            AddFeedbackToList(f);
-        }
-    }
-
-    public void AddCollectionToList(FeedbackCollection<IntFeedback> newFbs)
-    {
-        foreach (var f in newFbs)
-        {
-            if (f == null) continue;
-
             AddFeedbackToList(f);
         }
     }
@@ -1368,16 +970,13 @@ public class Nvx38X :
         foreach (var f in newFbs)
         {
             if (f == null) continue;
-
             AddFeedbackToList(f);
         }
     }
 
-    //Add Individual Feedbacks
     public void AddFeedbackToList(Feedback newFb)
     {
         if (newFb == null) return;
-
         if (!Feedbacks.Contains(newFb))
         {
             Feedbacks.Add(newFb);
@@ -1390,28 +989,34 @@ public class Nvx38X :
 
     void MultiviewWindowLayoutControlsChange(object sender, GenericEventArgs args)
     {
-        Debug.LogDebug(this, "WindowLayoutChange event triggerend. EventId = {0}", args.EventId);
+        Debug.LogDebug(this, "WindowLayoutChange event triggered. EventId = {0}", args.EventId);
 
         switch(args.EventId)
         {
-            case DMOutputEventIds.MultiviewControlsEnabledFeedbackEventId:{ MultiviewEnabledFeedback.FireUpdate(); break; }
-            case DMOutputEventIds.MultiviewControlsDisabledFeedbackEventId: { MultiviewDisabledFeedback.FireUpdate(); break; }
-            case DMOutputEventIds.MultiviewControlsWindowControlsLayoutFeedbackEventId: { MultiviewLayoutFeedback.FireUpdate(); break; }
-            case DMOutputEventIds.MultiviewControlsWindowControlsAudioSourceFeedbackEventId: { MultiviewAudioSourceFeedback.FireUpdate(); break; }
-            case DMOutputEventIds.MultiviewControlsWindowControlsStreamUrlFeedbackEventId: { 
-                    for (int i = 0; i < MultiviewWindowStreamUrlFeedbacks.Count; i++)
-                    {
-                        MultiviewWindowStreamUrlFeedbacks[i]?.FireUpdate();
-                    }
-                    break;
+            case DMOutputEventIds.MultiviewControlsEnabledFeedbackEventId:
+                MultiviewEnabledFeedback?.FireUpdate();
+                break;
+            case DMOutputEventIds.MultiviewControlsDisabledFeedbackEventId:
+                MultiviewDisabledFeedback?.FireUpdate();
+                break;
+            case DMOutputEventIds.MultiviewControlsWindowControlsLayoutFeedbackEventId:
+                MultiviewLayoutFeedback?.FireUpdate();
+                break;
+            case DMOutputEventIds.MultiviewControlsWindowControlsAudioSourceFeedbackEventId:
+                MultiviewAudioSourceFeedback?.FireUpdate();
+                break;
+            case DMOutputEventIds.MultiviewControlsWindowControlsStreamUrlFeedbackEventId:
+                for (int i = 0; i < MultiviewWindowStreamUrlFeedbacks?.Count; i++)
+                {
+                    MultiviewWindowStreamUrlFeedbacks[i]?.FireUpdate();
                 }
-            case DMOutputEventIds.MultiviewControlsWindowControlsTextFeedbackEventId: {
-                    for (int i = 0; i < MultiviewWindowLabelFeedbacks.Count; i++)
-                    {
-                        MultiviewWindowLabelFeedbacks[i]?.FireUpdate();
-                    }
-                    break;
+                break;
+            case DMOutputEventIds.MultiviewControlsWindowControlsTextFeedbackEventId:
+                for (int i = 0; i < MultiviewWindowLabelFeedbacks?.Count; i++)
+                {
+                    MultiviewWindowLabelFeedbacks[i]?.FireUpdate();
                 }
+                break;
         }
     }
 
