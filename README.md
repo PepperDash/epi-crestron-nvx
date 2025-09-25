@@ -58,7 +58,7 @@ MultiviewJoinMap - Only visible if configuration objects exist
 | 35   | -                       | -                        | Window 5 Label           |
 | 36   | -                       | -                        | Window 6 Label           |
 
-## Join Details
+## Join Details - Base Join Map
 
 1. Video Source = In RX mode; will route the video stream of the device with the Virtual ID of the value selected to the receiver.  No action in TX mode.
 2. Audio Source = In RX mode; will route the audio stream of the device with the Virtual ID of the value selected to the receiver.  No action in TX mode.
@@ -68,6 +68,16 @@ MultiviewJoinMap - Only visible if configuration objects exist
 6. HDCP Capability = Reports and sets HDCP cabaility on selected input.  HDCPSupportOff = 0, HDCPSupportAuto = 1, HDCP1xSupport = 2, HDCP2xSupport = 3
 7. HDCP Supported Level = UNUSED for NVX devices
 8. HDMI Output Horizontal Resolution = Custom Wharton usage; reports the horizontal resolution of the connected display on the HDMI output.
+
+## Join Details - Multiview Join Map
+
+1. Enter [D] - Selects the window layout including stream selection (subscription or URL), audio source, and text value. This allows for smooth transition when changing multiple items such as window layout and source. It is highly suggested to trigger this join for each and every transition. However, a "1" is permissible and will trigger events as they are received.
+2. Enable [D] - Enables multiview controls (*requires reboot*). In Transmitter mode -> Allows 3 streams to transmit simultaneously and will use 3rd Multicast address. No other controls will function for Transmitters. In Receiver mode: All controls are available. High/1 = Enable multiview controls; Low/0 = No effect.
+3. Disable [D] - Disables multiview controls (*requires reboot*). In Transmitter mode -> Single stream transmission. In Receiver mode -> No controls will function. High/1 = Disable multiview controls; Low/0 = No effect.
+4. Layout [A] - Sets the window layout. See JSON configuration example below for expected values for pre-defined layouts. Valid values are 0-604. Review [Crestron DM-NVX-38x Multiview documentation](https://docs.crestron.com/en-us/9496/Content/Topics/Getting-Started/Getting-Started.htm#Multi%E2%80%91Vi) for additional details.
+5. Audio Source [A] - Selects the video window audio is sent from. Must also select "Audio follows video" or "Multiview" as the main audio source for NVX in the top slot. Valid values are 0-6.
+6. Window x Stream Url [S] - Sets the stream URL for the corresponding window (1-6).
+7. Window x Label [S] - Sets the text value for the corresponding window (1-6).
 
 ## Config Example
 
