@@ -10,12 +10,12 @@ namespace NvxEpi.JoinMaps
             new JoinData { JoinNumber = 21, JoinSpan = 1 },
             new JoinMetadata { Description = "Multiview Enter - Select to update view, hold to always allow", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
-        [JoinName("MultiviewEnabledFeedback")]
+        [JoinName("MultiviewEnabled")]
         public JoinDataComplete MultiviewEnable = new JoinDataComplete(
             new JoinData { JoinNumber = 22, JoinSpan = 1 },
             new JoinMetadata { Description = "Multiview Enable - Requires reboot, starts additional multicast stream", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        [JoinName("MultiviewDisabledFeedback")]
+        [JoinName("MultiviewDisable")]
         public JoinDataComplete MultiviewDisable = new JoinDataComplete(
             new JoinData { JoinNumber = 23, JoinSpan = 1 },
             new JoinMetadata { Description = "Multiview Disable - Requires reboot, stops multiview stream", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });

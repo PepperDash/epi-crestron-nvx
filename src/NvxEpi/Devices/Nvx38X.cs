@@ -538,7 +538,7 @@ public class Nvx38X :
             });
 
             // Multiview Controls: Disable
-            trilist.SetBoolSigAction((uint)enabledFeedbackJoin, value =>
+            trilist.SetBoolSigAction((uint)disabledFeedbackJoin, value =>
             {
                 if (value)
                 {                    
