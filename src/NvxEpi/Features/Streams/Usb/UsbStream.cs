@@ -94,7 +94,7 @@ public class UsbStream : IUsbStreamWithHardware
 
         if (!followStream || IsTransmitter)
         {
-            Debug.LogWarning(device, "Will not Follow Stream!");
+            Debug.LogDebug(device, $"UsbStream: Will not Follow Stream! FollowStream state: {followStream}. IsTransmitter state: {IsTransmitter}.");
             return;
         }
 

@@ -331,9 +331,7 @@ public class Nvx38X :
     #region InitializeMultiviewFeatures
 
     private void InitializeMultiviewFeatures()
-    {
-        Debug.LogDebug(this, "InitializeMultiviewFeatures called. Current Screens count: {0}", Screens?.Count ?? 0);
-        
+    {       
         // Initialize multiview window feedbacks for all window IDs
         for (uint windowId = 1; windowId <= 6; windowId++)
         {
@@ -350,7 +348,7 @@ public class Nvx38X :
         // Don't add default screen for basic constructor - let it remain empty
         // This prevents the device from being treated as multiview-capable when it shouldn't be
         
-        Debug.LogDebug(this, "InitializeMultiviewFeatures completed. Final Screens count: {0}", Screens?.Count ?? 0);
+        Debug.LogDebug(this, "InitializeMultiviewFeatures completed. Screens count: {0}", Screens?.Count ?? 0);
     }
 
     #endregion
