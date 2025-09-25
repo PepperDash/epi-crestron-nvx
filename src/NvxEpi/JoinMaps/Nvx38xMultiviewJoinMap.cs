@@ -8,7 +8,7 @@ namespace NvxEpi.JoinMaps
         [JoinName("MultiviewEnter")]
         public JoinDataComplete MultiviewEnter = new JoinDataComplete(
             new JoinData { JoinNumber = 200, JoinSpan = 1 },
-            new JoinMetadata { Description = "Multiview Enter - Select to update view, hold to always allow updates", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Multiview Enter - Select to update view, hold to always allow", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("MultiviewEnabledFeedback")]
         public JoinDataComplete MultiviewEnable = new JoinDataComplete(
@@ -28,7 +28,7 @@ namespace NvxEpi.JoinMaps
         [JoinName("MultiviewAudioSource")]
         public JoinDataComplete MultiviewAudioSource = new JoinDataComplete(
             new JoinData { JoinNumber = 220, JoinSpan = 1 },
-            new JoinMetadata { Description = "Multiview Audio Source - Choose window audio source, requires audio route set to 'multiview'", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Multiview Audio Source - Requires audio route set to 'multiview'", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         // Stream URL joins for multiview windows (up to 6 windows)
         [JoinName("MultiviewWindow1StreamUrl")]
