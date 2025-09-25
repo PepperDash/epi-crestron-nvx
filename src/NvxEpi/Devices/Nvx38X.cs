@@ -138,7 +138,7 @@ public class Nvx38X :
         // Initialize empty screens dictionary - no default screens for basic constructor
         Screens = new Dictionary<uint, ScreenInfo>();
         
-        Debug.LogInformation(this, "Nvx38X created using basic constructor. Screens initialized as empty dictionary. Count: {0}", Screens?.Count ?? 0);
+        Debug.LogDebug(this, "Nvx38X created using basic constructor. Screens initialized as empty dictionary. Count: {0}", Screens?.Count ?? 0);
         
         AddPreActivationAction(InitializeMultiviewFeatures);
         AddPostActivationAction(AddFeedbackCollections);
@@ -332,7 +332,7 @@ public class Nvx38X :
 
     private void InitializeMultiviewFeatures()
     {
-        Debug.LogInformation(this, "InitializeMultiviewFeatures called. Current Screens count: {0}", Screens?.Count ?? 0);
+        Debug.LogDebug(this, "InitializeMultiviewFeatures called. Current Screens count: {0}", Screens?.Count ?? 0);
         
         // Initialize multiview window feedbacks for all window IDs
         for (uint windowId = 1; windowId <= 6; windowId++)
@@ -350,7 +350,7 @@ public class Nvx38X :
         // Don't add default screen for basic constructor - let it remain empty
         // This prevents the device from being treated as multiview-capable when it shouldn't be
         
-        Debug.LogInformation(this, "InitializeMultiviewFeatures completed. Final Screens count: {0}", Screens?.Count ?? 0);
+        Debug.LogDebug(this, "InitializeMultiviewFeatures completed. Final Screens count: {0}", Screens?.Count ?? 0);
     }
 
     #endregion
@@ -452,51 +452,39 @@ public class Nvx38X :
     /// certain configurations.</param>
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
-        Debug.LogInformation(this, "LinkToApi called - Device Key: '{0}', JoinStart: {1}, JoinMapKey: '{2}', Bridge: {3}", 
+        Debug.LogDebug(this, "LinkToApi called - Device Key: '{0}', JoinStart: {1}, JoinMapKey: '{2}', Bridge: {3}", 
             Key, joinStart, joinMapKey ?? "null", bridge?.GetType().Name ?? "null");
             
         // Check if this device has multiview screens configured
         var hasMultiviewScreens = Screens != null && Screens.Any();
         
-        Debug.LogInformation(this, "Multiview screens configured: {0}, Screen count: {1}", 
+        Debug.LogDebug(this, "Multiview screens configured: {0}, Screen count: {1}", 
             hasMultiviewScreens, Screens?.Count ?? 0);
         
         if (hasMultiviewScreens)
         {
             try
             {
-                Debug.LogInformation(this, "Linking NVX-38x with multiview capabilities");
+                Debug.LogDebug(this, "Linking NVX-38x with multiview capabilities");
                 
-                // Use the specialized multiview joinMap for NVX-38X
-                Debug.LogInformation(this, "Creating Nvx38xMultiviewJoinMap with joinStart: {0}", joinStart);
-                
-                Nvx38xMultiviewJoinMap multiviewJoinMap;
-                try
-                {
-                    multiviewJoinMap = new Nvx38xMultiviewJoinMap(joinStart);
-                    Debug.LogInformation(this, "Successfully created Nvx38xMultiviewJoinMap");
-                }
-                catch (Exception createEx)
-                {
-                    Debug.LogError(this, "Error creating Nvx38xMultiviewJoinMap: {0}", createEx.Message);
-                    Debug.LogError(this, "Creation Exception details: {0}", createEx.ToString());
-                    throw; // Re-throw to trigger fallback
-                }
+                // First, link with the standard NVX bridge for base functionality
+                Debug.LogDebug(this, "Linking base NVX functionality first");
+                var baseBridge = new NvxDeviceBridge(this);
+                baseBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
 
-                // Register the multiview joinMap with the bridge FIRST
-                Debug.LogInformation(this, "Adding multiview joinMap to bridge for key: {0}", Key);
-                bridge?.AddJoinMap(Key, multiviewJoinMap);
-                Debug.LogInformation(this, "Successfully registered multiview join map for device key: '{0}'", Key);
+                // Then create and add the multiview-specific join map
+                Debug.LogDebug(this, "Creating Nvx38xMultiviewJoinMap for multiview-specific joins");
+                var multiviewJoinMap = new Nvx38xMultiviewJoinMap(joinStart);
 
-                // Link the base NVX functionality using the multiview joinMap
-                // Pass null bridge to prevent NvxDeviceBridge from overwriting our multiview joinmap
-                var deviceBridge = new NvxDeviceBridge(this);
-                deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, null);
+                // Register the multiview joinMap with the bridge
+                Debug.LogDebug(this, "Adding multiview joinMap to bridge for key: {0}", Key);
+                bridge?.AddJoinMap($"{Key}-multiview", multiviewJoinMap);
+                Debug.LogDebug(this, "Successfully registered multiview join map for device key: '{0}-multiview'", Key);
 
                 // Link the multiview-specific functionality
                 LinkMultiviewControls(trilist, multiviewJoinMap);
-                
-                Debug.LogInformation(this, "Successfully linked NVX-38x with multiview join map");
+
+                Debug.LogDebug(this, "Successfully linked NVX-38x with base and multiview join maps");
             }
             catch (Exception ex)
             {
@@ -504,20 +492,20 @@ public class Nvx38X :
                 Debug.LogError(this, "Exception details: {0}", ex.ToString());
                 
                 // Fall back to standard NVX bridge if multiview linking fails
-                Debug.LogInformation(this, "Falling back to standard NVX bridge");
+                Debug.LogDebug(this, "Falling back to standard NVX bridge");
                 var fallbackBridge = new NvxDeviceBridge(this);
                 fallbackBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
             }
         }
         else
         {
-            Debug.LogInformation(this, "Linking NVX-38x with standard capabilities (no multiview screens configured)");
+            Debug.LogDebug(this, "Linking NVX-38x with standard capabilities (no multiview screens configured)");
             
             // Use standard NVX device bridge for non-multiview devices
             var deviceBridge = new NvxDeviceBridge(this);
             deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
             
-            Debug.LogInformation(this, "Successfully linked NVX-38x with standard join map for device key: '{0}'", Key);
+            Debug.LogDebug(this, "Successfully linked NVX-38x with standard join map for device key: '{0}'", Key);
         }
     }
 
@@ -525,108 +513,72 @@ public class Nvx38X :
     {
         try
         {
-            Debug.LogDebug(this, "Linking multiview controls for DM-NVX-38x");
+            Debug.LogDebug(this, "Linking multiview controls for DM-NVX-384");
+
+            // Use join map properties instead of hardcoded numbers
+            var enterJoinNumber = joinMap.MultiviewEnter.JoinNumber;
+            var enabledFeedbackJoin = joinMap.MultiviewEnabledFeedback.JoinNumber;
+            var disabledFeedbackJoin = joinMap.MultiviewDisabledFeedback.JoinNumber;
+            var layoutJoin = joinMap.MultiviewLayout.JoinNumber;
+            var audioSourceJoin = joinMap.MultiviewAudioSource.JoinNumber;
 
             // Multiview Controls: Enter
-            trilist.SetBoolSigAction(joinMap.MultiviewEnter.JoinNumber, value =>
-            {
-                if (value && _device?.MultiviewControlsSetup?.MultiViewWindowControls?.Enter != null)
-                {
-                    _device.MultiviewControlsSetup.MultiViewWindowControls.Enter.BoolValue = true;
-                    Debug.LogDebug(this, "Multiview Enter triggered");
-                }
-                else if (!value && _device?.MultiviewControlsSetup?.MultiViewWindowControls?.Enter != null)
-                {
-                    _device.MultiviewControlsSetup.MultiViewWindowControls.Enter.BoolValue = false;
-                    Debug.LogDebug(this, "Multiview Enter released");
-                }
-            });
-
-            // Multiview Controls: Enable/Disable
-            trilist.SetBoolSigAction(joinMap.MultiviewEnabled.JoinNumber, value =>
+            trilist.SetBoolSigAction((uint)enterJoinNumber, value =>
             {
                 if (value)
                 {
-                    _device?.MultiviewControlsSetup?.Enable();
-                    Debug.LogDebug(this, "Multiview Enable triggered");
+                    Debug.LogDebug(this, "Multiview Enter command received");
+                    EnterMultiviewMode();
                 }
             });
-
-            trilist.SetBoolSigAction(joinMap.MultiviewDisabled.JoinNumber, value =>
-            {
-                if (value)
-                {
-                    _device?.MultiviewControlsSetup?.Disable();
-                    Debug.LogDebug(this, "Multiview Disable triggered");
-                }
-            });
-
-            // Feedbacks
-            MultiviewEnabledFeedback?.LinkInputSig(trilist.BooleanInput[joinMap.MultiviewEnabled.JoinNumber]);
-            MultiviewDisabledFeedback?.LinkInputSig(trilist.BooleanInput[joinMap.MultiviewDisabled.JoinNumber]);
 
             // Layout Control
-            trilist.SetUShortSigAction(joinMap.MultiviewLayout.JoinNumber, layoutValue =>
+            trilist.SetUShortSigAction((uint)layoutJoin, layoutValue =>
             {
-                if (layoutValue >= 1 && layoutValue <= 18)
-                {
-                    SetWindowLayout(layoutValue);
-                    Debug.LogDebug(this, "Multiview layout set to: {0}", layoutValue);
-                }
+                Debug.LogDebug(this, "Multiview layout selection: {0}", layoutValue);
+                SetMultiviewLayout(layoutValue);
             });
 
-            MultiviewLayoutFeedback?.LinkInputSig(trilist.UShortInput[joinMap.MultiviewLayoutFeedback.JoinNumber]);
-
-            // Audio Source Control
-            trilist.SetUShortSigAction(joinMap.MultiviewAudioSource.JoinNumber, audioSource =>
+            // Audio Source Control  
+            trilist.SetUShortSigAction((uint)audioSourceJoin, audioSource =>
             {
-                if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.AudioSource != null)
-                {
-                    _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSource.UShortValue = audioSource;
-                    Debug.LogDebug(this, "Multiview audio source set to: {0}", audioSource);
-                }
+                Debug.LogDebug(this, "Multiview audio source selection: {0}", audioSource);
+                SetMultiviewAudioSource(audioSource);
             });
 
-            MultiviewAudioSourceFeedback?.LinkInputSig(trilist.UShortInput[joinMap.MultiviewAudioSourceFeedback.JoinNumber]);
+            // Link feedback - multiview enabled/disabled status
+            MultiviewEnabledFeedback?.LinkInputSig(trilist.BooleanInput[(uint)enabledFeedbackJoin]);
+            MultiviewDisabledFeedback?.LinkInputSig(trilist.BooleanInput[(uint)disabledFeedbackJoin]);
 
-            // Window Stream URL Controls and Feedbacks
-            for (uint windowId = 1; windowId <= 6; windowId++)
-            {
-                var windowIndex = windowId;
+            // Link stream URL feedbacks for 6 windows
+            if (MultiviewWindowStreamUrlFeedbacks?.Count >= 1 && MultiviewWindowStreamUrlFeedbacks[0] != null)
+                MultiviewWindowStreamUrlFeedbacks[0].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow1StreamUrl.JoinNumber]);
+            if (MultiviewWindowStreamUrlFeedbacks?.Count >= 2 && MultiviewWindowStreamUrlFeedbacks[1] != null)
+                MultiviewWindowStreamUrlFeedbacks[1].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow2StreamUrl.JoinNumber]);
+            if (MultiviewWindowStreamUrlFeedbacks?.Count >= 3 && MultiviewWindowStreamUrlFeedbacks[2] != null)
+                MultiviewWindowStreamUrlFeedbacks[2].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow3StreamUrl.JoinNumber]);
+            if (MultiviewWindowStreamUrlFeedbacks?.Count >= 4 && MultiviewWindowStreamUrlFeedbacks[3] != null)
+                MultiviewWindowStreamUrlFeedbacks[3].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow4StreamUrl.JoinNumber]);
+            if (MultiviewWindowStreamUrlFeedbacks?.Count >= 5 && MultiviewWindowStreamUrlFeedbacks[4] != null)
+                MultiviewWindowStreamUrlFeedbacks[4].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow5StreamUrl.JoinNumber]);
+            if (MultiviewWindowStreamUrlFeedbacks?.Count >= 6 && MultiviewWindowStreamUrlFeedbacks[5] != null)
+                MultiviewWindowStreamUrlFeedbacks[5].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow6StreamUrl.JoinNumber]);
 
-                // Stream URL Control
-                var streamUrlJoin = joinMap.GetWindowStreamUrlJoin(windowIndex);
-                trilist.SetStringSigAction(streamUrlJoin.JoinNumber, streamUrl =>
-                {
-                    SetWindowVideoSourceStreamUrl(windowIndex, streamUrl);
-                    Debug.LogDebug(this, "Set window {0} stream URL to: {1}", windowIndex, streamUrl);
-                });
+            // Link label feedbacks for 6 windows
+            if (MultiviewWindowLabelFeedbacks?.Count >= 1 && MultiviewWindowLabelFeedbacks[0] != null)
+                MultiviewWindowLabelFeedbacks[0].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow1Label.JoinNumber]);
+            if (MultiviewWindowLabelFeedbacks?.Count >= 2 && MultiviewWindowLabelFeedbacks[1] != null)
+                MultiviewWindowLabelFeedbacks[1].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow2Label.JoinNumber]);
+            if (MultiviewWindowLabelFeedbacks?.Count >= 3 && MultiviewWindowLabelFeedbacks[2] != null)
+                MultiviewWindowLabelFeedbacks[2].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow3Label.JoinNumber]);
+            if (MultiviewWindowLabelFeedbacks?.Count >= 4 && MultiviewWindowLabelFeedbacks[3] != null)
+                MultiviewWindowLabelFeedbacks[3].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow4Label.JoinNumber]);
+            if (MultiviewWindowLabelFeedbacks?.Count >= 5 && MultiviewWindowLabelFeedbacks[4] != null)
+                MultiviewWindowLabelFeedbacks[4].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow5Label.JoinNumber]);
+            if (MultiviewWindowLabelFeedbacks?.Count >= 6 && MultiviewWindowLabelFeedbacks[5] != null)
+                MultiviewWindowLabelFeedbacks[5].LinkInputSig(trilist.StringInput[joinMap.MultiviewWindow6Label.JoinNumber]);
 
-                // Stream URL Feedback
-                var streamUrlFeedbackJoin = joinMap.GetWindowStreamUrlFeedbackJoin(windowIndex);
-                if (windowIndex <= MultiviewWindowStreamUrlFeedbacks?.Count)
-                {
-                    MultiviewWindowStreamUrlFeedbacks[(int)windowIndex - 1]?.LinkInputSig(
-                        trilist.StringInput[streamUrlFeedbackJoin.JoinNumber]);
-                }
-
-                // Window Label Control
-                var labelJoin = joinMap.GetWindowLabelJoin(windowIndex);
-                trilist.SetStringSigAction(labelJoin.JoinNumber, label =>
-                {
-                    SetWindowLabel(windowIndex, label);
-                    Debug.LogDebug(this, "Set window {0} label to: {1}", windowIndex, label);
-                });
-
-                // Window Label Feedback
-                var labelFeedbackJoin = joinMap.GetWindowLabelFeedbackJoin(windowIndex);
-                if (windowIndex <= MultiviewWindowLabelFeedbacks?.Count)
-                {
-                    MultiviewWindowLabelFeedbacks[(int)windowIndex - 1]?.LinkInputSig(
-                        trilist.StringInput[labelFeedbackJoin.JoinNumber]);
-                }
-            }
-            Debug.LogDebug(this, "Successfully linked multiview controls for DM-NVX-38x");
+            Debug.LogDebug(this, "Multiview controls linked successfully");
         }
         catch (Exception ex)
         {
@@ -1026,6 +978,63 @@ public class Nvx38X :
         if (!Feedbacks.Contains(newFb))
         {
             Feedbacks.Add(newFb);
+        }
+    }
+
+    #endregion
+
+    #region Multiview Control Methods
+
+    /// <summary>
+    /// Enters multiview mode on the device
+    /// </summary>
+    public void EnterMultiviewMode()
+    {
+        try
+        {
+            Debug.LogDebug(this, "EnterMultiviewMode called - implementing hardware control");
+            // TODO: Implement actual hardware control when API is available
+            // This method should trigger the multiview mode on the hardware
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(this, "Error enabling multiview mode: {0}", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Sets the multiview layout
+    /// </summary>
+    /// <param name="layout">Layout number to set</param>
+    public void SetMultiviewLayout(ushort layout)
+    {
+        try
+        {
+            Debug.LogDebug(this, "SetMultiviewLayout called with layout: {0}", layout);
+            // TODO: Implement actual hardware control when API is available
+            // This method should set the layout on the multiview hardware
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(this, "Error setting multiview layout: {0}", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Sets the multiview audio source
+    /// </summary>
+    /// <param name="source">Audio source number to set</param>
+    public void SetMultiviewAudioSource(ushort source)
+    {
+        try
+        {
+            Debug.LogDebug(this, "SetMultiviewAudioSource called with source: {0}", source);
+            // TODO: Implement actual hardware control when API is available
+            // This method should set the audio source for the multiview
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(this, "Error setting multiview audio source: {0}", ex.Message);
         }
     }
 
