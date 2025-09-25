@@ -134,7 +134,11 @@ public class Nvx38X :
         LayoutNames = new Dictionary<uint, string>();
         MultiviewWindowStreamUrlFeedbacks = new FeedbackCollection<StringFeedback>();
         MultiviewWindowLabelFeedbacks = new FeedbackCollection<StringFeedback>();
+        
+        // Initialize empty screens dictionary - no default screens for basic constructor
         Screens = new Dictionary<uint, ScreenInfo>();
+        
+        Debug.LogInformation(this, "Nvx38X created using basic constructor. Screens initialized as empty dictionary. Count: {0}", Screens?.Count ?? 0);
         
         AddPreActivationAction(InitializeMultiviewFeatures);
         AddPostActivationAction(AddFeedbackCollections);
@@ -328,7 +332,9 @@ public class Nvx38X :
 
     private void InitializeMultiviewFeatures()
     {
-        // Initialize multiview window feedbacks if available
+        Debug.LogInformation(this, "InitializeMultiviewFeatures called. Current Screens count: {0}", Screens?.Count ?? 0);
+        
+        // Initialize multiview window feedbacks for all window IDs
         for (uint windowId = 1; windowId <= 6; windowId++)
         {
             MultiviewWindowStreamUrlFeedbacks.Add(new StringFeedback(
@@ -340,27 +346,11 @@ public class Nvx38X :
                 () => GetWindowLabel(windowId)));
         }
 
-        // If no screens are configured, add a minimal default screen
-        if (Screens == null || !Screens.Any())
-        {
-            var mainScreen = new ScreenInfo
-            {
-                Name = "Main Display", 
-                Enabled = true,
-                Layouts = new Dictionary<uint, LayoutInfo>
-                {
-                    [1] = new LayoutInfo { LayoutIndex = 0, LayoutName = "Full Screen", LayoutType = "fullScreen" }
-                }
-            };
-
-            Screens = new Dictionary<uint, ScreenInfo> { { 1, mainScreen } };
-            
-            // Initialize feedbacks for default screen
-            ScreenNamesFeedbacks.Add(new StringFeedback("ScreenName1", () => mainScreen.Name));
-            ScreenEnablesFeedbacks.Add(new BoolFeedback("ScreenEnabled1", () => mainScreen.Enabled));
-            LayoutNames[1] = "Full Screen";
-            LayoutNamesFeedbacks.Add(new StringFeedback("LayoutName1", () => "Full Screen"));
-        }
+        // Only add default screen if we're being constructed with multiview config
+        // Don't add default screen for basic constructor - let it remain empty
+        // This prevents the device from being treated as multiview-capable when it shouldn't be
+        
+        Debug.LogInformation(this, "InitializeMultiviewFeatures completed. Final Screens count: {0}", Screens?.Count ?? 0);
     }
 
     #endregion
@@ -448,31 +438,87 @@ public class Nvx38X :
 
     #region Override Method - LinkToApi (Bridge Linking)
 
+    /// <summary>
+    /// Links the device to the API by mapping its functionality to the specified join map and bridge.
+    /// </summary>
+    /// <remarks>This method determines whether the device supports multiview functionality based on its
+    /// configuration. If multiview screens are present, a specialized multiview join map is used, and the
+    /// multiview-specific controls are linked. Otherwise, the device is linked using the standard NVX device
+    /// bridge.</remarks>
+    /// <param name="trilist">The <see cref="BasicTriList"/> instance used to communicate with the device.</param>
+    /// <param name="joinStart">The starting join number for the device's join map.</param>
+    /// <param name="joinMapKey">The key used to identify the join map in the bridge.</param>
+    /// <param name="bridge">The <see cref="EiscApiAdvanced"/> instance that manages the API bridge. Can be <see langword="null"/> for
+    /// certain configurations.</param>
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
-        // Only use multiview joinMap if this device has multiview screens configured
-        if (Screens != null && Screens.Any())
+        Debug.LogInformation(this, "LinkToApi called - Device Key: '{0}', JoinStart: {1}, JoinMapKey: '{2}', Bridge: {3}", 
+            Key, joinStart, joinMapKey ?? "null", bridge?.GetType().Name ?? "null");
+            
+        // Check if this device has multiview screens configured
+        var hasMultiviewScreens = Screens != null && Screens.Any();
+        
+        Debug.LogInformation(this, "Multiview screens configured: {0}, Screen count: {1}", 
+            hasMultiviewScreens, Screens?.Count ?? 0);
+        
+        if (hasMultiviewScreens)
         {
             try
             {
+                Debug.LogInformation(this, "Linking NVX-38x with multiview capabilities");
+                
                 // Use the specialized multiview joinMap for NVX-38X
-                var joinMap = new Nvx38xMultiviewJoinMap(joinStart);
+                Debug.LogInformation(this, "Creating Nvx38xMultiviewJoinMap with joinStart: {0}", joinStart);
+                
+                Nvx38xMultiviewJoinMap multiviewJoinMap;
+                try
+                {
+                    multiviewJoinMap = new Nvx38xMultiviewJoinMap(joinStart);
+                    Debug.LogInformation(this, "Successfully created Nvx38xMultiviewJoinMap");
+                }
+                catch (Exception createEx)
+                {
+                    Debug.LogError(this, "Error creating Nvx38xMultiviewJoinMap: {0}", createEx.Message);
+                    Debug.LogError(this, "Creation Exception details: {0}", createEx.ToString());
+                    throw; // Re-throw to trigger fallback
+                }
 
-                // Register the joinMap with the bridge
-                bridge?.AddJoinMap(Key, joinMap);
+                // Register the multiview joinMap with the bridge FIRST
+                Debug.LogInformation(this, "Adding multiview joinMap to bridge for key: {0}", Key);
+                bridge?.AddJoinMap(Key, multiviewJoinMap);
+                Debug.LogInformation(this, "Successfully registered multiview join map for device key: '{0}'", Key);
+
+                // Link the base NVX functionality using the multiview joinMap
+                // Pass null bridge to prevent NvxDeviceBridge from overwriting our multiview joinmap
+                var deviceBridge = new NvxDeviceBridge(this);
+                deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, null);
 
                 // Link the multiview-specific functionality
-                LinkMultiviewControls(trilist, joinMap);
+                LinkMultiviewControls(trilist, multiviewJoinMap);
+                
+                Debug.LogInformation(this, "Successfully linked NVX-38x with multiview join map");
             }
             catch (Exception ex)
             {
-                Debug.LogError(this, "Error creating multiview joinMap: {0}", ex.Message);
+                Debug.LogError(this, "Error linking multiview joinMap: {0}", ex.Message);
+                Debug.LogError(this, "Exception details: {0}", ex.ToString());
+                
+                // Fall back to standard NVX bridge if multiview linking fails
+                Debug.LogInformation(this, "Falling back to standard NVX bridge");
+                var fallbackBridge = new NvxDeviceBridge(this);
+                fallbackBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
             }
         }
-
-        // Always link the base NVX functionality
-        var deviceBridge = new NvxDeviceBridge(this);
-        deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
+        else
+        {
+            Debug.LogInformation(this, "Linking NVX-38x with standard capabilities (no multiview screens configured)");
+            
+            // Use standard NVX device bridge for non-multiview devices
+            var deviceBridge = new NvxDeviceBridge(this);
+            deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
+            
+            Debug.LogInformation(this, "Successfully linked NVX-38x with standard join map for device key: '{0}'", Key);
+        }
     }
 
     private void LinkMultiviewControls(BasicTriList trilist, Nvx38xMultiviewJoinMap joinMap)
