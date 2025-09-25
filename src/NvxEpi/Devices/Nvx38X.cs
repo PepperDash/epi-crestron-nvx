@@ -79,7 +79,7 @@ public class Nvx38X :
 
     #region Constructor
 
-    public Nvx38X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter, IHasScreensWithLayoutsConfig props)
+    public Nvx38X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter, Nvx38xMultiviewConfig multiviewProps)
         : base(config, getHardware, isTransmitter)
     {
         _config = NvxDeviceProperties.FromDeviceConfig(config);
@@ -88,7 +88,7 @@ public class Nvx38X :
         // Initialize multiview controls and screen layout dictionaries
         LayoutNames = new Dictionary<uint, string>();
 
-        Screens = new Dictionary<uint, ScreenInfo>(props.Screens);
+        Screens = new Dictionary<uint, ScreenInfo>(multiviewProps.Screens);
 
         ScreenNamesFeedbacks = new FeedbackCollection<StringFeedback>();
         ScreenEnablesFeedbacks = new FeedbackCollection<BoolFeedback>();
@@ -119,9 +119,11 @@ public class Nvx38X :
             DeviceManager.AddDevice(_screenLayouts[screenKey]); //Add to device manager which will show up in devlist
         }
 
-        _device.MultiviewControlsSetup.MultiViewWindowControls.PropertyChange += MultiviewWindowLayoutControlsChange;       
-
         AddPostActivationAction(AddFeedbackCollections);
+    }
+
+    public Nvx38X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter) : base(config, getHardware, isTransmitter)
+    {
     }
 
     #endregion
@@ -150,7 +152,7 @@ public class Nvx38X :
         {
             var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
 
-            Debug.LogInformation(
+            Debug.LogDebug(
                 this,
                 "Executing switch : '{0}' | '{1}' | '{2}'",
                 inputSelector?.ToString() ?? "{null}",
@@ -317,6 +319,20 @@ public class Nvx38X :
         MultiviewDisabledFeedback = new BoolFeedback("MultiviewDisabledFeedback", () => _device.MultiviewControlsSetup.DisabledFeedback.BoolValue);
         MultiviewLayoutFeedback = new IntFeedback("MultiviewLayoutFeedback", () => _device.MultiviewControlsSetup.MultiViewWindowControls.LayoutFeedback.UShortValue);
         MultiviewAudioSourceFeedback = new IntFeedback("MultiviewAudioSourceFeedback", () => _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSourceFeedback.UShortValue);
+
+        // Initialize multiview window feedbacks
+        for (uint windowId = 1; windowId <= 6; windowId++)
+        {
+            var windowIndex = (int)windowId - 1;
+
+            MultiviewWindowStreamUrlFeedbacks.Add(new StringFeedback(
+                $"MultiviewWindow{windowId}StreamUrl",
+                () => GetWindowStreamUrl(windowId)));
+
+            MultiviewWindowLabelFeedbacks.Add(new StringFeedback(
+                $"MultiviewWindow{windowId}Label",
+                () => GetWindowLabel(windowId)));
+        }
 
         // Initialize default screen configuration for DM-NVX-38X
         var mainScreen = new ScreenInfo
@@ -639,56 +655,156 @@ public class Nvx38X :
         AddCollectionsToList(ScreenEnablesFeedbacks);
         AddCollectionsToList(MultiviewWindowStreamUrlFeedbacks, MultiviewWindowLabelFeedbacks);
     }
-    
+
     #endregion
 
-    #region Override Method - LinkToApi
+    #region Override Method - LinkToApi (Bridge Linking)
 
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
+        // Use the specialized multiview joinMap for NVX-38X
+        var joinMap = new Nvx38xMultiviewJoinMap(joinStart);
+
+        // Register the joinMap with the bridge
+        bridge?.AddJoinMap(Key, joinMap);
+
+        // Link the base NVX functionality
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
 
-        // Add to LinkToApi method after existing links
-        if (_device is IHasScreensWithLayouts multiviewDevice)
-        {
-            LinkMultiviewSupport(trilist, joinMap, multiviewDevice);
-        }
+        // Link the multiview-specific functionality
+        LinkMultiviewControls(trilist, joinMap);
     }
 
-    private void LinkMultiviewSupport(BasicTriList trilist, NvxDeviceJoinMap joinMap, IHasScreensWithLayouts device)
+    private void LinkMultiviewControls(BasicTriList trilist, Nvx38xMultiviewJoinMap joinMap)
     {
-        // Layout selection
-        trilist.SetUShortSigAction(joinMap.LayoutSelect.JoinNumber, layoutId =>
+        try
         {
-            if (device is Nvx38X nvx38x)
-            {
-                nvx38x.ApplyLayout(1, layoutId); // Screen 1, specified layout
-            }
-        });
+            Debug.LogDebug(this, "Linking multiview controls for DM-NVX-38x");
 
-        // Window source assignments
-        for (uint window = 1; window <= 6; window++)
-        {
-            var windowNum = window;
-            trilist.SetUShortSigAction(joinMap.WindowVideoSource.JoinNumber + windowNum - 1, sourceId =>
+            // Multiview Controls: Enter
+            trilist.SetBoolSigAction(joinMap.MultiviewEnter.JoinNumber, value =>
             {
-                if (device is Nvx38X nvx38x && sourceId >= 1 && sourceId <= 6)
+                if (value)
                 {
-                    var sourceType = (WindowLayout.eVideoSourceType)sourceId;
-                    nvx38x.SetWindowVideoSource(windowNum, sourceType);
+                    if (_device != null &&
+                        _device.MultiviewControlsSetup != null &&
+                        _device.MultiviewControlsSetup.MultiViewWindowControls != null &&
+                        _device.MultiviewControlsSetup.MultiViewWindowControls.Enter != null)
+                    {
+                        _device.MultiviewControlsSetup.MultiViewWindowControls.Enter.BoolValue = true;
+                        Debug.LogDebug(this, "Multiview Enter triggered");
+                    }
+                }
+                else
+                    if (_device != null &&
+                        _device.MultiviewControlsSetup != null &&
+                        _device.MultiviewControlsSetup.MultiViewWindowControls != null &&
+                        _device.MultiviewControlsSetup.MultiViewWindowControls.Enter != null)
+                {
+                    _device.MultiviewControlsSetup.MultiViewWindowControls.Enter.BoolValue = false;
+                    Debug.LogDebug(this, "Multiview Enter released");
                 }
             });
-        }
 
-        // Layout type selection (0-6)
-        trilist.SetUShortSigAction(joinMap.LayoutType.JoinNumber, layoutType =>
-        {
-            if (device is Nvx38X nvx38x)
+            // Multiview Controls: Enable Press
+            trilist.SetBoolSigAction(joinMap.MultiviewEnabled.JoinNumber, value =>
             {
-                nvx38x.SetWindowLayout(layoutType);
+                if (value)
+                {
+                    _device?.MultiviewControlsSetup?.Enable();
+                    Debug.LogDebug(this, "Multiview Enable triggered");
+                }
+            });
+
+            // Multiview Controls: Enable Feedback
+            MultiviewEnabledFeedback?.LinkInputSig(trilist.BooleanInput[joinMap.MultiviewEnabled.JoinNumber]);
+
+            // Multiview Controls: Disable Press
+            trilist.SetBoolSigAction(joinMap.MultiviewDisabled.JoinNumber, value =>
+            {
+                if (value)
+                {
+                    _device?.MultiviewControlsSetup?.Disable();
+                    Debug.LogDebug(this, "Multiview Disable triggered");
+                }
+            });
+
+            // Multiview Controls: Disabled Feedback
+            MultiviewDisabledFeedback?.LinkInputSig(trilist.BooleanInput[joinMap.MultiviewDisabled.JoinNumber]);
+
+            // Multiview Controls: Set Layout
+            trilist.SetUShortSigAction(joinMap.MultiviewLayout.JoinNumber, layoutValue =>
+            {
+                if (layoutValue >= 1 && layoutValue <= 18)
+                {
+                    SetWindowLayout(layoutValue);
+                    Debug.LogDebug(this, "Multiview layout set to: {0}", layoutValue);
+                }
+            });
+
+            // Multiview Controls: Layout Feedback
+            MultiviewLayoutFeedback?.LinkInputSig(trilist.UShortInput[joinMap.MultiviewLayoutFeedback.JoinNumber]);
+
+            // Multiview Controls: Set Audio Source
+            trilist.SetUShortSigAction(joinMap.MultiviewAudioSource.JoinNumber, audioSource =>
+            {   
+                if (_device != null &&
+                    _device.MultiviewControlsSetup != null &&
+                    _device.MultiviewControlsSetup.MultiViewWindowControls != null &&
+                    _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSource != null)
+                {
+                    _device.MultiviewControlsSetup.MultiViewWindowControls.AudioSource.UShortValue = audioSource;
+                    Debug.LogDebug(this, "Multiview audio source set to: {0}", audioSource);
+                }
+            });
+
+            // Multiview Controls: Audio Source Feedback
+            MultiviewAudioSourceFeedback?.LinkInputSig(trilist.UShortInput[joinMap.MultiviewAudioSourceFeedback.JoinNumber]);
+
+            // Window Stream URL Controls and Feedbacks
+            for (uint windowId = 1; windowId <= 6; windowId++)
+            {
+                var windowIndex = windowId; // Capture for closure
+
+                // Stream URL Control
+                var streamUrlJoin = joinMap.GetWindowStreamUrlJoin(windowIndex);
+                trilist.SetStringSigAction(streamUrlJoin.JoinNumber, streamUrl =>
+                {
+                    SetWindowVideoSourceStreamUrl(windowIndex, streamUrl);
+                    Debug.LogDebug(this, "Set window {0} stream URL to: {1}", windowIndex, streamUrl);
+                });
+
+                // Stream URL Feedback
+                var streamUrlFeedbackJoin = joinMap.GetWindowStreamUrlFeedbackJoin(windowIndex);
+                if (windowIndex <= MultiviewWindowStreamUrlFeedbacks?.Count)
+                {
+                    MultiviewWindowStreamUrlFeedbacks[(int)windowIndex - 1]?.LinkInputSig(
+                        trilist.StringInput[streamUrlFeedbackJoin.JoinNumber]);
+                }
+
+                // Window Label Control
+                var labelJoin = joinMap.GetWindowLabelJoin(windowIndex);
+                trilist.SetStringSigAction(labelJoin.JoinNumber, label =>
+                {
+                    SetWindowLabel(windowIndex, label);
+                    Debug.LogDebug(this, "Set window {0} label to: {1}", windowIndex, label);
+                });
+
+                // Window Label Feedback
+                var labelFeedbackJoin = joinMap.GetWindowLabelFeedbackJoin(windowIndex);
+                if (windowIndex <= MultiviewWindowLabelFeedbacks?.Count)
+                {
+                    MultiviewWindowLabelFeedbacks[(int)windowIndex - 1]?.LinkInputSig(
+                        trilist.StringInput[labelFeedbackJoin.JoinNumber]);
+                }
             }
-        });
+            Debug.LogDebug(this, "Successfully linked multiview controls for DM-NVX-38x");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(this, "Error linking multiview controls: {0}", ex.Message);
+        }
     }
 
     #endregion
@@ -720,7 +836,7 @@ public class Nvx38X :
     #region Multiview Methods
 
     /// <summary>
-    /// Change the current window layout using values from 1-18. Call from SIMPL Bridge only.
+    /// Change the current window layout using values from 1-18. Call from ApplyLayout() only.
     /// </summary>
     /// <param name="layout">Values from 1 - 18</param>
     private void SetWindowLayout(uint layout)
@@ -768,7 +884,7 @@ public class Nvx38X :
                 _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.FourLeftOneLargeRight;
                 break;
             case 14:
-                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.OneLargeLeftFourRight;
+                _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.TwoLeftOneLargeCenterTwoRight;
                 break;
             case 15:
                 _layoutType = Nvx38xWindowLayout.ExtendedLayoutType.ThreeTopThreeBottom;
@@ -824,7 +940,6 @@ public class Nvx38X :
     {
         if (Screens != null)
         {
-
             // throw not implemented exception as device does not support this method
             throw new NotImplementedException("SetWindowVideoSource with WindowLayout.eVideoSourceType is not implemented for DM-NVX-38x");
         }
@@ -865,7 +980,7 @@ public class Nvx38X :
                 {
                     // Set the stream URL for the window
                     windowDetail.StreamUrl.StringValue = streamUrl;
-                    Debug.LogInformation(this, "Set window {0} to stream URL: {1}", windowId, streamUrl);
+                    Debug.LogDebug(this, "Set window {0} to stream URL: {1}", windowId, streamUrl);
 
                     // Update the internal tracking array
                     if (MultiviewWindowStreamUrlFeedbacks != null && windowId <= MultiviewWindowStreamUrlFeedbacks.Count)
@@ -917,12 +1032,13 @@ public class Nvx38X :
             if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.WindowDetails != null)
             {
                 var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values.FirstOrDefault(w => w.Number == windowId);
+                var windowDetailText = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values.FirstOrDefault(w => w.Number == windowId)?.Text.StringValue;
 
                 if (windowDetail != null)
                 {
                     // Set the window label
-                    windowDetail.TextFeedback.StringValue = label ?? string.Empty;
-                    Debug.LogInformation(this, "Set window {0} label to: {1}", windowId, label);
+                    windowDetailText = label;
+                    Debug.LogDebug(this, "Set window {0} label to: {1}", windowId, label);
 
                     // Update the internal tracking array
                     if (MultiviewWindowLabelFeedbacks != null && windowId <= MultiviewWindowLabelFeedbacks.Count)
@@ -944,6 +1060,17 @@ public class Nvx38X :
         {
             Debug.LogError(this, "Error setting window {0} label to {1}: {2}", windowId, label, ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Clears the label of the specified window by setting it to an empty string.
+    /// </summary>
+    /// <remarks>This method effectively removes any existing label associated with the specified
+    /// window.</remarks>
+    /// <param name="windowId">The unique identifier of the window whose label is to be cleared.</param>
+    public void ClearWindowLabel(uint windowId)
+    {
+        SetWindowLabel(windowId, string.Empty);
     }
 
     /// <summary>
@@ -975,40 +1102,6 @@ public class Nvx38X :
             SetWindowLayout((uint)layout.LayoutIndex);
         }
 
-        // Then configure individual windows
-        foreach (var window in layout.Windows)
-        {
-            uint windowId = window.Key;
-            string inputKey = window.Value.Input?.ToLower();
-
-            if (string.IsNullOrEmpty(inputKey))
-            {
-                Debug.LogError(this, $"[ApplyLayout] Missing input for window {windowId}.");
-                continue;
-            }
-
-            Nvx38xWindowLayout.ExtendedVideoSourceType? source = inputKey switch
-            {
-                "input1" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input1,
-                "input2" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input2,
-                "input3" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input3,
-                "input4" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input4,
-                "input5" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input5,
-                "input6" => Nvx38xWindowLayout.ExtendedVideoSourceType.Input6,
-                _ => null
-            };
-
-            if (source.HasValue)
-            {
-                SetWindowVideoSource(windowId, source.Value);
-                Debug.LogVerbose(this, $"[ApplyLayout] Set window {windowId} to {inputKey} ({window.Value.Label}).");
-            }
-            else
-            {
-                Debug.LogError(this, $"[ApplyLayout] Invalid input '{inputKey}' for window {windowId}.");
-            }
-        }
-
         // Send layout data via messenger
         var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
         if (mc != null)
@@ -1020,27 +1113,94 @@ public class Nvx38X :
     }
 
     /// <summary>
-    /// Get current layout feedback from the hardware
+    /// Get the current stream URL for a specific window.
     /// </summary>
-    /// <returns>Current layout type</returns>
-    public Nvx38xWindowLayout.ExtendedLayoutType GetCurrentLayout()
+    /// <param name="windowId">Window ID (1-6)</param>
+    /// <returns>Current stream URL or empty string if not found</returns>
+    public string GetWindowStreamUrl(uint windowId)
     {
-        // TODO: Implement feedback retrieval from hardware
+        try
+        {
+            if (windowId < 1 || windowId > 6)
+            {
+                Debug.LogError(this, "Invalid window ID: {0}. Valid range is 1-6", windowId);
+                return string.Empty;
+            }
+
+            if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.WindowDetails != null)
+            {
+                var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values
+                    .FirstOrDefault(w => w.Number == windowId);
+
+                if (windowDetail != null)
+                {
+                    return windowDetail.StreamUrl.StringValue ?? string.Empty;
+                }
+                else
+                {
+                    Debug.LogVerbose(this, "Window detail not found for window ID: {0}", windowId);
+                }
+            }
+            else
+            {
+                Debug.LogVerbose(this, "DM-NVX-38x multiview window controls not available");
+            }
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(this, "Error getting stream URL for window {0}: {1}", windowId, ex.Message);
+            return string.Empty;
+        }
     }
 
     /// <summary>
-    /// Get current video source for a specific window
+    /// Get the current label for a specific window.
     /// </summary>
-    /// <param name="windowId">Window ID</param>
-    /// <returns>Current video source type</returns>
-    public Nvx38xWindowLayout.ExtendedVideoSourceType GetWindowVideoSource(uint windowId)
+    /// <param name="windowId">Window ID (1-6)</param>
+    /// <returns>Current window label or empty string if not found</returns>
+    public string GetWindowLabel(uint windowId)
     {
-        // TODO: Implement feedback retrieval from hardware
+        try
+        {
+            if (windowId < 1 || windowId > 6)
+            {
+                Debug.LogError(this, "Invalid window ID: {0}. Valid range is 1-6", windowId);
+                return string.Empty;
+            }
+
+            if (_device?.MultiviewControlsSetup?.MultiViewWindowControls?.WindowDetails != null)
+            {
+                var windowDetail = _device.MultiviewControlsSetup.MultiViewWindowControls.WindowDetails.Values
+                    .FirstOrDefault(w => w.Number == windowId);
+
+                if (windowDetail != null)
+                {
+                    return windowDetail.Text.StringValue ?? string.Empty;
+                }
+                else
+                {
+                    Debug.LogVerbose(this, "Window detail not found for window ID: {0}", windowId);
+                }
+            }
+            else
+            {
+                Debug.LogVerbose(this, "DM-NVX-38x multiview window controls not available");
+            }
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(this, "Error getting label for window {0}: {1}", windowId, ex.Message);
+            return string.Empty;
+        }
     }
 
     #endregion
 
-    #region Layouts
+    #region Nvx38xLayouts
 
     class Nvx38xLayouts : ISelectableItems<uint>, IKeyName
     {
@@ -1135,7 +1295,7 @@ public class Nvx38X :
                 if (_parentDevice != null)
                 {
                     _parentDevice.ApplyLayout((uint)screenIndex, (uint)Id);
-                    Debug.LogInformation(_parentDevice, "Applied layout {0} ({1}) to screen {2}", Name, Id, screenIndex);
+                    Debug.LogDebug(_parentDevice, "Applied layout {0} ({1}) to screen {2}", Name, Id, screenIndex);
                 }
                 else
                 {
@@ -1214,7 +1374,7 @@ public class Nvx38X :
     }
 
     //Add Individual Feedbacks
-    public void AddFeedbackToList(PepperDash.Essentials.Core.Feedback newFb)
+    public void AddFeedbackToList(Feedback newFb)
     {
         if (newFb == null) return;
 

@@ -30,6 +30,17 @@ public class Nvx38XDeviceFactory : NvxBaseDeviceFactory<Nvx38X>
     {
         var props = NvxDeviceProperties.FromDeviceConfig(dc);
         var deviceBuild = GetDeviceBuildAction(dc.Type, props);
+        
+        // Check if this device has multiview configuration
+        var multiviewConfig = dc.Properties?.ToObject<Nvx38xMultiviewConfig>();
+        
+        // If multiview config is provided, use the multiview constructor
+        if (multiviewConfig?.Screens != null && multiviewConfig.Screens.Any())
+        {
+            return new Nvx38X(dc, deviceBuild, props.DeviceIsTransmitter(), multiviewConfig);
+        }
+        
+        // Otherwise, use the basic constructor
         return new Nvx38X(dc, deviceBuild, props.DeviceIsTransmitter());
     }
 }
