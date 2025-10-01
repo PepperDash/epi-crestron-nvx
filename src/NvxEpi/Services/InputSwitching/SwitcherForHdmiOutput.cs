@@ -3,7 +3,7 @@ using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Services.Utilities;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputSwitching;
@@ -26,10 +26,13 @@ public class SwitcherForHdmiOutput : IHandleInputSwitch
         }
 
         if (_device.IsTransmitter)
-            throw new NotSupportedException("transmitter");
+        {
+            _device.LogWarning("Cannot individually switch inputs on a transmitter device. HDMI Output will follow the Stream output");
+            return;
+        }
 
         var routingInput = input as DeviceInputEnum;
-        Debug.Console(1, _device, "Switching input on HdmiOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
+        _device.LogDebug("Switching input on HdmiOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
 
         if (type.Is(eRoutingSignalType.AudioVideo))
         {
@@ -92,6 +95,7 @@ public class SwitcherForHdmiOutput : IHandleInputSwitch
             eRoutingSignalType.AudioVideo,
             eRoutingPortConnectionType.Hdmi,
             new SwitcherForHdmiOutput(parent),
-            parent) { Port = parent });
+            parent)
+        { Port = parent });
     }
 }
