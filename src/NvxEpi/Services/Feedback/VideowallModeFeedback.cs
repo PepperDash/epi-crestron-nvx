@@ -10,7 +10,7 @@ public class VideowallModeFeedback
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiOut == null)
-            return new IntFeedback(() => 0);
+            return new IntFeedback(Key, () => 0);
 
         var feedback = new IntFeedback(Key, () => device.HdmiOut.VideoWallModeFeedback.UShortValue);
         device.HdmiOut.StreamChange += (stream, args) => feedback.FireUpdate();

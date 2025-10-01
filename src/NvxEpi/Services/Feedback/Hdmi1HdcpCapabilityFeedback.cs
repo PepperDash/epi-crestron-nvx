@@ -1,4 +1,3 @@
-using System;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
@@ -11,7 +10,7 @@ public class Hdmi1HdcpCapabilityFeedback
     public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiIn == null || device.HdmiIn[1] == null)
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
 
         var feedback = new StringFeedback(Key,
             () => device.HdmiIn[1].HdcpCapabilityFeedback.ToString());
@@ -28,7 +27,7 @@ public class Hdmi1HdcpStateFeedback
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiIn == null || device.HdmiIn[1] == null)
-            return new IntFeedback(() => 0);
+            return new IntFeedback(Key, () => 0);
 
         var feedback = new IntFeedback(Key,
             () => (int)device.HdmiIn[1].VideoAttributes.HdcpStateFeedback);
@@ -44,9 +43,9 @@ public class Hdmi1CurrentResolutionFeedback
 
     public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
-        if(device.HdmiIn == null || device.HdmiIn[1] == null)
+        if (device.HdmiIn == null || device.HdmiIn[1] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
         }
 
         var feedback = new StringFeedback(Key, () =>
@@ -67,9 +66,9 @@ public class Hdmi1AudioChannelsFeedback
 
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
-        if(device.HdmiIn == null | device.HdmiIn[1] == null)
+        if (device.HdmiIn == null | device.HdmiIn[1] == null)
         {
-            return new IntFeedback(() => 0);
+            return new IntFeedback(Key, () => 0);
         }
 
         var feedback = new IntFeedback(Key, () => device.HdmiIn[1].AudioChannelsFeedback.UShortValue);
@@ -88,7 +87,7 @@ public class Hdmi1AudioFormatFeedback
     {
         if (device.HdmiIn == null | device.HdmiIn[1] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
         }
 
         var feedback = new StringFeedback(Key, () => device.HdmiIn[1].AudioFormatFeedback.ToString());
@@ -107,7 +106,7 @@ public class Hdmi1ColorSpaceFeedback
     {
         if (device.HdmiIn == null | device.HdmiIn[1] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
         }
 
         var feedback = new StringFeedback(Key, () => device.HdmiIn[1].VideoAttributes.ColorSpaceFeedback.ToString());
@@ -126,7 +125,7 @@ public class Hdmi1HdrTypeFeedback
     {
         if (device.HdmiIn == null | device.HdmiIn[1] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
         }
 
         var feedback = new StringFeedback(Key, () => device.HdmiIn[1].HdrTypeFeedback.ToString());

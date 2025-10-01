@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Crestron.SimplSharp.Net;
 using NvxEpi.Abstractions.Usb;
-using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using System.Threading;
 
 namespace NvxEpi.Extensions;
 
@@ -59,9 +56,9 @@ public static class UsbStreamExt
                     foreach (var usbRemoteId in localUsb.Hardware.UsbInput.RemoteDeviceIds.Values.Where(sig => sig.StringValue.Equals(remoteId)))
                     {
                         // Clear the remote device id if it matches the one we're trying to add
-                        
+
                         usbRemoteId.StringValue = ClearUsbValue;
-                        
+
                     }
                 }
 
@@ -115,7 +112,7 @@ public static class UsbStreamExt
             remote.Hardware.UsbInput.RemoteDeviceId.StringValue = local.UsbLocalId.StringValue;
 
             // Thread.Sleep(500);
-          
+
             if (local.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
                 local.Hardware.UsbInput.Pair();
             if (remote.Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
@@ -125,6 +122,6 @@ public static class UsbStreamExt
         catch (Exception ex)
         {
             local.LogError(ex, "Error adding remote USB stream to local");
-        }   
+        }
     }
 }

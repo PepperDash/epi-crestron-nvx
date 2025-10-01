@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials;
 
@@ -35,7 +30,7 @@ public class Amplifier : EssentialsDevice, IRoutingSink
             handler?.Invoke(_CurrentSourceInfo, ChangeType.DidChange);
         }
     }
-    SourceListItem _CurrentSourceInfo;        
+    SourceListItem _CurrentSourceInfo;
 
     public RoutingInputPort CurrentInputPort => AudioIn;
 
@@ -46,7 +41,7 @@ public class Amplifier : EssentialsDevice, IRoutingSink
     {
         AudioIn = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio,
             eRoutingPortConnectionType.None, null, this);
-        InputPorts = new RoutingPortCollection<RoutingInputPort> { AudioIn };            
+        InputPorts = new RoutingPortCollection<RoutingInputPort> { AudioIn };
     }
 
     #region IRoutingInputs Members
@@ -65,7 +60,7 @@ public class AmplifierFactory : EssentialsDeviceFactory<Amplifier>
 
     public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
-        Debug.Console(1, "Factory Attempting to create new Amplifier Device");
+        Debug.LogDebug("Factory Attempting to create new Amplifier Device");
         return new Amplifier(dc.Key, dc.Name);
     }
 }

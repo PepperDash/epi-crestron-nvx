@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using NvxEpi.Abstractions;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Utilities;
@@ -16,10 +15,10 @@ public static class DeviceConsole
 
         foreach (var device in devices)
         {
-            Debug.Console(0, device, "----------- {0} -----------", device.Name);
+            device.LogInformation("----------- {0} -----------", device.Name);
             PrintInfoToConsole(device);
-            Debug.Console(0, device, "-----------------------------------------\r");
-        }       
+            device.LogInformation("-----------------------------------------\r");
+        }
     }
 
     private static void PrintInfoToConsole(IHasFeedback device)
@@ -27,13 +26,13 @@ public static class DeviceConsole
         foreach (var feedback in device.Feedbacks.Where(x => x != null && !string.IsNullOrEmpty(x.Key)))
         {
             if (feedback is BoolFeedback)
-                Debug.Console(0, device, "{0} : '{1}'", feedback.Key, feedback.BoolValue);
+                device.LogInformation("{0} : '{1}'", feedback.Key, feedback.BoolValue);
 
             if (feedback is IntFeedback)
-                Debug.Console(0, device, "{0} : '{1}'", feedback.Key, feedback.IntValue);
+                device.LogInformation("{0} : '{1}'", feedback.Key, feedback.IntValue);
 
             if (feedback is StringFeedback)
-                Debug.Console(0, device, "{0} : '{1}'", feedback.Key, feedback.StringValue);
+                device.LogInformation("{0} : '{1}'", feedback.Key, feedback.StringValue);
         }
     }
 }

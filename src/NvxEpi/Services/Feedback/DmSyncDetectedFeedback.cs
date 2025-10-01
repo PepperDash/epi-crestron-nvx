@@ -10,7 +10,7 @@ public class DmSyncDetectedFeedback
     public static BoolFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device is not DmNvxE760x dmDevice)
-            return new BoolFeedback(() => false);
+            return new BoolFeedback(Key, () => false);
 
         var feedback = new BoolFeedback(Key,
             () => device.DmIn.SyncDetectedFeedback.BoolValue);

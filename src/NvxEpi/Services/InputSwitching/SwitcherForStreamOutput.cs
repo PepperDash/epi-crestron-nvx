@@ -3,7 +3,7 @@ using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Services.Utilities;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputSwitching;
@@ -33,7 +33,7 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
         if (routingInput == DeviceInputEnum.NoSwitch)
             return;
 
-        Debug.Console(1, _device, "Switching input on Stream Output: '{0}' : '{1}'", routingInput.Name, type.ToString());
+        _device.LogDebug("Switching input on Stream Output: '{0}' : '{1}'", routingInput.Name, type.ToString());
         if (type.Is(eRoutingSignalType.AudioVideo))
         {
             SwitchVideo(routingInput);
@@ -87,10 +87,10 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
     public static void AddRoutingPort(ICurrentVideoInput parent)
     {
         parent.OutputPorts.Add(new RoutingOutputPort(
-            Key, 
-            eRoutingSignalType.AudioVideo, 
+            Key,
+            eRoutingSignalType.AudioVideo,
             eRoutingPortConnectionType.Streaming,
-            new SwitcherForStreamOutput(parent), 
+            new SwitcherForStreamOutput(parent),
             parent));
     }
 }

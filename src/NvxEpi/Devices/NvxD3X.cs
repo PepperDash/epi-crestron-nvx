@@ -11,7 +11,6 @@ using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
-using NvxEpi.Services.Utilities;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -19,10 +18,10 @@ using PepperDash.Essentials.Core.Config;
 
 namespace NvxEpi.Devices;
 
-public class NvxD3X : 
-    NvxBaseDevice, 
-    INvxD3XDeviceWithHardware, 
-    IComPorts, 
+public class NvxD3X :
+    NvxBaseDevice,
+    INvxD3XDeviceWithHardware,
+    IComPorts,
     IIROutputPorts,
     IHdmiOutput,
     IRoutingWithFeedback
@@ -47,7 +46,8 @@ public class NvxD3X :
 
         _hdmiOutput = new HdmiOutput(this);
 
-        Hardware.BaseEvent += (o, a) => {
+        Hardware.BaseEvent += (o, a) =>
+        {
             var newRoute = this.HandleBaseEvent(a);
 
             if (newRoute == null)
@@ -122,7 +122,7 @@ public class NvxD3X :
 
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Switching {input} to {output} type {type}", inputSelector, outputSelector, signalType.ToString());
 
-            if(inputSelector is null)
+            if (inputSelector is null)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Device is DmNvxD30. 'None' input not available", this);
                 return;

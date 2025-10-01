@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -8,37 +8,34 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Extensions;
 using NvxEpi.Features.Audio;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Features.Streams.Usb;
-
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
-
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
-using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using NvxEpi.Extensions;
 
 
 namespace NvxEpi.Devices;
 
-public class Nvx36X : 
-    NvxBaseDevice, 
-    IComPorts, 
+public class Nvx36X :
+    NvxBaseDevice,
+    IComPorts,
     IIROutputPorts,
-    IUsbStreamWithHardware, 
-    IHdmiInput, 
-    IVideowallMode, 
-    IRoutingWithFeedback, 
+    IUsbStreamWithHardware,
+    IHdmiInput,
+    IVideowallMode,
+    IRoutingWithFeedback,
     ICec,
     IBasicVolumeWithFeedback
 {
@@ -63,18 +60,20 @@ public class Nvx36X :
         {
             var result = base.CustomActivate();
 
-            if(Hardware is DmNvx36x nvx36x)
+            if (Hardware is DmNvx36x nvx36x)
             {
                 _audio = new Nvx36XAudio(nvx36x, this);
-            } else if(Hardware is DmNvxE760x nvxE760x) {
+            }
+            else if (Hardware is DmNvxE760x nvxE760x)
+            {
                 _audio = new NvxE760xAudio(nvxE760x, this);
             }
-            
+
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInputs = new HdmiInput(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
-            Feedbacks.AddRange(new [] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
+            Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
 
             if (_config.EnableAutoRoute)
                 // ReSharper disable once ObjectCreationAsStatement
@@ -82,7 +81,8 @@ public class Nvx36X :
 
             AddMcMessengers();
 
-            Hardware.BaseEvent += (o, a) => {
+            Hardware.BaseEvent += (o, a) =>
+            {
                 var newRoute = this.HandleBaseEvent(a);
 
                 if (newRoute == null)
@@ -97,7 +97,8 @@ public class Nvx36X :
         }
         catch (Exception ex)
         {
-            Debug.Console(0, this, "Caught an exception in activate:{0}", ex);
+            this.LogError("Caught an exception in activate:{0}", ex.Message);
+            this.LogDebug(ex, "Stack Trace: ");
             throw;
         }
     }
@@ -109,10 +110,10 @@ public class Nvx36X :
 
     public void MakeUsbRoute(IUsbStreamWithHardware hardware)
     {
-        Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
+        this.LogInformation("Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
         if (_usbStream is not UsbStream usbStream)
         {
-            Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
+            this.LogError("cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
             return;
         }
         usbStream.MakeUsbRoute(hardware);
@@ -212,8 +213,7 @@ public class Nvx36X :
         {
             var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
 
-            Debug.Console(1,
-                this,
+            this.LogDebug(
                 "Executing switch : '{0}' | '{1}' | '{2}'",
                 inputSelector?.ToString() ?? "{null}",
                 outputSelector?.ToString() ?? "{null}",
@@ -223,7 +223,8 @@ public class Nvx36X :
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error executing switch!: {0}", ex);
+            this.LogError("Error executing switch!: {0}", ex.Message);
+            this.LogDebug(ex, "Stack Trace: ");
         }
     }
 
@@ -300,7 +301,7 @@ public class Nvx36X :
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }        
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 }

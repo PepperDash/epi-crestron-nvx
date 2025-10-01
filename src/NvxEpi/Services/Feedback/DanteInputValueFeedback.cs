@@ -9,7 +9,7 @@ public class DanteInputValueFeedback
 
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
-        var feedback = new IntFeedback(() => 0);
+        var feedback = new IntFeedback(Key, () => 0);
 
         if (device.Control.DanteAes67Name != null)
         {

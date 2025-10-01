@@ -1,14 +1,13 @@
 ﻿using System;
 using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 
 namespace NvxEpi.Extensions;
 
 public static class HdmiInputExtensions
-{        
+{
     public static void SetHdmi1HdcpCapability(this IHdmiInput device, ushort capability)
     {
         try
@@ -18,14 +17,14 @@ public static class HdmiInputExtensions
             if (device.Hardware is DmNvxE760x)
             {
                 capabilityToSet = (eHdcpCapabilityType)capability;
-                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
+                device.LogDebug("Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
                 var hardware = device.Hardware as DmNvxE760x;
                 hardware.DmIn.HdcpCapability = capabilityToSet;
             }
             else if (device.Hardware.HdmiIn != null && device.Hardware.HdmiIn[1] != null)
             {
-                capabilityToSet = (eHdcpCapabilityType) capability;
-                Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
+                capabilityToSet = (eHdcpCapabilityType)capability;
+                device.LogDebug("Setting Hdmi1 Capability to '{0}'", capabilityToSet.ToString());
                 device.Hardware.HdmiIn[1].HdcpCapability = capabilityToSet;
             }
             else
@@ -35,15 +34,16 @@ public static class HdmiInputExtensions
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogDebug(ex, "Stack Trace: ");
         }
     }
 
@@ -54,20 +54,21 @@ public static class HdmiInputExtensions
             if (device.Hardware.HdmiIn[1] == null)
                 throw new NotSupportedException("hdmi1");
 
-            Debug.Console(1, device, "Setting Hdmi1 Capability to '{0}'", capability.ToString());
+            device.LogDebug("Setting Hdmi1 Capability to '{0}'", capability.ToString());
             device.Hardware.HdmiIn[1].HdcpCapability = capability;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi1 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogDebug(ex, "Stack Trace: ");
         }
     }
 
@@ -78,22 +79,23 @@ public static class HdmiInputExtensions
             if (device.Hardware.HdmiIn[2] == null)
                 throw new NotSupportedException("hdmi2");
 
-            var capabilityToSet = (eHdcpCapabilityType) capability;
+            var capabilityToSet = (eHdcpCapabilityType)capability;
 
-            Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}'", capabilityToSet.ToString());
+            device.LogDebug("Setting Hdmi2 Capability to '{0}'", capabilityToSet.ToString());
             device.Hardware.HdmiIn[2].HdcpCapability = capabilityToSet;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi2 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi2 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi2 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi2 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi2 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi2 Capability : {0}", ex.Message);
+            device.LogDebug(ex, "Stack Trace: ");
         }
     }
 
@@ -102,22 +104,23 @@ public static class HdmiInputExtensions
         try
         {
             if (device.Hardware.HdmiIn[2] == null)
-                throw new NotSupportedException("hdmi1");
+                throw new NotSupportedException("hdmi2");
 
-            Debug.Console(1, device, "Setting Hdmi2 Capability to '{0}'", capability.ToString());
+            device.LogDebug("Setting Hdmi2 Capability to '{0}'", capability.ToString());
             device.Hardware.HdmiIn[2].HdcpCapability = capability;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi2 Capability : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi2 Capability : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Hdmi1 Capability : {0}", ex.Message);
+            device.LogError("Error setting Hdmi2 Capability : {0}", ex.Message);
+            device.LogDebug(ex, "Stack Trace: ");
         }
     }
 }

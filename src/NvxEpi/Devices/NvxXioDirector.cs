@@ -1,9 +1,9 @@
 ﻿using System;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Hardware;
-using NvxEpi.Features.Monitor;
 using NvxEpi.Features.Config;
-using PepperDash.Core;
+using NvxEpi.Features.Monitor;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -27,12 +27,12 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline, ICommunic
             }
 
             var domain = new DmXioDirectorBase.DmXioDomain((uint)i, hardware);
-            Debug.Console(1, this, "Adding domain:{0}", domain.Id);
-            domain.DomainChange += (sender, args) => Debug.Console(1, this, "Domain {0} changed: {1}", domain.Id, args.EventId);
+            this.LogDebug("Adding domain: {id}", domain.Id);
+            domain.DomainChange += (sender, args) => this.LogDebug("Domain {id} changed: {eventId}", domain.Id, args.EventId);
         }
 
         _hardware = hardware ?? throw new ArgumentNullException("hardware");
-        _isOnline = new BoolFeedback("BuildFeedbacks", () => _hardware.IsOnline);
+        _isOnline = new BoolFeedback("isOnline", () => _hardware.IsOnline);
         _hardware.OnlineStatusChange += (device, args) => _isOnline.FireUpdate();
 
         AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, _hardware));

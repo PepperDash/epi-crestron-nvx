@@ -11,6 +11,7 @@ using NvxEpi.Extensions;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
@@ -33,15 +34,15 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
                 continue;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating match object for {key}", this, input.Key);
+            Debug.LogVerbose("Updating match object for {key}", this, input.Key);
 
             tx.Hardware.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (o, a) =>
             {
                 if (a.EventId != DMOutputEventIds.MulticastAddressEventId) return;
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating Feedback match object for {input}", this, input.Key);
+                Debug.LogVerbose("Updating Feedback match object for {input}", this, input.Key);
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating Feedback match object for {input} to {url}", this, input.Key, tx.Hardware.Control.ServerUrlFeedback.StringValue);
+                Debug.LogVerbose("Updating Feedback match object for {input} to {url}", this, input.Key, tx.Hardware.Control.ServerUrlFeedback.StringValue);
 
                 input.FeedbackMatchObject = tx.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue;
             };
@@ -121,7 +122,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
                 {
                     var currentUrl = device.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue;
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Received server URL event {eventId}:{serverUrl}", this, args.EventId, currentUrl);
+                    this.LogVerbose("Received server URL event {eventId}:{serverUrl}", args.EventId, currentUrl);
 
                     if (string.IsNullOrEmpty(currentUrl))
                     {
@@ -142,7 +143,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
                     if (inputPort == null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "No input port found for URL {currentUrl}", this, currentUrl);
+                        this.LogInformation("No input port found for URL {currentUrl}", currentUrl);
                         break;
                     }
 
@@ -150,7 +151,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
                     if (outputPort == null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "No output port found for {deviceKey}", this, device.Key);
+                        this.LogInformation("No output port found for {deviceKey}", device.Key);
                         break;
                     }
 
@@ -174,7 +175,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
     {
         try
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Trying execute switch secondary audio route: {input} {output}", NvxGlobalRouter.Instance.SecondaryAudioRouter, inputSelector, outputSelector);
+            Debug.LogDebug("Trying execute switch secondary audio route: {input} {output}", NvxGlobalRouter.Instance.SecondaryAudioRouter, inputSelector, outputSelector);
 
             if (!signalType.Has(eRoutingSignalType.Audio) && !signalType.Has(eRoutingSignalType.SecondaryAudio))
                 throw new ArgumentException("signal type must include audio or secondary audio");
@@ -191,8 +192,8 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
         }
         catch (Exception ex)
         {
-            Debug.LogMessage(ex, "Error executing route!", this);
-            throw;
+            this.LogError("Error executing route: {message}", ex.Message);
+            this.LogDebug(ex, "Stack trace: ");
         }
     }
 
@@ -208,7 +209,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(int txId, int rxId)
     {
-        Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txId & rxId: {0} {1}", txId, rxId);
+        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug("Trying secondary audio route by txId & rxId: {0} {1}", txId, rxId);
         if (rxId == 0)
             return;
 
@@ -227,7 +228,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(int txId, ISecondaryAudioStream rx)
     {
-        Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txId & address: {0} {1}", txId, rx.RxAudioAddress);
+        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug("Trying secondary audio route by txId & address: {0} {1}", txId, rx.RxAudioAddress);
         if (txId == 0)
         {
             rx.ClearSecondaryStream();
@@ -243,7 +244,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(string txName, ISecondaryAudioStream rx)
     {
-        Debug.Console(1, NvxGlobalRouter.Instance.SecondaryAudioRouter, "Trying secondary audio route by txName & address: {0} {1}", txName, rx.RxAudioAddress);
+        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug("Trying secondary audio route by txName & address: {0} {1}", txName, rx.RxAudioAddress);
         if (string.IsNullOrEmpty(txName))
             return;
 

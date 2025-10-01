@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using NvxEpi.Application.Config;
-using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Application.Builder;
 
@@ -35,7 +33,7 @@ public class NvxApplicationApplicationBuilder : INvxApplicationBuilder
 
         if (props.Transmitters != null)
             Transmitters = props.Transmitters.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
-        
+
         if (props.Receivers != null)
             Receivers = props.Receivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
 

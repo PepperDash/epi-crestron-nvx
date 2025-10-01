@@ -1,6 +1,4 @@
-﻿using System;
-using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Streaming;
+﻿using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback;
@@ -12,9 +10,9 @@ public class VideoAspectRatioModeFeedback
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiOut == null)
-            return new IntFeedback(() => default);
+            return new IntFeedback(Key, () => default);
 
-        var feedback = new IntFeedback(Key, () => (int) device.HdmiOut.VideoAttributes.AspectRatioModeFeedback);
+        var feedback = new IntFeedback(Key, () => (int)device.HdmiOut.VideoAttributes.AspectRatioModeFeedback);
         device.HdmiOut.VideoAttributes.AttributeChange += (stream, args) => feedback.FireUpdate();
         device.HdmiOut.StreamChange += (stream, args) => feedback.FireUpdate();
         device.OnlineStatusChange += (stream, args) => feedback.FireUpdate();
@@ -30,7 +28,7 @@ public class VideoAspectRatioModeFeedbackName
     public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiOut == null)
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
 
         var feedback = new StringFeedback(Key,
             () => device.HdmiOut.VideoAttributes.AspectRatioModeFeedback.ToString());

@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
@@ -13,32 +17,27 @@ using NvxEpi.Features.InputSwitching;
 using NvxEpi.Features.Monitor;
 using NvxEpi.Features.Streams.Audio;
 using NvxEpi.Features.Streams.Video;
+using NvxEpi.McMessengers;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputPorts;
-using NvxEpi.Services.Utilities;
 using NvxEpi.Services.Messages;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceInfo;
-using PepperDash.Essentials.Core.Queues;
-using PepperDash.Essentials.Core.Config;
-using NvxEpi.Abstractions.HdmiInput;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using NvxEpi.Services.Utilities;
 using PepperDash.Core;
-using NvxEpi.Abstractions.HdmiOutput;
-using NvxEpi.McMessengers;
-using System.Collections.Generic;
-using NvxEpi.Abstractions.Device;
 using PepperDash.Core.Logging;
-using System.Timers;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceInfo;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Queues;
 
 namespace NvxEpi.Devices;
 
-public abstract class NvxBaseDevice : 
-    EssentialsBridgeableDevice, 
-    ICurrentVideoInput, 
-    ICurrentAudioInput, 
+public abstract class NvxBaseDevice :
+    EssentialsBridgeableDevice,
+    ICurrentVideoInput,
+    ICurrentAudioInput,
     ICurrentStream,
-    ICurrentSecondaryAudioStream, 
+    ICurrentSecondaryAudioStream,
     ICurrentNaxInput,
     ICommunicationMonitor,
     IDeviceInfoProvider,
@@ -173,7 +172,8 @@ public abstract class NvxBaseDevice :
             Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
 
             return base.CustomActivate();
-        } catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.LogMessage(ex, "Exception in base custom activate", this);
             return false;
@@ -210,14 +210,14 @@ public abstract class NvxBaseDevice :
 
         Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Generating HDMI Input messenger for {key:l}", this, Key);
 
-        
+
         var hdmiInputMessenger = new IHdmiInputMessenger($"{Key}-hdmiInputMessenger", $"/device/{Key}", hdmiInputDevice);
 
         mc.AddDeviceMessenger(hdmiInputMessenger);
 
         if (this is not IHdmiOutput hdmiOutputDevice)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information,"{key:l} does NOT implement IHdmiOutput interface", this, Key);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "{key:l} does NOT implement IHdmiOutput interface", this, Key);
             return;
         }
 

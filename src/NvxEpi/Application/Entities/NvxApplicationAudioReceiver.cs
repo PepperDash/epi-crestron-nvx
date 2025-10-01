@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Application.Config;
+using NvxEpi.Extensions;
 using NvxEpi.Features.Routing;
 using NvxEpi.Features.Streams.Audio;
-using NvxEpi.Features.Streams.Video;
-using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Feedback;
-using NvxEpi.Extensions;
-using PepperDash.Core;
+using NvxEpi.Services.InputSwitching;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
-using Crestron.SimplSharpPro.DM.Streaming;
 
 namespace NvxEpi.Application.Entities;
 
@@ -52,7 +49,7 @@ public class NvxApplicationAudioReceiver : EssentialsDevice
             {
                 Name = Device.Name;
                 AudioName =
-                    new StringFeedback(() => string.IsNullOrEmpty(config.AudioName) ? Device.Name : config.AudioName);
+                    new StringFeedback("audioName", () => string.IsNullOrEmpty(config.AudioName) ? Device.Name : config.AudioName);
                 AudioName.FireUpdate();
             });
 

@@ -1,20 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronXml;
-using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
-using Newtonsoft.Json.Schema;
-using NvxEpi.Abstractions.Hardware;
-using NvxEpi.Abstractions.Stream;
-using NvxEpi.Abstractions.Usb;
 using NvxEpi.Devices;
 using NvxEpi.Extensions;
-using NvxEpi.Features.Routing;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
@@ -24,7 +15,7 @@ namespace NvxEpi.Services.Feedback;
 public static class UsbRouteFeedback
 {
     public const string Key = "UsbRoute";
-    
+
     public static IntFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.UsbInput == null)

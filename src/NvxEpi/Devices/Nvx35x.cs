@@ -1,27 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
-using Newtonsoft.Json;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
-using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Extensions;
 using NvxEpi.Features.AutomaticRouting;
 using NvxEpi.Features.Config;
-using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Features.Streams.Usb;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
@@ -31,17 +28,17 @@ using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 namespace NvxEpi.Devices;
 
 public class Nvx35X :
-    NvxBaseDevice, 
-    IComPorts, 
+    NvxBaseDevice,
+    IComPorts,
     IIROutputPorts,
-    IUsbStreamWithHardware, 
-    IHdmiInput, 
-    IVideowallMode, 
-    IRoutingWithFeedback, 
+    IUsbStreamWithHardware,
+    IHdmiInput,
+    IVideowallMode,
+    IRoutingWithFeedback,
     ICec,
     INvx35XDeviceWithHardware
 {
-    private IHdmiInput _hdmiInputs;        
+    private IHdmiInput _hdmiInputs;
     private IVideowallMode _hdmiOutput;
     private IUsbStreamWithHardware _usbStream;
     private readonly NvxDeviceProperties _config;
@@ -64,7 +61,7 @@ public class Nvx35X :
         //    Debug.Console(0, this, "{0}", JsonConvert.SerializeObject(_config, Formatting.Indented));
 
         _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
-        _hdmiInputs = new HdmiInput(this);            
+        _hdmiInputs = new HdmiInput(this);
         _hdmiOutput = new VideowallModeOutput(this);
 
         if (_config.EnableAutoRoute)
@@ -73,13 +70,14 @@ public class Nvx35X :
 
         AddMcMessengers();
 
-        Hardware.BaseEvent += (o, a) => {
+        Hardware.BaseEvent += (o, a) =>
+        {
             var newRoute = this.HandleBaseEvent(a);
 
             if (newRoute == null)
             {
                 return;
-            }            
+            }
 
             RouteChanged?.Invoke(this, newRoute);
 
@@ -100,10 +98,10 @@ public class Nvx35X :
 
     public void MakeUsbRoute(IUsbStreamWithHardware hardware)
     {
-        Debug.Console(0, this, "Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
+        this.LogInformation("Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
         if (_usbStream is not UsbStream usbStream)
         {
-            Debug.Console(0, this, "cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
+            this.LogError("cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
             return;
         }
         usbStream.MakeUsbRoute(hardware);
@@ -188,15 +186,14 @@ public class Nvx35X :
     public IntFeedback VideowallMode
     {
         get { return _hdmiOutput.VideowallMode; }
-    }    
+    }
 
     public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
     {
         try
         {
             var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
-            Debug.Console(1,
-                this,
+            this.LogDebug(
                 "Executing switch : '{0}' | '{1}' | '{2}'",
                 inputSelector?.ToString() ?? "{null}",
                 outputSelector?.ToString() ?? "{null}",
@@ -206,7 +203,8 @@ public class Nvx35X :
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error executing switch!: {0}", ex);
+            this.LogError("Error executing switch!: {0}", ex.Message);
+            this.LogDebug(ex, "Stack Trace: ");
         }
     }
 
@@ -253,5 +251,5 @@ public class Nvx35X :
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
 
-    public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new ();
+    public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 }

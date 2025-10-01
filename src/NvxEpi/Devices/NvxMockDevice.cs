@@ -183,12 +183,12 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
 
     public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
     {
-        Debug.Console(2, this, "Executing switch : {0}", signalType);
+        this.LogVerbose("Executing switch : {0}", signalType);
     }
 
     public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
     {
-        Debug.Console(2, this, "Executing switch : {0}", type);
+        this.LogVerbose("Executing switch : {0}", type);
     }
 
     public FeedbackCollection<Feedback> Feedbacks { get; private set; }

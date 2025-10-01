@@ -5,7 +5,7 @@ using Crestron.SimplSharp;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Features.Routing;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Streams.Video;
@@ -19,16 +19,16 @@ public class CurrentVideoStream : VideoStream, ICurrentStream
     private readonly CCriticalSection _lock = new();
     private IStream _current;
 
-    private readonly IList<IStream> _transmitters = new List<IStream>(); 
+    private readonly IList<IStream> _transmitters = new List<IStream>();
 
     public CurrentVideoStream(INvxDeviceWithHardware device) : base(device)
     {
         _currentStreamId = IsTransmitter
-            ? new IntFeedback(() => default)
+            ? new IntFeedback("currentStreamId", () => default)
             : new IntFeedback(RouteValueKey, () => _current != null ? _current.DeviceId : default);
 
         _currentStreamName = IsTransmitter
-            ? new StringFeedback(() => string.Empty)
+            ? new StringFeedback("currentStreamName", () => string.Empty)
             : new StringFeedback(RouteNameKey,
                 () => _current != null ? _current.Name : NvxGlobalRouter.NoSourceText);
 
@@ -58,26 +58,18 @@ public class CurrentVideoStream : VideoStream, ICurrentStream
             _lock.Enter();
             _current = GetCurrentStream();
 
-            if (_current == null)
-            {
-                Debug.Console(2, this, "Current stream address: {0} device ID: {1}", "0.0.0.0", 0);
-            }
-            else
-            {
-                Debug.Console(2, this, "Current stream address: {0} device ID: {1}", _current.MulticastAddress, _current.DeviceId);
-            }
+
+
+            this.LogVerbose("Current stream address: {address} device ID: {id}", _current?.MulticastAddress.StringValue ?? "0.0.0.0", _current?.DeviceId ?? 0);
+
 
             CurrentStreamId.FireUpdate();
             CurrentStreamName.FireUpdate();
         }
         catch (Exception ex)
         {
-            Debug.Console(1,
-                this,
-                "Error getting current video route : {0}\r{1}\r{2}",
-                ex.Message,
-                ex.InnerException,
-                ex.StackTrace);
+            this.LogError("Error getting current video route : {message}", ex.Message);
+            this.LogDebug(ex, "Stack trace: ");
         }
         finally
         {

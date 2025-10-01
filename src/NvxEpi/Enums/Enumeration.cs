@@ -69,16 +69,16 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
     {
         try
         {
-            var baseType = typeof (TEnum).GetCType();
+            var baseType = typeof(TEnum).GetCType();
             var a = baseType.Assembly;
 
-            Debug.Console(2, "Base type: {0}", baseType.Name);
+            Debug.LogVerbose("Base type: {0}", baseType.Name);
             IEnumerable<CType> enumTypes = a.GetTypes().Where(baseType.IsAssignableFrom);
 
             var options = new List<TEnum>();
             foreach (CType enumType in enumTypes)
             {
-                Debug.Console(2, "Found enum type: {0}", enumType.Name);
+                Debug.LogVerbose("Found enum type: {0}", enumType.Name);
                 var fields =
                     enumType.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
                         .Select(x => x.GetValue(null))
@@ -86,7 +86,7 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
 
                 foreach (var field in fields.Where(field => field != null))
                 {
-                    Debug.Console(2, "Adding field to this enum:{0} - {1}", field.Name, enumType.Name);
+                    Debug.LogVerbose("Adding field to this enum:{0} - {1}", field.Name, enumType.Name);
                     if (options.Contains(field))
                         throw new Exception("This enum already exists");
 
@@ -98,9 +98,8 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
         }
         catch (Exception ex)
         {
-            var error = "Error getting all options -" +
-                           string.Format("{0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
-            Debug.Console(0, error);
+            Debug.LogError("Error getting all options {message}", ex.Message);
+            Debug.LogDebug(ex, "Stack trace: ");
             throw;
         }
     }

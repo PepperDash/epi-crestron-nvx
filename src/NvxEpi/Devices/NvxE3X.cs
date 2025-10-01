@@ -8,7 +8,6 @@ using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.Usb;
 using NvxEpi.Extensions;
-using NvxEpi.Features.Hdmi.Input;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
@@ -20,10 +19,10 @@ using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 
 namespace NvxEpi.Devices;
 
-public class NvxE3X : 
-    NvxBaseDevice, 
-    INvxE3XDeviceWithHardware, 
-    IComPorts, 
+public class NvxE3X :
+    NvxBaseDevice,
+    INvxE3XDeviceWithHardware,
+    IComPorts,
     IIROutputPorts,
     IHdmiInput,
     IRoutingWithFeedback
@@ -42,7 +41,7 @@ public class NvxE3X :
     public override bool CustomActivate()
     {
         try
-        {            
+        {
             var hardware = base.Hardware as DmNvxE3x ?? throw new Exception("hardware built doesn't match");
             Hardware = hardware;
 
@@ -71,7 +70,8 @@ public class NvxE3X :
             };
 
             return result;
-        } catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.LogMessage(ex, "Exception activating device", this);
             return false;
@@ -120,28 +120,32 @@ public class NvxE3X :
         get { return _hdmiInputs.CurrentResolution; }
     }
 
-    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels {
+    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels
+    {
         get
         {
             return _hdmiInputs.AudioChannels;
         }
     }
 
-    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat {
+    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat
+    {
         get
         {
             return _hdmiInputs.AudioFormat;
         }
     }
 
-    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace {
+    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace
+    {
         get
         {
             return _hdmiInputs.ColorSpace;
         }
     }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdrType {
+    public ReadOnlyDictionary<uint, StringFeedback> HdrType
+    {
         get
         {
             return _hdmiInputs.HdrType;
@@ -158,20 +162,20 @@ public class NvxE3X :
     {
         try
         {
-            if(outputSelector is not IHandleInputSwitch switcher)
+            if (outputSelector is not IHandleInputSwitch switcher)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Unable to execute switch. OutputSelector is not IHandleInputSwitch {outputSelectorType}", this, outputSelector.ToString());
                 return;
-            }                     
-            
+            }
+
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Switching {input} to {output} type {type}", inputSelector, outputSelector, signalType.ToString());
 
-            if(inputSelector is null)
+            if (inputSelector is null)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Device is DmNvxE3x. 'None' input not available", this);
                 return;
             }
-            
+
             switcher.HandleSwitch(inputSelector, signalType);
         }
         catch (Exception ex)
