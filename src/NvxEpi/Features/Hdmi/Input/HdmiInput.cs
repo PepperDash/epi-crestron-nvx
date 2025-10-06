@@ -1,14 +1,13 @@
-﻿using Crestron.SimplSharpPro.DM.Streaming;
+﻿using System;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core;
-using System;
-using System.Linq;
 
 namespace NvxEpi.Features.Hdmi.Input;
 
 public class HdmiInput : HdmiInputBase
-{        
+{
     public HdmiInput(INvxDeviceWithHardware device)
         : base(device)
     {
@@ -30,7 +29,8 @@ public class HdmiInput : HdmiInputBase
 
                 return;
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.LogMessage(ex, "Exception getting DmNVXE760x information", this);
         }
@@ -89,13 +89,14 @@ public class HdmiInput : HdmiInputBase
                     Feedbacks.Add(colorSpace);
                     Feedbacks.Add(hdrType);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Debug.LogMessage(ex, "Exception getting information for HDMI {inputNumber}", this, inputNumber);
                 }
             }
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
             Debug.LogMessage(ex, "Exception getting HDMI Input information", this);
         }
     }

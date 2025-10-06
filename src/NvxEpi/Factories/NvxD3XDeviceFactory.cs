@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp.Reflection;
-using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Devices;
 using NvxEpi.Features.Config;
 using PepperDash.Essentials.Core;
@@ -17,7 +14,7 @@ public class NvxD3XDeviceFactory : NvxBaseDeviceFactory<NvxD3X>
     public NvxD3XDeviceFactory()
     {
         MinimumEssentialsFrameworkVersion = MinumumEssentialsVersion;
-        
+
         _typeNames ??= new List<string>
             {
                 "dmnvxd30",

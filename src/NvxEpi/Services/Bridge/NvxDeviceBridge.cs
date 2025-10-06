@@ -287,7 +287,7 @@ public class NvxDeviceBridge : IBridgeAdvanced
         if (_device.IsTransmitter) return;
 
         var videowallDevice = _device as IVideowallMode;
-        var videowallMode = new BoolFeedback(() => videowallDevice != null);
+        var videowallMode = new BoolFeedback("videoWallMode", () => videowallDevice != null);
         videowallMode.LinkInputSig(trilist.BooleanInput[joinMap.VideowallMode.JoinNumber]);
         videowallMode.FireUpdate();
 
@@ -300,11 +300,11 @@ public class NvxDeviceBridge : IBridgeAdvanced
         if (_device is not IHdmiInput hdmiInput)
             return;
 
-        var hdmi1Fb = new BoolFeedback(() => hdmiInput.SyncDetected.ContainsKey(1));
+        var hdmi1Fb = new BoolFeedback("hdmiIn1Present", () => hdmiInput.SyncDetected.ContainsKey(1));
         hdmi1Fb.LinkInputSig(trilist.BooleanInput[joinMap.HdmiIn1Present.JoinNumber]);
         hdmi1Fb.FireUpdate();
 
-        var hdmi2Fb = new BoolFeedback(() => hdmiInput.SyncDetected.ContainsKey(2));
+        var hdmi2Fb = new BoolFeedback("hdmiIn2Present", () => hdmiInput.SyncDetected.ContainsKey(2));
         hdmi2Fb.LinkInputSig(trilist.BooleanInput[joinMap.HdmiIn2Present.JoinNumber]);
         hdmi2Fb.FireUpdate();
 

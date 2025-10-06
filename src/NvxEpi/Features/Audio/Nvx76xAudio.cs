@@ -1,6 +1,7 @@
 ﻿using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Audio;
@@ -47,12 +48,12 @@ public class NvxE760xAudio : IBasicVolumeWithFeedback
 
     public void VolumeUp(bool pressRelease)
     {
-        Debug.Console(0, _parent, "Volume press not implemented");
+        _parent.LogWarning("Volume press not implemented");
     }
 
     public void VolumeDown(bool pressRelease)
     {
-        Debug.Console(0, _parent, "Volume press not implemented");
+        _parent.LogWarning("Volume press not implemented");
     }
 
     public void MuteToggle()
@@ -70,7 +71,7 @@ public class NvxE760xAudio : IBasicVolumeWithFeedback
     public void SetVolume(ushort level)
     {
         var volume = CrestronEnvironment.ScaleWithLimits(level, ushort.MaxValue, ushort.MinValue, 240, -800);
-        _device.Control.AnalogAudioOutputVolume.ShortValue = (short) volume;
+        _device.Control.AnalogAudioOutputVolume.ShortValue = (short)volume;
     }
 
     public void MuteOn()

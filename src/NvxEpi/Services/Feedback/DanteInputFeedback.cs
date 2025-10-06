@@ -9,14 +9,14 @@ public class DanteInputFeedback
 
     public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
-        var feedback = new StringFeedback(() => string.Empty);
+        var feedback = new StringFeedback(Key, () => string.Empty);
 
         if (device.Control.DanteAes67Name != null)
         {
             feedback = new StringFeedback(Key, () => device.Control.ActiveDanteAudioSourceFeedback.ToString());
             device.BaseEvent += (@base, args) => feedback.FireUpdate();
         }
-        
+
         return feedback;
     }
 }

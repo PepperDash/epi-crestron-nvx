@@ -14,7 +14,7 @@ public class UsbRemoteAddressFeedback
     public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.UsbInput == null)
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
 
         var feedback = new StringFeedback(Key, () => device.UsbInput.RemoteDeviceIdFeedback.StringValue);
 
@@ -27,7 +27,7 @@ public class UsbRemoteAddressFeedback
     {
         var dict = new Dictionary<uint, StringFeedback>();
 
-        if(device.UsbInput == null)
+        if (device.UsbInput == null)
         {
             return new ReadOnlyDictionary<uint, StringFeedback>(dict);
         }
@@ -41,7 +41,7 @@ public class UsbRemoteAddressFeedback
         }
 
         device.UsbInput.UsbInputChange += (sender, args) => dict.Values.ToList().ForEach(x => x.FireUpdate());
-        
+
 
         return new ReadOnlyDictionary<uint, StringFeedback>(dict);
     }

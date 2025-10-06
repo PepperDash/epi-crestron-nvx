@@ -11,7 +11,7 @@ using NvxEpi.Application.Entities;
 using NvxEpi.Application.JoinMap;
 using NvxEpi.Application.Services;
 using NvxEpi.Extensions;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 
@@ -67,7 +67,7 @@ public class NvxApplication : EssentialsBridgeableDevice
             .ToList()
             .ForEach(DeviceManager.AddDevice);
 
-        _enableAudioBreakawayFeedback = new BoolFeedback(() => _enableAudioBreakaway);
+        _enableAudioBreakawayFeedback = new BoolFeedback("enableAudioBreakaway", () => _enableAudioBreakaway);
     }
 
     private bool _enableAudioBreakaway;
@@ -90,7 +90,7 @@ public class NvxApplication : EssentialsBridgeableDevice
                     {
                         _lock.Enter();
                         _enableAudioBreakaway = value;
-                        Debug.Console(1, this, "Setting EnableAudioBreakaway to : {0}", _enableAudioBreakaway);
+                        this.LogDebug("Setting EnableAudioBreakaway to : {0}", _enableAudioBreakaway);
 
                         var audioFollowsVideoHandler = new AudioFollowsVideoHandler(
                             _transmitters.ToDictionary(x => x.Key, x => x.Value.Device), _receivers.ToDictionary(x => x.Key, x => x.Value.Device));
@@ -117,31 +117,31 @@ public class NvxApplication : EssentialsBridgeableDevice
     {
         foreach (var item in _transmitters.Select(x => new { DeviceId = x.Key, DeviceActual = x.Value }))
         {
-            Debug.Console(2, this, "Linking {0} Online to join {1}", item.DeviceActual.Key, joinMap.InputEndpointOnline.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Online to join {1}", item.DeviceActual.Key, joinMap.InputEndpointOnline.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.IsOnline.LinkInputSig(
                 trilist.BooleanInput[(uint)(joinMap.InputEndpointOnline.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} Name to join {1}", item.DeviceActual.Key, joinMap.InputNames.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Name to join {1}", item.DeviceActual.Key, joinMap.InputNames.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.NameFeedback.LinkInputSig(
                 trilist.StringInput[(uint)(joinMap.InputNames.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} Video Name to join {1}", item.DeviceActual.Key, joinMap.InputVideoNames.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Video Name to join {1}", item.DeviceActual.Key, joinMap.InputVideoNames.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.VideoName.LinkInputSig(
                 trilist.StringInput[(uint)(joinMap.InputVideoNames.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} Input Resolution to join {1}", item.DeviceActual.Key, joinMap.InputCurrentResolution.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Input Resolution to join {1}", item.DeviceActual.Key, joinMap.InputCurrentResolution.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.InputResolution.LinkInputSig(
                 trilist.StringInput[(uint)(joinMap.InputCurrentResolution.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} VideoSyncStatus to join {1}", item.DeviceActual.Key, joinMap.VideoSyncStatus.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} VideoSyncStatus to join {1}", item.DeviceActual.Key, joinMap.VideoSyncStatus.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.HdmiSyncDetected.LinkInputSig(
                 trilist.BooleanInput[(uint)(joinMap.VideoSyncStatus.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} HdcpSupportCapability to join {1}", item.DeviceActual.Key, joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} HdcpSupportCapability to join {1}", item.DeviceActual.Key, joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.HdcpCapability.LinkInputSig(
                 trilist.UShortInput[(uint)(joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} HdcpSupportState to join {1}", item.DeviceActual.Key, joinMap.HdcpSupportState.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} HdcpSupportState to join {1}", item.DeviceActual.Key, joinMap.HdcpSupportState.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.HdcpState.LinkInputSig(
                 trilist.UShortInput[(uint)(joinMap.HdcpSupportState.JoinNumber + item.DeviceId - 1)]);
 
@@ -152,56 +152,56 @@ public class NvxApplication : EssentialsBridgeableDevice
 
     private void LinkReceivers(BasicTriList trilist, NvxApplicationJoinMap joinMap)
     {
-        foreach (var item in _receivers.Select(x => new {DeviceId = x.Key, DeviceActual = x.Value}))
+        foreach (var item in _receivers.Select(x => new { DeviceId = x.Key, DeviceActual = x.Value }))
         {
-            Debug.Console(2, this, "Linking {0} Online to join {1}", item.DeviceActual.Key, joinMap.OutputEndpointOnline.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Online to join {1}", item.DeviceActual.Key, joinMap.OutputEndpointOnline.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.IsOnline.LinkInputSig(
-                trilist.BooleanInput[(uint) ( joinMap.OutputEndpointOnline.JoinNumber + item.DeviceId - 1 )]);
+                trilist.BooleanInput[(uint)(joinMap.OutputEndpointOnline.JoinNumber + item.DeviceId - 1)]);
 
 
-            Debug.Console(2, this, "Linking {0} Name to join {1}", item.DeviceActual.Key, joinMap.OutputNames.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Name to join {1}", item.DeviceActual.Key, joinMap.OutputNames.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.NameFeedback.LinkInputSig(
-                trilist.StringInput[(uint) ( joinMap.OutputNames.JoinNumber + item.DeviceId - 1 )]);
+                trilist.StringInput[(uint)(joinMap.OutputNames.JoinNumber + item.DeviceId - 1)]);
 
 
-            Debug.Console(2, this, "Linking {0} OutputVideoNames to join {1}", item.DeviceActual.Key, joinMap.OutputVideoNames.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} OutputVideoNames to join {1}", item.DeviceActual.Key, joinMap.OutputVideoNames.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.VideoName.LinkInputSig(
-                trilist.StringInput[(uint) ( joinMap.OutputVideoNames.JoinNumber + item.DeviceId - 1 )]);
+                trilist.StringInput[(uint)(joinMap.OutputVideoNames.JoinNumber + item.DeviceId - 1)]);
 
 
-            Debug.Console(2, this, "Linking {0} OutputDisabledByHdcp to join {1}", item.DeviceActual.Key, joinMap.OutputDisabledByHdcp.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} OutputDisabledByHdcp to join {1}", item.DeviceActual.Key, joinMap.OutputDisabledByHdcp.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.DisabledByHdcp.LinkInputSig(
-                trilist.BooleanInput[(uint) ( joinMap.OutputDisabledByHdcp.JoinNumber + item.DeviceId - 1 )]);
+                trilist.BooleanInput[(uint)(joinMap.OutputDisabledByHdcp.JoinNumber + item.DeviceId - 1)]);
 
 
-            Debug.Console(2, this, "Linking {0} OutputHorizontalResolution to join {1}", item.DeviceActual.Key, joinMap.OutputHorizontalResolution.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} OutputHorizontalResolution to join {1}", item.DeviceActual.Key, joinMap.OutputHorizontalResolution.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.HorizontalResolution.LinkInputSig(
-                trilist.UShortInput[(uint) ( joinMap.OutputHorizontalResolution.JoinNumber + item.DeviceId - 1 )]);
+                trilist.UShortInput[(uint)(joinMap.OutputHorizontalResolution.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} OutputEdidManufacturer to join {1}", item.DeviceActual.Key, joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1);
-            item.DeviceActual.EdidManufacturer.LinkInputSig(
-                trilist.StringInput[(uint) ( joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1 )]);
-
-
-            Debug.Console(2, this, "Linking {0} OutputVideo to join {1}", item.DeviceActual.Key, joinMap.OutputVideo.JoinNumber + item.DeviceId - 1);
-            item.DeviceActual.CurrentVideoRouteId.LinkInputSig(
-                trilist.UShortInput[(uint) ( joinMap.OutputVideo.JoinNumber + item.DeviceId - 1 )]);
-
-            Debug.Console(2, this, "Linking {0} OutputCurrentVideoInputNames to join {1}", item.DeviceActual.Key, joinMap.OutputCurrentVideoInputNames.JoinNumber + item.DeviceId - 1);
-            item.DeviceActual.CurrentVideoRouteName.LinkInputSig(
-                trilist.StringInput[(uint) ( joinMap.OutputCurrentVideoInputNames.JoinNumber + item.DeviceId - 1 )]);
-
-            Debug.Console(2, this, "Linking {0} OutputEdidManufacturer to join {1}", item.DeviceActual.Key, joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} OutputEdidManufacturer to join {1}", item.DeviceActual.Key, joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.EdidManufacturer.LinkInputSig(
                 trilist.StringInput[(uint)(joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} OutputAspectRatioMode to join {1}", item.DeviceActual.Key, joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1);
+
+            this.LogVerbose("Linking {0} OutputVideo to join {1}", item.DeviceActual.Key, joinMap.OutputVideo.JoinNumber + item.DeviceId - 1);
+            item.DeviceActual.CurrentVideoRouteId.LinkInputSig(
+                trilist.UShortInput[(uint)(joinMap.OutputVideo.JoinNumber + item.DeviceId - 1)]);
+
+            this.LogVerbose("Linking {0} OutputCurrentVideoInputNames to join {1}", item.DeviceActual.Key, joinMap.OutputCurrentVideoInputNames.JoinNumber + item.DeviceId - 1);
+            item.DeviceActual.CurrentVideoRouteName.LinkInputSig(
+                trilist.StringInput[(uint)(joinMap.OutputCurrentVideoInputNames.JoinNumber + item.DeviceId - 1)]);
+
+            this.LogVerbose("Linking {0} OutputEdidManufacturer to join {1}", item.DeviceActual.Key, joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1);
+            item.DeviceActual.EdidManufacturer.LinkInputSig(
+                trilist.StringInput[(uint)(joinMap.OutputEdidManufacturer.JoinNumber + item.DeviceId - 1)]);
+
+            this.LogVerbose("Linking {0} OutputAspectRatioMode to join {1}", item.DeviceActual.Key, joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.AspectRatioMode.LinkInputSig(
                 trilist.UShortInput[(uint)(joinMap.OutputAspectRatioMode.JoinNumber + item.DeviceId - 1)]);
 
             var rx = item.DeviceActual;
             var stream = rx.Device as IStreamWithHardware;
-            trilist.SetUShortSigAction((uint) ( joinMap.OutputVideo.JoinNumber + item.DeviceId - 1 ),
+            trilist.SetUShortSigAction((uint)(joinMap.OutputVideo.JoinNumber + item.DeviceId - 1),
                 s =>
                     {
                         if (s == 0)
@@ -215,7 +215,7 @@ public class NvxApplication : EssentialsBridgeableDevice
                             if (!_transmitters.TryGetValue(s, out NvxApplicationVideoTransmitter device))
                                 return;
 
-                            rx.Display.ReleaseAndMakeRoute((IRoutingOutputs) device.Source, _enableAudioBreakaway ? eRoutingSignalType.Video : eRoutingSignalType.AudioVideo);   
+                            rx.Display.ReleaseAndMakeRoute((IRoutingOutputs)device.Source, _enableAudioBreakaway ? eRoutingSignalType.Video : eRoutingSignalType.AudioVideo);
                         }
                     });
 
@@ -230,7 +230,7 @@ public class NvxApplication : EssentialsBridgeableDevice
     {
         foreach (var item in _audioTransmitters.Select(x => new { DeviceId = x.Key, DeviceActual = x.Value }))
         {
-            Debug.Console(2, this, "Linking {0} Input Audio Name to join {1}", item.DeviceActual.Key, joinMap.InputAudioNames.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Input Audio Name to join {1}", item.DeviceActual.Key, joinMap.InputAudioNames.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.AudioName.LinkInputSig(
                 trilist.StringInput[(uint)(joinMap.InputAudioNames.JoinNumber + item.DeviceId - 1)]);
         }
@@ -240,15 +240,15 @@ public class NvxApplication : EssentialsBridgeableDevice
     {
         foreach (var item in _audioReceivers.Select(x => new { DeviceId = x.Key, DeviceActual = x.Value }))
         {
-            Debug.Console(2, this, "Linking {0} Output Audio Name to join {1}", item.DeviceActual.Key, joinMap.OutputAudioNames.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Output Audio Name to join {1}", item.DeviceActual.Key, joinMap.OutputAudioNames.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.AudioName.LinkInputSig(
                 trilist.StringInput[(uint)(joinMap.OutputAudioNames.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} Output Audio to join {1}", item.DeviceActual.Key, joinMap.OutputAudio.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Output Audio to join {1}", item.DeviceActual.Key, joinMap.OutputAudio.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.CurrentAudioRouteId.LinkInputSig(
                 trilist.UShortInput[(uint)(joinMap.OutputAudio.JoinNumber + item.DeviceId - 1)]);
 
-            Debug.Console(2, this, "Linking {0} Current Output Audio Name to join {1}", item.DeviceActual.Key, joinMap.OutputCurrentAudioInputNames.JoinNumber + item.DeviceId - 1);
+            this.LogVerbose("Linking {0} Current Output Audio Name to join {1}", item.DeviceActual.Key, joinMap.OutputCurrentAudioInputNames.JoinNumber + item.DeviceId - 1);
             item.DeviceActual.CurrentAudioRouteName.LinkInputSig(
                 trilist.StringInput[(uint)(joinMap.OutputCurrentAudioInputNames.JoinNumber + item.DeviceId - 1)]);
 
@@ -270,7 +270,7 @@ public class NvxApplication : EssentialsBridgeableDevice
                         if (!_audioTransmitters.TryGetValue(s, out NvxApplicationAudioTransmitter device))
                             return;
 
-                        rx.Amp.ReleaseAndMakeRoute((IRoutingOutputs) device.Source, eRoutingSignalType.Audio);
+                        rx.Amp.ReleaseAndMakeRoute((IRoutingOutputs)device.Source, eRoutingSignalType.Audio);
                     }
                 });
         }

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Linq;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Application.Config;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
-using NvxEpi.Abstractions.InputSwitching;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-using Crestron.SimplSharpPro.DM.Streaming;
 
 namespace NvxEpi.Application.Entities;
 
@@ -50,9 +50,9 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
         AddPostActivationAction(() =>
             {
                 Name = Device.Name;
-                NameFeedback = new StringFeedback(() => Device.Name);
+                NameFeedback = new StringFeedback("name", () => Device.Name);
                 VideoName =
-                    new StringFeedback(() => string.IsNullOrEmpty(config.VideoName) ? Device.Name : config.VideoName);
+                    new StringFeedback("videoName", () => string.IsNullOrEmpty(config.VideoName) ? Device.Name : config.VideoName);
                 NameFeedback.FireUpdate();
                 VideoName.FireUpdate();
             });
@@ -67,7 +67,8 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
                 }
                 catch (Exception ex)
                 {
-                    Debug.Console(0, this, "Caught an exception:{0}", ex);
+                    this.LogError("Caught an exception: {message}", ex.Message);
+                    this.LogDebug(ex, "Stack Trace: ");
                 }
             });
     }
@@ -96,11 +97,11 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
         }
         else
         {
-            Debug.Console(1, this, "----- {0} is not a valid routing port key, available ports are:", routingPortKey);
+            this.LogDebug("----- {key} is not a valid routing port key, available ports are:", routingPortKey);
             Device
                 .InputPorts
                 .ToList()
-                .ForEach(x => Debug.Console(1, this, "----- " + x.Key));
+                .ForEach(x => this.LogDebug("----- " + x.Key));
 
             throw new NotSupportedException(routingPortKey);
         }
@@ -108,10 +109,10 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
 
     private void LinkInputValues(string routingPortKey)
     {
-        HdmiSyncDetected = new BoolFeedback(() => false);
-        HdcpState = new IntFeedback(() => 0);
-        HdcpCapability = new IntFeedback(() => 99);
-        InputResolution = new StringFeedback(() => string.Empty);
+        HdmiSyncDetected = new BoolFeedback("hdmiSyncDetected", () => false);
+        HdcpState = new IntFeedback("hdcpState", () => 0);
+        HdcpCapability = new IntFeedback("hdcpCapability", () => 99);
+        InputResolution = new StringFeedback("inputResolution", () => string.Empty);
 
         if (string.IsNullOrEmpty(routingPortKey))
         {

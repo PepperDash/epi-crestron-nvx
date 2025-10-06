@@ -5,7 +5,7 @@ using Crestron.SimplSharp;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Features.Routing;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Streams.Audio;
@@ -18,7 +18,7 @@ public class CurrentSecondaryAudioStream : SecondaryAudioStream, ICurrentSeconda
     private readonly IntFeedback _currentSecondaryAudioStreamId;
     private readonly StringFeedback _currentSecondaryAudioStreamName;
 
-    private readonly IList<ISecondaryAudioStream> _audioTransmitters = new List<ISecondaryAudioStream>(); 
+    private readonly IList<ISecondaryAudioStream> _audioTransmitters = new List<ISecondaryAudioStream>();
     private readonly CCriticalSection _lock = new();
 
     private ISecondaryAudioStream _current;
@@ -67,7 +67,7 @@ public class CurrentSecondaryAudioStream : SecondaryAudioStream, ICurrentSeconda
         if (result != null)
             _audioTransmitters.Add(result);
 
-        return result;      
+        return result;
     }
 
     private void Initialize()
@@ -93,12 +93,8 @@ public class CurrentSecondaryAudioStream : SecondaryAudioStream, ICurrentSeconda
         }
         catch (Exception ex)
         {
-            Debug.Console(1,
-                this,
-                "Error getting current audio route : {0}\r{1}\r{2}",
-                ex.Message,
-                ex.InnerException,
-                ex.StackTrace);
+            this.LogError("Error getting current audio route : {message}", ex.Message);
+            this.LogDebug(ex, "Stack trace: ");
         }
         finally
         {

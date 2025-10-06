@@ -2,7 +2,6 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using NvxEpi.Abstractions.Usb;
-using NvxEpi.Features.Streams.Usb;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 

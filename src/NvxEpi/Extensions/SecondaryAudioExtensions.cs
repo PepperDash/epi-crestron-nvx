@@ -1,7 +1,6 @@
-﻿using System;
-using Crestron.SimplSharpPro.DM.Streaming;
+﻿using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.SecondaryAudio;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 
 namespace NvxEpi.Extensions;
 
@@ -13,23 +12,23 @@ public static class SecondaryAudioExtensions
     {
         if (string.IsNullOrEmpty(address))
         {
-            Debug.Console(1, device, "Secondary Audio Address null or empty");
+            device.LogWarning("Secondary Audio Address null or empty");
             return;
         }
 
         if (device is not ISecondaryAudioStreamWithHardware deviceWithHardware) return;
 
-        Debug.Console(1, device, "Setting Secondary Audio Address : '{0}'", address);
+        device.LogDebug("Setting Secondary Audio Address : '{0}'", address);
 
         if (deviceWithHardware.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue == address && address != NoRouteString)
         {
-            Debug.Console(1, device, "Secondary Audio Address is same as this unit's Tx address: '{0}'", address);
+            device.LogDebug("Secondary Audio Address is same as this unit's Tx address: '{0}'", address);
             deviceWithHardware.Hardware.Control.AudioSource = deviceWithHardware.Hardware.Control.DmNaxAudioSourceFeedback;
         }
         else
         {
             deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
-            deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;   
+            deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
         }
     }
 
@@ -37,7 +36,7 @@ public static class SecondaryAudioExtensions
     {
         if (device is not ISecondaryAudioStreamWithHardware) return;
 
-        Debug.Console(1, device, "Clearing Secondary Audio Stream");
+        device.LogDebug("Clearing Secondary Audio Stream");
         device.SetSecondaryAudioAddress(NoRouteString);
     }
 
@@ -49,7 +48,7 @@ public static class SecondaryAudioExtensions
             return;
         }
 
-        Debug.Console(1, device, "Routing device secondary audio stream : '{0}'", tx.Name);
+        device.LogDebug("Routing device secondary audio stream : '{0}'", tx.Name);
         tx.TxAudioAddress.FireUpdate();
         device.SetSecondaryAudioAddress(tx.TxAudioAddress.StringValue);
     }

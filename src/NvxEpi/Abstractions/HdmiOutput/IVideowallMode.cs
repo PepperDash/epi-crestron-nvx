@@ -1,4 +1,3 @@
-using NvxEpi.Abstractions.Hardware;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions.HdmiOutput;

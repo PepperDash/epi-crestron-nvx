@@ -1,5 +1,4 @@
-﻿using System;
-using Crestron.SimplSharpPro.DM.Streaming;
+﻿using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback;
@@ -27,7 +26,7 @@ public class HdmiOutputEdidFeedback
     public static StringFeedback GetFeedback(DmNvxBaseClass device)
     {
         if (device.HdmiOut == null)
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(Key, () => string.Empty);
 
         var feedback = new StringFeedback(Key, () => device.HdmiOut.ConnectedDevice.Manufacturer.StringValue);
         device.HdmiOut.ConnectedDevice.DeviceInformationChange += (stream, args) => feedback.FireUpdate();

@@ -1,7 +1,7 @@
 ﻿using System;
 using Crestron.SimplSharpPro.DM;
 using NvxEpi.Abstractions.HdmiOutput;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 
 namespace NvxEpi.Extensions;
 
@@ -14,23 +14,24 @@ public static class HdmiOutputExtensions
             if (device.Hardware.HdmiOut == null)
                 throw new NotSupportedException("HdmiOut");
 
-            var modeToSet = (eAspectRatioMode) mode;
+            var modeToSet = (eAspectRatioMode)mode;
 
 
-            Debug.Console(1, device, "Setting Video Aspect Ratio to '{0}'", modeToSet.ToString());
+            device.LogDebug("Setting Video Aspect Ratio to '{mode}'", modeToSet.ToString());
             device.Hardware.HdmiOut.VideoAttributes.AspectRatioMode = modeToSet;
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Debug.Console(1, device, "Error setting Aspect Ratio : {0}", ex.Message);
+            device.LogError("Error setting Aspect Ratio : {0}", ex.Message);
         }
         catch (NotSupportedException ex)
         {
-            Debug.Console(1, device, "Error setting Aspect Ratio : {0}", ex.Message);
+            device.LogError("Error setting Aspect Ratio : {0}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(1, device, "Error setting Aspect Ratio Capability : {0}", ex.Message);
+            device.LogError("Error setting Aspect Ratio Capability : {0}", ex.Message);
+            device.LogDebug(ex, "Stack Trace: ");
         }
     }
 
@@ -39,7 +40,7 @@ public static class HdmiOutputExtensions
         if (device.IsTransmitter)
             return;
 
-        Debug.Console(1, device, "Setting videowall mode to : '{0}'", value);
+        device.LogDebug("Setting videowall mode to : {mode}", value);
         if (device.Hardware.HdmiOut != null)
             device.Hardware.HdmiOut.VideoWallMode.UShortValue = value;
     }

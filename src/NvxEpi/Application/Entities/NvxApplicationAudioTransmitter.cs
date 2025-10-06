@@ -3,7 +3,7 @@ using System.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Application.Config;
 using NvxEpi.Enums;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 
@@ -40,7 +40,7 @@ public class NvxApplicationAudioTransmitter : EssentialsDevice
             {
                 Name = Device.Name;
                 AudioName =
-                    new StringFeedback(() => string.IsNullOrEmpty(config.AudioName) ? Device.Name : config.AudioName);
+                    new StringFeedback("audioName", () => string.IsNullOrEmpty(config.AudioName) ? Device.Name : config.AudioName);
                 AudioName.FireUpdate();
             });
 
@@ -76,11 +76,11 @@ public class NvxApplicationAudioTransmitter : EssentialsDevice
         }
         else
         {
-            Debug.Console(1, this, "----- {0} is not a valid routing port key, available ports are:", routingPortKey);
+            this.LogWarning("----- {0} is not a valid routing port key, available ports are:", routingPortKey);
             Device
                 .InputPorts
                 .ToList()
-                .ForEach(x => Debug.Console(1, this, "----- " + x.Key));
+                .ForEach(x => this.LogWarning("----- " + x.Key));
 
             throw new NotSupportedException(routingPortKey);
         }

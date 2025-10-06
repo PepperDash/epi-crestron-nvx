@@ -1,7 +1,6 @@
-using System;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.InputSwitching;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 
 namespace NvxEpi.Extensions;
 
@@ -33,47 +32,47 @@ public static class VideoInputExtensions
     public static void SetVideoToHdmiInput1(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
-        {            
+        {
             return;
         }
-        Debug.Console(1, device, "Switching Video Input to : 'Hdmi1'");
+        device.LogDebug("Switching Video Input to : 'Hdmi1'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
     }
 
     public static void SetVideoToHdmiInput2(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
-        {       
+        {
             return;
         }
-        Debug.Console(1, device, "Switching Video Input to : 'Hdmi2'");
+        device.LogDebug("Switching Video Input to : 'Hdmi2'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
     }
 
     public static void SetVideoToInputNone(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
-        {            
+        {
             return;
         }
-        Debug.Console(1, device, "Switching Video Input to : 'Disable'");
+        device.LogDebug("Switching Video Input to : 'Disable'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
     }
 
     public static void SetVideoToStream(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x || device.IsTransmitter)
-        {            
+        {
             return;
         }
 
-        Debug.Console(1, device, "Switching Video Input to : 'Stream'");
+        device.LogDebug("Switching Video Input to : 'Stream'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
     }
 
     public static void SetVideoToAutomatic(this ICurrentVideoInput device)
     {
-        Debug.Console(1, device, "Switching Video Input to : 'Automatic'");
+        device.LogDebug("Switching Video Input to : 'Automatic'");
         device.Hardware.Control.EnableAutomaticInputRouting();
     }
 }

@@ -1,10 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Essentials.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NvxEpi.Services.Feedback;
 
@@ -13,8 +8,8 @@ public static class HdmiOutputResolutionFeedback
     public const string Key = "HdmiOutOutputResolution";
 
     public static StringFeedback GetFeedback(DmNvxBaseClass device)
-    {            
-        if(device.HdmiOut == null)
+    {
+        if (device.HdmiOut == null)
         {
             return new StringFeedback(Key, () => string.Empty);
         }

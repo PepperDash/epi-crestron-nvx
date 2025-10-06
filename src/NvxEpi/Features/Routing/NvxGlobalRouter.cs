@@ -1,14 +1,15 @@
-﻿using NvxEpi.Abstractions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Devices;
 using NvxEpi.Services.TieLines;
 using NvxEpi.Services.Utilities;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NvxEpi.Features.Routing;
 
@@ -97,7 +98,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
         if (signalType.Has(eRoutingSignalType.Audio) || signalType.Has(eRoutingSignalType.SecondaryAudio))
             SecondaryAudioRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
 
-        if(signalType.HasFlag(eRoutingSignalType.UsbInput) || signalType.HasFlag(eRoutingSignalType.UsbOutput))
+        if (signalType.HasFlag(eRoutingSignalType.UsbInput) || signalType.HasFlag(eRoutingSignalType.UsbOutput))
             UsbRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
     }
 
@@ -131,15 +132,15 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
                .OfType<NvxBaseDevice>()
                .Where(t =>
                {
-                   Debug.Console(0, this, $"{t.Key} is transmitter: {t.IsTransmitter}");
+                   this.LogVerbose($"{t.Key} is transmitter: {t.IsTransmitter}");
                    return !t.IsTransmitter;
                }).ToList();
 
-            Debug.Console(2, this, $"Receiver count: {transmitters.Count}");
+            this.LogVerbose($"Receiver count: {transmitters.Count}");
 
             OutputSlots = transmitters.Select((t) =>
             {
-                Debug.Console(0, this, $"Getting NvxMatrixOutput for {t.Key}");
+                this.LogInformation($"Getting NvxMatrixOutput for {t.Key}");
 
                 return new NvxMatrixOutput(t);
             }).Cast<IRoutingOutputSlot>().ToDictionary(t => t.Key, t => t);
@@ -155,13 +156,13 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
     {
         if (!InputSlots.TryGetValue(inputSlotKey, out var inputSlot))
         {
-            Debug.Console(0, this, "Unable to find input slot with key {0}", inputSlotKey);
+            this.LogError("Unable to find input slot with key {0}", inputSlotKey);
             return;
         }
 
         if (!OutputSlots.TryGetValue(outputSlotKey, out var outputSlot))
         {
-            Debug.Console(0, this, "Unable to find output slot with key {0}", outputSlotKey);
+            this.LogError("Unable to find output slot with key {0}", outputSlotKey);
             return;
         }
 
@@ -175,7 +176,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         if (outputDevice == null)
         {
-            Debug.Console(0, this, "Unable to get device to route");
+            this.LogError("Unable to get device to route");
             return;
         }
 

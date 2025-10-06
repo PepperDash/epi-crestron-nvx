@@ -17,7 +17,7 @@ public static class DeviceDefaults
         device.Control.EnableAutomaticInitiation();
         if (!string.IsNullOrEmpty(props.MulticastVideoAddress))
         {
-            Debug.Console(0, "Setting multicast Video Address to {0}", props.MulticastVideoAddress);
+            Debug.LogInformation("Setting multicast Video Address to {multicastVideoAddress}", props.MulticastVideoAddress);
             device.Control.MulticastAddress.StringValue = props.MulticastVideoAddress;
         }
 
@@ -32,11 +32,12 @@ public static class DeviceDefaults
             try
             {
                 device.Control.VideoSource =
-                    (eSfpVideoSourceTypes) Enum.Parse(typeof (eSfpVideoSourceTypes), props.DefaultVideoInput, true);
+                    (eSfpVideoSourceTypes)Enum.Parse(typeof(eSfpVideoSourceTypes), props.DefaultVideoInput, true);
             }
             catch (Exception ex)
             {
-                Debug.Console(1, "Cannot set device to video input:{0} | {1}", props.DefaultVideoInput, ex.Message);
+                Debug.LogError("Cannot set device to video input:{input} | {message}", props.DefaultVideoInput, ex.Message);
+                Debug.LogDebug(ex, "Stack trace: ");
             }
         }
 
@@ -46,11 +47,12 @@ public static class DeviceDefaults
             {
                 device.Control.AudioSource =
                     (DmNvxControl.eAudioSource)
-                        Enum.Parse(typeof (DmNvxControl.eAudioSource), props.DefaultAudioInput, true);
+                        Enum.Parse(typeof(DmNvxControl.eAudioSource), props.DefaultAudioInput, true);
             }
             catch (Exception ex)
             {
-                Debug.Console(1, "Cannot set device to audio input:{0} | {1}", props.DefaultVideoInput, ex.Message);
+                Debug.LogError("Cannot set device to audio input:{input} | {message}", props.DefaultAudioInput, ex.Message);
+                Debug.LogDebug(ex, "Stack trace: ");
             }
         }
     }

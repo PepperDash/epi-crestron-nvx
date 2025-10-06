@@ -8,7 +8,6 @@ using NvxEpi.Features.Routing;
 using NvxEpi.Features.Streams.Video;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Routing;
 using MockDisplay = PepperDash.Essentials.Devices.Common.Displays.MockDisplay;
 
 namespace NvxEpi.Application.Entities;
@@ -51,8 +50,8 @@ public class NvxApplicationVideoReceiver : EssentialsDevice, IOnline
         AddPostActivationAction(() =>
             {
                 Name = Device.Name;
-                NameFeedback = new StringFeedback(() => Device.Name);
-                VideoName = new StringFeedback(() => string.IsNullOrEmpty(config.VideoName) ? Device.Name : config.VideoName);
+                NameFeedback = new StringFeedback("name", () => Device.Name);
+                VideoName = new StringFeedback("videoName", () => string.IsNullOrEmpty(config.VideoName) ? Device.Name : config.VideoName);
                 NameFeedback.FireUpdate();
                 VideoName.FireUpdate();
             });
@@ -61,7 +60,7 @@ public class NvxApplicationVideoReceiver : EssentialsDevice, IOnline
             {
                 var feedback = Device.Feedbacks[CurrentVideoStream.RouteNameKey] as StringFeedback ?? throw new NullReferenceException(CurrentVideoStream.RouteNameKey);
 
-                var currentRouteFb = new IntFeedback(() =>
+                var currentRouteFb = new IntFeedback("currentRoute", () =>
                     {
                         if (feedback.StringValue.Equals(NvxGlobalRouter.NoSourceText))
                             return 0;
@@ -77,7 +76,7 @@ public class NvxApplicationVideoReceiver : EssentialsDevice, IOnline
 
         AddPostActivationAction(() =>
             {
-                var currentRouteNameFb = new StringFeedback(() =>
+                var currentRouteNameFb = new StringFeedback("currentRouteName", () =>
                     {
                         if (CurrentVideoRouteId.IntValue == 0)
                             return NvxGlobalRouter.NoSourceText;
@@ -93,10 +92,10 @@ public class NvxApplicationVideoReceiver : EssentialsDevice, IOnline
 
         AddPostActivationAction(() =>
             {
-                DisabledByHdcp = new BoolFeedback(() => false);
-                HorizontalResolution = new IntFeedback(() => 0);
-                AspectRatioMode = new IntFeedback(() => 0);
-                EdidManufacturer = new StringFeedback(() => string.Empty);
+                DisabledByHdcp = new BoolFeedback("disabledByHdcp", () => false);
+                HorizontalResolution = new IntFeedback("horizontalResolution", () => 0);
+                AspectRatioMode = new IntFeedback("aspectRatioMode", () => 0);
+                EdidManufacturer = new StringFeedback("edidManufacturer", () => string.Empty);
 
                 if (Device is not IHdmiOutput hdmiOut)
                     return;

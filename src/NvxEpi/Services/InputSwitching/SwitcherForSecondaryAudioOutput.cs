@@ -3,7 +3,7 @@ using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Services.Utilities;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.InputSwitching;
@@ -25,18 +25,18 @@ public class SwitcherForSecondaryAudioOutput : IHandleInputSwitch
         {
             return;
         }
-        
+
         var routingInput = input as DeviceInputEnum ?? throw new InvalidCastException("routing input");
         if (routingInput == DeviceInputEnum.NoSwitch)
             return;
 
-        Debug.Console(1, _device, "Switching input on SecondaryAudioOutput: '{0}' : '{1}", routingInput.Name, type.ToString());
+        _device.LogDebug("Switching input on SecondaryAudioOutput: '{0}' : '{1}'", routingInput.Name, type.ToString());
 
         if (type.Has(eRoutingSignalType.Audio) || type.Has(eRoutingSignalType.SecondaryAudio))
             SwitchAudio(routingInput);
 
         if (type.Has(eRoutingSignalType.Video))
-            throw new NotSupportedException("video"); 
+            throw new NotSupportedException("video");
     }
 
     private void SwitchAudio(Enumeration<DeviceInputEnum> input)
@@ -61,10 +61,10 @@ public class SwitcherForSecondaryAudioOutput : IHandleInputSwitch
     public static void AddRoutingPort(ICurrentNaxInput parent)
     {
         parent.OutputPorts.Add(new RoutingOutputPort(
-            Key, 
+            Key,
             eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
             eRoutingPortConnectionType.LineAudio,
-            new SwitcherForSecondaryAudioOutput(parent), 
+            new SwitcherForSecondaryAudioOutput(parent),
             parent));
     }
 }

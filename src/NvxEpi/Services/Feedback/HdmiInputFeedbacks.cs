@@ -1,5 +1,4 @@
 ﻿using Crestron.SimplSharpPro.DM.Streaming;
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Feedback;
@@ -11,7 +10,7 @@ public class HdmiSyncDetectedFeedback
     public static BoolFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
-            return new BoolFeedback(() => false);
+            return new BoolFeedback(string.Format(Key, _inputNumber), () => false);
 
         var feedback = new BoolFeedback(string.Format(Key, _inputNumber),
             () => device.HdmiIn[_inputNumber].SyncDetectedFeedback.BoolValue);
@@ -48,7 +47,7 @@ public class HdmiHdcpCapabilityValueFeedback
     public static IntFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
-            return new IntFeedback(() => 0);
+            return new IntFeedback(string.Format(Key, _inputNumber), () => 0);
 
         var feedback = new IntFeedback(string.Format(Key, _inputNumber),
             () => (int)device.HdmiIn[_inputNumber].HdcpCapabilityFeedback);
@@ -64,7 +63,7 @@ public class HdmiHdcpCapabilityFeedback
     public static StringFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(string.Format(Key, _inputNumber), () => string.Empty);
 
         var feedback = new StringFeedback(string.Format(Key, _inputNumber),
             () => device.HdmiIn[_inputNumber].HdcpCapabilityFeedback.ToString());
@@ -81,7 +80,7 @@ public class HdmiHdcpStateFeedback
     public static IntFeedback GetFeedback(DmNvxBaseClass device, uint _inputNumber)
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
-            return new IntFeedback(() => 0);
+            return new IntFeedback(string.Format(Key, _inputNumber), () => 0);
 
         var feedback = new IntFeedback(string.Format(Key, _inputNumber),
             () => (int)device.HdmiIn[_inputNumber].VideoAttributes.HdcpStateFeedback);
@@ -100,7 +99,7 @@ public class HdmiCurrentResolutionFeedback
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(string.Format(Key, _inputNumber), () => string.Empty);
         }
 
         var feedback = new StringFeedback(string.Format(Key, _inputNumber), () =>
@@ -123,7 +122,7 @@ public class HdmiAudioChannelsFeedback
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
         {
-            return new IntFeedback(() => 0);
+            return new IntFeedback(string.Format(Key, _inputNumber), () => 0);
         }
 
         var feedback = new IntFeedback(string.Format(Key, _inputNumber), () => device.HdmiIn[_inputNumber].AudioChannelsFeedback.UShortValue);
@@ -142,7 +141,7 @@ public class HdmiAudioFormatFeedback
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(string.Format(Key, _inputNumber), () => string.Empty);
         }
 
         var feedback = new StringFeedback(string.Format(Key, _inputNumber), () => device.HdmiIn[_inputNumber].AudioFormatFeedback.ToString());
@@ -161,7 +160,7 @@ public class HdmiColorSpaceFeedback
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(string.Format(Key, _inputNumber), () => string.Empty);
         }
 
         var feedback = new StringFeedback(string.Format(Key, _inputNumber), () => device.HdmiIn[_inputNumber].VideoAttributes.ColorSpaceFeedback.ToString());
@@ -180,7 +179,7 @@ public class HdmiHdrTypeFeedback
     {
         if (device.HdmiIn == null || device.HdmiIn[_inputNumber] == null)
         {
-            return new StringFeedback(() => string.Empty);
+            return new StringFeedback(string.Format(Key, _inputNumber), () => string.Empty);
         }
 
         var feedback = new StringFeedback(string.Format(Key, _inputNumber), () => device.HdmiIn[_inputNumber].HdrTypeFeedback.ToString());

@@ -1,13 +1,17 @@
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.InputSwitching;
-using PepperDash.Core;
+using PepperDash.Core.Logging;
 
 namespace NvxEpi.Extensions;
 
 public static class AudioInputExtensions
 {
-    //TODO: needs documentation
+    /// <summary>
+    /// Sets the audio input based on a ushort value
+    /// </summary>
+    /// <param name="device">The audio input device</param>
+    /// <param name="input">The input number</param>
     public static void SetAudioInput(this ICurrentAudioInput device, ushort input)
     {
         switch (input)
@@ -35,37 +39,37 @@ public static class AudioInputExtensions
 
     public static void SetAudioToHdmiInput1(this ICurrentAudioInput device)
     {
-        Debug.Console(1, device, "Switching Audio Input to: 'Hdmi1'");
+        device.LogDebug("Switching Audio Input to: 'Hdmi1'");
         device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Input1;
     }
 
     public static void SetAudioToHdmiInput2(this ICurrentAudioInput device)
     {
-        Debug.Console(1, device, "Switching Audio Input to: 'Hdmi2'");
+        device.LogDebug("Switching Audio Input to: 'Hdmi2'");
         device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Input2;
     }
 
     public static void SetAudioToInputAnalog(this ICurrentAudioInput device)
     {
-        Debug.Console(1, device, "Switching Audio Input to: 'Analog'");
+        device.LogDebug("Switching Audio Input to: 'Analog'");
         device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.AnalogAudio;
     }
 
     public static void SetAudioToPrimaryStreamAudio(this ICurrentAudioInput device)
     {
-        Debug.Console(1, device, "Switching Audio Input to: 'PrimaryStream'");
+        device.LogDebug("Switching Audio Input to: 'PrimaryStream'");
         device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.PrimaryStreamAudio;
     }
 
     public static void SetAudioToSecondaryStreamAudio(this ICurrentAudioInput device)
     {
-        Debug.Console(1, device, "Switching Audio Input to: 'SecondaryStream/DM NAX'");
+        device.LogDebug("Switching Audio Input to: 'SecondaryStream/DM NAX'");
         device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
     }
 
     public static void SetAudioToInputAutomatic(this ICurrentAudioInput device)
     {
-        Debug.Console(1, device, "Switching Audio Input to: 'Automatic'");
+        device.LogDebug("Switching Audio Input to: 'Automatic'");
         device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.Automatic;
     }
 

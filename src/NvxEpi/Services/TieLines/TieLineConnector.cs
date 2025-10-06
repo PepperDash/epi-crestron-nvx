@@ -1,15 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
-using NvxEpi.Abstractions.Usb;
 using NvxEpi.Enums;
 using NvxEpi.Features.Routing;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NvxEpi.Services.TieLines;
 

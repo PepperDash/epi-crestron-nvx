@@ -3,6 +3,7 @@ using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Services.Utilities;
@@ -14,7 +15,7 @@ public static class DeviceDebug
         try
         {
             device.Hardware.BaseEvent += (sender, args) =>
-                Debug.Console(2, device, "Received Base Event:{0}", args.EventId);
+                device.LogDebug("Received Base Event:{0}", args.EventId);
 
             RegisterForHdmiInputFeedback(device.Hardware, device);
             RegisterForHdmiOutputFeedback(device.Hardware, device);
@@ -23,15 +24,12 @@ public static class DeviceDebug
         }
         catch (MissingMethodException ex)
         {
-            Debug.Console(2,
-                device,
-                "Missing Method Exception Registering for Logging : {0}\r{1}",
-                ex.Message,
-                ex.StackTrace);
+            device.LogError("Missing Method Exception Registering for Logging : {message}", ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.Console(2, device, "Exception Registering for Logging : {0}\r{1}", ex.Message, ex.StackTrace);
+            Debug.LogError("Exception Registering for Logging : {message}", ex.Message);
+            Debug.LogDebug(ex, "Stack trace: ");
         }
     }
 
@@ -49,13 +47,13 @@ public static class DeviceDebug
             item.OutputChange += (sender, args) =>
                 {
                     if (sender is BoolFeedback)
-                        Debug.Console(1, feedback, "Received {0} Update : '{1}'", fb.Key, args.BoolValue);
+                        feedback.LogDebug("Received Update : '{1}'", args.BoolValue);
 
                     if (sender is IntFeedback)
-                        Debug.Console(1, feedback, "Received {0} Update : '{1}'", fb.Key, args.IntValue);
+                        feedback.LogDebug("Received Update : '{1}'", args.IntValue);
 
                     if (sender is StringFeedback)
-                        Debug.Console(1, feedback, "Received {0} Update : '{1}'", fb.Key, args.StringValue);
+                        feedback.LogDebug("Received Update : '{1}'", args.StringValue);
                 };
         }
     }
@@ -69,8 +67,7 @@ public static class DeviceDebug
         {
             var input = item;
             input.StreamChange += (stream, args) =>
-                Debug.Console(2,
-                    keyed,
+                keyed.LogVerbose(
                     "Received HDMI Stream Change Event ID:{0} from {1}",
                     args.EventId,
                     input.NameFeedback.StringValue);
@@ -83,15 +80,13 @@ public static class DeviceDebug
             return;
 
         device.HdmiOut.StreamChange += (stream, args) =>
-            Debug.Console(2,
-                keyed,
+            keyed.LogVerbose(
                 "Received HDMI Stream Change Event ID:{0} from {1}",
                 args.EventId,
                 device.HdmiOut.NameFeedback.StringValue);
 
         device.HdmiOut.VideoAttributes.AttributeChange += (sender, args) =>
-            Debug.Console(2,
-                keyed,
+            keyed.LogVerbose(
                 "Received Video Attributes Change:{0} from {1}",
                 args.EventId,
                 device.HdmiOut.NameFeedback.StringValue);
@@ -105,16 +100,14 @@ public static class DeviceDebug
                 return;
 
             device.DmNaxRouting.DmNaxRoutingChange += (stream, args) =>
-                Debug.Console(2,
-                    keyed,
+                keyed.LogVerbose(
                     "Received NAX Routing Change Event ID:{0}",
                     args.EventId);
 
             if (device.DmNaxRouting.DmNaxReceive != null)
             {
                 device.DmNaxRouting.DmNaxReceive.DmNaxStreamChange += (sender, args) =>
-                    Debug.Console(2,
-                        keyed,
+                    keyed.LogVerbose(
                         "Recieved NAX Routing Receive Change:{0}",
                         args.EventId);
             }
@@ -122,25 +115,24 @@ public static class DeviceDebug
             if (device.DmNaxRouting.DmNaxTransmit != null)
             {
                 device.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (sender, args) =>
-                    Debug.Console(2, keyed, "Recieved NAX Routing Transmit Change:{0}", args.EventId);
+                    keyed.LogVerbose(
+                        "Recieved NAX Routing Transmit Change:{0}",
+                        args.EventId);
             }
         }
         catch (MissingMethodException ex)
         {
-            Debug.Console(2,
-                keyed,
-                "This firmware doesn't support NAX Audio Routing : {0}\r{1}",
-                ex.Message,
-                ex.InnerException);
+            keyed.LogError(
+                "This firmware doesn't support NAX Audio Routing : {0}",
+                ex.Message);
             throw;
         }
         catch (Exception ex)
         {
-            Debug.Console(2,
-                keyed,
-                "This firmware doesn't support NAX Audio Routing : {0}\r{1}",
-                ex.Message,
-                ex.InnerException);
+            keyed.LogError(
+                "This firmware doesn't support NAX Audio Routing : {0}",
+                ex.Message);
+            keyed.LogDebug(ex, "Stack Trace: ");
             throw;
         }
     }
@@ -149,31 +141,24 @@ public static class DeviceDebug
     {
         try
         {
-            if (device is not DmNvx35x )
+            if (device is not DmNvx35x)
                 return;
 
             if (device.SecondaryAudio == null)
                 return;
 
             device.SecondaryAudio.SecondaryAudioChange += (sender, args) =>
-                Debug.Console(2, keyed, "Received Secondary Audio Change Event ID:{0}", args.EventId);
+                keyed.LogVerbose("Received Secondary Audio Change Event ID:{0}", args.EventId);
         }
         catch (MissingMethodException ex)
         {
-            Debug.Console(2,
-                keyed,
-                "This firmware doesn't support NAX Audio Routing : {0}\r{1}",
-                ex.Message,
-                ex.InnerException);
+            keyed.LogError("This firmware doesn't support NAX Audio Routing : {0}", ex.Message);
             throw;
         }
         catch (Exception ex)
         {
-            Debug.Console(2,
-                keyed,
-                "This firmware doesn't support NAX Audio Routing : {0}\r{1}",
-                ex.Message,
-                ex.InnerException);
+            keyed.LogError("This firmware doesn't support NAX Audio Routing : {0}", ex.Message);
+            keyed.LogDebug(ex, "Stack Trace: ");
             throw;
         }
     }
