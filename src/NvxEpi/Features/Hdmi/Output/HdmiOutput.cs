@@ -81,5 +81,9 @@ public class HdmiOutput : IHdmiOutput
     public int DeviceId
     {
         get { return _device.DeviceId; }
-    }         
+    }
+
+    public bool IsEnabled => _device.IsEnabled;
+
+    public BoolFeedback EnabledFeedback => _device.EnabledFeedback;
 }

@@ -224,4 +224,9 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetStreamUrl);
 
     }
+
+
+    public bool IsEnabled => true;
+
+    public BoolFeedback EnabledFeedback { get; } = new BoolFeedback("EnabledFeedback", () => true);
 }

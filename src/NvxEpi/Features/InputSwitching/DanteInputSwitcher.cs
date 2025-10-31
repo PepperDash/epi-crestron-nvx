@@ -73,4 +73,8 @@ public class DanteInputSwitcher : ICurrentDanteInput
 
     public StringFeedback CurrentDanteInput { get; private set; }
     public IntFeedback CurrentDanteInputValue { get; private set; }
+
+    public bool IsEnabled => _device.IsEnabled;
+
+    public BoolFeedback EnabledFeedback => _device.EnabledFeedback;
 }

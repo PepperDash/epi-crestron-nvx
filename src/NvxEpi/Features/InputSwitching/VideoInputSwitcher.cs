@@ -82,4 +82,8 @@ public class VideoInputSwitcher : ICurrentVideoInput
     {
         get { return _device.OutputPorts; }
     }
+
+    public bool IsEnabled => _device.IsEnabled;
+
+    public BoolFeedback EnabledFeedback => _device.EnabledFeedback;
 }

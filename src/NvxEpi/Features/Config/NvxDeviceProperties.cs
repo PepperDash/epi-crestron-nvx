@@ -24,6 +24,12 @@ public class NvxDeviceProperties
     public string DefaultVideoInput { get; set; }
     public bool EnableAutoRoute { get; set; }
     public string DefaultMulticastSource { get; set; }
+    public NvxEnableMatchingProperties EnableMatching { get; set; }
+}
+
+public class NvxEnableMatchingProperties
+{
+    public string DefaultGateway { get; set; }
 }
 
 public class NvxMockDeviceProperties : BaseStreamingDeviceProperties
