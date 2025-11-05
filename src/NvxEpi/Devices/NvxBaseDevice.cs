@@ -102,14 +102,14 @@ public abstract class NvxBaseDevice :
 
         debounceTimer.Elapsed += (sender, args) =>
         {
-            this.LogInformation("Network change detected, updating network port information");
+            this.LogDebug("Network change detected, updating network port information");
 
             debounceTimer.Enabled = false;
             PortInformationChanged?.Invoke(this, EventArgs.Empty);
 
             foreach (var port in NetworkPorts)
             {
-                this.LogInformation("Port {portNumber} port name: {portName} portDescription: {portDescription}\r\nvlanName: {vlanName} systemName: {systemName} systemDescription: {systemDescription} managementAddress: {managementAddress}", port.DevicePortIndex, port.PortName, port.PortDescription, port.VlanName, port.SystemName, port.SystemNameDescription, port.IpManagementAddress);
+                this.LogVerbose("Port {portNumber} port name: {portName} portDescription: {portDescription}\r\nvlanName: {vlanName} systemName: {systemName} systemDescription: {systemDescription} managementAddress: {managementAddress}", port.DevicePortIndex, port.PortName, port.PortDescription, port.VlanName, port.SystemName, port.SystemNameDescription, port.IpManagementAddress);
             }
         };
     }
