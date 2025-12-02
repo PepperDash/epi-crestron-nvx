@@ -2,6 +2,7 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.Hardware;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Enums;
 using PepperDash.Essentials.Core;
@@ -12,9 +13,9 @@ public class UsbcInput1Port
 {
     public static void AddRoutingPort(ICurrentVideoInputWithUsbc device)
     {
-        if (device.Hardware.UsbcIn != null && device.Hardware.UsbcIn[1] != null)
+        if (((INvx38XHardware)device).Hardware.UsbcIn != null && ((INvx38XHardware)device).Hardware.UsbcIn[1] != null)
         {
-            var usbc = device.Hardware.UsbcIn[1];
+            var usbc = ((INvx38XHardware)device).Hardware.UsbcIn[1];
             var port = new RoutingInputPortWithVideoStatuses(
                 DeviceInputEnum.Usbc1.Name,
                 eRoutingSignalType.AudioVideo,
@@ -45,9 +46,9 @@ public class UsbcInput1Port
             foreach (var videoStatusOutput in port.VideoStatus.ToList().Where(x => x != null))
                 device.Feedbacks.Add(videoStatusOutput);
         }
-        else if (device.Hardware.DmIn != null)
+        else if (((INvxHardware)device).Hardware.DmIn != null)
         {
-            var dm = device.Hardware.DmIn;
+            var dm = ((INvxHardware)device).Hardware.DmIn;
             var port = new RoutingInputPortWithVideoStatuses(
                 DeviceInputEnum.Usbc1.Name,
                 eRoutingSignalType.AudioVideo,
