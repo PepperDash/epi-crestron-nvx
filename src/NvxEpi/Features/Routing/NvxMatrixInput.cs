@@ -1,4 +1,5 @@
 ﻿using NvxEpi.Abstractions.HdmiInput;
+using NvxEpi.Abstractions.UsbcInput;
 using NvxEpi.Devices;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;

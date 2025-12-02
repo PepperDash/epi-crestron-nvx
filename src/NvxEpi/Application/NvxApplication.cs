@@ -134,7 +134,7 @@ public class NvxApplication : EssentialsBridgeableDevice
                 trilist.StringInput[(uint)(joinMap.InputCurrentResolution.JoinNumber + item.DeviceId - 1)]);
 
             Debug.LogInformation(this, "Linking {0} VideoSyncStatus to join {1}", item.DeviceActual.Key, joinMap.VideoSyncStatus.JoinNumber + item.DeviceId - 1);
-            item.DeviceActual.HdmiSyncDetected.LinkInputSig(
+            item.DeviceActual.VideoSyncDetected.LinkInputSig(
                 trilist.BooleanInput[(uint)(joinMap.VideoSyncStatus.JoinNumber + item.DeviceId - 1)]);
 
             Debug.LogInformation(this, "Linking {0} HdcpSupportCapability to join {1}", item.DeviceActual.Key, joinMap.HdcpSupportCapability.JoinNumber + item.DeviceId - 1);

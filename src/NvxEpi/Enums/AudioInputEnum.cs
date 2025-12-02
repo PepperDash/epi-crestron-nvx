@@ -18,4 +18,6 @@ public class AudioInputEnum : Enumeration<AudioInputEnum>
     public static readonly AudioInputEnum SecondaryStream = new(5, "SecondaryStream");
     public static readonly AudioInputEnum Dante = new(6, "Dante");
     public static readonly AudioInputEnum NaxAudio = new(7, "Nax");
+    public static readonly AudioInputEnum Usbc1 = new(8, "Usbc1");
+    public static readonly AudioInputEnum Usbc2 = new(9, "Usbc2");
 }

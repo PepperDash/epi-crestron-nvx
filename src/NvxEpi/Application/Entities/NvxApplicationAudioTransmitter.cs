@@ -64,6 +64,16 @@ public class NvxApplicationAudioTransmitter : EssentialsDevice
             var routingPort = Device.InputPorts[DeviceInputEnum.Hdmi2.Name] ?? throw new NullReferenceException(DeviceInputEnum.Hdmi2.Name);
             TieLineCollection.Default.Add(new TieLine(_source.AudioVideoOutputPort, routingPort));
         }
+        else if (routingPortKey.Equals(DeviceInputEnum.Usbc1.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            var routingPort = Device.InputPorts[DeviceInputEnum.Usbc1.Name] ?? throw new NullReferenceException(DeviceInputEnum.Usbc1.Name);
+            TieLineCollection.Default.Add(new TieLine(_source.AudioVideoOutputPort, routingPort));
+        }
+        else if (routingPortKey.Equals(DeviceInputEnum.Usbc2.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            var routingPort = Device.InputPorts[DeviceInputEnum.Usbc2.Name] ?? throw new NullReferenceException(DeviceInputEnum.Usbc2.Name);
+            TieLineCollection.Default.Add(new TieLine(_source.AudioVideoOutputPort, routingPort));
+        }
         else if (routingPortKey.Equals(DeviceInputEnum.AnalogAudio.Name, StringComparison.OrdinalIgnoreCase))
         {
             var routingPort = Device.InputPorts[DeviceInputEnum.AnalogAudio.Name] ?? throw new NullReferenceException(DeviceInputEnum.AnalogAudio.Name);

@@ -10,13 +10,14 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions.UsbcInput;
 
 namespace NvxEpi.Application.Entities;
 
 public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
 {
     public int DeviceId { get; private set; }
-    public BoolFeedback HdmiSyncDetected { get; private set; }
+    public BoolFeedback VideoSyncDetected { get; private set; }
     public IntFeedback HdcpState { get; private set; }
     public IntFeedback HdcpCapability { get; private set; }
     public StringFeedback InputResolution { get; private set; }
@@ -33,6 +34,8 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
     public INvxDevice Device { get; private set; }
 
     private bool _useHdmiInput2;
+    private bool _useUsbInput1;
+    private bool _useUsbInput2;
 
     public NvxApplicationVideoTransmitter(string key, NvxApplicationDeviceVideoConfig config, int deviceId)
         : base(key)
@@ -89,6 +92,16 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
             var routingPort = Device.InputPorts[DeviceInputEnum.Hdmi2.Name] ?? throw new NullReferenceException(DeviceInputEnum.Hdmi2.Name);
             TieLineCollection.Default.Add(new TieLine(_source.AudioVideoOutputPort, routingPort));
         }
+        else if (routingPortKey.Equals(DeviceInputEnum.Usbc1.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            var routingPort = Device.InputPorts[DeviceInputEnum.Usbc1.Name] ?? throw new NullReferenceException(DeviceInputEnum.Usbc1.Name);
+            TieLineCollection.Default.Add(new TieLine(_source.AudioVideoOutputPort, routingPort));
+        }
+        else if (routingPortKey.Equals(DeviceInputEnum.Usbc2.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            var routingPort = Device.InputPorts[DeviceInputEnum.Usbc2.Name] ?? throw new NullReferenceException(DeviceInputEnum.Usbc2.Name);
+            TieLineCollection.Default.Add(new TieLine(_source.AudioVideoOutputPort, routingPort));
+        }
         else if (routingPortKey.Equals(DeviceInputEnum.Automatic.Name, StringComparison.OrdinalIgnoreCase))
         {
             var routingPort = Device.InputPorts[DeviceInputEnum.Automatic.Name] ?? throw new NullReferenceException(DeviceInputEnum.Automatic.Name);
@@ -108,38 +121,58 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
 
     private void LinkInputValues(string routingPortKey)
     {
-        HdmiSyncDetected = new BoolFeedback(() => false);
+        VideoSyncDetected = new BoolFeedback(() => false);
         HdcpState = new IntFeedback(() => 0);
         HdcpCapability = new IntFeedback(() => 99);
         InputResolution = new StringFeedback(() => string.Empty);
 
         if (string.IsNullOrEmpty(routingPortKey))
         {
-            if (Device is not IHdmiInput hdmiInput)
+            if (Device is not IHdmiInput videoInput)
                 return;
 
-            HdmiSyncDetected = hdmiInput.SyncDetected[1];
-            HdcpState = hdmiInput.HdcpCapability[1];
-            InputResolution = hdmiInput.CurrentResolution[1];
+            VideoSyncDetected = videoInput.SyncDetected[1];
+            HdcpState = videoInput.HdcpCapability[1];
+            InputResolution = videoInput.CurrentResolution[1];
         }
         else if (routingPortKey.Equals(DeviceInputEnum.Hdmi1.Name, StringComparison.OrdinalIgnoreCase))
         {
-            if (Device is not IHdmiInput hdmiInput)
+            if (Device is not IHdmiInput videoInput)
                 return;
 
-            HdmiSyncDetected = hdmiInput.SyncDetected[1];
-            HdcpState = hdmiInput.HdcpCapability[1];
-            InputResolution = hdmiInput.CurrentResolution[1];
+            VideoSyncDetected = videoInput.SyncDetected[1];
+            HdcpState = videoInput.HdcpCapability[1];
+            InputResolution = videoInput.CurrentResolution[1];
         }
         else if (routingPortKey.Equals(DeviceInputEnum.Hdmi2.Name, StringComparison.OrdinalIgnoreCase))
         {
-            if (Device is not IHdmiInput hdmiInput)
+            if (Device is not IHdmiInput videoInput)
                 return;
 
             _useHdmiInput2 = true;
-            HdmiSyncDetected = hdmiInput.SyncDetected[2];
-            HdcpState = hdmiInput.HdcpCapability[2];
-            InputResolution = hdmiInput.CurrentResolution[2];
+            VideoSyncDetected = videoInput.SyncDetected[2];
+            HdcpState = videoInput.HdcpCapability[2];
+            InputResolution = videoInput.CurrentResolution[2];
+        }
+        else if (routingPortKey.Equals(DeviceInputEnum.Usbc1.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            if (Device is not INvxUsbcInput videoInput)
+                return;
+
+            _useUsbInput1 = true;
+            VideoSyncDetected = videoInput.SyncDetected[3];
+            HdcpState = videoInput.HdcpCapability[3];
+            InputResolution = videoInput.CurrentResolution[3];
+        }
+        else if (routingPortKey.Equals(DeviceInputEnum.Usbc2.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            if (Device is not INvxUsbcInput videoInput)
+                return;
+
+            _useUsbInput2 = true;
+            VideoSyncDetected = videoInput.SyncDetected[4];
+            HdcpState = videoInput.HdcpCapability[4];
+            InputResolution = videoInput.CurrentResolution[4];
         }
         else if (routingPortKey.Equals(DeviceInputEnum.Automatic.Name, StringComparison.OrdinalIgnoreCase))
         {
@@ -149,14 +182,14 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
             if (Device is not ICurrentVideoInput hdmiSwitcher)
                 return;
 
-            HdmiSyncDetected = hdmiInput.SyncDetected[1];
+            VideoSyncDetected = hdmiInput.SyncDetected[1];
             HdcpState = hdmiInput.HdcpCapability[1];
             InputResolution = hdmiInput.CurrentResolution[1];
         }
         else
             throw new NotSupportedException(routingPortKey);
 
-        HdmiSyncDetected.FireUpdate();
+        VideoSyncDetected.FireUpdate();
         HdcpCapability.FireUpdate();
         InputResolution.FireUpdate();
     }
@@ -168,12 +201,21 @@ public class NvxApplicationVideoTransmitter : EssentialsDevice, IOnline
 
     public void SetHdcpState(ushort state)
     {
-        if (Device is not IHdmiInput hdmiInput)
-            return;
-
-        if (_useHdmiInput2)
-            hdmiInput.SetHdmi2HdcpCapability(state);
-        else
-            hdmiInput.SetHdmi1HdcpCapability(state);
+        if (Device is IHdmiInput videoInput)
+        {
+            if (_useHdmiInput2)
+                videoInput.SetHdmi2HdcpCapability(state);
+            else
+                videoInput.SetHdmi1HdcpCapability(state);
+        }
+        else if (Device is INvxUsbcInput videoInputWithUsbc)
+        {
+            if (_useHdmiInput2 && Device is IHdmiInput hdmiCapableUsbc)
+                hdmiCapableUsbc.SetHdmi2HdcpCapability(state);
+            else if (_useUsbInput1)
+                videoInputWithUsbc.SetUsbc1HdcpCapability(state);
+            else if (_useUsbInput2)
+                videoInputWithUsbc.SetUsbc2HdcpCapability(state);
+        }
     }
 }
