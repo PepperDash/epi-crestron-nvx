@@ -38,6 +38,11 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline, ICommunic
         AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, _hardware));
     }
 
+    public override void Initialize()
+    {
+        _hardware.RegisterWithLogging(Key);
+    }
+
     public override bool CustomActivate()
     {
         CommunicationMonitor.Start();
