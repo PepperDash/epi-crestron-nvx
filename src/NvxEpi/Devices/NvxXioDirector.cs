@@ -28,7 +28,6 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline, ICommunic
 
             var domain = new DmXioDirectorBase.DmXioDomain((uint)i, hardware);
             this.LogDebug("Adding domain: {id}", domain.Id);
-            domain.DomainChange += (sender, args) => this.LogDebug("Domain {id} changed: {eventId}", domain.Id, args.EventId);
         }
 
         _hardware = hardware ?? throw new ArgumentNullException("hardware");
