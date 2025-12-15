@@ -34,7 +34,7 @@ public class UsbStream : IUsbStreamWithHardware
             if (string.IsNullOrEmpty(props.Default))
                 props.Default = string.Empty;
 
-            return new UsbStream(device, props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase), props.FollowVideo, props.Default, props.IsLayer3);
+            return new UsbStream(device, !props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase), props.FollowVideo, props.Default, props.IsLayer3);
         }
         catch (Exception ex)
         {
