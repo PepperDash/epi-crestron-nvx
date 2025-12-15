@@ -14,9 +14,6 @@ public static class DeviceDebug
     {
         try
         {
-            device.Hardware.BaseEvent += (sender, args) =>
-                device.LogDebug("Received Base Event:{0}", args.EventId);
-
             RegisterForHdmiInputFeedback(device.Hardware, device);
             RegisterForHdmiOutputFeedback(device.Hardware, device);
             RegisterForSecondaryAudioFeedback(device.Hardware, device);
@@ -47,13 +44,13 @@ public static class DeviceDebug
             item.OutputChange += (sender, args) =>
                 {
                     if (sender is BoolFeedback)
-                        feedback.LogDebug("Received Update : '{1}'", args.BoolValue);
+                        feedback.LogVerbose("Received Update: '{value}'", args.BoolValue);
 
                     if (sender is IntFeedback)
-                        feedback.LogDebug("Received Update : '{1}'", args.IntValue);
+                        feedback.LogVerbose("Received Update: '{value}'", args.IntValue);
 
                     if (sender is StringFeedback)
-                        feedback.LogDebug("Received Update : '{1}'", args.StringValue);
+                        feedback.LogVerbose("Received Update: '{value}'", args.StringValue);
                 };
         }
     }
