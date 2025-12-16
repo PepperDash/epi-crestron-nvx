@@ -28,16 +28,19 @@ public class UsbStream : IUsbStreamWithHardware
                 IsLayer3 = false
             };
 
-            device.LogDebug("Mode : {mode}, Default : {default}, FollowVideo = {followVideo}", props.Mode, props.Default, props.FollowVideo);
+            if (string.IsNullOrEmpty(props.Mode))
+                props.Mode = "local";
 
-            return props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase)
-                ? new UsbStream(device, false, props.FollowVideo, props.Default, props.IsLayer3)
-                : new UsbStream(device, true, props.FollowVideo, props.Default, props.IsLayer3);
+            if (string.IsNullOrEmpty(props.Default))
+                props.Default = string.Empty;
+
+            return new UsbStream(device, !props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase), props.FollowVideo, props.Default, props.IsLayer3);
         }
         catch (Exception ex)
         {
-            device.LogError(ex, "Exception in GetUsbStream");
-            throw;
+            device.LogError("Exception in GetUsbStream: {message}", ex.Message);
+            device.LogDebug(ex, "Stack Trace: ");
+            return null;
         }
     }
 
@@ -62,8 +65,6 @@ public class UsbStream : IUsbStreamWithHardware
                 UsbStatusFeedback.GetFeedback(Hardware),
                 UsbRouteFeedback.GetFeedback(device.Hardware)
             });
-
-
 
         foreach (var item in _usbRemoteIds.Values)
             _device.Feedbacks.Add(item);
@@ -116,11 +117,11 @@ public class UsbStream : IUsbStreamWithHardware
     {
         if (hardware == null || hardware.Hardware.UsbInput == null)
         {
-            this.LogInformation("Unable to make USB Route - hardware is null");
+            this.LogWarning("Unable to make USB Route - hardware is null");
             return;
         }
 
-        this.LogInformation("Trying USB Route {0}", hardware.UsbLocalId.StringValue);
+        this.LogDebug("Trying USB Route {localId}", hardware.UsbLocalId.StringValue);
 
         ClearCurrentUsbRoute();
 
@@ -130,18 +131,18 @@ public class UsbStream : IUsbStreamWithHardware
         /*else*/
         if (IsRemote && !hardware.IsRemote)
         {
-            this.LogDebug("Routing to Local from New Route : {0}!", hardware.Name);
+            this.LogDebug("Routing to Local from New Route : {name}!", hardware.Name);
 
             hardware.AddRemoteUsbStreamToLocal(this);
         }
         else if (!IsRemote && hardware.IsRemote)
         {
-            this.LogDebug("Routing to Remote from New Route : {0}!", hardware.Name);
+            this.LogDebug("Routing to Remote from New Route : {name}!", hardware.Name);
 
             this.AddRemoteUsbStreamToLocal(hardware);
         }
         else
-            this.LogError("Cannot route usb to device : {0}", hardware.Key);
+            this.LogError("Cannot route usb to device : {key}", hardware.Key);
     }
 
     private void FollowCurrentRoute(string streamUrl)
@@ -253,18 +254,6 @@ public class UsbStream : IUsbStreamWithHardware
 
         if (local == null)
             return;
-        /*
-        var inputSig = local
-            .Hardware
-            .UsbInput
-            .RemoteDeviceIds[index];
-
-        if (inputSig == null)
-        {
-            Debug.Console(0, local, "Somehow input sig and index:{0} doesn't exist", index);
-            return;
-        }
-         */
 
         local.LogDebug("Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
         local.Hardware.UsbInput.RemoteDeviceId.StringValue = UsbStreamExt.ClearUsbValue;

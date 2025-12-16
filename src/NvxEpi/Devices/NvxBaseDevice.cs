@@ -118,8 +118,6 @@ public abstract class NvxBaseDevice :
     {
         Hardware.Network.NetworkChange += (sender, args) =>
         {
-            this.LogDebug("event Id: {eventId}", args.EventId);
-
             debounceTimer.Stop();
             debounceTimer.Start();
         };

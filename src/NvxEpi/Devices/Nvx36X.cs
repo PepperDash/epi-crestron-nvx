@@ -97,9 +97,9 @@ public class Nvx36X :
         }
         catch (Exception ex)
         {
-            this.LogError("Caught an exception in activate:{0}", ex.Message);
+            this.LogError("Caught an exception in activate: {message}", ex.Message);
             this.LogDebug(ex, "Stack Trace: ");
-            throw;
+            return false;
         }
     }
 

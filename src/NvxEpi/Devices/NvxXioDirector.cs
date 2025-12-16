@@ -19,23 +19,40 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline, ICommunic
     {
         var props = config.Properties.ToObject<NvxDirectorConfig>();
 
+        _hardware = hardware ?? throw new ArgumentNullException("hardware");
+
         for (var i = 1; i <= props.NumberOfDomains; i++)
         {
-            if (hardware.Domain.Contains((uint)i))
+            if (_hardware.Domain.Contains((uint)i))
             {
+                this.LogDebug("Domain {id} already exists, skipping add.", i);
                 continue;
             }
 
-            var domain = new DmXioDirectorBase.DmXioDomain((uint)i, hardware);
+            var domain = new DmXioDirectorBase.DmXioDomain((uint)i, _hardware);
             this.LogDebug("Adding domain: {id}", domain.Id);
-            domain.DomainChange += (sender, args) => this.LogDebug("Domain {id} changed: {eventId}", domain.Id, args.EventId);
         }
 
-        _hardware = hardware ?? throw new ArgumentNullException("hardware");
         _isOnline = new BoolFeedback("isOnline", () => _hardware.IsOnline);
         _hardware.OnlineStatusChange += (device, args) => _isOnline.FireUpdate();
 
         AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, _hardware));
+    }
+
+    public override void Initialize()
+    {
+        this.LogDebug("Director configured with {count} domains out of {max}", _hardware.Domain.Count, _hardware.MaximumNumberOfDomains);
+
+        foreach (var domain in _hardware.Domain)
+        {
+            this.LogDebug(" - Domain {id}", domain.Id);
+            this.LogDebug("   - Total number of endpoints: {count}", domain.TotalNumberOfEndpoints);
+            this.LogDebug("   - Inputs: {count}", domain.TotalNumberOfTransmitterEndpoints);
+            this.LogDebug("   - Outputs: {count}", domain.TotalNumberOfReceiverEndpoints);
+        }
+
+        this.LogDebug("Registering NVX Director Hardware: {key}", Key);
+        _hardware.RegisterWithLogging(Key);
     }
 
     public override bool CustomActivate()

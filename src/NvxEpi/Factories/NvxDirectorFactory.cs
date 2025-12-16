@@ -33,7 +33,6 @@ public class NvxDirectorFactory : EssentialsPluginDeviceFactory<NvxXioDirector>
             _ => throw new NotSupportedException(dc.Type),
         };
 
-        xio.RegisterWithLogging(dc.Key);
         return new NvxXioDirector(dc, xio);
     }
 }

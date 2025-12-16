@@ -133,7 +133,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
     {
         return CurrentRoutes.FirstOrDefault(rd =>
         {
-            if (rd.OutputPort.Selector is not IStream selector)
+            if (rd.OutputPort?.Selector is not IStream selector)
             {
                 return false;
             }
