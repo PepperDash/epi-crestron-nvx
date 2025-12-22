@@ -11,6 +11,7 @@ using NvxEpi.Extensions;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
@@ -27,7 +28,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     private void AddFeedbackMatchObjects()
     {
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating feedback match objects", this);
+        this.LogVerbose("Updating feedback match objects");
 
         foreach (var input in InputPorts.Where(ip => ip.Selector is IStreamWithHardware))
         {
@@ -36,15 +37,15 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
                 continue;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating match object for {key}", this, input.Key);
+            this.LogVerbose("Updating match object for {key}", this, input.Key);
 
             tx.Hardware.BaseEvent += (o, a) =>
             {
                 if (a.EventId != DMInputEventIds.ServerUrlEventId) return;
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating Feedback match object for {input}", this, input.Key);
+                this.LogVerbose("Updating Feedback match object for {input}", this, input.Key);
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating Feedback match object for {input} to {url}", this, input.Key, tx.Hardware.Control.ServerUrlFeedback.StringValue);
+                this.LogVerbose("Updating Feedback match object for {input} to {url}", this, input.Key, tx.Hardware.Control.ServerUrlFeedback.StringValue);
 
                 input.FeedbackMatchObject = tx.Hardware.Control.ServerUrlFeedback.StringValue;
             };
