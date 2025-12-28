@@ -35,7 +35,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
             && !signalType.Has(eRoutingSignalType.UsbOutput)
         )
         {
-            this.LogInformation("Skipping switch with signal type {signalType}", signalType);
+            this.LogDebug("Skipping switch with signal type {signalType}", signalType);
             return;
         }
 
@@ -236,7 +236,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             if (device.IsRemote)
             {
-                this.LogInformation("Skipping remote device {deviceKey}", device.Key);
+                this.LogDebug("Skipping remote device {deviceKey}", device.Key);
                 continue;
             }
 
@@ -296,7 +296,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
                 this
             );
 
-            this.LogInformation("Adding USB Output Port: {portKey}", outputPort.Key);
+            this.LogDebug("Adding USB Output Port: {portKey}", outputPort.Key);
             OutputPorts.Add(outputPort);
 
             remoteDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>
@@ -366,7 +366,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
                 this
             );
 
-            this.LogInformation("Adding USB Input Port: {portKey}", inputPort.Key);
+            this.LogDebug("Adding USB Input Port: {portKey}", inputPort.Key);
             InputPorts.Add(inputPort);
 
             localDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>

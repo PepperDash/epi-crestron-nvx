@@ -79,17 +79,14 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
                 || signalType.Is(eRoutingSignalType.UsbOutput)
             )
             {
-                this.LogInformation(
-                    "Skipping switch with USB signal type {signalType}",
-                    signalType
-                );
+                this.LogDebug("Skipping switch with USB signal type {signalType}", signalType);
 
                 return;
             }
 
             if (signalType.Is(eRoutingSignalType.Audio))
             {
-                this.LogInformation(
+                this.LogDebug(
                     "Executing switch, but its audio only... this route will include video... GOOD LUCK!",
                     this
                 );

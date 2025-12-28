@@ -154,7 +154,7 @@ public class UsbStream : IUsbStreamWithHardware
             return;
         }
 
-        this.LogInformation("Trying USB Route {localId}", hardware.UsbLocalId.StringValue);
+        this.LogDebug("Trying USB Route {localId}", hardware.UsbLocalId.StringValue);
 
         if (string.IsNullOrEmpty(hardware.UsbLocalId.StringValue))
             return;

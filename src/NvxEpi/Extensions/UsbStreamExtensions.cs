@@ -33,24 +33,28 @@ public static class UsbStreamExt
             }
 
             ValidateDeviceTypes(local, remote);
-            LogPairingAttempt(local, remote);
 
-            var deviceIds = GetDeviceIds(local, remote);
-
-            var isRemoteAlreadyPairedWithLocal = IsRemoteAlreadyPairedWithLocal(remote);
+            var remoteId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+            var localId = local.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
 
             remote.LogInformation(
-                "Is remote already paired with a local device? {isPaired}",
-                isRemoteAlreadyPairedWithLocal
+                "Setting local device {localKey} RemoteDeviceId to local ID {remoteId}",
+                local.Key,
+                remoteId
             );
 
-            if (isRemoteAlreadyPairedWithLocal)
-            {
-                // HandleExistingPairing(local, remote, deviceIds);
-                return;
-            }
+            local.Hardware.UsbInput.RemoteDeviceId.StringValue = remoteId;
 
-            EstablishNewPairing(local, remote, deviceIds);
+            remote.LogInformation(
+                "Setting remote device {remoteKey} RemoteDeviceId to local ID {localId}",
+                remote.Key,
+                localId
+            );
+
+            remote.Hardware.UsbInput.RemoteDeviceId.StringValue = localId;
+
+            EstablishPairingIfManual(remote);
+            EstablishPairingIfManual(local);
         }
         catch (Exception ex)
         {
@@ -78,49 +82,6 @@ public static class UsbStreamExt
     }
 
     /// <summary>
-    /// Logs the pairing attempt and current automatic pairing status
-    /// </summary>
-    private static void LogPairingAttempt(
-        IUsbStreamWithHardware local,
-        IUsbStreamWithHardware remote
-    )
-    {
-        var remoteKey = remote?.Key ?? "no remote device";
-        var localKey = local?.Key ?? "no local device";
-        var remoteId = remote?.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue ?? ClearUsbValue;
-        var localId = local?.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue ?? ClearUsbValue;
-
-        local.LogDebug(
-            "Adding remote USB stream {remoteKey} with {remoteId} to local {localKey} with {localId}",
-            remoteKey,
-            remoteId,
-            localKey,
-            localId
-        );
-
-        Debug.LogDebug("remote: {remoteKey} local: {localKey}", remoteKey, localKey);
-
-        var remoteAutoPairingStatus = remote
-            .Hardware
-            .UsbInput
-            .AutomaticUsbPairingEnabledFeedback
-            .BoolValue
-            ? "Enabled"
-            : "Disabled";
-
-        var localAutoPairingStatus = local
-            .Hardware
-            .UsbInput
-            .AutomaticUsbPairingEnabledFeedback
-            .BoolValue
-            ? "Enabled"
-            : "Disabled";
-
-        remote.LogDebug("Automatic Pairing is {automaticPairing}", remoteAutoPairingStatus);
-        local.LogDebug("Automatic Pairing is {automaticPairing}", localAutoPairingStatus);
-    }
-
-    /// <summary>
     /// Gets the device IDs for both local and remote devices
     /// </summary>
     private static (string RemoteId, string LocalId) GetDeviceIds(
@@ -143,12 +104,12 @@ public static class UsbStreamExt
         var remoteRemoteIds = remote.Hardware.UsbInput.RemoteDeviceIdFeedbacks;
         var localRemoteIds = local.Hardware.UsbInput.RemoteDeviceIdFeedbacks;
 
-        remote.LogInformation(
+        remote.LogDebug(
             "Remote device IDS: {@remoteIds}",
             remoteRemoteIds.Values.Select(x => x.StringValue)
         );
 
-        local.LogInformation(
+        local.LogDebug(
             "Remote device IDS: {@localIds}",
             localRemoteIds.Values.Select(x => x.StringValue)
         );
@@ -183,6 +144,21 @@ public static class UsbStreamExt
         (string RemoteId, string LocalId) deviceIds
     )
     {
+        remote.LogInformation(
+            "Handling existing pairing for remote ID {remoteId} and local ID {localId}",
+            deviceIds.RemoteId,
+            deviceIds.LocalId
+        );
+
+        remote.LogInformation(
+            "Current remoteIDs: {@remoteIds}",
+            remote
+                .UsbRemoteIds.Values.Select(x => x.StringValue)
+                .Aggregate("", (current, next) => current + next + "; ")
+        );
+
+        local.LogInformation("Current localId: {@localId}", local.UsbLocalId.StringValue);
+
         ClearExistingPairingsForRemote(remote, deviceIds.RemoteId);
         SetupDirectPairing(local, remote, deviceIds);
     }
@@ -195,7 +171,7 @@ public static class UsbStreamExt
         string remoteId
     )
     {
-        remote.LogDebug("Clearing existing pairings for remote ID {remoteId}", remoteId);
+        remote.LogInformation("Clearing existing pairings for remote ID {remoteId}", remoteId);
 
         var pairedLocalDevices = DeviceManager
             .AllDevices.OfType<IUsbStreamWithHardware>()
