@@ -18,7 +18,8 @@ namespace NvxEpi.Features.Routing;
 
 public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 {
-    public SecondaryAudioRouter(string key) : base(key)
+    public SecondaryAudioRouter(string key)
+        : base(key)
     {
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
         OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
@@ -38,16 +39,30 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
             tx.Hardware.DmNaxRouting.DmNaxTransmit.DmNaxStreamChange += (o, a) =>
             {
-                if (a.EventId != DMOutputEventIds.MulticastAddressEventId) return;
+                if (a.EventId != DMOutputEventIds.MulticastAddressEventId)
+                    return;
 
                 Debug.LogVerbose("Updating Feedback match object for {input}", this, input.Key);
 
-                Debug.LogVerbose("Updating Feedback match object for {input} to {url}", this, input.Key, tx.Hardware.Control.ServerUrlFeedback.StringValue);
+                Debug.LogVerbose(
+                    "Updating Feedback match object for {input} to {url}",
+                    this,
+                    input.Key,
+                    tx.Hardware.Control.ServerUrlFeedback.StringValue
+                );
 
-                input.FeedbackMatchObject = tx.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue;
+                input.FeedbackMatchObject = tx.Hardware
+                    .DmNaxRouting
+                    .DmNaxTransmit
+                    .MulticastAddressFeedback
+                    .StringValue;
             };
 
-            input.FeedbackMatchObject = tx.Hardware.DmNaxRouting.DmNaxTransmit.MulticastAddressFeedback.StringValue;
+            input.FeedbackMatchObject = tx.Hardware
+                .DmNaxRouting
+                .DmNaxTransmit
+                .MulticastAddressFeedback
+                .StringValue;
         }
     }
 
@@ -61,46 +76,51 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
             .SelectMany(x => x)
             .ToList()
             .ForEach(device =>
+            {
+                var streamInputPort = device.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
+                if (streamInputPort != null)
                 {
-                    var streamInputPort = device.OutputPorts[SwitcherForSecondaryAudioOutput.Key];
-                    if (streamInputPort != null)
-                    {
-                        var input = new RoutingInputPort(
-                            GetInputPortKeyForTx(device),
-                            eRoutingSignalType.Audio,
-                            eRoutingPortConnectionType.Streaming,
-                            device,
-                            this);
-
-                        InputPorts.Add(input);
-                    }
-
-                    var streamOutputPort = device.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
-                    if (streamOutputPort == null)
-                        return;
-
-                    var output = new RoutingOutputPort(
-                        GetOutputPortKeyForRx(device),
+                    var input = new RoutingInputPort(
+                        GetInputPortKeyForTx(device),
                         eRoutingSignalType.Audio,
                         eRoutingPortConnectionType.Streaming,
                         device,
-                        this);
+                        this
+                    );
 
-                    OutputPorts.Add(output);
-                });
+                    InputPorts.Add(input);
+                }
+
+                var streamOutputPort = device.InputPorts[DeviceInputEnum.SecondaryAudio.Name];
+                if (streamOutputPort == null)
+                    return;
+
+                var output = new RoutingOutputPort(
+                    GetOutputPortKeyForRx(device),
+                    eRoutingSignalType.Audio,
+                    eRoutingPortConnectionType.Streaming,
+                    device,
+                    this
+                );
+
+                OutputPorts.Add(output);
+            });
 
         foreach (var routingOutputPort in OutputPorts)
         {
             var port = routingOutputPort;
             const int delayTime = 250;
 
-            var timer = new CTimer(o =>
-            {
-                if (port.InUseTracker.InUseFeedback.BoolValue)
-                    return;
+            var timer = new CTimer(
+                o =>
+                {
+                    if (port.InUseTracker.InUseFeedback.BoolValue)
+                        return;
 
-                ExecuteSwitch(null, port.Selector, eRoutingSignalType.Audio);
-            }, Timeout.Infinite);
+                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.Audio);
+                },
+                Timeout.Infinite
+            );
 
             port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
             {
@@ -119,50 +139,65 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
         switch (args.EventId)
         {
             case DMInputEventIds.DmNaxAudioSourceFeedbackEventId:
+            {
+                var currentUrl = device
+                    .Hardware
+                    .DmNaxRouting
+                    .DmNaxReceive
+                    .MulticastAddressFeedback
+                    .StringValue;
+
+                this.LogVerbose(
+                    "Received server URL event {eventId}:{serverUrl}",
+                    args.EventId,
+                    currentUrl
+                );
+
+                if (string.IsNullOrEmpty(currentUrl))
                 {
-                    var currentUrl = device.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddressFeedback.StringValue;
+                    var index = CurrentRoutes.FindIndex(
+                        (r) => r.OutputPort.ParentDevice.Key == device.Key
+                    );
 
-                    this.LogVerbose("Received server URL event {eventId}:{serverUrl}", args.EventId, currentUrl);
-
-                    if (string.IsNullOrEmpty(currentUrl))
+                    if (index < 0)
                     {
-                        var index = CurrentRoutes.FindIndex((r) => r.OutputPort.ParentDevice.Key == device.Key);
-
-                        if (index < 0)
-                        {
-                            return;
-                        }
-
-                        CurrentRoutes.RemoveAt(index);
-
-                        RouteChanged?.Invoke(this, null);
-                        break;
+                        return;
                     }
 
-                    var inputPort = InputPorts.FirstOrDefault(ip => ip.FeedbackMatchObject.Equals(currentUrl));
+                    CurrentRoutes.RemoveAt(index);
 
-                    if (inputPort == null)
-                    {
-                        this.LogInformation("No input port found for URL {currentUrl}", currentUrl);
-                        break;
-                    }
-
-                    var outputPort = OutputPorts.FirstOrDefault(op => op.ParentDevice.Key == device.Key);
-
-                    if (outputPort == null)
-                    {
-                        this.LogInformation("No output port found for {deviceKey}", device.Key);
-                        break;
-                    }
-
-                    var route = new RouteSwitchDescriptor(outputPort, inputPort);
-
-                    CurrentRoutes.Add(route);
-
-                    RouteChanged?.Invoke(this, route);
-
+                    RouteChanged?.Invoke(this, null);
                     break;
                 }
+
+                var inputPort = InputPorts.FirstOrDefault(ip =>
+                    ip.FeedbackMatchObject.Equals(currentUrl)
+                );
+
+                if (inputPort == null)
+                {
+                    this.LogInformation("No input port found for URL {currentUrl}", currentUrl);
+                    break;
+                }
+
+                var outputPort = OutputPorts.FirstOrDefault(op =>
+                    op.ParentDevice.Key == device.Key
+                );
+
+                if (outputPort == null)
+                {
+                    this.LogInformation("No output port found for {deviceKey}", device.Key);
+                    break;
+                }
+
+                var route = new RouteSwitchDescriptor(outputPort, inputPort);
+
+                CurrentRoutes.Add(route);
+
+                RouteChanged?.Invoke(this, route);
+
+                break;
+            }
         }
     }
 
@@ -171,16 +206,36 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 
-    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+    public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
     {
         try
         {
-            Debug.LogDebug("Trying execute switch secondary audio route: {input} {output}", NvxGlobalRouter.Instance.SecondaryAudioRouter, inputSelector, outputSelector);
+            Debug.LogDebug(
+                "Trying execute switch secondary audio route: {input} {output}",
+                NvxGlobalRouter.Instance.SecondaryAudioRouter,
+                inputSelector,
+                outputSelector
+            );
 
-            if (!signalType.Has(eRoutingSignalType.Audio) && !signalType.Has(eRoutingSignalType.SecondaryAudio))
-                throw new ArgumentException("signal type must include audio or secondary audio");
+            if (
+                signalType.Is(eRoutingSignalType.UsbInput)
+                || signalType.Is(eRoutingSignalType.UsbOutput)
+            )
+            {
+                this.LogInformation(
+                    "Skipping switch with USB signal type {signalType}",
+                    signalType
+                );
 
-            var rx = outputSelector as ISecondaryAudioStream ?? throw new ArgumentNullException("rx");
+                return;
+            }
+
+            var rx =
+                outputSelector as ISecondaryAudioStream ?? throw new ArgumentNullException("rx");
 
             if (inputSelector is null)
             {
@@ -209,7 +264,11 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(int txId, int rxId)
     {
-        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug("Trying secondary audio route by txId & rxId: {0} {1}", txId, rxId);
+        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug(
+            "Trying secondary audio route by txId & rxId: {0} {1}",
+            txId,
+            rxId
+        );
         if (rxId == 0)
             return;
 
@@ -228,7 +287,11 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(int txId, ISecondaryAudioStream rx)
     {
-        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug("Trying secondary audio route by txId & address: {0} {1}", txId, rx.RxAudioAddress);
+        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug(
+            "Trying secondary audio route by txId & address: {0} {1}",
+            txId,
+            rx.RxAudioAddress
+        );
         if (txId == 0)
         {
             rx.ClearSecondaryStream();
@@ -244,7 +307,11 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static void Route(string txName, ISecondaryAudioStream rx)
     {
-        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug("Trying secondary audio route by txName & address: {0} {1}", txName, rx.RxAudioAddress);
+        NvxGlobalRouter.Instance.SecondaryAudioRouter.LogDebug(
+            "Trying secondary audio route by txName & address: {0} {1}",
+            txName,
+            rx.RxAudioAddress
+        );
         if (string.IsNullOrEmpty(txName))
             return;
 
@@ -260,9 +327,9 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
             return;
         }
 
-        var txByKey = _transmitters
-            .Values
-            .FirstOrDefault(x => x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase));
+        var txByKey = _transmitters.Values.FirstOrDefault(x =>
+            x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase)
+        );
 
         if (txByKey == null)
             return;
@@ -277,21 +344,17 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     private static Dictionary<string, ISecondaryAudioStream> GetTransmitterDictionary()
     {
-        return
-            DeviceManager
-                .AllDevices
-                .OfType<ISecondaryAudioStream>()
-                .Where(device => device.IsTransmitter)
-                .ToDictionary(device => device.Key, stream => stream);
+        return DeviceManager
+            .AllDevices.OfType<ISecondaryAudioStream>()
+            .Where(device => device.IsTransmitter)
+            .ToDictionary(device => device.Key, stream => stream);
     }
 
     private static Dictionary<string, ISecondaryAudioStream> GetReceiverDictionary()
     {
-        return
-            DeviceManager
-                .AllDevices
-                .OfType<ISecondaryAudioStream>()
-                .Where(device => !device.IsTransmitter)
-                .ToDictionary(device => device.Key, stream => stream);
+        return DeviceManager
+            .AllDevices.OfType<ISecondaryAudioStream>()
+            .Where(device => !device.IsTransmitter)
+            .ToDictionary(device => device.Key, stream => stream);
     }
 }

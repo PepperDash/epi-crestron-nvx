@@ -16,19 +16,29 @@ namespace NvxEpi.Features.Streams.Usb;
 
 public class UsbStream : IUsbStreamWithHardware
 {
-    public static IUsbStreamWithHardware GetUsbStream(INvxDeviceWithHardware device, NvxUsbProperties incomingProps)
+    public static IUsbStreamWithHardware GetUsbStream(
+        INvxDeviceWithHardware device,
+        NvxUsbProperties incomingProps
+    )
     {
         try
         {
-            var props = incomingProps ?? new NvxUsbProperties()
-            {
-                Mode = "local",
-                Default = string.Empty,
-                FollowVideo = false,
-                IsLayer3 = false
-            };
+            var props =
+                incomingProps
+                ?? new NvxUsbProperties()
+                {
+                    Mode = "local",
+                    Default = string.Empty,
+                    FollowVideo = false,
+                    IsLayer3 = false,
+                };
 
-            device.LogDebug("Mode : {mode}, Default : {default}, FollowVideo = {followVideo}", props.Mode, props.Default, props.FollowVideo);
+            device.LogDebug(
+                "Mode : {mode}, Default : {default}, FollowVideo = {followVideo}",
+                props.Mode,
+                props.Default,
+                props.FollowVideo
+            );
 
             if (string.IsNullOrEmpty(props.Mode))
                 props.Mode = "local";
@@ -36,7 +46,13 @@ public class UsbStream : IUsbStreamWithHardware
             if (string.IsNullOrEmpty(props.Default))
                 props.Default = string.Empty;
 
-            return new UsbStream(device, !props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase), props.FollowVideo, props.Default, props.IsLayer3);
+            return new UsbStream(
+                device,
+                !props.Mode.Equals("local", StringComparison.OrdinalIgnoreCase),
+                props.FollowVideo,
+                props.Default,
+                props.IsLayer3
+            );
         }
         catch (Exception ex)
         {
@@ -51,39 +67,51 @@ public class UsbStream : IUsbStreamWithHardware
     private readonly ReadOnlyDictionary<uint, StringFeedback> _usbRemoteIds;
     private readonly bool _isRemote;
 
-    private UsbStream(INvxDeviceWithHardware device, bool isRemote, bool followStream, string defaultPair, bool isLayer3)
+    private UsbStream(
+        INvxDeviceWithHardware device,
+        bool isRemote,
+        bool followStream,
+        string defaultPair,
+        bool isLayer3
+    )
     {
         _device = device;
         _isRemote = isRemote;
         _usbLocalId = UsbLocalAddressFeedback.GetFeedback(device.Hardware);
         _usbRemoteIds = UsbRemoteAddressFeedback.GetFeedbacks(device.Hardware);
 
-        device.Feedbacks.AddRange(new Feedback[]
+        device.Feedbacks.AddRange(
+            new Feedback[]
             {
                 _usbLocalId,
                 new BoolFeedback("UsbFollowsVideoStream", () => !followStream || IsTransmitter),
                 UsbRemoteAddressFeedback.GetFeedback(device.Hardware),
                 UsbModeFeedback.GetFeedback(Hardware),
                 UsbStatusFeedback.GetFeedback(Hardware),
-                UsbRouteFeedback.GetFeedback(device.Hardware)
-            });
+                UsbRouteFeedback.GetFeedback(device.Hardware),
+            }
+        );
 
         foreach (var item in _usbRemoteIds.Values)
             _device.Feedbacks.Add(item);
 
         Hardware.OnlineStatusChange += (currentDevice, args) =>
-            {
-                if (!args.DeviceOnLine || Hardware.UsbInput == null)
-                    return;
+        {
+            if (!args.DeviceOnLine || Hardware.UsbInput == null)
+                return;
 
-                Hardware.UsbInput.AutomaticUsbPairingEnabled();
-                Hardware.UsbInput.Mode = IsRemote ? DmNvxUsbInput.eUsbMode.Remote : DmNvxUsbInput.eUsbMode.Local;
-                Hardware.UsbInput.TransportMode = isLayer3 ? DmNvxUsbInput.eUsbTransportMode.Layer3 : DmNvxUsbInput.eUsbTransportMode.Layer2;
-                if (!followStream || IsTransmitter)
-                    return;
+            Hardware.UsbInput.AutomaticUsbPairingEnabled();
+            Hardware.UsbInput.Mode = IsRemote
+                ? DmNvxUsbInput.eUsbMode.Remote
+                : DmNvxUsbInput.eUsbMode.Local;
+            Hardware.UsbInput.TransportMode = isLayer3
+                ? DmNvxUsbInput.eUsbTransportMode.Layer3
+                : DmNvxUsbInput.eUsbTransportMode.Layer2;
+            if (!followStream || IsTransmitter)
+                return;
 
-                SetDefaultStream(isRemote, defaultPair);
-            };
+            SetDefaultStream(isRemote, defaultPair);
+        };
 
         if (Hardware.UsbInput == null)
         {
@@ -106,7 +134,10 @@ public class UsbStream : IUsbStreamWithHardware
         stream.StreamUrl.OutputChange += (sender, args) => FollowCurrentRoute(args.StringValue);
     }
 
-    void UsbInput_UsbInputChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
+    void UsbInput_UsbInputChange(
+        object sender,
+        Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args
+    )
     {
         if (args.EventId == UsbInputEventIds.RemoteDeviceIdFeedbackEventId)
         {
@@ -125,9 +156,8 @@ public class UsbStream : IUsbStreamWithHardware
 
         this.LogInformation("Trying USB Route {localId}", hardware.UsbLocalId.StringValue);
 
-        ClearCurrentUsbRoute();
-
-        if (string.IsNullOrEmpty(hardware.UsbLocalId.StringValue)) return;
+        if (string.IsNullOrEmpty(hardware.UsbLocalId.StringValue))
+            return;
 
         // device is remote, hardware is local
         if (IsRemote && !hardware.IsRemote)
@@ -138,7 +168,7 @@ public class UsbStream : IUsbStreamWithHardware
             return;
         }
 
-        // device is local, hardware is remote        
+        // device is local, hardware is remote
         if (!IsRemote && hardware.IsRemote)
         {
             this.LogDebug("Routing to Remote from New Route : {name}", hardware.Name);
@@ -158,31 +188,41 @@ public class UsbStream : IUsbStreamWithHardware
             return;
         }
 
-        var result = DeviceManager
-            .AllDevices
-            .OfType<IStreamWithHardware>()
-            .FirstOrDefault(x =>
-            {
-                if (x.StreamUrl == null)
+        var result =
+            DeviceManager
+                .AllDevices.OfType<IStreamWithHardware>()
+                .FirstOrDefault(x =>
                 {
-                    this.LogError("StreamUrl Is Null!");
-                    return false;
-                }
-                if (string.IsNullOrEmpty(x.StreamUrl.StringValue))
-                {
-                    this.LogError("StreamUrl Is Empty!");
-                    return false;
-                }
-                this.LogDebug("StreamUrl Is Valid!");
+                    if (x.StreamUrl == null)
+                    {
+                        this.LogError("StreamUrl Is Null!");
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(x.StreamUrl.StringValue))
+                    {
+                        this.LogError("StreamUrl Is Empty!");
+                        return false;
+                    }
+                    this.LogDebug("StreamUrl Is Valid!");
 
-                return x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl);
-            }) as IUsbStreamWithHardware;
-
+                    return x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl);
+                }) as IUsbStreamWithHardware;
 
         var currentRoute = result;
-        //if (currentRoute == null)
-        ClearCurrentUsbRoute();
-        /*else*/
+
+        if (currentRoute == null)
+        {
+            this.LogDebug("No Current Route Found for streamUrl : {0}", streamUrl);
+            ClearCurrentUsbRoute();
+            return;
+        }
+
+        this.LogInformation(
+            "Following Current Route : {0} for streamUrl : {1}",
+            currentRoute.Name,
+            streamUrl
+        );
+
         if (IsRemote && !currentRoute.IsRemote)
         {
             this.LogDebug("Routing to Local from CurrentRoute : {0}!", currentRoute.Name);
@@ -215,16 +255,26 @@ public class UsbStream : IUsbStreamWithHardware
 
     public void ClearRemoteUsbRoute()
     {
-        foreach (var item in
-            DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>()
-                .Where(device => device.Hardware.UsbInput.RemoteDeviceIdFeedbacks.Values.Any(y => y.StringValue.Equals(Hardware.UsbInput.LocalDeviceIdFeedback.StringValue)))
-            )
+        foreach (
+            var item in DeviceManager
+                .AllDevices.OfType<IUsbStreamWithHardware>()
+                .Where(device =>
+                    device.Hardware.UsbInput.RemoteDeviceIdFeedbacks.Values.Any(y =>
+                        y.StringValue.Equals(Hardware.UsbInput.LocalDeviceIdFeedback.StringValue)
+                    )
+                )
+        )
         {
             item.Hardware.UsbInput.RemoteDeviceIds[1].StringValue = UsbStreamExt.ClearUsbValue;
 
             foreach (var id in item.Hardware.UsbInput.RemoteDeviceIds)
             {
-                if (!id.StringValue.Equals(UsbStreamExt.ClearUsbValue, StringComparison.OrdinalIgnoreCase))
+                if (
+                    !id.StringValue.Equals(
+                        UsbStreamExt.ClearUsbValue,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
                 {
                     id.StringValue = UsbStreamExt.ClearUsbValue;
                 }
