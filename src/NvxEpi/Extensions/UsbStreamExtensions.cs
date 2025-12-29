@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Crestron.SimplSharpPro.DM.Endpoints;
 using NvxEpi.Abstractions.Usb;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
@@ -84,6 +85,8 @@ public static class UsbStreamExt
 
             if (remote.Hardware.UsbInput.RemoteDeviceId.StringValue != remoteId)
             {
+                remote.RemoveRemoteUsbFromPairedLocal();
+
                 remote.Hardware.UsbInput.RemoteDeviceId.StringValue = remoteId;
 
                 local.LogInformation(
@@ -345,5 +348,71 @@ public static class UsbStreamExt
 
         remote.LogDebug("Setting Remote Id to {localId}", deviceIds.LocalId);
         remote.Hardware.UsbInput.RemoteDeviceIds[1].StringValue = local.UsbLocalId.StringValue;
+    }
+
+    public static void RemoveRemoteUsbFromPairedLocal(this IUsbStreamWithHardware device)
+    {
+        if (device.Hardware.UsbInput?.Mode == DmNvxUsbInput.eUsbMode.Local)
+        {
+            device.LogInformation("Skipping RemoveRemoteUsbFromPairedLocal - Device is local");
+            return;
+        }
+
+        var currentRemoteId = device.Hardware.UsbInput.RemoteDeviceIds[1].StringValue;
+
+        if (currentRemoteId.Equals(ClearUsbValue))
+        {
+            device.LogInformation("Skipping ClearCurrentUsbRoute - No current remote ID to clear");
+            return;
+        }
+
+        var remote = DeviceManager
+            .AllDevices.OfType<IUsbStreamWithHardware>()
+            .Where(device =>
+                device.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue.Equals(currentRemoteId)
+            )
+            .Select(device => device.Hardware)
+            .FirstOrDefault();
+
+        if (remote != null)
+        {
+            var currentLocal = device.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+
+            device.LogInformation(
+                "Found remote device {0} to clear USB route for remote ID {1}",
+                remote.EndpointName,
+                currentRemoteId
+            );
+
+            var index = remote
+                .UsbInput.RemoteDeviceIdFeedbacks.Values.ToList()
+                .FindIndex(sig => sig.StringValue.Equals(currentLocal));
+
+            if (index >= 0)
+            {
+                remote.UsbInput.RemoteDeviceIds[(uint)(index + 1)].StringValue =
+                    UsbStreamExt.ClearUsbValue;
+
+                device.LogInformation(
+                    "Cleared USB route for local ID {0} on remote device {1}",
+                    currentLocal,
+                    remote.EndpointName
+                );
+            }
+            else
+            {
+                device.LogInformation(
+                    "No remote device ID found to clear USB route for local ID {0}",
+                    currentLocal
+                );
+            }
+        }
+        else
+        {
+            device.LogInformation(
+                "No remote device found to clear USB route for remote ID {0}",
+                currentRemoteId
+            );
+        }
     }
 }

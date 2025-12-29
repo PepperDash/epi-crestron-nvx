@@ -1,7 +1,11 @@
 using System;
+using System.Linq;
+using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Abstractions.Usb;
 using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Extensions;
 
