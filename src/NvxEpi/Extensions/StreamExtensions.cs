@@ -30,13 +30,17 @@ public static class StreamExtensions
         if (!tx.IsTransmitter)
             throw new ArgumentException("tx");
 
-        device.LogDebug("Routing device stream : '{0}'", tx.Name);
+        device.LogDebug("Setting device stream : '{0}'", tx.Name);
         tx.StreamUrl.FireUpdate();
 
         if (string.IsNullOrEmpty(tx.StreamUrl.StringValue))
+        {
             device.ClearStream();
+        }
         else
+        {
             device.SetStreamUrl(tx.StreamUrl.StringValue);
+        }
     }
 
     public static void SetStreamUrl(this IStreamWithHardware device, string url)
