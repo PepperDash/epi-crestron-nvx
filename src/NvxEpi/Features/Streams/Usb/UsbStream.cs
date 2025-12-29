@@ -120,6 +120,21 @@ public class UsbStream : IUsbStreamWithHardware
 
         Hardware.UsbInput.UsbInputChange += UsbInput_UsbInputChange;
 
+        Hardware.UsbInput.AutomaticUsbPairingEnabled();
+
+        Hardware.OnlineStatusChange += (currentDevice, args) =>
+        {
+            if (!args.DeviceOnLine || Hardware.UsbInput == null)
+            {
+                return;
+            }
+
+            foreach (var sig in Hardware.UsbInput.RemoteDeviceIds.Values)
+            {
+                sig.StringValue = UsbStreamExt.ClearUsbValue;
+            }
+        };
+
         if (!followStream || IsTransmitter)
         {
             device.LogDebug("Will not Follow Stream!");
@@ -241,16 +256,70 @@ public class UsbStream : IUsbStreamWithHardware
 
     public void ClearCurrentUsbRoute()
     {
-        this.LogDebug("Setting remote id to : {0}", UsbStreamExt.ClearUsbValue);
+        if (Hardware.UsbInput.Mode == DmNvxUsbInput.eUsbMode.Local)
+        {
+            this.LogInformation("Skipping ClearCurrentUsbRoute - Device is local");
+            return;
+        }
+
+        var currentRemoteId = Hardware.UsbInput.RemoteDeviceIds[1].StringValue;
+
+        if (currentRemoteId.Equals(UsbStreamExt.ClearUsbValue))
+        {
+            this.LogInformation("Skipping ClearCurrentUsbRoute - No current remote ID to clear");
+            return;
+        }
+
+        var remote = DeviceManager
+            .AllDevices.OfType<IUsbStreamWithHardware>()
+            .Where(device =>
+                device.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue.Equals(currentRemoteId)
+            )
+            .Select(device => device.Hardware)
+            .FirstOrDefault();
+
+        if (remote != null)
+        {
+            var currentLocal = Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+
+            this.LogInformation(
+                "Found remote device {0} to clear USB route for remote ID {1}",
+                remote.EndpointName,
+                currentRemoteId
+            );
+
+            var index = remote
+                .UsbInput.RemoteDeviceIdFeedbacks.Values.ToList()
+                .FindIndex(sig => sig.StringValue.Equals(currentLocal));
+
+            if (index >= 0)
+            {
+                remote.UsbInput.RemoteDeviceIds[(uint)(index + 1)].StringValue =
+                    UsbStreamExt.ClearUsbValue;
+
+                this.LogInformation(
+                    "Cleared USB route for local ID {0} on remote device {1}",
+                    currentLocal,
+                    remote.EndpointName
+                );
+            }
+            else
+            {
+                this.LogInformation(
+                    "No remote device ID found to clear USB route for local ID {0}",
+                    currentLocal
+                );
+            }
+        }
+        else
+        {
+            this.LogInformation(
+                "No remote device found to clear USB route for remote ID {0}",
+                currentRemoteId
+            );
+        }
 
         Hardware.UsbInput.RemoteDeviceIds[1].StringValue = UsbStreamExt.ClearUsbValue;
-        foreach (var usb in Hardware.UsbInput.RemoteDeviceIds)
-        {
-            usb.StringValue = UsbStreamExt.ClearUsbValue;
-        }
-        if (Hardware.UsbInput.AutomaticUsbPairingDisabledFeedback.BoolValue)
-            Hardware.UsbInput.RemovePairing();
-        ClearRemoteUsbRoute();
     }
 
     public void ClearRemoteUsbRoute()

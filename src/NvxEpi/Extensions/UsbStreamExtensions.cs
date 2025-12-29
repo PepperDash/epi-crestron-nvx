@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using NvxEpi.Abstractions.Usb;
-using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
@@ -34,27 +33,68 @@ public static class UsbStreamExt
 
             ValidateDeviceTypes(local, remote);
 
-            var remoteId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
-            var localId = local.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+            var localId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
 
-            remote.LogInformation(
-                "Setting local device {localKey} RemoteDeviceId to local ID {remoteId}",
-                local.Key,
-                remoteId
-            );
+            if (local.Hardware.UsbInput.MultipleUsbDeviceEnabledFeedback.BoolValue)
+            {
+                var remoteIds = local
+                    .Hardware.UsbInput.RemoteDeviceIds.Values.Select(x => x.StringValue)
+                    .ToList();
 
-            local.Hardware.UsbInput.RemoteDeviceId.StringValue = remoteId;
+                if (remoteIds.Contains(localId))
+                {
+                    local.LogInformation(
+                        "Local device {remoteKey} already has local ID {localId}",
+                        remote.Key,
+                        localId
+                    );
+                }
+                else
+                {
+                    var firstEmptyIndex = remoteIds.FindIndex(x => x == ClearUsbValue);
+                    if (firstEmptyIndex >= 0)
+                    {
+                        local.LogInformation(
+                            "Adding local device {localKey} to remote device {remoteKey} at index {index}",
+                            local.Key,
+                            remote.Key,
+                            firstEmptyIndex + 1
+                        );
 
-            remote.LogInformation(
-                "Setting remote device {remoteKey} RemoteDeviceId to local ID {localId}",
-                remote.Key,
-                localId
-            );
+                        local
+                            .Hardware
+                            .UsbInput
+                            .RemoteDeviceIds[(uint)(firstEmptyIndex + 1)]
+                            .StringValue = localId;
+                    }
+                }
+            }
+            else
+            {
+                local.LogInformation(
+                    "Setting remote device {remoteKey} RemoteDeviceId to local ID {localId}",
+                    remote.Key,
+                    localId
+                );
 
-            remote.Hardware.UsbInput.RemoteDeviceId.StringValue = localId;
+                local.Hardware.UsbInput.RemoteDeviceId.StringValue = localId;
+            }
 
-            EstablishPairingIfManual(remote);
+            var remoteId = local.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+
+            if (remote.Hardware.UsbInput.RemoteDeviceId.StringValue != remoteId)
+            {
+                remote.Hardware.UsbInput.RemoteDeviceId.StringValue = remoteId;
+
+                local.LogInformation(
+                    "Setting local device {localKey} RemoteDeviceId to local ID {remoteId}",
+                    local.Key,
+                    remoteId
+                );
+            }
+
             EstablishPairingIfManual(local);
+            EstablishPairingIfManual(remote);
         }
         catch (Exception ex)
         {
