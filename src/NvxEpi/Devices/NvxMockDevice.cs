@@ -25,6 +25,9 @@ namespace NvxEpi.Devices;
 public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced, IHasFeedback
 {
     private NvxMockDeviceProperties properties;
+
+    public bool IncludeInMatrixRouting => properties.IncludeInMatrixRouting;
+
     private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
         new();
 
@@ -76,7 +79,7 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
 
     private void BuildFeedbacks()
     {
-        IsOnline = new BoolFeedback("IsOnline", () => true);
+        IsOnline = new BoolFeedback("IsOnline", () => Online);
         DeviceMode = new IntFeedback("DeviceMode", () => 0);
         StreamUrl = new StringFeedback("StreamUrl", () => streamUrl);
 
@@ -118,6 +121,8 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
                 IsOnline,
                 StreamUrl,
             });
+
+        IsOnline.FireUpdate();
     }
 
     private void BuildRoutingPorts()
@@ -226,6 +231,23 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     }
 
     public FeedbackCollection<Feedback> Feedbacks { get; private set; }
+
+    private bool isOnline = true;
+
+    public bool Online
+    {
+        get => isOnline;
+        private set
+        {
+            if (isOnline == value)
+                return;
+
+            isOnline = value;
+
+            IsOnline.FireUpdate();
+        }
+    }
+
     public BoolFeedback IsOnline { get; private set; }
     public IntFeedback DeviceMode { get; private set; }
     public bool IsTransmitter { get; private set; }
@@ -269,6 +291,11 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     public void SetSyncState(bool state)
     {
         Sync = state;
+    }
+
+    public void SetIsOnline(bool state)
+    {
+        Online = state;
     }
 
     public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)

@@ -132,21 +132,23 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
                 .Cast<IRoutingInputSlot>()
                 .ToDictionary(i => i.Key, i => i);
 
+            var mockInputSlots = DeviceManager
+            .AllDevices
+            .OfType<NvxMockDevice>()
+            .Where(md => md.IncludeInMatrixRouting && md.IsTransmitter)
+            .Select(md => { return new NvxMockMatrixInput(md); })
+            .Cast<IRoutingInputSlot>()
+            .ToDictionary(i => i.Key, i => i);
+
+            InputSlots.Concat(mockInputSlots);
+
             var clearInput = new NvxMatrixClearInput();
+
             InputSlots.Add(clearInput.Key, clearInput);
 
-            var transmitters = DeviceManager
+            OutputSlots = DeviceManager
                 .AllDevices.OfType<NvxBaseDevice>()
-                .Where(t =>
-                {
-                    this.LogVerbose($"{t.Key} is transmitter: {t.IsTransmitter}");
-                    return !t.IsTransmitter;
-                })
-                .ToList();
-
-            this.LogVerbose($"Receiver count: {transmitters.Count}");
-
-            OutputSlots = transmitters
+                .Where(t => !t.IsTransmitter)
                 .Select((t) => new NvxMatrixOutput(t))
                 .Cast<IRoutingOutputSlot>()
                 .ToDictionary(t => t.Key, t => t);
