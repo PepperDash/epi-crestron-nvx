@@ -53,21 +53,24 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
 
     protected override void CustomSetConfig(DeviceConfig config)
     {
-        var newProperties = config.Properties.ToObject<NvxMockDeviceProperties>();
-
-        if (newProperties == null)
+        lock (config.Properties)
         {
-            this.LogError("************ PROPS IS NULL ************");
-            throw new NullReferenceException("properties");
-        }
+            var newProperties = config.Properties.ToObject<NvxMockDeviceProperties>();
 
-        this.LogDebug("Updating config with {@newConfig}\r\nold {@oldConfig}", newProperties, properties);
+            if (newProperties == null)
+            {
+                this.LogError("************ PROPS IS NULL ************");
+                throw new NullReferenceException("properties");
+            }
 
-        properties = newProperties;
+            this.LogDebug("Updating config with {@newConfig}\r\nold {@oldConfig}", newProperties, properties);
 
-        foreach (var feedback in Feedbacks)
-        {
-            feedback.FireUpdate();
+            properties = newProperties;
+
+            foreach (var feedback in Feedbacks)
+            {
+                feedback.FireUpdate();
+            }
         }
     }
 
@@ -114,7 +117,6 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
                 SecondaryAudioStreamStatus,
                 IsOnline,
                 StreamUrl,
-                MulticastAddress
             });
     }
 
