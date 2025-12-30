@@ -10,7 +10,6 @@ using NvxEpi.JoinMaps;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputSwitching;
-using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -20,7 +19,7 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices;
 
-public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced
+public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced, IHasFeedback
 {
     private NvxMockDeviceProperties properties;
     private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
@@ -95,6 +94,14 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         Feedbacks.AddRange(new Feedback[]
             {
                 DeviceNameFeedback.GetFeedback(Name),
+                MulticastAddress,
+                IsStreamingVideo,
+                VideoStreamStatus,
+                SecondaryAudioAddress,
+                TxAudioAddress,
+                RxAudioAddress,
+                IsStreamingSecondaryAudio,
+                SecondaryAudioStreamStatus,
                 IsOnline,
                 StreamUrl,
                 MulticastAddress,
