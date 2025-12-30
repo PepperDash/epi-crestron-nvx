@@ -35,8 +35,8 @@ public static class StreamExtensions
             throw new ArgumentException("tx");
 
         tx.StreamUrl.FireUpdate();
-        
-        device.LogDebug("Setting device stream : '{txName}'", tx.Name, tx.StreamUrl.StringValue);
+
+        device.LogDebug("Setting device stream : '{txName}'", tx.Name);
 
         if (string.IsNullOrEmpty(tx.StreamUrl.StringValue))
         {
