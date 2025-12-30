@@ -28,7 +28,7 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
         new();
 
-    private string _streamUrl => properties != null && !string.IsNullOrEmpty(properties.StreamUrl) ? properties.StreamUrl : string.Empty;
+    private string streamUrl => properties != null && !string.IsNullOrEmpty(properties.StreamUrl) ? properties.StreamUrl : string.Empty;
 
     public NvxMockDevice(DeviceConfig dc, bool isTransmitter)
         : base(dc)
@@ -50,12 +50,17 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
 
     protected override void CustomSetConfig(DeviceConfig config)
     {
-        properties = config.Properties.ToObject<NvxMockDeviceProperties>();
-        if (properties == null)
+        var newProperties = config.Properties.ToObject<NvxMockDeviceProperties>();
+
+        if (newProperties == null)
         {
             this.LogError("************ PROPS IS NULL ************");
             throw new NullReferenceException("properties");
         }
+
+        this.LogVerbose("Updating config with {@newConfig}\r\nold {@oldConfig}", newProperties, properties);
+
+        properties = newProperties;
 
         foreach (var feedback in Feedbacks)
         {
@@ -67,7 +72,7 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     {
         IsOnline = new BoolFeedback("IsOnline", () => true);
         DeviceMode = new IntFeedback("DeviceMode", () => 0);
-        StreamUrl = new StringFeedback("StreamUrl", () => _streamUrl);
+        StreamUrl = new StringFeedback("StreamUrl", () => streamUrl);
 
         MulticastAddress = new StringFeedback("MulticastVideoAddress",
             () => !string.IsNullOrEmpty(properties.MulticastVideoAddress) ? properties.MulticastVideoAddress : string.Empty);
