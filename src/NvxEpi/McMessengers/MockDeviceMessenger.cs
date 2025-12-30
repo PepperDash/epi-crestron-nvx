@@ -19,6 +19,11 @@ public class MockDeviceMessenger : MessengerBase
       SendFullStatus(id);
     });
 
+    AddAction("/inputStatus", (id, content) =>
+    {
+      SendFullStatus(id);
+    });
+
     device.SyncDetected.OutputChange += (o, a) =>
     {
       SendFullStatus();
