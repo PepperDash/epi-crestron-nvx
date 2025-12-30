@@ -99,6 +99,8 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         SecondaryAudioStreamStatus = new StringFeedback("secondaryAudioStreamStatus",
             () => !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? "Streaming" : string.Empty);
 
+        SyncDetected = new BoolFeedback("syncDetected", () => Sync);
+
         Feedbacks.AddRange(new Feedback[]
             {
                 DeviceNameFeedback.GetFeedback(Name),
@@ -112,8 +114,7 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
                 SecondaryAudioStreamStatus,
                 IsOnline,
                 StreamUrl,
-                MulticastAddress,
-                TxAudioAddress
+                MulticastAddress
             });
     }
 
