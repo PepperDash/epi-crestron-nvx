@@ -14,7 +14,7 @@ public class NvxMatrixClearInput : IRoutingInputSlot
 
     public string Name => "None";
 
-    public BoolFeedback IsOnline => new("isOnline", () => false);
+    public BoolFeedback IsOnline => new("isOnline", () => true);
 
     public bool VideoSyncDetected => false;
 
