@@ -7,14 +7,17 @@ using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
 using NvxEpi.Features.Config;
 using NvxEpi.JoinMaps;
+using NvxEpi.McMessengers;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputSwitching;
+using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices;
@@ -179,9 +182,25 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     {
         Feedbacks.ToList().ForEach(x => x.FireUpdate());
 
-
         return base.CustomActivate();
     }
+
+  protected override void CreateMobileControlMessengers()
+  {
+    var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
+
+    if (mc == null)
+    {
+        this.LogInformation("Mobile Control not found");
+        return;
+    }
+
+    var messenger = new MockDeviceMessenger($"{Key}-mockDevice", $"/device/{Key}", this);
+
+    mc.AddDeviceMessenger(messenger);
+
+    base.CreateMobileControlMessengers();
+  }
 
     public RoutingPortCollection<RoutingInputPort> InputPorts
     {
@@ -218,6 +237,23 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     public StringFeedback SecondaryAudioStreamStatus { get; private set; }
     public StringFeedback MulticastAddress { get; private set; }
 
+    private bool sync;
+
+    public bool Sync
+    {
+        get { return sync; }
+        set
+        {
+            if (sync == value)
+                return;
+
+            sync = value;
+            SyncDetected.FireUpdate();
+        }
+    }
+
+    public BoolFeedback SyncDetected { get; private set; }
+
     private void SetStreamUrl(string url)
     {
         if (url.Equals(properties.StreamUrl))
@@ -227,6 +263,11 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         StreamUrl.FireUpdate();
     }
 
+    public void SetSyncState(bool state)
+    {
+        Sync = state;
+    }
+
     public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
         var joinMap = new NvxDeviceJoinMap(joinStart);
@@ -234,6 +275,5 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
         trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetStreamUrl);
-
     }
 }
