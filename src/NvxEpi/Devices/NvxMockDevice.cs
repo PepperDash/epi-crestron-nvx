@@ -61,7 +61,7 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
             throw new NullReferenceException("properties");
         }
 
-        this.LogVerbose("Updating config with {@newConfig}\r\nold {@oldConfig}", newProperties, properties);
+        this.LogDebug("Updating config with {@newConfig}\r\nold {@oldConfig}", newProperties, properties);
 
         properties = newProperties;
 
