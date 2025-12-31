@@ -33,7 +33,7 @@ public class NvxMockDevice
     private object propertiesLock = new();
     private NvxMockDeviceProperties properties;
 
-    public bool IncludeInMatrixRouting => properties.IncludeInMatrixRouting;
+    public bool IncludeInMatrixRouting => properties?.IncludeInMatrixRouting ?? false;
 
     private readonly RoutingPortCollection<RoutingInputPort> _inputPorts = new();
 

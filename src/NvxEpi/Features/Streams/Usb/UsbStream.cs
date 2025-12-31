@@ -203,7 +203,7 @@ public class UsbStream : IUsbStreamWithHardware
             return;
         }
 
-        var result =
+        var currentRoute =
             DeviceManager
                 .AllDevices.OfType<IStreamWithHardware>()
                 .FirstOrDefault(x =>
@@ -222,8 +222,6 @@ public class UsbStream : IUsbStreamWithHardware
 
                     return x.IsTransmitter && x.StreamUrl.StringValue.Equals(streamUrl);
                 }) as IUsbStreamWithHardware;
-
-        var currentRoute = result;
 
         if (currentRoute == null)
         {
