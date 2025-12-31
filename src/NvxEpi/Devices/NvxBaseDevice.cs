@@ -32,16 +32,16 @@ using PepperDash.Essentials.Core.Queues;
 
 namespace NvxEpi.Devices;
 
-public abstract class NvxBaseDevice :
-    EssentialsBridgeableDevice,
-    ICurrentVideoInput,
-    ICurrentAudioInput,
-    ICurrentStream,
-    ICurrentSecondaryAudioStream,
-    ICurrentNaxInput,
-    ICommunicationMonitor,
-    IDeviceInfoProvider,
-    INvxNetworkPortInformation
+public abstract class NvxBaseDevice
+    : EssentialsBridgeableDevice,
+        ICurrentVideoInput,
+        ICurrentAudioInput,
+        ICurrentStream,
+        ICurrentSecondaryAudioStream,
+        ICurrentNaxInput,
+        ICommunicationMonitor,
+        IDeviceInfoProvider,
+        INvxNetworkPortInformation
 {
     private ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
     private ICurrentStream _currentVideoStream;
@@ -49,11 +49,9 @@ public abstract class NvxBaseDevice :
     private ICurrentAudioInput _audioSwitcher;
     private ICurrentNaxInput _naxSwitcher;
 
-    private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
-        new();
+    private readonly RoutingPortCollection<RoutingInputPort> _inputPorts = new();
 
-    private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
-        new();
+    private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts = new();
 
     private string _hardwareName;
     private const string _showNvxCmd = "shownvxinfo";
@@ -67,19 +65,29 @@ public abstract class NvxBaseDevice :
 
     static NvxBaseDevice()
     {
-        CrestronConsole.AddNewConsoleCommand(s => DeviceConsole.PrintInfoForAllDevices(),
+        CrestronConsole.AddNewConsoleCommand(
+            s => DeviceConsole.PrintInfoForAllDevices(),
             _showNvxCmd,
             _showNvxCmdHelp,
-            ConsoleAccessLevelEnum.AccessAdministrator);
+            ConsoleAccessLevelEnum.AccessAdministrator
+        );
     }
 
-    protected NvxBaseDevice(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
+    protected NvxBaseDevice(
+        DeviceConfig config,
+        Func<DmNvxBaseClass> getHardware,
+        bool isTransmitter
+    )
         : base(config.Key, config.Name)
     {
         if (getHardware == null)
             throw new ArgumentNullException(nameof(getHardware));
 
-        _queue ??= new GenericQueue("NvxDeviceBuildQueue", Thread.eThreadPriority.LowestPriority, 200);
+        _queue ??= new GenericQueue(
+            "NvxDeviceBuildQueue",
+            Thread.eThreadPriority.LowestPriority,
+            200
+        );
 
         Feedbacks = new FeedbackCollection<Feedback>();
         var props = NvxDeviceProperties.FromDeviceConfig(config);
@@ -94,23 +102,35 @@ public abstract class NvxBaseDevice :
         SetDeviceName();
 
         AddPreActivationAction(() => Hardware = getHardware());
-        AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, Hardware));
+        AddPreActivationAction(() =>
+            CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, Hardware)
+        );
         AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
         AddPostActivationAction(() => RegisterForNetworkChangeFeedback());
 
-        debounceTimer = new Timer(1000) { Enabled = false, AutoReset = false };
+        debounceTimer = new Timer(30000) { Enabled = false, AutoReset = false };
 
         debounceTimer.Elapsed += (sender, args) =>
         {
             this.LogDebug("Network change detected, updating network port information");
 
             debounceTimer.Enabled = false;
-            PortInformationChanged?.Invoke(this, EventArgs.Empty);
 
             foreach (var port in NetworkPorts)
             {
-                this.LogVerbose("Port {portNumber} port name: {portName} portDescription: {portDescription}\r\nvlanName: {vlanName} systemName: {systemName} systemDescription: {systemDescription} managementAddress: {managementAddress}", port.DevicePortIndex, port.PortName, port.PortDescription, port.VlanName, port.SystemName, port.SystemNameDescription, port.IpManagementAddress);
+                this.LogVerbose(
+                    "Port {portNumber} port name: {portName} portDescription: {portDescription}\r\nvlanName: {vlanName} systemName: {systemName} systemDescription: {systemDescription} managementAddress: {managementAddress}",
+                    port.DevicePortIndex,
+                    port.PortName,
+                    port.PortDescription,
+                    port.VlanName,
+                    port.SystemName,
+                    port.SystemNameDescription,
+                    port.IpManagementAddress
+                );
             }
+
+            PortInformationChanged?.Invoke(this, EventArgs.Empty);
         };
     }
 
@@ -139,18 +159,20 @@ public abstract class NvxBaseDevice :
 
             DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
-            Feedbacks.AddRange(new Feedback[]
+            Feedbacks.AddRange(
+                new Feedback[]
                 {
-                IsOnline,
-                new IntFeedback("DeviceId", () => DeviceId),
-                DeviceNameFeedback.GetFeedback(Name),
-                DeviceIpFeedback.GetFeedback(Hardware),
-                DeviceHostnameFeedback.GetFeedback(Hardware),
-                DeviceModeNameFeedback.GetFeedback(Hardware),
-                DanteInputFeedback.GetFeedback(Hardware),
-                DanteInputValueFeedback.GetFeedback(Hardware),
-                DeviceMode
-                });
+                    IsOnline,
+                    new IntFeedback("DeviceId", () => DeviceId),
+                    DeviceNameFeedback.GetFeedback(Name),
+                    DeviceIpFeedback.GetFeedback(Hardware),
+                    DeviceHostnameFeedback.GetFeedback(Hardware),
+                    DeviceModeNameFeedback.GetFeedback(Hardware),
+                    DanteInputFeedback.GetFeedback(Hardware),
+                    DanteInputValueFeedback.GetFeedback(Hardware),
+                    DeviceMode,
+                }
+            );
 
             _currentVideoStream = new CurrentVideoStream(this);
             _currentSecondaryAudioStream = new CurrentSecondaryAudioStream(this);
@@ -164,7 +186,8 @@ public abstract class NvxBaseDevice :
 
             _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
 
-            if (IsTransmitter || Hardware == null) return base.CustomActivate();
+            if (IsTransmitter || Hardware == null)
+                return base.CustomActivate();
             if (Hardware.Control.ServerUrlFeedback.StringValue != string.Empty)
                 Hardware.Control.ServerUrl.StringValue = string.Empty;
             Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
@@ -184,42 +207,80 @@ public abstract class NvxBaseDevice :
 
         if (mc == null)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Mobile Control not found", this);
+            Debug.LogMessage(
+                Serilog.Events.LogEventLevel.Information,
+                "Mobile Control not found",
+                this
+            );
             return;
         }
 
-        var streamMessenger = new PrimaryStreamStatusMessenger($"{Key}-streamStatus", $"/device/{Key}", this);
+        var streamMessenger = new PrimaryStreamStatusMessenger(
+            $"{Key}-streamStatus",
+            $"/device/{Key}",
+            this
+        );
 
         mc.AddDeviceMessenger(streamMessenger);
 
-        var secondaryAudioMessenger = new SecondaryAudioStatusMessenger($"{Key}-secondaryAudioStreamStatus", $"/device/{Key}", this);
+        var secondaryAudioMessenger = new SecondaryAudioStatusMessenger(
+            $"{Key}-secondaryAudioStreamStatus",
+            $"/device/{Key}",
+            this
+        );
 
         mc.AddDeviceMessenger(secondaryAudioMessenger);
 
-        var infoMessenger = new EndpointInfoMessenger($"{Key}-endpointInfo", $"/device/{Key}", this);
+        var infoMessenger = new EndpointInfoMessenger(
+            $"{Key}-endpointInfo",
+            $"/device/{Key}",
+            this
+        );
 
         mc.AddDeviceMessenger(infoMessenger);
 
         if (this is not IHdmiInput hdmiInputDevice)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "{key:l} does NOT implement IHdmiInput interface", this, Key);
+            Debug.LogMessage(
+                Serilog.Events.LogEventLevel.Information,
+                "{key:l} does NOT implement IHdmiInput interface",
+                this,
+                Key
+            );
             return;
         }
 
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Generating HDMI Input messenger for {key:l}", this, Key);
+        Debug.LogMessage(
+            Serilog.Events.LogEventLevel.Debug,
+            "Generating HDMI Input messenger for {key:l}",
+            this,
+            Key
+        );
 
-
-        var hdmiInputMessenger = new IHdmiInputMessenger($"{Key}-hdmiInputMessenger", $"/device/{Key}", hdmiInputDevice);
+        var hdmiInputMessenger = new IHdmiInputMessenger(
+            $"{Key}-hdmiInputMessenger",
+            $"/device/{Key}",
+            hdmiInputDevice
+        );
 
         mc.AddDeviceMessenger(hdmiInputMessenger);
 
         if (this is not IHdmiOutput hdmiOutputDevice)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "{key:l} does NOT implement IHdmiOutput interface", this, Key);
+            Debug.LogMessage(
+                Serilog.Events.LogEventLevel.Information,
+                "{key:l} does NOT implement IHdmiOutput interface",
+                this,
+                Key
+            );
             return;
         }
 
-        var hdmiOutputMessenger = new IHdmiOutputMessenger($"{Key}-hdmiOutputMessenger", $"/device/{Key}", hdmiOutputDevice);
+        var hdmiOutputMessenger = new IHdmiOutputMessenger(
+            $"{Key}-hdmiOutputMessenger",
+            $"/device/{Key}",
+            hdmiOutputDevice
+        );
 
         mc.AddDeviceMessenger(hdmiOutputMessenger);
     }
@@ -280,22 +341,19 @@ public abstract class NvxBaseDevice :
     private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
     {
         hardware.OnlineStatusChange += (device, args) =>
-            {
-                Feedbacks
-                    .Where(x => x != null)
-                    .ToList()
-                    .ForEach(f => f.FireUpdate());
+        {
+            Feedbacks.Where(x => x != null).ToList().ForEach(f => f.FireUpdate());
 
-                if (!args.DeviceOnLine)
-                    return;
+            if (!args.DeviceOnLine)
+                return;
 
-                Hardware.Control.Name.StringValue = _hardwareName;
+            Hardware.Control.Name.StringValue = _hardwareName;
 
-                if (IsTransmitter || hardware is DmNvxE30)
-                    Hardware.SetTxDefaults(props);
-                else
-                    Hardware.SetRxDefaults(props);
-            };
+            if (IsTransmitter || hardware is DmNvxE30)
+                Hardware.SetTxDefaults(props);
+            else
+                Hardware.SetRxDefaults(props);
+        };
     }
 
     private void RegisterForFeedback()
@@ -385,7 +443,7 @@ public abstract class NvxBaseDevice :
             IpAddress = Hardware.Network.IpAddressFeedback.StringValue,
             HostName = Hardware.Network.HostNameFeedback.StringValue,
             MacAddress = string.Empty,
-            FirmwareVersion = string.Empty
+            FirmwareVersion = string.Empty,
         };
 
         var handler = DeviceInfoChanged;
@@ -397,7 +455,13 @@ public abstract class NvxBaseDevice :
 
     public DeviceInfo DeviceInfo { get; private set; }
 
-    public List<NvxNetworkPortInformation> NetworkPorts => Hardware.Network.LldpPort.Values.Select(port => new NvxNetworkPortInformation(port, port.Number)).ToList();
+    public List<NvxNetworkPortInformation> NetworkPorts =>
+        Hardware
+            .Network.LldpPort.Values.Select(port => new NvxNetworkPortInformation(
+                port,
+                port.Number
+            ))
+            .ToList();
 
     public event DeviceInfoChangeHandler DeviceInfoChanged;
 

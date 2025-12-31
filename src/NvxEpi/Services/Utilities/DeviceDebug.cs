@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using PepperDash.Core;
@@ -58,7 +59,7 @@ public static class DeviceDebug
     private static void RegisterForHdmiInputFeedback(DmNvxBaseClass device, IKeyed keyed)
     {
         if (device.HdmiIn == null)
-            return;
+            return;        
 
         foreach (var item in device.HdmiIn)
         {

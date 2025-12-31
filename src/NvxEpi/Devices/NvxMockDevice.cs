@@ -7,6 +7,7 @@ using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
 using NvxEpi.Features.Config;
 using NvxEpi.JoinMaps;
+using NvxEpi.McMessengers;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.Feedback;
 using NvxEpi.Services.InputSwitching;
@@ -16,20 +17,32 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace NvxEpi.Devices;
 
-public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStream, IRoutingNumeric, IBridgeAdvanced
+public class NvxMockDevice
+    : ReconfigurableDevice,
+        IStream,
+        ISecondaryAudioStream,
+        IRoutingNumeric,
+        IBridgeAdvanced,
+        IHasFeedback
 {
+    private object propertiesLock = new();
     private NvxMockDeviceProperties properties;
-    private readonly RoutingPortCollection<RoutingInputPort> _inputPorts =
-        new();
 
-    private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts =
-        new();
+    public bool IncludeInMatrixRouting => properties?.IncludeInMatrixRouting ?? false;
 
-    private string _streamUrl => properties != null && !string.IsNullOrEmpty(properties.StreamUrl) ? properties.StreamUrl : string.Empty;
+    private readonly RoutingPortCollection<RoutingInputPort> _inputPorts = new();
+
+    private readonly RoutingPortCollection<RoutingOutputPort> _outputPorts = new();
+
+    private string streamUrl =>
+        properties != null && !string.IsNullOrEmpty(properties.StreamUrl)
+            ? properties.StreamUrl
+            : string.Empty;
 
     public NvxMockDevice(DeviceConfig dc, bool isTransmitter)
         : base(dc)
@@ -51,55 +64,104 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
 
     protected override void CustomSetConfig(DeviceConfig config)
     {
-        properties = config.Properties.ToObject<NvxMockDeviceProperties>();
-        if (properties == null)
+        lock (propertiesLock)
         {
-            this.LogError("************ PROPS IS NULL ************");
-            throw new NullReferenceException("properties");
-        }
+            var newProperties = config.Properties.ToObject<NvxMockDeviceProperties>();
 
-        foreach (var feedback in Feedbacks)
-        {
-            feedback.FireUpdate();
+            if (newProperties == null)
+            {
+                this.LogError("************ PROPS IS NULL ************");
+                throw new NullReferenceException("properties");
+            }
+
+            this.LogDebug(
+                "Updating config with {@newConfig}\r\nold {@oldConfig}",
+                newProperties,
+                properties
+            );
+
+            properties = newProperties;
+
+            foreach (var feedback in Feedbacks)
+            {
+                feedback.FireUpdate();
+            }
         }
     }
 
     private void BuildFeedbacks()
     {
-        IsOnline = new BoolFeedback("IsOnline", () => true);
+        IsOnline = new BoolFeedback("IsOnline", () => Online);
         DeviceMode = new IntFeedback("DeviceMode", () => 0);
-        StreamUrl = new StringFeedback("StreamUrl", () => _streamUrl);
+        StreamUrl = new StringFeedback("StreamUrl", () => streamUrl);
 
-        MulticastAddress = new StringFeedback("MulticastVideoAddress",
-            () => !string.IsNullOrEmpty(properties.MulticastVideoAddress) ? properties.MulticastVideoAddress : string.Empty);
+        MulticastAddress = new StringFeedback(
+            "MulticastVideoAddress",
+            () =>
+                !string.IsNullOrEmpty(properties.MulticastVideoAddress)
+                    ? properties.MulticastVideoAddress
+                    : string.Empty
+        );
 
-        IsStreamingVideo = new BoolFeedback("isStreamingVideo", () => !string.IsNullOrEmpty(properties.StreamUrl));
+        IsStreamingVideo = new BoolFeedback(
+            "isStreamingVideo",
+            () => !string.IsNullOrEmpty(properties.StreamUrl)
+        );
 
-        VideoStreamStatus = new StringFeedback("videoStreamStatus",
-            () => !string.IsNullOrEmpty(properties.StreamUrl) ? "Streaming" : string.Empty);
+        VideoStreamStatus = new StringFeedback(
+            "videoStreamStatus",
+            () => !string.IsNullOrEmpty(properties.StreamUrl) ? "Streaming" : string.Empty
+        );
 
-        SecondaryAudioAddress = new StringFeedback("secondaryAudioAddress",
-            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? properties.MulticastAudioAddress : string.Empty);
+        SecondaryAudioAddress = new StringFeedback(
+            "secondaryAudioAddress",
+            () =>
+                !string.IsNullOrEmpty(properties.MulticastAudioAddress)
+                    ? properties.MulticastAudioAddress
+                    : string.Empty
+        );
 
-        TxAudioAddress = new StringFeedback("txAudioAddress",
-            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? properties.MulticastAudioAddress : string.Empty);
+        TxAudioAddress = new StringFeedback(
+            "txAudioAddress",
+            () =>
+                !string.IsNullOrEmpty(properties.MulticastAudioAddress)
+                    ? properties.MulticastAudioAddress
+                    : string.Empty
+        );
 
         RxAudioAddress = new StringFeedback("rxAudioAddress", () => string.Empty);
 
-        IsStreamingSecondaryAudio = new BoolFeedback("isStreamingSecondaryAudio",
-            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress));
+        IsStreamingSecondaryAudio = new BoolFeedback(
+            "isStreamingSecondaryAudio",
+            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress)
+        );
 
-        SecondaryAudioStreamStatus = new StringFeedback("secondaryAudioStreamStatus",
-            () => !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? "Streaming" : string.Empty);
+        SecondaryAudioStreamStatus = new StringFeedback(
+            "secondaryAudioStreamStatus",
+            () =>
+                !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? "Streaming" : string.Empty
+        );
 
-        Feedbacks.AddRange(new Feedback[]
+        SyncDetected = new BoolFeedback("syncDetected", () => Sync);
+
+        Feedbacks.AddRange(
+            new Feedback[]
             {
                 DeviceNameFeedback.GetFeedback(Name),
+                MulticastAddress,
+                IsStreamingVideo,
+                VideoStreamStatus,
+                SecondaryAudioAddress,
+                TxAudioAddress,
+                RxAudioAddress,
+                IsStreamingSecondaryAudio,
+                SecondaryAudioStreamStatus,
                 IsOnline,
                 StreamUrl,
-                MulticastAddress,
-                TxAudioAddress
-            });
+            }
+        );
+
+        IsOnline.FireUpdate();
     }
 
     private void BuildRoutingPorts()
@@ -110,7 +172,9 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
                 eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi,
                 DeviceInputEnum.Hdmi1,
-                this));
+                this
+            )
+        );
 
         InputPorts.Add(
             new RoutingInputPort(
@@ -118,9 +182,9 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
                 eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
                 eRoutingPortConnectionType.Streaming,
                 DeviceInputEnum.SecondaryAudio,
-                this));
-
-
+                this
+            )
+        );
 
         OutputPorts.Add(
             new RoutingOutputPort(
@@ -128,38 +192,46 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
                 eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
                 eRoutingPortConnectionType.LineAudio,
                 null,
-                this));
+                this
+            )
+        );
 
-        OutputPorts.Add(new RoutingOutputPort(
-            SwitcherForHdmiOutput.Key,
-            eRoutingSignalType.AudioVideo,
-            eRoutingPortConnectionType.Hdmi,
-            null,
-            this));
-
+        OutputPorts.Add(
+            new RoutingOutputPort(
+                SwitcherForHdmiOutput.Key,
+                eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi,
+                null,
+                this
+            )
+        );
 
         if (IsTransmitter)
         {
             OutputPorts.Add(
-             new RoutingOutputPort(
-                 SwitcherForStreamOutput.Key,
-                 eRoutingSignalType.AudioVideo,
-                 eRoutingPortConnectionType.Streaming,
-                 null,
-                 this));
+                new RoutingOutputPort(
+                    SwitcherForStreamOutput.Key,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    null,
+                    this
+                )
+            );
         }
         else
         {
-
-            InputPorts.Add(new RoutingInputPort(
-            DeviceInputEnum.Stream.Name,
-            eRoutingSignalType.AudioVideo,
-            eRoutingPortConnectionType.Streaming,
-            DeviceInputEnum.Stream,
-            this)
-            {
-                FeedbackMatchObject = eSfpVideoSourceTypes.Stream
-            });
+            InputPorts.Add(
+                new RoutingInputPort(
+                    DeviceInputEnum.Stream.Name,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    DeviceInputEnum.Stream,
+                    this
+                )
+                {
+                    FeedbackMatchObject = eSfpVideoSourceTypes.Stream,
+                }
+            );
         }
     }
 
@@ -167,8 +239,24 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     {
         Feedbacks.ToList().ForEach(x => x.FireUpdate());
 
-
         return base.CustomActivate();
+    }
+
+    protected override void CreateMobileControlMessengers()
+    {
+        var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
+
+        if (mc == null)
+        {
+            this.LogInformation("Mobile Control not found");
+            return;
+        }
+
+        var messenger = new MockDeviceMessenger($"{Key}-mockDevice", $"/device/{Key}", this);
+
+        mc.AddDeviceMessenger(messenger);
+
+        base.CreateMobileControlMessengers();
     }
 
     public RoutingPortCollection<RoutingInputPort> InputPorts
@@ -181,7 +269,11 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         get { return _outputPorts; }
     }
 
-    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+    public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
     {
         this.LogVerbose("Executing switch : {0}", signalType);
     }
@@ -192,6 +284,23 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     }
 
     public FeedbackCollection<Feedback> Feedbacks { get; private set; }
+
+    private bool isOnline = true;
+
+    public bool Online
+    {
+        get => isOnline;
+        private set
+        {
+            if (isOnline == value)
+                return;
+
+            isOnline = value;
+
+            IsOnline.FireUpdate();
+        }
+    }
+
     public BoolFeedback IsOnline { get; private set; }
     public IntFeedback DeviceMode { get; private set; }
     public bool IsTransmitter { get; private set; }
@@ -206,6 +315,23 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
     public StringFeedback SecondaryAudioStreamStatus { get; private set; }
     public StringFeedback MulticastAddress { get; private set; }
 
+    private bool sync;
+
+    public bool Sync
+    {
+        get { return sync; }
+        set
+        {
+            if (sync == value)
+                return;
+
+            sync = value;
+            SyncDetected.FireUpdate();
+        }
+    }
+
+    public BoolFeedback SyncDetected { get; private set; }
+
     private void SetStreamUrl(string url)
     {
         if (url.Equals(properties.StreamUrl))
@@ -215,13 +341,27 @@ public class NvxMockDevice : ReconfigurableDevice, IStream, ISecondaryAudioStrea
         StreamUrl.FireUpdate();
     }
 
-    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+    public void SetSyncState(bool state)
+    {
+        Sync = state;
+    }
+
+    public void SetIsOnline(bool state)
+    {
+        Online = state;
+    }
+
+    public void LinkToApi(
+        BasicTriList trilist,
+        uint joinStart,
+        string joinMapKey,
+        EiscApiAdvanced bridge
+    )
     {
         var joinMap = new NvxDeviceJoinMap(joinStart);
 
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
         trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetStreamUrl);
-
     }
 }
