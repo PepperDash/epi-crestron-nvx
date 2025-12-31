@@ -16,14 +16,20 @@ public class Nvx36XAudio : IBasicVolumeWithFeedback
         _device = device;
         _parent = parent;
 
-        MuteFeedback = new BoolFeedback("Muted", () => _device.Control.AudioMutedFeedback.BoolValue);
+        MuteFeedback = new BoolFeedback(
+            "Muted",
+            () => _device.Control.AudioMutedFeedback.BoolValue
+        );
 
-        VolumeLevelFeedback = new IntFeedback("Volume", () =>
-        {
-            var volume = _device.Control.AnalogAudioOutputVolumeFeedback.ShortValue;
-            var result = MapVolume(volume);
-            return result;
-        });
+        VolumeLevelFeedback = new IntFeedback(
+            "Volume",
+            () =>
+            {
+                var volume = _device.Control.AnalogAudioOutputVolumeFeedback.ShortValue;
+                var result = MapVolume(volume);
+                return result;
+            }
+        );
 
         _device.OnlineStatusChange += (@base, args) => MuteFeedback.FireUpdate();
         _device.OnlineStatusChange += (@base, args) => VolumeLevelFeedback.FireUpdate();
@@ -70,7 +76,13 @@ public class Nvx36XAudio : IBasicVolumeWithFeedback
 
     public void SetVolume(ushort level)
     {
-        var volume = CrestronEnvironment.ScaleWithLimits(level, ushort.MaxValue, ushort.MinValue, 240, -800);
+        var volume = CrestronEnvironment.ScaleWithLimits(
+            level,
+            ushort.MaxValue,
+            ushort.MinValue,
+            240,
+            -800
+        );
         _device.Control.AnalogAudioOutputVolume.ShortValue = (short)volume;
     }
 
@@ -86,4 +98,7 @@ public class Nvx36XAudio : IBasicVolumeWithFeedback
 
     public IntFeedback VolumeLevelFeedback { get; private set; }
     public BoolFeedback MuteFeedback { get; private set; }
+
+    public string Name => _parent is IKeyed keyedParent ? keyedParent.Key : _parent.Key;
+    public string Key => _parent.Key;
 }
