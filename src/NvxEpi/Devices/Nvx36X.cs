@@ -24,19 +24,18 @@ using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
 
-
 namespace NvxEpi.Devices;
 
-public class Nvx36X :
-    NvxBaseDevice,
-    IComPorts,
-    IIROutputPorts,
-    IUsbStreamWithHardware,
-    IHdmiInput,
-    IVideowallMode,
-    IRoutingWithFeedback,
-    ICec,
-    IBasicVolumeWithFeedback
+public class Nvx36X
+    : NvxBaseDevice,
+        IComPorts,
+        IIROutputPorts,
+        IUsbStreamWithHardware,
+        IHdmiInput,
+        IVideowallMode,
+        IRoutingWithFeedback,
+        ICec,
+        IBasicVolumeWithFeedback
 {
     private IBasicVolumeWithFeedback _audio;
     private IHdmiInput _hdmiInputs;
@@ -78,6 +77,7 @@ public class Nvx36X :
                 // ReSharper disable once ObjectCreationAsStatement
                 new AutomaticInputRouter(_hdmiInputs);
 
+            this.LogInformation("Adding MC Messengers");
             AddMcMessengers();
 
             Hardware.BaseEvent += (o, a) =>
@@ -98,7 +98,7 @@ public class Nvx36X :
         {
             this.LogError("Caught an exception in activate: {message}", ex.Message);
             this.LogDebug(ex, "Stack Trace: ");
-            return false;
+            throw;
         }
     }
 
@@ -112,7 +112,10 @@ public class Nvx36X :
         this.LogInformation("Try Make USB Route for mac : {0}", hardware.UsbLocalId.StringValue);
         if (_usbStream is not UsbStream usbStream)
         {
-            this.LogError("cannot Make USB Route for url : {0} - UsbStream is null", hardware.UsbLocalId.StringValue);
+            this.LogError(
+                "cannot Make USB Route for url : {0} - UsbStream is null",
+                hardware.UsbLocalId.StringValue
+            );
             return;
         }
         usbStream.MakeUsbRoute(hardware);
@@ -193,30 +196,49 @@ public class Nvx36X :
         get { return _hdmiInputs.CurrentResolution; }
     }
 
-    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels { get { return _hdmiInputs.AudioChannels; } }
+    public ReadOnlyDictionary<uint, IntFeedback> AudioChannels
+    {
+        get { return _hdmiInputs.AudioChannels; }
+    }
 
-    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat { get { return _hdmiInputs.AudioFormat; } }
+    public ReadOnlyDictionary<uint, StringFeedback> AudioFormat
+    {
+        get { return _hdmiInputs.AudioFormat; }
+    }
 
-    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace { get { return _hdmiInputs.ColorSpace; } }
+    public ReadOnlyDictionary<uint, StringFeedback> ColorSpace
+    {
+        get { return _hdmiInputs.ColorSpace; }
+    }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return _hdmiInputs.HdrType; } }
+    public ReadOnlyDictionary<uint, StringFeedback> HdrType
+    {
+        get { return _hdmiInputs.HdrType; }
+    }
 
     public IntFeedback VideowallMode
     {
         get { return _hdmiOutput.VideowallMode; }
     }
 
-    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+    public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
     {
         try
         {
-            var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
+            var switcher =
+                outputSelector as IHandleInputSwitch
+                ?? throw new NullReferenceException("outputSelector");
 
             this.LogDebug(
                 "Executing switch : '{0}' | '{1}' | '{2}'",
                 inputSelector?.ToString() ?? "{null}",
                 outputSelector?.ToString() ?? "{null}",
-                signalType.ToString());
+                signalType.ToString()
+            );
 
             switcher.HandleSwitch(inputSelector, signalType);
         }
@@ -227,7 +249,12 @@ public class Nvx36X :
         }
     }
 
-    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+    public override void LinkToApi(
+        BasicTriList trilist,
+        uint joinStart,
+        string joinMapKey,
+        EiscApiAdvanced bridge
+    )
     {
         var deviceBridge = new NvxDeviceBridge(this);
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
@@ -298,9 +325,15 @@ public class Nvx36X :
         get { return _audio.MuteFeedback; }
     }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString { get { return _hdmiInputs.HdcpCapabilityString; } }
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString
+    {
+        get { return _hdmiInputs.HdcpCapabilityString; }
+    }
 
-    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return _hdmiInputs.HdcpSupport; } }
+    public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport
+    {
+        get { return _hdmiInputs.HdcpSupport; }
+    }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 }

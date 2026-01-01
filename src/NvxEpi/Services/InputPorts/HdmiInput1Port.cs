@@ -24,18 +24,20 @@ public class HdmiInput1Port
                 {
                     HasVideoStatusFunc = () => true,
                     HdcpStateFeedbackFunc = () => hdmi.HdcpCapabilityFeedback.ToString(),
-                    VideoResolutionFeedbackFunc =
-                        () =>
-                            string.Format("{0}x{1}",
-                                hdmi.VideoAttributes.HorizontalResolutionFeedback.UShortValue,
-                                hdmi.VideoAttributes.VerticalResolutionFeedback.UShortValue),
-                    VideoSyncFeedbackFunc = () => hdmi.SyncDetectedFeedback.BoolValue
-                })
+                    VideoResolutionFeedbackFunc = () =>
+                        string.Format(
+                            "{0}x{1}",
+                            hdmi.VideoAttributes.HorizontalResolutionFeedback.UShortValue,
+                            hdmi.VideoAttributes.VerticalResolutionFeedback.UShortValue
+                        ),
+                    VideoSyncFeedbackFunc = () => hdmi.SyncDetectedFeedback.BoolValue,
+                }
+            )
             {
-                FeedbackMatchObject = eSfpVideoSourceTypes.Hdmi1
-            }
-                ;
+                FeedbackMatchObject = eSfpVideoSourceTypes.Hdmi1,
+            };
 
+            device.IsOnline.OutputChange += (sender, args) => port.VideoStatus.FireAll();
             hdmi.StreamChange += (stream, args) => port.VideoStatus.FireAll();
             hdmi.VideoAttributes.AttributeChange += (sender, args) => port.VideoStatus.FireAll();
 
@@ -57,13 +59,15 @@ public class HdmiInput1Port
                 {
                     HasVideoStatusFunc = () => true,
                     HdcpStateFeedbackFunc = () => dm.HdcpCapabilityFeedback.ToString(),
-                    VideoResolutionFeedbackFunc =
-                        () =>
-                            string.Format("{0}x{1}",
-                                dm.VideoAttributes.HorizontalResolutionFeedback.UShortValue,
-                                dm.VideoAttributes.VerticalResolutionFeedback.UShortValue),
-                    VideoSyncFeedbackFunc = () => dm.SyncDetectedFeedback.BoolValue
-                });
+                    VideoResolutionFeedbackFunc = () =>
+                        string.Format(
+                            "{0}x{1}",
+                            dm.VideoAttributes.HorizontalResolutionFeedback.UShortValue,
+                            dm.VideoAttributes.VerticalResolutionFeedback.UShortValue
+                        ),
+                    VideoSyncFeedbackFunc = () => dm.SyncDetectedFeedback.BoolValue,
+                }
+            );
 
             dm.InputStreamChange += (stream, args) => port.VideoStatus.FireAll();
             dm.VideoAttributes.AttributeChange += (sender, args) => port.VideoStatus.FireAll();
