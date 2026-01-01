@@ -158,6 +158,7 @@ public class NvxMockDevice
                 SecondaryAudioStreamStatus,
                 IsOnline,
                 StreamUrl,
+                SyncDetected,
             }
         );
 
