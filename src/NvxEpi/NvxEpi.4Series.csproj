@@ -11,7 +11,7 @@
     <AssemblyTitle>NvxEpi</AssemblyTitle>
     <Company>PepperDash Technologies</Company>
     <Description>This software is a plugin designed to work as a part of PepperDash Essentials for Crestron control processors. This plugin allows for control Crestron NVX devices.</Description>
-    <Copyright>Copyright 2025</Copyright>
+    <Copyright>Copyright 2026</Copyright>
     <Version>1.0.0-local</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <InformationalVersion>$(Version)</InformationalVersion>
