@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Abstractions.UsbcInput;
 using NvxEpi.Extensions;
 using NvxEpi.Features.Audio;
 using NvxEpi.Features.AutomaticRouting;
@@ -23,6 +24,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
+using UsbcInput = NvxEpi.Features.Usbc.Input.UsbcInput;
 
 namespace NvxEpi.Devices;
 
@@ -32,6 +34,7 @@ public class Nvx38X
         IIROutputPorts,
         IUsbStreamWithHardware,
         IHdmiInput,
+        IUsbcInput,
         IVideowallMode,
         IMultiview,
         IRoutingWithFeedback,
@@ -40,6 +43,7 @@ public class Nvx38X
 {
     private IBasicVolumeWithFeedback _audio;
     private IHdmiInput _hdmiInputs;
+    private IUsbcInput _usbcInputs;
     private IHdmiOutput _hdmiOutput;
     private IUsbStreamWithHardware _usbStream;
     private readonly NvxDeviceProperties _config;
@@ -66,6 +70,7 @@ public class Nvx38X
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInputs = new HdmiInput(this);
+            _usbcInputs = new UsbcInput(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
             Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
@@ -130,7 +135,20 @@ public class Nvx38X
 
     public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
     {
-        get { return _hdmiInputs.HdcpCapability; }
+        //get { return _hdmiInputs.HdcpCapability; }
+        get
+        {
+            var hdcpCapability = new Dictionary<uint, IntFeedback>();
+            foreach (var hdmiCapability in _hdmiInputs.HdcpCapability)
+            {
+                hdcpCapability.Add(hdmiCapability.Key, hdmiCapability.Value);
+            }
+            foreach (var usbcCapability in _usbcInputs.HdcpCapability)
+            {
+                hdcpCapability.Add(usbcCapability.Key, usbcCapability.Value);
+            }
+            return new ReadOnlyDictionary<uint, IntFeedback>(hdcpCapability);
+        }
     }
 
     public IntFeedback HorizontalResolution
@@ -302,6 +320,9 @@ public class Nvx38X
     private void AddRoutingPorts()
     {
         HdmiInput1Port.AddRoutingPort(this);
+        HdmiInput2Port.AddRoutingPort(this);
+        UsbcInput1Port.AddRoutingPort(this);
+        UsbcInput2Port.AddRoutingPort(this);
         SecondaryAudioInput.AddRoutingPort(this);
         AnalogAudioInput.AddRoutingPort(this);
 
