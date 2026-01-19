@@ -38,9 +38,15 @@ public class UsbcInput : UsbcInputBase
         try
         {
             //Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Hardware is NOT DmNvxE760x", this);
-            if (device.Hardware is not DmNvx38x nvx38x || nvx38x.UsbcIn == null)
+            if (device.Hardware is not DmNvx38x nvx38x)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Hardware is NOT DmNvx38x and does not support UsbcIn", this);
+                return;
+            }
+
+            if (nvx38x.UsbcIn == null)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "UsbcIn is null on this DmNvx38x device", this);
                 return;
             }
 
