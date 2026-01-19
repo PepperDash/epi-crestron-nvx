@@ -204,32 +204,110 @@ public class Nvx38X
 
     public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
     {
-        get { return _hdmiInputs.SyncDetected; }
+        //get { return _hdmiInputs.SyncDetected; }
+        get
+        {
+            var syncDetected = new Dictionary<uint, BoolFeedback>();
+            foreach (var item in _hdmiInputs.SyncDetected)
+            {
+                syncDetected.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.SyncDetected)
+            {
+                syncDetected.Add(item.Key, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, BoolFeedback>(syncDetected);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
     {
-        get { return _hdmiInputs.CurrentResolution; }
+        //get { return _hdmiInputs.CurrentResolution; }
+        get
+        {
+            var currentResolution = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.CurrentResolution)
+            {
+                currentResolution.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.CurrentResolution)
+            {
+                currentResolution.Add(item.Key, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(currentResolution);
+        }
     }
 
     public ReadOnlyDictionary<uint, IntFeedback> AudioChannels
     {
-        get { return _hdmiInputs.AudioChannels; }
+        //get { return _hdmiInputs.AudioChannels; }
+        get
+        {
+            var audioChannels = new Dictionary<uint, IntFeedback>();
+            foreach (var item in _hdmiInputs.AudioChannels)
+            {
+                audioChannels.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.AudioChannels)
+            {
+                audioChannels.Add(item.Key, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, IntFeedback>(audioChannels);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> AudioFormat
     {
-        get { return _hdmiInputs.AudioFormat; }
+        //get { return _hdmiInputs.AudioFormat; }
+        get
+        {
+            var audioFormat = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.AudioFormat)
+            {
+                audioFormat.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.AudioFormat)
+            {
+                audioFormat.Add(item.Key, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(audioFormat);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> ColorSpace
     {
-        get { return _hdmiInputs.ColorSpace; }
+        //get { return _hdmiInputs.ColorSpace; }
+        get
+        {
+            var colorSpace = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.ColorSpace)
+            {
+                colorSpace.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.ColorSpace)
+            {
+                colorSpace.Add(item.Key, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(colorSpace);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> HdrType
     {
-        get { return _hdmiInputs.HdrType; }
+        //get { return _hdmiInputs.HdrType; }
+        get
+        {
+            var hdrType = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.HdrType)
+            {
+                hdrType.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.HdrType)
+            {
+                hdrType.Add(item.Key, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(hdrType);
+        }
     }
 
     public IntFeedback VideowallMode
@@ -387,12 +465,38 @@ public class Nvx38X
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString
     {
-        get { return _hdmiInputs.HdcpCapabilityString; }
+        //get { return _hdmiInputs.HdcpCapabilityString; }
+        get
+        {
+            var hdcpCapabilityString = new Dictionary<uint, StringFeedback>();
+            foreach (var hdmiCapability in _hdmiInputs.HdcpCapabilityString)
+            {
+                hdcpCapabilityString.Add(hdmiCapability.Key, hdmiCapability.Value);
+            }
+            foreach (var usbcCapability in _usbcInputs.HdcpCapabilityString)
+            {
+                hdcpCapabilityString.Add(usbcCapability.Key, usbcCapability.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(hdcpCapabilityString);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport
     {
-        get { return _hdmiInputs.HdcpSupport; }
+        //get { return _hdmiInputs.HdcpSupport; }
+        get
+        {
+            var hdcpSupport = new Dictionary<uint, StringFeedback>();
+            foreach (var hdmiSupport in _hdmiInputs.HdcpSupport)
+            {
+                hdcpSupport.Add(hdmiSupport.Key, hdmiSupport.Value);
+            }
+            foreach (var usbcSupport in _usbcInputs.HdcpSupport)
+            {
+                hdcpSupport.Add(usbcSupport.Key, usbcSupport.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(hdcpSupport);
+        }
     }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
