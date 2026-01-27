@@ -138,7 +138,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdcpCapability; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.HdcpCapability.Count;
             var hdcpCapability = new Dictionary<uint, IntFeedback>();
             foreach (var hdmiCapability in _hdmiInputs.HdcpCapability)
             {
@@ -208,7 +208,7 @@ public class Nvx38X
         //get { return _hdmiInputs.SyncDetected; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.SyncDetected.Count;
             var syncDetected = new Dictionary<uint, BoolFeedback>();
             foreach (var item in _hdmiInputs.SyncDetected)
             {
@@ -227,7 +227,7 @@ public class Nvx38X
         //get { return _hdmiInputs.CurrentResolution; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.CurrentResolution.Count;
             var currentResolution = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.CurrentResolution)
             {
@@ -246,7 +246,7 @@ public class Nvx38X
         //get { return _hdmiInputs.AudioChannels; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.AudioChannels.Count;
             var audioChannels = new Dictionary<uint, IntFeedback>();
             foreach (var item in _hdmiInputs.AudioChannels)
             {
@@ -265,7 +265,7 @@ public class Nvx38X
         //get { return _hdmiInputs.AudioFormat; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.AudioFormat.Count;
             var audioFormat = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.AudioFormat)
             {
@@ -284,7 +284,7 @@ public class Nvx38X
         //get { return _hdmiInputs.ColorSpace; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.ColorSpace.Count;
             var colorSpace = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.ColorSpace)
             {
@@ -303,7 +303,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdrType; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.HdrType.Count;
             var hdrType = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.HdrType)
             {
@@ -475,7 +475,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdcpCapabilityString; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.HdcpCapabilityString.Count;
             var hdcpCapabilityString = new Dictionary<uint, StringFeedback>();
             foreach (var hdmiCapability in _hdmiInputs.HdcpCapabilityString)
             {
@@ -494,7 +494,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdcpSupport; }
         get
         {
-            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
+            var offset = (uint)_hdmiInputs.HdcpSupport.Count;
             var hdcpSupport = new Dictionary<uint, StringFeedback>();
             foreach (var hdmiSupport in _hdmiInputs.HdcpSupport)
             {
