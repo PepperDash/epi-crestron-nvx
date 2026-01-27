@@ -6,12 +6,12 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Audio;
 
-public class NvxD3xAudio : IBasicVolumeWithFeedback
+public class NvxD3XAudio : IBasicVolumeWithFeedback
 {
     private readonly DmNvxD3x _device;
     private readonly IKeyed _parent;
 
-    public NvxD3xAudio(DmNvxD3x device, IKeyed parent)
+    public NvxD3XAudio(DmNvxD3x device, IKeyed parent)
     {
         _device = device;
         _parent = parent;

@@ -48,7 +48,7 @@ public class NvxD3X :
 
         var result = base.CustomActivate();
 
-        _audio = new NvxD3xAudio(hardware, this);
+        _audio = new NvxD3XAudio(hardware, this);
         _hdmiOutput = new HdmiOutput(this);
 
         Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
