@@ -138,6 +138,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdcpCapability; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var hdcpCapability = new Dictionary<uint, IntFeedback>();
             foreach (var hdmiCapability in _hdmiInputs.HdcpCapability)
             {
@@ -145,7 +146,7 @@ public class Nvx38X
             }
             foreach (var usbcCapability in _usbcInputs.HdcpCapability)
             {
-                hdcpCapability.Add(usbcCapability.Key, usbcCapability.Value);
+                hdcpCapability.Add(usbcCapability.Key + offset, usbcCapability.Value);
             }
             return new ReadOnlyDictionary<uint, IntFeedback>(hdcpCapability);
         }
@@ -207,6 +208,7 @@ public class Nvx38X
         //get { return _hdmiInputs.SyncDetected; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var syncDetected = new Dictionary<uint, BoolFeedback>();
             foreach (var item in _hdmiInputs.SyncDetected)
             {
@@ -214,7 +216,7 @@ public class Nvx38X
             }
             foreach (var item in _usbcInputs.SyncDetected)
             {
-                syncDetected.Add(item.Key, item.Value);
+                syncDetected.Add(item.Key + offset, item.Value);
             }
             return new ReadOnlyDictionary<uint, BoolFeedback>(syncDetected);
         }
@@ -225,6 +227,7 @@ public class Nvx38X
         //get { return _hdmiInputs.CurrentResolution; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var currentResolution = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.CurrentResolution)
             {
@@ -232,7 +235,7 @@ public class Nvx38X
             }
             foreach (var item in _usbcInputs.CurrentResolution)
             {
-                currentResolution.Add(item.Key, item.Value);
+                currentResolution.Add(item.Key + offset, item.Value);
             }
             return new ReadOnlyDictionary<uint, StringFeedback>(currentResolution);
         }
@@ -243,6 +246,7 @@ public class Nvx38X
         //get { return _hdmiInputs.AudioChannels; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var audioChannels = new Dictionary<uint, IntFeedback>();
             foreach (var item in _hdmiInputs.AudioChannels)
             {
@@ -250,7 +254,7 @@ public class Nvx38X
             }
             foreach (var item in _usbcInputs.AudioChannels)
             {
-                audioChannels.Add(item.Key, item.Value);
+                audioChannels.Add(item.Key + offset, item.Value);
             }
             return new ReadOnlyDictionary<uint, IntFeedback>(audioChannels);
         }
@@ -261,6 +265,7 @@ public class Nvx38X
         //get { return _hdmiInputs.AudioFormat; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var audioFormat = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.AudioFormat)
             {
@@ -268,7 +273,7 @@ public class Nvx38X
             }
             foreach (var item in _usbcInputs.AudioFormat)
             {
-                audioFormat.Add(item.Key, item.Value);
+                audioFormat.Add(item.Key + offset, item.Value);
             }
             return new ReadOnlyDictionary<uint, StringFeedback>(audioFormat);
         }
@@ -279,6 +284,7 @@ public class Nvx38X
         //get { return _hdmiInputs.ColorSpace; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var colorSpace = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.ColorSpace)
             {
@@ -286,7 +292,7 @@ public class Nvx38X
             }
             foreach (var item in _usbcInputs.ColorSpace)
             {
-                colorSpace.Add(item.Key, item.Value);
+                colorSpace.Add(item.Key + offset, item.Value);
             }
             return new ReadOnlyDictionary<uint, StringFeedback>(colorSpace);
         }
@@ -297,6 +303,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdrType; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var hdrType = new Dictionary<uint, StringFeedback>();
             foreach (var item in _hdmiInputs.HdrType)
             {
@@ -304,7 +311,7 @@ public class Nvx38X
             }
             foreach (var item in _usbcInputs.HdrType)
             {
-                hdrType.Add(item.Key, item.Value);
+                hdrType.Add(item.Key + offset, item.Value);
             }
             return new ReadOnlyDictionary<uint, StringFeedback>(hdrType);
         }
@@ -468,6 +475,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdcpCapabilityString; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var hdcpCapabilityString = new Dictionary<uint, StringFeedback>();
             foreach (var hdmiCapability in _hdmiInputs.HdcpCapabilityString)
             {
@@ -475,7 +483,7 @@ public class Nvx38X
             }
             foreach (var usbcCapability in _usbcInputs.HdcpCapabilityString)
             {
-                hdcpCapabilityString.Add(usbcCapability.Key, usbcCapability.Value);
+                hdcpCapabilityString.Add(usbcCapability.Key + offset, usbcCapability.Value);
             }
             return new ReadOnlyDictionary<uint, StringFeedback>(hdcpCapabilityString);
         }
@@ -486,6 +494,7 @@ public class Nvx38X
         //get { return _hdmiInputs.HdcpSupport; }
         get
         {
+            var offset = (uint)_hdmiInputs.HdmiInputPorts.Count;
             var hdcpSupport = new Dictionary<uint, StringFeedback>();
             foreach (var hdmiSupport in _hdmiInputs.HdcpSupport)
             {
@@ -493,7 +502,7 @@ public class Nvx38X
             }
             foreach (var usbcSupport in _usbcInputs.HdcpSupport)
             {
-                hdcpSupport.Add(usbcSupport.Key, usbcSupport.Value);
+                hdcpSupport.Add(usbcSupport.Key + offset, usbcSupport.Value);
             }
             return new ReadOnlyDictionary<uint, StringFeedback>(hdcpSupport);
         }
