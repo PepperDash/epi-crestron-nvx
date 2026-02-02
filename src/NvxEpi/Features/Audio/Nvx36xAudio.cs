@@ -46,7 +46,10 @@ public class Nvx36XAudio : IBasicVolumeWithFeedback
             {
                 case DMInputEventIds.AudioMuteEventId:
                     MuteFeedback.FireUpdate();
-                    break;    
+                    break;   
+                case DMInputEventIds.AudioUnmuteEventId:
+                    MuteFeedback.FireUpdate();
+                    break;   
                 case DMInputEventIds.VolumeEventId:
                     VolumeLevelFeedback.FireUpdate();
                     break;

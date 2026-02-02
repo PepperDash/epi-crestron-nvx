@@ -54,6 +54,9 @@ public class NvxD3XAudio : IBasicVolumeWithFeedback
                 case DMInputEventIds.AudioMuteEventId:
                     MuteFeedback.FireUpdate();
                     break;
+                case DMInputEventIds.AudioUnmuteEventId:
+                    MuteFeedback.FireUpdate();
+                    break;  
                 case DMInputEventIds.VolumeEventId:
                     VolumeLevelFeedback.FireUpdate();
                     break;
