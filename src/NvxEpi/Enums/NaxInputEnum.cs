@@ -16,4 +16,6 @@ public class NaxInputEnum : Enumeration<NaxInputEnum>
     public static readonly NaxInputEnum Hdmi2 = new(2, "Hdmi2");
     public static readonly NaxInputEnum AnalogAudio = new(3, "AnalogAudio");
     public static readonly NaxInputEnum Stream = new(4, "Stream");
+    public static readonly NaxInputEnum Usbc1 = new(11, "Usbc1");
+    public static readonly NaxInputEnum Usbc2 = new(12, "Usbc2");
 }

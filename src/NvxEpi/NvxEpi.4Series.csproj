@@ -11,7 +11,7 @@
     <AssemblyTitle>NvxEpi</AssemblyTitle>
     <Company>PepperDash Technologies</Company>
     <Description>This software is a plugin designed to work as a part of PepperDash Essentials for Crestron control processors. This plugin allows for control Crestron NVX devices.</Description>
-    <Copyright>Copyright 2025</Copyright>
+    <Copyright>Copyright 2026</Copyright>
     <Version>1.0.0-local</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <InformationalVersion>$(Version)</InformationalVersion>
@@ -21,25 +21,20 @@
     <PackageProjectUrl>https://github.com/PepperDash/epi-crestron-nvx</PackageProjectUrl>
     <PackageTags>crestron 4series nvx</PackageTags>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Properties\**" />
     <EmbeddedResource Remove="Properties\**" />
     <None Remove="Properties\**" />
   </ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="PepperDashEssentials" Version="2.24.4">
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</PackageReference>
-	</ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="PepperDashEssentials" Version="2.24.4">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>

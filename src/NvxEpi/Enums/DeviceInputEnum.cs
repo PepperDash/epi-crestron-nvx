@@ -4,7 +4,7 @@ public class DeviceInputEnum : Enumeration<DeviceInputEnum>
 {
     private DeviceInputEnum(int value, string name) : base(value, name)
     {
-        
+
     }
 
     public static readonly DeviceInputEnum Stream = new(0, "Stream");
@@ -15,6 +15,8 @@ public class DeviceInputEnum : Enumeration<DeviceInputEnum>
     public static readonly DeviceInputEnum SecondaryAudio = new(5, "SecondaryAudio");
     public static readonly DeviceInputEnum DanteAudio = new(6, "DanteAudio");
     public static readonly DeviceInputEnum DmNaxAudio = new(7, "DmNaxAudio");
+    public static readonly DeviceInputEnum Usbc1 = new(11, "Usbc1");
+    public static readonly DeviceInputEnum Usbc2 = new(12, "Usbc2");
     public static readonly DeviceInputEnum Automatic = new(98, "Automatic");
     public static readonly DeviceInputEnum NoSwitch = new(99, "NoSwitch");
 }
