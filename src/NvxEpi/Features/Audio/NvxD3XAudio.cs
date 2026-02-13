@@ -1,18 +1,25 @@
-﻿using Crestron.SimplSharp;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
+using Org.BouncyCastle.Asn1.Crmf;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Audio;
 
-public class Nvx36XAudio : IBasicVolumeWithFeedback
+public class NvxD3XAudio : IBasicVolumeWithFeedback
 {
-    private readonly DmNvx36x _device;
+    private readonly DmNvxD3x _device;
     private readonly IKeyed _parent;
+    
+    public IntFeedback VolumeLevelFeedback { get; private set; }
+    public BoolFeedback MuteFeedback { get; private set; }
 
-    public Nvx36XAudio(DmNvx36x device, IKeyed parent)
+    public string Name => _parent is IKeyed keyedParent ? keyedParent.Key : _parent.Key;
+    public string Key => _parent.Key;
+
+    public NvxD3XAudio(DmNvxD3x device, IKeyed parent)
     {
         _device = device;
         _parent = parent;
@@ -33,30 +40,30 @@ public class Nvx36XAudio : IBasicVolumeWithFeedback
         );
 
         _device.OnlineStatusChange += (@base, args) => {  
-            if (args.DeviceOnLine) 
-            {  
-                MuteFeedback.FireUpdate();  
-                VolumeLevelFeedback.FireUpdate();  
-            }
+                if (args.DeviceOnLine) 
+                {  
+                    MuteFeedback.FireUpdate();  
+                    VolumeLevelFeedback.FireUpdate();  
+                }
         };
 
         _device.BaseEvent += (device, args) =>
         {
             switch(args.EventId)
-            {
+            {      
                 case DMInputEventIds.AudioMuteEventId:
                     MuteFeedback.FireUpdate();
-                    break;   
+                    break;
                 case DMInputEventIds.AudioUnmuteEventId:
                     MuteFeedback.FireUpdate();
-                    break;   
+                    break;  
                 case DMInputEventIds.VolumeEventId:
                     VolumeLevelFeedback.FireUpdate();
                     break;
                 default:
                     break;
             }
-        };        
+        };
     }
 
     public static int MapVolume(short level)
@@ -116,10 +123,4 @@ public class Nvx36XAudio : IBasicVolumeWithFeedback
     {
         _device.Control.AudioUnmute();
     }
-
-    public IntFeedback VolumeLevelFeedback { get; private set; }
-    public BoolFeedback MuteFeedback { get; private set; }
-
-    public string Name => _parent is IKeyed keyedParent ? keyedParent.Key : _parent.Key;
-    public string Key => _parent.Key;
 }
