@@ -264,32 +264,6 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
                 }
             });
 
-        foreach (var routingOutputPort in OutputPorts)
-        {
-            var port = routingOutputPort;
-            const int delayTime = 250;
-
-            var timer = new CTimer(
-                o =>
-                {
-                    if (port.InUseTracker.InUseFeedback.BoolValue)
-                        return;
-
-                    this.LogInformation("Port not in use: {portKey}, clearing stream", port.Key);
-                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
-                },
-                Timeout.Infinite
-            );
-
-            port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
-            {
-                if (args.BoolValue)
-                    return;
-
-                timer.Reset(delayTime);
-            };
-        }
-
         return base.CustomActivate();
     }
 
@@ -298,126 +272,126 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
         switch (args.EventId)
         {
             case DMInputEventIds.ServerUrlEventId:
-            {
-                if (device == null)
                 {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Information,
-                        "Device is null",
-                        this
-                    );
+                    if (device == null)
+                    {
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "Device is null",
+                            this
+                        );
 
-                    return;
-                }
+                        return;
+                    }
 
-                var currentUrl = device.Hardware.Control.ServerUrlFeedback.StringValue;
-
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Verbose,
-                    "Received Server URL event {deviceKey};{eventId}:{serverUrl}",
-                    this,
-                    device?.Key,
-                    args.EventId,
-                    currentUrl
-                );
-
-                var existingRoute = CurrentRoutes.FirstOrDefault(
-                    (cr) => (cr.OutputPort.Selector as IKeyed)?.Key == device.Key
-                );
-
-                if (string.IsNullOrEmpty(currentUrl) && existingRoute != null)
-                {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Verbose,
-                        "Removing route {currentRoute}",
-                        this,
-                        existingRoute
-                    );
-
-                    CurrentRoutes.Remove(existingRoute);
-
-                    RouteChanged?.Invoke(this, null);
-                    break;
-                }
-
-                var inputPort = InputPorts.FirstOrDefault(ip =>
-                {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Debug,
-                        "Checking {currentUrl} against {feedbackMatchObject}",
-                        this,
-                        currentUrl,
-                        ip.FeedbackMatchObject
-                    );
-                    return ip.FeedbackMatchObject != null
-                        && ip.FeedbackMatchObject.Equals(currentUrl);
-                });
-
-                if (inputPort == null && existingRoute != null)
-                {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Information,
-                        "No input port found for URL {currentUrl}",
-                        this,
-                        currentUrl
-                    );
+                    var currentUrl = device.Hardware.Control.ServerUrlFeedback.StringValue;
 
                     Debug.LogMessage(
                         Serilog.Events.LogEventLevel.Verbose,
-                        "Removing route {currentRoute}",
+                        "Received Server URL event {deviceKey};{eventId}:{serverUrl}",
                         this,
-                        existingRoute
-                    );
-
-                    CurrentRoutes.Remove(existingRoute);
-
-                    RouteChanged?.Invoke(this, null);
-
-                    break;
-                }
-
-                if (existingRoute != null)
-                {
-                    existingRoute.InputPort = inputPort;
-
-                    RouteChanged?.Invoke(this, existingRoute);
-                    return;
-                }
-
-                if (inputPort == null)
-                {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Information,
-                        "No input port found for URL {currentUrl}",
-                        this,
+                        device?.Key,
+                        args.EventId,
                         currentUrl
                     );
-                    return;
-                }
 
-                var outputPort = OutputPorts.FirstOrDefault(op =>
-                    (op.Selector as IKeyed)?.Key == device.Key
-                );
-
-                if (outputPort == null)
-                {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Information,
-                        "No output port found for {deviceKey}",
-                        this,
-                        device.Key
+                    var existingRoute = CurrentRoutes.FirstOrDefault(
+                        (cr) => (cr.OutputPort.Selector as IKeyed)?.Key == device.Key
                     );
+
+                    if (string.IsNullOrEmpty(currentUrl) && existingRoute != null)
+                    {
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Verbose,
+                            "Removing route {currentRoute}",
+                            this,
+                            existingRoute
+                        );
+
+                        CurrentRoutes.Remove(existingRoute);
+
+                        RouteChanged?.Invoke(this, null);
+                        break;
+                    }
+
+                    var inputPort = InputPorts.FirstOrDefault(ip =>
+                    {
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Debug,
+                            "Checking {currentUrl} against {feedbackMatchObject}",
+                            this,
+                            currentUrl,
+                            ip.FeedbackMatchObject
+                        );
+                        return ip.FeedbackMatchObject != null
+                            && ip.FeedbackMatchObject.Equals(currentUrl);
+                    });
+
+                    if (inputPort == null && existingRoute != null)
+                    {
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "No input port found for URL {currentUrl}",
+                            this,
+                            currentUrl
+                        );
+
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Verbose,
+                            "Removing route {currentRoute}",
+                            this,
+                            existingRoute
+                        );
+
+                        CurrentRoutes.Remove(existingRoute);
+
+                        RouteChanged?.Invoke(this, null);
+
+                        break;
+                    }
+
+                    if (existingRoute != null)
+                    {
+                        existingRoute.InputPort = inputPort;
+
+                        RouteChanged?.Invoke(this, existingRoute);
+                        return;
+                    }
+
+                    if (inputPort == null)
+                    {
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "No input port found for URL {currentUrl}",
+                            this,
+                            currentUrl
+                        );
+                        return;
+                    }
+
+                    var outputPort = OutputPorts.FirstOrDefault(op =>
+                        (op.Selector as IKeyed)?.Key == device.Key
+                    );
+
+                    if (outputPort == null)
+                    {
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "No output port found for {deviceKey}",
+                            this,
+                            device.Key
+                        );
+                        break;
+                    }
+
+                    var route = new RouteSwitchDescriptor(outputPort, inputPort);
+
+                    CurrentRoutes.Add(route);
+
+                    RouteChanged?.Invoke(this, route);
+
                     break;
                 }
-
-                var route = new RouteSwitchDescriptor(outputPort, inputPort);
-
-                CurrentRoutes.Add(route);
-
-                RouteChanged?.Invoke(this, route);
-
-                break;
-            }
         }
     }
 
