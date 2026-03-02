@@ -106,31 +106,6 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
                 OutputPorts.Add(output);
             });
 
-        foreach (var routingOutputPort in OutputPorts)
-        {
-            var port = routingOutputPort;
-            const int delayTime = 250;
-
-            var timer = new CTimer(
-                o =>
-                {
-                    if (port.InUseTracker.InUseFeedback.BoolValue)
-                        return;
-
-                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.Audio);
-                },
-                Timeout.Infinite
-            );
-
-            port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
-            {
-                if (args.BoolValue)
-                    return;
-
-                timer.Reset(delayTime);
-            };
-        }
-
         return base.CustomActivate();
     }
 
@@ -139,65 +114,65 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
         switch (args.EventId)
         {
             case DMInputEventIds.DmNaxAudioSourceFeedbackEventId:
-            {
-                var currentUrl = device
-                    .Hardware
-                    .DmNaxRouting
-                    .DmNaxReceive
-                    .MulticastAddressFeedback
-                    .StringValue;
-
-                this.LogVerbose(
-                    "Received server URL event {eventId}:{serverUrl}",
-                    args.EventId,
-                    currentUrl
-                );
-
-                if (string.IsNullOrEmpty(currentUrl))
                 {
-                    var index = CurrentRoutes.FindIndex(
-                        (r) => r.OutputPort.ParentDevice.Key == device.Key
+                    var currentUrl = device
+                        .Hardware
+                        .DmNaxRouting
+                        .DmNaxReceive
+                        .MulticastAddressFeedback
+                        .StringValue;
+
+                    this.LogVerbose(
+                        "Received server URL event {eventId}:{serverUrl}",
+                        args.EventId,
+                        currentUrl
                     );
 
-                    if (index < 0)
+                    if (string.IsNullOrEmpty(currentUrl))
                     {
-                        return;
+                        var index = CurrentRoutes.FindIndex(
+                            (r) => r.OutputPort.ParentDevice.Key == device.Key
+                        );
+
+                        if (index < 0)
+                        {
+                            return;
+                        }
+
+                        CurrentRoutes.RemoveAt(index);
+
+                        RouteChanged?.Invoke(this, null);
+                        break;
                     }
 
-                    CurrentRoutes.RemoveAt(index);
+                    var inputPort = InputPorts.FirstOrDefault(ip =>
+                        ip.FeedbackMatchObject.Equals(currentUrl)
+                    );
 
-                    RouteChanged?.Invoke(this, null);
+                    if (inputPort == null)
+                    {
+                        this.LogInformation("No input port found for URL {currentUrl}", currentUrl);
+                        break;
+                    }
+
+                    var outputPort = OutputPorts.FirstOrDefault(op =>
+                        op.ParentDevice.Key == device.Key
+                    );
+
+                    if (outputPort == null)
+                    {
+                        this.LogInformation("No output port found for {deviceKey}", device.Key);
+                        break;
+                    }
+
+                    var route = new RouteSwitchDescriptor(outputPort, inputPort);
+
+                    CurrentRoutes.Add(route);
+
+                    RouteChanged?.Invoke(this, route);
+
                     break;
                 }
-
-                var inputPort = InputPorts.FirstOrDefault(ip =>
-                    ip.FeedbackMatchObject.Equals(currentUrl)
-                );
-
-                if (inputPort == null)
-                {
-                    this.LogInformation("No input port found for URL {currentUrl}", currentUrl);
-                    break;
-                }
-
-                var outputPort = OutputPorts.FirstOrDefault(op =>
-                    op.ParentDevice.Key == device.Key
-                );
-
-                if (outputPort == null)
-                {
-                    this.LogInformation("No output port found for {deviceKey}", device.Key);
-                    break;
-                }
-
-                var route = new RouteSwitchDescriptor(outputPort, inputPort);
-
-                CurrentRoutes.Add(route);
-
-                RouteChanged?.Invoke(this, route);
-
-                break;
-            }
         }
     }
 
