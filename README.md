@@ -6,9 +6,8 @@ The NVX plugin endeavors to provide device control and routing over Crestron NVX
 
 The NVX plugin current requires Essentials 2.7.4 or later.
 
-### __IMPORTANT:__
-
-The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
+> [!IMPORTANT]
+> The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
 
 ## Join Map
 
@@ -107,3 +106,81 @@ will throw an exception.  Many default values are set based on this property.  A
 TX-1 to RX-1, you would send a value of 1 to the Video Source input of RX-1.
 5. Multicast Video Address = Sets the local multicast Video address that a transmitter will attempt to stream to.  This address __must__ have an even number as the last Octet and is recommended to fall within a locally scoped mulitcast address range. Recommended reading : [http://www.tcpipguide.com/free/t_IPMulticastAddressing.htm]
 6. Multicast Audio Address = Sets the local multicast Audio address that a transmitter will attempt to stream the secondary audio to.  In most cases set this to be +1 of the Multicast Video address.
+
+## Feature Requests
+
+## NVX Router
+
+When using the `nvxRouter` the following `nvxRoutingPort` types are available.
+
+```
+stream
+hdmi1
+hdmi2
+analogAudio
+primaryAudio
+secondaryAudio
+danteAudio
+dmNaxAudio
+automatic
+noSwitch
+```
+
+### NVX Router Config Example
+
+```json
+{
+    "key": "NvxRouter",
+    "name": "NvxRouter",
+    "type": "dynNvx",
+    "group": "nvx",
+    "properties": {
+        "transmitters": {
+            "1"  : { "deviceKey": "nvxTx1" , "videoName": "Input 1" , "nvxRoutingPort": "hdmi1" },
+            "2"  : { "deviceKey": "nvxTx2" , "videoName": "Input 2" , "nvxRoutingPort": "hdmi1" },
+            "3"  : { "deviceKey": "nvxTx3" , "videoName": "Input 3" , "nvxRoutingPort": "hdmi1" },
+            "4"  : { "deviceKey": "nvxTx4" , "videoName": "Input 4" , "nvxRoutingPort": "hdmi1" }
+        },
+        "receivers": {
+            "1"  : { "deviceKey": "nvxRx1" , "videoName": "Output 1"      },
+            "2"  : { "deviceKey": "nvxRx2" , "videoName": "Output 2"      },
+            "3"  : { "deviceKey": "nvxRx3" , "videoName": "Output 3"      },
+            "4"  : { "deviceKey": "nvxRx4" , "videoName": "Output 4"      }
+        },
+        "audioTransmitters": {
+            "1" : { "deviceKey": "nvxTx1" , "audioName": "Input 1" , "nvxRoutingPort": "hdmi1"       },
+            "2" : { "deviceKey": "nvxTx2" , "audioName": "Input 2" , "nvxRoutingPort": "hdmi1"       },
+            "3" : { "deviceKey": "nvxTx3" , "audioName": "Input 3" , "nvxRoutingPort": "hdmi1"       },
+            "4" : { "deviceKey": "nvxTx4" , "audioName": "Input 4" , "nvxRoutingPort": "analogAudio" }
+        },
+        "audioReceivers": {
+            "1"  : { "deviceKey": "nvxTx1" , "audioName": "Output 1"  },
+            "2"  : { "deviceKey": "nvxTx2" , "audioName": "Output 2"  },
+            "3"  : { "deviceKey": "nvxTx3" , "audioName": "Output 3"  },
+            "4"  : { "deviceKey": "nvxTx4" , "audioName": "Output 4"  }
+        }
+    }
+}
+```
+
+## USB Routing
+
+- Local = `PC`
+- Remote = `Keyboard/Mouse`
+
+### NVX Plugin Device ID Offsets (when bridged)
+
+- Encoder-to-Decoder: `0 + deviceId`
+- Decoder-to-Decoder: `1000 + deviceId`
+
+### NVX TX USB Configuration Object
+
+```json
+"usb": { "mode": "{local OR remote}", "followVideo": false, "isLayer3": false}
+```
+
+### NVX RX USB Configuration Object
+
+```json
+"usb": { "mode": "{local OR remote}", "followVideo": false, "isLayer3": false }
+```
