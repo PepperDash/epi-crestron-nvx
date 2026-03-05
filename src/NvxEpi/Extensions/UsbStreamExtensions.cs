@@ -379,8 +379,7 @@ public static class UsbStreamExt
             var currentLocal = device.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
 
             device.LogInformation(
-                "Found remote device {0} to clear USB route for remote ID {1}",
-                remote.EndpointName,
+                "Found remote device to clear USB route for remote ID {0}",
                 currentRemoteId
             );
 
@@ -394,9 +393,8 @@ public static class UsbStreamExt
                     UsbStreamExt.ClearUsbValue;
 
                 device.LogInformation(
-                    "Cleared USB route for local ID {0} on remote device {1}",
-                    currentLocal,
-                    remote.EndpointName
+                    "Cleared USB route for local ID {0}",
+                    currentLocal
                 );
             }
             else
