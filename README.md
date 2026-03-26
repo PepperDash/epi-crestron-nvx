@@ -130,7 +130,7 @@ noSwitch
 
 ```json
 {
-    "key": "NvxRouter",
+    "key": "nvx-router",
     "name": "NvxRouter",
     "type": "dynNvx",
     "group": "nvx",
