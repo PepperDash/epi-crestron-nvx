@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NvxEpi.Devices;
 using NvxEpi.Features.Config;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -28,9 +30,23 @@ public class Nvx36XDeviceFactory : NvxBaseDeviceFactory<Nvx36X>
         TypeNames = _typeNames.ToList();
     }
 
+    private static readonly string[] _usbUnsupportedTypes = { "dmnvxe760", "dmnvxe760c" };
+
+    private static void WarnIfUsbConfiguredOnUnsupportedDevice(DeviceConfig dc, NvxDeviceProperties props)
+    {
+        if (props.Usb == null)
+            return;
+
+        var isUnsupported = Array.Exists(_usbUnsupportedTypes, t => t.Equals(dc.Type, StringComparison.OrdinalIgnoreCase));
+
+        if (isUnsupported)
+            Debug.LogError("Device '{key}' of type '{type}' does not support USB, but USB is configured in config. USB configuration will be ignored.", dc.Key, dc.Type);
+    }
+
     public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
         var props = NvxDeviceProperties.FromDeviceConfig(dc);
+        WarnIfUsbConfiguredOnUnsupportedDevice(dc, props);
         var deviceBuild = GetDeviceBuildAction(dc.Type, props);
         return new Nvx36X(dc, deviceBuild, props.DeviceIsTransmitter());
     }
