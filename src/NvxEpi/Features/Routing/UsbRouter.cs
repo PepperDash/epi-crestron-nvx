@@ -240,11 +240,6 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
                 continue;
             }
 
-            if (device.Hardware.UsbInput == null)
-            {
-                continue;
-            }
-
             // getting current local device for this remote when it changes and setting the feedback match object for this input port to that value
 
             device.Hardware.UsbInput.UsbInputChange += (o, a) =>
@@ -281,12 +276,12 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         // Remote devices in NVX world are the USB peripherals like keyboards or touchscreen
         var usbRemoteDevices = DeviceManager
             .AllDevices.OfType<IUsbStreamWithHardware>()
-            .Where(usb => usb.IsRemote);
+            .Where(usb => usb.IsRemote && usb.Hardware.UsbInput != null);
 
         // Local devices in NVX world are the USB Hosts like a PC
         var usbLocalDevices = DeviceManager
             .AllDevices.OfType<IUsbStreamWithHardware>()
-            .Where(usb => !usb.IsRemote);
+            .Where(usb => !usb.IsRemote && usb.Hardware.UsbInput != null);
 
         // A local device can have multiple remote devices, but a remote device can only have one local device.
         // remote devices will be treated as Outputs and local devices as Inputs to mimic traditional video routing behavior.
@@ -303,11 +298,6 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             this.LogDebug("Adding USB Output Port: {portKey}", outputPort.Key);
             OutputPorts.Add(outputPort);
-
-            if (remoteDevice.Hardware.UsbInput == null)
-            {
-                continue;
-            }
 
             remoteDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>
             {
@@ -378,11 +368,6 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             this.LogDebug("Adding USB Input Port: {portKey}", inputPort.Key);
             InputPorts.Add(inputPort);
-
-            if (localDevice.Hardware.UsbInput == null)
-            {
-                continue;
-            }
 
             localDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>
             {
