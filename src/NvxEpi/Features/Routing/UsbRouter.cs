@@ -240,6 +240,12 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
                 continue;
             }
 
+            if (device.Hardware.UsbInput == null)
+            {
+                this.LogError("Device {deviceKey} does not support USB - skipping feedback subscription", device.Key);
+                continue;
+            }
+
             // getting current local device for this remote when it changes and setting the feedback match object for this input port to that value
 
             device.Hardware.UsbInput.UsbInputChange += (o, a) =>
@@ -298,6 +304,12 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             this.LogDebug("Adding USB Output Port: {portKey}", outputPort.Key);
             OutputPorts.Add(outputPort);
+
+            if (remoteDevice.Hardware.UsbInput == null)
+            {
+                this.LogError("Device {deviceKey} does not support USB - skipping event subscription", remoteDevice.Key);
+                continue;
+            }
 
             remoteDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>
             {
@@ -368,6 +380,12 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             this.LogDebug("Adding USB Input Port: {portKey}", inputPort.Key);
             InputPorts.Add(inputPort);
+
+            if (localDevice.Hardware.UsbInput == null)
+            {
+                this.LogError("Device {deviceKey} does not support USB - skipping event subscription", localDevice.Key);
+                continue;
+            }
 
             localDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>
             {
