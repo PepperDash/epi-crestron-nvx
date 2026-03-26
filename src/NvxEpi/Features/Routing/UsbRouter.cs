@@ -242,7 +242,6 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             if (device.Hardware.UsbInput == null)
             {
-                this.LogError("Device {deviceKey} does not support USB - skipping feedback subscription", device.Key);
                 continue;
             }
 
@@ -307,7 +306,6 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             if (remoteDevice.Hardware.UsbInput == null)
             {
-                this.LogError("Device {deviceKey} does not support USB - skipping event subscription", remoteDevice.Key);
                 continue;
             }
 
@@ -383,7 +381,6 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             if (localDevice.Hardware.UsbInput == null)
             {
-                this.LogError("Device {deviceKey} does not support USB - skipping event subscription", localDevice.Key);
                 continue;
             }
 
