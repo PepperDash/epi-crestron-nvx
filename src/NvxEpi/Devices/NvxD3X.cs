@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Features.Hdmi.Output;
 using NvxEpi.Services.Bridge;
 using NvxEpi.Services.InputPorts;
 using NvxEpi.Services.InputSwitching;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
@@ -57,6 +60,19 @@ public class NvxD3X :
 
             RouteChanged?.Invoke(this, newRoute);
         };
+
+        var inputPort = InputPorts.FirstOrDefault(p => p.Key == DeviceInputEnum.Stream.Name);
+
+        var outputPort = OutputPorts.FirstOrDefault(p => p.Key == SwitcherForHdmiOutput.Key);
+
+        if (inputPort == null || outputPort == null)
+        {
+            this.LogWarning("Unable to find input or output port for initial route. Input Port: {inputPort} Output Port: {outputPort}", inputPort, outputPort);
+            return result;
+        }
+
+        var currentRoute = new RouteSwitchDescriptor(outputPort, inputPort);
+        CurrentRoutes.Add(currentRoute);
 
         return result;
     }
@@ -124,7 +140,7 @@ public class NvxD3X :
 
             if (inputSelector is null)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Device is DmNvxD30. 'None' input not available", this);
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Device is DmNvxD3x. 'None' input not available", this);
                 return;
             }
 
