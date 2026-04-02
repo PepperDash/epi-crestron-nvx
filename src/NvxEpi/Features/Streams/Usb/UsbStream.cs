@@ -67,6 +67,7 @@ public class UsbStream : IUsbStreamWithHardware
     private readonly ReadOnlyDictionary<uint, StringFeedback> _usbRemoteIds;
     private readonly bool _isRemote;
     private readonly string _defaultPair;
+    private bool hasSubscribed;
 
     private UsbStream(
         INvxDeviceWithHardware device,
@@ -118,22 +119,21 @@ public class UsbStream : IUsbStreamWithHardware
 
             if (!string.IsNullOrEmpty(_defaultPair) && IsRemote)
             {
-                var local = DeviceManager.GetDeviceForKey(_defaultPair) as IUsbStreamWithHardware;
-                if (local != null) 
+                if (DeviceManager.GetDeviceForKey(_defaultPair) is not IUsbStreamWithHardware local)
                 {
                     return;
                 }
 
-                local.IsOnline.OutputChange -= LocalIsOnlineOutputChange;
+                if (!hasSubscribed)
+                {
+                    local.IsOnline.OutputChange += LocalIsOnlineOutputChange;
+                    hasSubscribed = true;
+                }
+
                 if (local.IsOnline.BoolValue)
                 {
                     this.LogInformation("Pairing default USB to {defaultPair}", _defaultPair);
                     SetDefaultStream(IsRemote, _defaultPair);
-                }
-                else
-                {
-                    this.LogInformation("Default pair {defaultPair} is not online, waiting for online status to set default stream", _defaultPair);
-                    local.IsOnline.OutputChange += LocalIsOnlineOutputChange;
                 }
             }
         };
