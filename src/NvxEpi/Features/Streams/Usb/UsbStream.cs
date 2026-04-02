@@ -128,7 +128,7 @@ public class UsbStream : IUsbStreamWithHardware
                 if (local.IsOnline.BoolValue)
                 {
                     this.LogInformation("Pairing default USB to {defaultPair}", _defaultPair);
-                    SetDefaultStream(local.IsRemote, _defaultPair);
+                    SetDefaultStream(IsRemote, _defaultPair);
                 }
                 else
                 {
