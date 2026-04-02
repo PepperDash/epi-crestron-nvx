@@ -36,6 +36,13 @@ public static class UsbStreamExt
 
             var localId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
 
+            remote.LogDebug(
+                "Attempting to pair remote device {remoteKey} with local device {localKey} (local ID: {localId})",
+                remote.Key,
+                local.Key,
+                localId
+            );
+
             if (local.Hardware.UsbInput.MultipleUsbDeviceEnabledFeedback.BoolValue)
             {
                 var remoteIds = local
@@ -44,7 +51,7 @@ public static class UsbStreamExt
 
                 if (remoteIds.Contains(localId))
                 {
-                    local.LogInformation(
+                    local.LogDebug(
                         "Local device {remoteKey} already has local ID {localId}",
                         remote.Key,
                         localId
@@ -55,7 +62,7 @@ public static class UsbStreamExt
                     var firstEmptyIndex = remoteIds.FindIndex(x => x == ClearUsbValue);
                     if (firstEmptyIndex >= 0)
                     {
-                        local.LogInformation(
+                        local.LogDebug(
                             "Adding local device {localKey} to remote device {remoteKey} at index {index}",
                             local.Key,
                             remote.Key,
@@ -72,7 +79,7 @@ public static class UsbStreamExt
             }
             else
             {
-                local.LogInformation(
+                local.LogDebug(
                     "Setting remote device {remoteKey} RemoteDeviceId to local ID {localId}",
                     remote.Key,
                     localId
