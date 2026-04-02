@@ -66,6 +66,8 @@ public class UsbStream : IUsbStreamWithHardware
     private readonly StringFeedback _usbLocalId;
     private readonly ReadOnlyDictionary<uint, StringFeedback> _usbRemoteIds;
     private readonly bool _isRemote;
+    private readonly string _defaultPair;
+    private bool hasSubscribed;
 
     private UsbStream(
         INvxDeviceWithHardware device,
@@ -79,6 +81,7 @@ public class UsbStream : IUsbStreamWithHardware
         _isRemote = isRemote;
         _usbLocalId = UsbLocalAddressFeedback.GetFeedback(device.Hardware);
         _usbRemoteIds = UsbRemoteAddressFeedback.GetFeedbacks(device.Hardware);
+        _defaultPair = defaultPair ?? string.Empty;
 
         device.Feedbacks.AddRange(
             new Feedback[]
@@ -93,24 +96,46 @@ public class UsbStream : IUsbStreamWithHardware
         );
 
         foreach (var item in _usbRemoteIds.Values)
+        {
             _device.Feedbacks.Add(item);
+        }
 
         Hardware.OnlineStatusChange += (currentDevice, args) =>
         {
             if (!args.DeviceOnLine || Hardware.UsbInput == null)
+            {
                 return;
+            }
 
             Hardware.UsbInput.AutomaticUsbPairingEnabled();
+
             Hardware.UsbInput.Mode = IsRemote
                 ? DmNvxUsbInput.eUsbMode.Remote
                 : DmNvxUsbInput.eUsbMode.Local;
+
             Hardware.UsbInput.TransportMode = isLayer3
                 ? DmNvxUsbInput.eUsbTransportMode.Layer3
                 : DmNvxUsbInput.eUsbTransportMode.Layer2;
-            if (!followStream || IsTransmitter)
-                return;
 
-            SetDefaultStream(isRemote, defaultPair);
+            if (!string.IsNullOrEmpty(_defaultPair) && IsRemote)
+            {
+                if (DeviceManager.GetDeviceForKey(_defaultPair) is not IUsbStreamWithHardware local)
+                {
+                    return;
+                }
+
+                if (!hasSubscribed)
+                {
+                    local.IsOnline.OutputChange += LocalIsOnlineOutputChange;
+                    hasSubscribed = true;
+                }
+
+                if (local.IsOnline.BoolValue)
+                {
+                    this.LogInformation("Pairing default USB to {defaultPair}", _defaultPair);
+                    SetDefaultStream(IsRemote, _defaultPair);
+                }
+            }
         };
 
         if (Hardware.UsbInput == null)
@@ -121,19 +146,6 @@ public class UsbStream : IUsbStreamWithHardware
         Hardware.UsbInput.UsbInputChange += UsbInput_UsbInputChange;
 
         Hardware.UsbInput.AutomaticUsbPairingEnabled();
-
-        Hardware.OnlineStatusChange += (currentDevice, args) =>
-        {
-            if (!args.DeviceOnLine || Hardware.UsbInput == null)
-            {
-                return;
-            }
-
-            foreach (var sig in Hardware.UsbInput.RemoteDeviceIds.Values)
-            {
-                sig.StringValue = UsbStreamExt.ClearUsbValue;
-            }
-        };
 
         if (!followStream || IsTransmitter)
         {
@@ -147,6 +159,15 @@ public class UsbStream : IUsbStreamWithHardware
         }
 
         stream.StreamUrl.OutputChange += (sender, args) => FollowCurrentRoute(args.StringValue);
+    }
+
+    private void LocalIsOnlineOutputChange(object sender, FeedbackEventArgs e)
+    {
+        if (e.BoolValue)
+        {
+            this.LogInformation("Pairing default USB to {defaultPair}", _defaultPair);
+            SetDefaultStream(IsRemote, _defaultPair);
+        }
     }
 
     void UsbInput_UsbInputChange(
