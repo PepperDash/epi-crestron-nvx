@@ -1,5 +1,4 @@
 ﻿using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
@@ -7,23 +6,23 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Audio;
 
-public class Nvx36XAudio : IBasicVolumeWithFeedback
+public class Nvx38XAudio : IBasicVolumeWithFeedback
 {
-    private readonly DmNvx36x _device;
+    private readonly DmNvx38x _device;
     private readonly IKeyed _parent;
 
-    public Nvx36XAudio(DmNvx36x device, IKeyed parent)
+    public Nvx38XAudio(DmNvx38x device, IKeyed parent)
     {
         _device = device;
         _parent = parent;
 
         MuteFeedback = new BoolFeedback(
-            "MuteFeedback",
+            "Muted",
             () => _device.Control.AudioMutedFeedback.BoolValue
         );
 
         VolumeLevelFeedback = new IntFeedback(
-            "VolumeLevelFeedback",
+            "Volume",
             () =>
             {
                 var volume = _device.Control.AnalogAudioOutputVolumeFeedback.ShortValue;
@@ -32,31 +31,11 @@ public class Nvx36XAudio : IBasicVolumeWithFeedback
             }
         );
 
-        _device.OnlineStatusChange += (@base, args) => {  
-            if (args.DeviceOnLine) 
-            {  
-                MuteFeedback.FireUpdate();  
-                VolumeLevelFeedback.FireUpdate();  
-            }
-        };
+        _device.OnlineStatusChange += (@base, args) => MuteFeedback.FireUpdate();
+        _device.OnlineStatusChange += (@base, args) => VolumeLevelFeedback.FireUpdate();
 
-        _device.BaseEvent += (device, args) =>
-        {
-            switch(args.EventId)
-            {
-                case DMInputEventIds.AudioMuteEventId:
-                    MuteFeedback.FireUpdate();
-                    break;   
-                case DMInputEventIds.AudioUnmuteEventId:
-                    MuteFeedback.FireUpdate();
-                    break;   
-                case DMInputEventIds.VolumeEventId:
-                    VolumeLevelFeedback.FireUpdate();
-                    break;
-                default:
-                    break;
-            }
-        };        
+        _device.BaseEvent += (@base, args) => MuteFeedback.FireUpdate();
+        _device.BaseEvent += (@base, args) => VolumeLevelFeedback.FireUpdate();
     }
 
     public static int MapVolume(short level)

@@ -2,6 +2,7 @@
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Services.Utilities;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
@@ -9,28 +10,41 @@ namespace NvxEpi.Features.Routing;
 
 public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 {
-    public UsbRouter(string key) : base(key)
+    public UsbRouter(string key)
+        : base(key)
     {
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
         OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
-        AddPostActivationAction(AddFeedbackMatchObjects);
         AddPostActivationAction(AddRoutingPorts);
+        AddPostActivationAction(AddFeedbackMatchObjects);
     }
 
     public event RouteChangedEventHandler RouteChanged;
 
-
     #region IRouting Members
 
-    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+    public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
     {
-        if (!signalType.HasFlag(eRoutingSignalType.UsbInput) &&
-            !signalType.HasFlag(eRoutingSignalType.UsbOutput))
+        if (
+            !signalType.Has(eRoutingSignalType.UsbInput)
+            && !signalType.Has(eRoutingSignalType.UsbOutput)
+        )
         {
-            this.LogError("Invalid signal type for USB routing: {0}", signalType);
+            this.LogDebug("Skipping switch with signal type {signalType}", signalType);
             return;
         }
+
+        this.LogInformation(
+            "*** Executing switch: {inputSelector} to {outputSelector} with signal type {signalType} ***",
+            inputSelector,
+            outputSelector,
+            signalType
+        );
 
         var localDevice = inputSelector as IUsbStreamWithHardware;
 
@@ -71,14 +85,52 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
             return;
         }
 
-        ExecuteSwitch(inputPort?.Selector ?? null, outputPort.Selector, eRoutingSignalType.UsbInput);
+        ExecuteSwitch(
+            inputPort?.Selector ?? null,
+            outputPort.Selector,
+            eRoutingSignalType.UsbInput
+        );
     }
 
     private void UpdateCurrentRoutes(IUsbStreamWithHardware local, IUsbStreamWithHardware remote)
     {
+        this.LogDebug(
+            "Updating current routes for USB Router: {local} -> {remote}",
+            local?.Key ?? "null",
+            remote?.Key ?? "null"
+        );
         RouteSwitchDescriptor descriptor;
 
+        if (local == null && remote == null)
+        {
+            this.LogDebug("Both local and remote devices are null. Clearing all current routes.");
+            CurrentRoutes.Clear();
+            RouteChanged?.Invoke(this, null);
+            return;
+        }
+
+        if (local != null && remote == null)
+        {
+            this.LogDebug(
+                "Remote device is null. Clearing route for local device {local}",
+                local.Key
+            );
+            descriptor = GetRouteDescriptorByInputPort(local);
+
+            if (descriptor != null)
+            {
+                CurrentRoutes.Remove(descriptor);
+                RouteChanged?.Invoke(this, descriptor);
+            }
+            return;
+        }
+
         descriptor = GetRouteDescriptorByOutputPort(remote);
+
+        this.LogDebug(
+            "Found existing route descriptor: [{descriptor}]",
+            descriptor?.ToString() ?? "null"
+        );
 
         var inputPort = GetRoutingInputPortForSelector(local);
 
@@ -101,6 +153,8 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
             descriptor.InputPort = inputPort;
         }
 
+        this.LogDebug("Updated route descriptor: [{descriptor}]", descriptor?.ToString());
+
         RouteChanged?.Invoke(this, descriptor);
     }
 
@@ -117,9 +171,23 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         });
     }
 
+    private RouteSwitchDescriptor GetRouteDescriptorByInputPort(IUsbStreamWithHardware tx)
+    {
+        return CurrentRoutes.FirstOrDefault(rd =>
+        {
+            if (rd.InputPort.Selector is not IUsbStreamWithHardware selector)
+            {
+                return false;
+            }
+
+            return selector.Key == tx.Key;
+        });
+    }
+
     private RoutingInputPort GetRoutingInputPortForSelector(IUsbStreamWithHardware tx)
     {
-        if (tx == null) return null;
+        if (tx == null)
+            return null;
 
         return InputPorts.FirstOrDefault(ip =>
         {
@@ -134,7 +202,8 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
     private RoutingOutputPort GetRoutingOutputPortForSelector(IUsbStreamWithHardware rx)
     {
-        if (rx == null) return null;
+        if (rx == null)
+            return null;
 
         return OutputPorts.FirstOrDefault(ip =>
         {
@@ -145,7 +214,6 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             return selector.Key == rx.Key;
         });
-
     }
 
     private void AddFeedbackMatchObjects()
@@ -155,19 +223,20 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         // For now, we will just log that this method has been called.
         this.LogDebug("Adding feedback match objects for USB Router");
 
-        var ports = InputPorts.OfType<RoutingInputPort>();
+        var ports = InputPorts.Where(ip => ip.Selector is IUsbStreamWithHardware);
+
+        this.LogDebug("{count} input ports found", ports.Count());
 
         foreach (var port in ports)
         {
             if (port.Selector is not IUsbStreamWithHardware device)
             {
-                this.LogError("Input port {portKey} does not have a valid USB device selector.", port.Key);
                 continue;
             }
 
-            if (!device.IsRemote)
+            if (device.IsRemote)
             {
-                this.LogInformation("Skipping remote device {deviceKey}", device.Key);
+                this.LogDebug("Skipping remote device {deviceKey}", device.Key);
                 continue;
             }
 
@@ -175,25 +244,43 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
             device.Hardware.UsbInput.UsbInputChange += (o, a) =>
             {
-                if (a.EventId != UsbInputEventIds.PairedEventId)
+                if (a.EventId != UsbInputEventIds.LocalDeviceIdFeedbackEventId)
                 {
                     return;
                 }
 
-                port.FeedbackMatchObject = device.Hardware.UsbInput.RemoteDeviceIdFeedback.StringValue;
+                this.LogDebug(
+                    "Updating USB Feedback match object for {portKey} to {localId}",
+                    port.Key,
+                    device.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue
+                );
+                port.FeedbackMatchObject = device
+                    .Hardware
+                    .UsbInput
+                    .LocalDeviceIdFeedback
+                    .StringValue;
             };
 
-            port.FeedbackMatchObject = device.Hardware.UsbInput.RemoteDeviceIdFeedback.StringValue;
+            this.LogDebug(
+                "Updating USB Feedback match object for {portKey} to {localId}",
+                port.Key,
+                device.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue
+            );
+            port.FeedbackMatchObject = device.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
         }
     }
 
     private void AddRoutingPorts()
     {
-        // Local devices in NVX world are the USB peripherals like keyboards or touchscreen
-        var usbRemoteDevices = DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>().Where(usb => usb.IsRemote);
+        this.LogDebug("Adding routing ports for USB Router");
+        // Remote devices in NVX world are the USB peripherals like keyboards or touchscreen
+        var usbRemoteDevices = DeviceManager
+            .AllDevices.OfType<IUsbStreamWithHardware>()
+            .Where(usb => usb.IsRemote);
 
-        // Remote devices in NVX world are the USB Hosts like a PC 
-        var usbLocalDevices = DeviceManager.AllDevices.OfType<IUsbStreamWithHardware>()
+        // Local devices in NVX world are the USB Hosts like a PC
+        var usbLocalDevices = DeviceManager
+            .AllDevices.OfType<IUsbStreamWithHardware>()
             .Where(usb => !usb.IsRemote);
 
         // A local device can have multiple remote devices, but a remote device can only have one local device.
@@ -201,45 +288,158 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
         foreach (var remoteDevice in usbRemoteDevices)
         {
-            var outputPort = new RoutingOutputPort($"{remoteDevice.Key}-UsbRemote", eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput, eRoutingPortConnectionType.UsbC, remoteDevice, this);
+            var outputPort = new RoutingOutputPort(
+                $"{remoteDevice.Key}-UsbRemote",
+                eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput,
+                eRoutingPortConnectionType.UsbC,
+                remoteDevice,
+                this
+            );
+
+            this.LogDebug("Adding USB Output Port: {portKey}", outputPort.Key);
             OutputPorts.Add(outputPort);
+
+            remoteDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>
+            {
+                if (
+                    a.EventId != UsbInputEventIds.PairedEventId
+                    && a.EventId != UsbInputEventIds.RemoteDeviceIdFeedbackEventId
+                )
+                {
+                    return;
+                }
+
+                if (a.EventId == UsbInputEventIds.RemoteDeviceIdFeedbackEventId && a.Index > 1)
+                {
+                    // only care about index 1 which is the active remote device id
+                    this.LogDebug(
+                        "Ignoring RemoteDeviceIdFeedbackEventId with index {index} for {deviceKey}",
+                        a.Index,
+                        remoteDevice.Key
+                    );
+                    return;
+                }
+
+                var paired = remoteDevice.Hardware.UsbInput.PairFeedback[1].BoolValue;
+
+                // currently only one local device can be paired to a remote device
+                this.LogDebug(
+                    "USB Route change detected for {deviceKey} - {paired}",
+                    remoteDevice.Key,
+                    paired ? "paired" : "unpaired"
+                );
+
+                var localDeviceId = remoteDevice
+                    .Hardware
+                    .UsbInput
+                    .RemoteDeviceIdFeedbacks[1]
+                    .StringValue;
+
+                this.LogDebug(
+                    "Remote device {deviceKey} paired to local device ID: {localId}",
+                    remoteDevice.Key,
+                    localDeviceId
+                );
+
+                var localDevice = usbLocalDevices.FirstOrDefault(d =>
+                    d.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue == localDeviceId
+                );
+
+                this.LogDebug(
+                    "Found local device for pairing: {localDeviceKey}",
+                    localDevice?.Key ?? "null"
+                );
+
+                var localForRoute = paired ? localDevice : null;
+
+                UpdateCurrentRoutes(localForRoute, remoteDevice);
+            };
         }
 
         foreach (var localDevice in usbLocalDevices)
         {
-            var inputPort = new RoutingInputPort($"{localDevice.Key}-UsbLocal", eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput, eRoutingPortConnectionType.UsbC, localDevice, this);
+            var inputPort = new RoutingInputPort(
+                $"{localDevice.Key}-UsbLocal",
+                eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput,
+                eRoutingPortConnectionType.UsbC,
+                localDevice,
+                this
+            );
+
+            this.LogDebug("Adding USB Input Port: {portKey}", inputPort.Key);
             InputPorts.Add(inputPort);
+
+            localDevice.Hardware.UsbInput.UsbInputChange += (o, a) =>
+            {
+                if (
+                    a.EventId != UsbInputEventIds.PairedEventId
+                    && a.EventId != UsbInputEventIds.RemoteDeviceIdFeedbackEventId
+                )
+                {
+                    return;
+                }
+
+                if (a.EventId == UsbInputEventIds.RemoteDeviceIdFeedbackEventId && a.Index > 1)
+                {
+                    // only care about index 1 which is the active remote device id
+                    this.LogDebug(
+                        "Ignoring RemoteDeviceIdFeedbackEventId with index {index} for {deviceKey}",
+                        a.Index,
+                        localDevice.Key
+                    );
+                    return;
+                }
+
+                var paired = localDevice.Hardware.UsbInput.PairFeedback[1].BoolValue;
+
+                this.LogDebug(
+                    "USB Route change detected for {deviceKey} - {paired}",
+                    localDevice.Key,
+                    paired ? "paired" : "unpaired"
+                );
+
+                var remoteDeviceId = localDevice
+                    .Hardware
+                    .UsbInput
+                    .RemoteDeviceIdFeedbacks[1]
+                    .StringValue;
+
+                this.LogDebug(
+                    "Local device {deviceKey} paired to remote device ID: {remoteId}",
+                    localDevice.Key,
+                    remoteDeviceId
+                );
+
+                // var remoteDevice = usbRemoteDevices.FirstOrDefault(d => d.UsbLocalId.StringValue == remoteDeviceId);
+
+                // this.LogDebug("Found remote device for pairing: {remoteDeviceKey}", remoteDevice?.Key ?? "null");
+
+                // var remoteForRoute = paired ? remoteDevice : null;
+                // UpdateCurrentRoutes(localDevice, remoteForRoute);
+            };
         }
 
-        var clearRoutePort = new RoutingInputPort("None", eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput, eRoutingPortConnectionType.UsbC, null, this);
+        var clearRoutePort = new RoutingInputPort(
+            "None",
+            eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput,
+            eRoutingPortConnectionType.UsbC,
+            null,
+            this
+        );
         InputPorts.Add(clearRoutePort);
-    }
-
-    public override bool CustomActivate()
-    {
-
-
-
-        return base.CustomActivate();
     }
 
     #endregion
 
     #region IRoutingInputs Members
 
-    public RoutingPortCollection<RoutingInputPort> InputPorts
-    {
-        get; private set;
-    }
+    public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
     #endregion
 
     #region IRoutingOutputs Members
 
-    public RoutingPortCollection<RoutingOutputPort> OutputPorts
-    {
-        get; private set;
-    }
+    public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 

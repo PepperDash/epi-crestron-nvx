@@ -1,4 +1,5 @@
 ﻿using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
@@ -16,20 +17,46 @@ public class NvxE760xAudio : IBasicVolumeWithFeedback
         _device = device;
         _parent = parent;
 
-        MuteFeedback = new BoolFeedback("Muted", () => _device.Control.AudioMutedFeedback.BoolValue);
+        MuteFeedback = new BoolFeedback(
+            "MuteFeedback",
+            () => _device.Control.AudioMutedFeedback.BoolValue
+        );
 
-        VolumeLevelFeedback = new IntFeedback("Volume", () =>
+        VolumeLevelFeedback = new IntFeedback(
+            "VolumeLevelFeedback",
+            () =>
+            {
+                var volume = _device.Control.AnalogAudioOutputVolumeFeedback.ShortValue;
+                var result = MapVolume(volume);
+                return result;
+            }
+        );
+
+        _device.OnlineStatusChange += (@base, args) => {  
+            if (args.DeviceOnLine) 
+            {  
+                MuteFeedback.FireUpdate();  
+                VolumeLevelFeedback.FireUpdate();  
+            }
+        };
+
+        _device.BaseEvent += (device, args) =>
         {
-            var volume = _device.Control.AnalogAudioOutputVolumeFeedback.ShortValue;
-            var result = MapVolume(volume);
-            return result;
-        });
-
-        _device.OnlineStatusChange += (@base, args) => MuteFeedback.FireUpdate();
-        _device.OnlineStatusChange += (@base, args) => VolumeLevelFeedback.FireUpdate();
-
-        _device.BaseEvent += (@base, args) => MuteFeedback.FireUpdate();
-        _device.BaseEvent += (@base, args) => VolumeLevelFeedback.FireUpdate();
+            switch(args.EventId)
+            {
+                case DMInputEventIds.AudioMuteEventId:
+                    MuteFeedback.FireUpdate();
+                    break;
+                case DMInputEventIds.AudioUnmuteEventId:
+                    MuteFeedback.FireUpdate();
+                    break;  
+                case DMInputEventIds.VolumeEventId:
+                    VolumeLevelFeedback.FireUpdate();
+                    break;
+                default:
+                    break;
+            }
+        };
     }
 
     public static int MapVolume(short level)
@@ -70,7 +97,13 @@ public class NvxE760xAudio : IBasicVolumeWithFeedback
 
     public void SetVolume(ushort level)
     {
-        var volume = CrestronEnvironment.ScaleWithLimits(level, ushort.MaxValue, ushort.MinValue, 240, -800);
+        var volume = CrestronEnvironment.ScaleWithLimits(
+            level,
+            ushort.MaxValue,
+            ushort.MinValue,
+            240,
+            -800
+        );
         _device.Control.AnalogAudioOutputVolume.ShortValue = (short)volume;
     }
 
@@ -86,4 +119,7 @@ public class NvxE760xAudio : IBasicVolumeWithFeedback
 
     public IntFeedback VolumeLevelFeedback { get; private set; }
     public BoolFeedback MuteFeedback { get; private set; }
+
+    public string Name => _parent is IKeyed keyedParent ? keyedParent.Key : _parent.Key;
+    public string Key => _parent.Key;
 }

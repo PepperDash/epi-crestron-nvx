@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.Usb;
+using NvxEpi.Abstractions.UsbcInput;
 using NvxEpi.Extensions;
 using NvxEpi.Features.Audio;
 using NvxEpi.Features.AutomaticRouting;
@@ -23,29 +24,33 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using HdmiInput = NvxEpi.Features.Hdmi.Input.HdmiInput;
+using UsbcInput = NvxEpi.Features.Usbc.Input.UsbcInput;
 
 namespace NvxEpi.Devices;
 
-public class Nvx36X
+public class Nvx38X
     : NvxBaseDevice,
         IComPorts,
         IIROutputPorts,
         IUsbStreamWithHardware,
         IHdmiInput,
+        IUsbcInput,
         IVideowallMode,
+        IMultiview,
         IRoutingWithFeedback,
         ICec,
         IBasicVolumeWithFeedback
 {
     private IBasicVolumeWithFeedback _audio;
     private IHdmiInput _hdmiInputs;
-    private IVideowallMode _hdmiOutput;
+    private IUsbcInput _usbcInputs;
+    private IHdmiOutput _hdmiOutput;
     private IUsbStreamWithHardware _usbStream;
     private readonly NvxDeviceProperties _config;
 
     public event RouteChangedEventHandler RouteChanged;
 
-    public Nvx36X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
+    public Nvx38X(DeviceConfig config, Func<DmNvxBaseClass> getHardware, bool isTransmitter)
         : base(config, getHardware, isTransmitter)
     {
         _config = NvxDeviceProperties.FromDeviceConfig(config);
@@ -58,17 +63,14 @@ public class Nvx36X
         {
             var result = base.CustomActivate();
 
-            if (Hardware is DmNvx36x nvx36x)
+            if (Hardware is DmNvx38x nvx38x)
             {
-                _audio = new Nvx36XAudio(nvx36x, this);
-            }
-            else if (Hardware is DmNvxE760x nvxE760x)
-            {
-                _audio = new NvxE760xAudio(nvxE760x, this);
+                _audio = new Nvx38XAudio(nvx38x, this);
             }
 
             _usbStream = UsbStream.GetUsbStream(this, _config.Usb);
             _hdmiInputs = new HdmiInput(this);
+            _usbcInputs = new UsbcInput(this);
             _hdmiOutput = new VideowallModeOutput(this);
 
             Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
@@ -133,7 +135,21 @@ public class Nvx36X
 
     public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
     {
-        get { return _hdmiInputs.HdcpCapability; }
+        //get { return _hdmiInputs.HdcpCapability; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.HdcpCapability.Count;
+            var hdcpCapability = new Dictionary<uint, IntFeedback>();
+            foreach (var hdmiCapability in _hdmiInputs.HdcpCapability)
+            {
+                hdcpCapability.Add(hdmiCapability.Key, hdmiCapability.Value);
+            }
+            foreach (var usbcCapability in _usbcInputs.HdcpCapability)
+            {
+                hdcpCapability.Add(usbcCapability.Key + offset, usbcCapability.Value);
+            }
+            return new ReadOnlyDictionary<uint, IntFeedback>(hdcpCapability);
+        }
     }
 
     public IntFeedback HorizontalResolution
@@ -153,7 +169,8 @@ public class Nvx36X
 
     public IntFeedback VideoAspectRatioMode
     {
-        get { return _hdmiOutput.VideoAspectRatioMode; }
+        // get { return _hdmiOutput.VideoAspectRatioMode; }
+        get { return (_hdmiOutput as IVideowallMode)?.VideoAspectRatioMode; }
     }
 
     public CrestronCollection<IROutputPort> IROutputPorts
@@ -188,38 +205,163 @@ public class Nvx36X
 
     public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
     {
-        get { return _hdmiInputs.SyncDetected; }
+        //get { return _hdmiInputs.SyncDetected; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.SyncDetected.Count;
+            var syncDetected = new Dictionary<uint, BoolFeedback>();
+            foreach (var item in _hdmiInputs.SyncDetected)
+            {
+                syncDetected.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.SyncDetected)
+            {
+                syncDetected.Add(item.Key + offset, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, BoolFeedback>(syncDetected);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> CurrentResolution
     {
-        get { return _hdmiInputs.CurrentResolution; }
+        //get { return _hdmiInputs.CurrentResolution; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.CurrentResolution.Count;
+            var currentResolution = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.CurrentResolution)
+            {
+                currentResolution.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.CurrentResolution)
+            {
+                currentResolution.Add(item.Key + offset, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(currentResolution);
+        }
     }
 
     public ReadOnlyDictionary<uint, IntFeedback> AudioChannels
     {
-        get { return _hdmiInputs.AudioChannels; }
+        //get { return _hdmiInputs.AudioChannels; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.AudioChannels.Count;
+            var audioChannels = new Dictionary<uint, IntFeedback>();
+            foreach (var item in _hdmiInputs.AudioChannels)
+            {
+                audioChannels.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.AudioChannels)
+            {
+                audioChannels.Add(item.Key + offset, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, IntFeedback>(audioChannels);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> AudioFormat
     {
-        get { return _hdmiInputs.AudioFormat; }
+        //get { return _hdmiInputs.AudioFormat; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.AudioFormat.Count;
+            var audioFormat = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.AudioFormat)
+            {
+                audioFormat.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.AudioFormat)
+            {
+                audioFormat.Add(item.Key + offset, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(audioFormat);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> ColorSpace
     {
-        get { return _hdmiInputs.ColorSpace; }
+        //get { return _hdmiInputs.ColorSpace; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.ColorSpace.Count;
+            var colorSpace = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.ColorSpace)
+            {
+                colorSpace.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.ColorSpace)
+            {
+                colorSpace.Add(item.Key + offset, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(colorSpace);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> HdrType
     {
-        get { return _hdmiInputs.HdrType; }
+        //get { return _hdmiInputs.HdrType; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.HdrType.Count;
+            var hdrType = new Dictionary<uint, StringFeedback>();
+            foreach (var item in _hdmiInputs.HdrType)
+            {
+                hdrType.Add(item.Key, item.Value);
+            }
+            foreach (var item in _usbcInputs.HdrType)
+            {
+                hdrType.Add(item.Key + offset, item.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(hdrType);
+        }
     }
 
     public IntFeedback VideowallMode
     {
-        get { return _hdmiOutput.VideowallMode; }
+        get { return (_hdmiOutput as IVideowallMode)?.VideowallMode; }
     }
+
+    public BoolFeedback MultiviewEnabled
+    {
+        get { return (_hdmiOutput as IMultiview)?.MultiviewEnabled; }
+    }
+
+    public IntFeedback MultiviewLayout
+    {
+        get { return (_hdmiOutput as IMultiview)?.MultiviewLayout; }
+    }
+
+    public StringFeedback WindowAStreamUrl
+    {
+        get { return (_hdmiOutput as IMultiview)?.WindowAStreamUrl; }
+    }
+
+    public StringFeedback WindowBStreamUrl
+    {
+        get { return (_hdmiOutput as IMultiview)?.WindowBStreamUrl; }
+    }
+
+    public StringFeedback WindowCStreamUrl
+    {
+        get { return (_hdmiOutput as IMultiview)?.WindowCStreamUrl; }
+    }
+
+    public StringFeedback WindowDStreamUrl
+    {
+        get { return (_hdmiOutput as IMultiview)?.WindowDStreamUrl; }
+    }
+
+    public StringFeedback WindowEStreamUrl
+    {
+        get { return (_hdmiOutput as IMultiview)?.WindowEStreamUrl; }
+    }
+
+    public StringFeedback WindowFStreamUrl
+    {
+        get { return (_hdmiOutput as IMultiview)?.WindowFStreamUrl; }
+    }
+
 
     public void ExecuteSwitch(
         object inputSelector,
@@ -263,6 +405,9 @@ public class Nvx36X
     private void AddRoutingPorts()
     {
         HdmiInput1Port.AddRoutingPort(this);
+        HdmiInput2Port.AddRoutingPort(this);
+        UsbcInput1Port.AddRoutingPort(this);
+        UsbcInput2Port.AddRoutingPort(this);
         SecondaryAudioInput.AddRoutingPort(this);
         AnalogAudioInput.AddRoutingPort(this);
 
@@ -327,12 +472,40 @@ public class Nvx36X
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpCapabilityString
     {
-        get { return _hdmiInputs.HdcpCapabilityString; }
+        //get { return _hdmiInputs.HdcpCapabilityString; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.HdcpCapabilityString.Count;
+            var hdcpCapabilityString = new Dictionary<uint, StringFeedback>();
+            foreach (var hdmiCapability in _hdmiInputs.HdcpCapabilityString)
+            {
+                hdcpCapabilityString.Add(hdmiCapability.Key, hdmiCapability.Value);
+            }
+            foreach (var usbcCapability in _usbcInputs.HdcpCapabilityString)
+            {
+                hdcpCapabilityString.Add(usbcCapability.Key + offset, usbcCapability.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(hdcpCapabilityString);
+        }
     }
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport
     {
-        get { return _hdmiInputs.HdcpSupport; }
+        //get { return _hdmiInputs.HdcpSupport; }
+        get
+        {
+            var offset = (uint)_hdmiInputs.HdcpSupport.Count;
+            var hdcpSupport = new Dictionary<uint, StringFeedback>();
+            foreach (var hdmiSupport in _hdmiInputs.HdcpSupport)
+            {
+                hdcpSupport.Add(hdmiSupport.Key, hdmiSupport.Value);
+            }
+            foreach (var usbcSupport in _usbcInputs.HdcpSupport)
+            {
+                hdcpSupport.Add(usbcSupport.Key + offset, usbcSupport.Value);
+            }
+            return new ReadOnlyDictionary<uint, StringFeedback>(hdcpSupport);
+        }
     }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();

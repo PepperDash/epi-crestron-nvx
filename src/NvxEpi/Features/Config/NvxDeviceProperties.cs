@@ -37,6 +37,10 @@ public class NvxMockDeviceProperties : BaseStreamingDeviceProperties
     public int DeviceId { get; set; }
 
     public string Mode { get; set; }
+
+    public bool IncludeInMatrixRouting { get; set; }
+
+    public NvxUsbProperties Usb { get; set; }
 }
 
 internal static class NvxDevicePropertiesExt

@@ -23,6 +23,12 @@ public static class VideoInputExtensions
             case 4:
                 device.SetVideoToAutomatic();
                 break;
+            case 11:
+                device.SetVideoToUsbcInput1();
+                break;
+            case 12:
+                device.SetVideoToUsbcInput2();
+                break;
             case 99:
                 device.SetVideoToInputNone();
                 break;
@@ -47,6 +53,26 @@ public static class VideoInputExtensions
         }
         device.LogDebug("Switching Video Input to : 'Hdmi2'");
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
+    }
+
+    public static void SetVideoToUsbcInput1(this ICurrentVideoInput device)
+    {
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
+        {
+            return;
+        }
+        device.LogDebug("Switching Video Input to : 'Usbc1'");
+        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc1;
+    }
+
+    public static void SetVideoToUsbcInput2(this ICurrentVideoInput device)
+    {
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
+        {
+            return;
+        }
+        device.LogDebug("Switching Video Input to : 'Usbc2'");
+        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc2;
     }
 
     public static void SetVideoToInputNone(this ICurrentVideoInput device)

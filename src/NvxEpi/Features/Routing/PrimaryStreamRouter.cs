@@ -11,13 +11,15 @@ using NvxEpi.Extensions;
 using NvxEpi.Services.InputSwitching;
 using NvxEpi.Services.Utilities;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
 
 public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 {
-    public PrimaryStreamRouter(string key) : base(key)
+    public PrimaryStreamRouter(string key)
+        : base(key)
     {
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
         OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
@@ -27,7 +29,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     private void AddFeedbackMatchObjects()
     {
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating feedback match objects", this);
+        this.LogVerbose("Updating feedback match objects");
 
         foreach (var input in InputPorts.Where(ip => ip.Selector is IStreamWithHardware))
         {
@@ -36,15 +38,21 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
                 continue;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating match object for {key}", this, input.Key);
+            this.LogVerbose("Updating match object for {key}", this, input.Key);
 
             tx.Hardware.BaseEvent += (o, a) =>
             {
-                if (a.EventId != DMInputEventIds.ServerUrlEventId) return;
+                if (a.EventId != DMInputEventIds.ServerUrlEventId)
+                    return;
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating Feedback match object for {input}", this, input.Key);
+                this.LogVerbose("Updating Feedback match object for {input}", this, input.Key);
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating Feedback match object for {input} to {url}", this, input.Key, tx.Hardware.Control.ServerUrlFeedback.StringValue);
+                this.LogVerbose(
+                    "Updating Feedback match object for {input} to {url}",
+                    this,
+                    input.Key,
+                    tx.Hardware.Control.ServerUrlFeedback.StringValue
+                );
 
                 input.FeedbackMatchObject = tx.Hardware.Control.ServerUrlFeedback.StringValue;
             };
@@ -58,17 +66,38 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 
-    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+    public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
     {
         try
         {
+            if (
+                signalType.Is(eRoutingSignalType.UsbInput)
+                || signalType.Is(eRoutingSignalType.UsbOutput)
+            )
+            {
+                this.LogDebug("Skipping switch with USB signal type {signalType}", signalType);
+
+                return;
+            }
+
             if (signalType.Is(eRoutingSignalType.Audio))
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Information,
+                this.LogDebug(
                     "Executing switch, but its audio only... this route will include video... GOOD LUCK!",
-                    this);
+                    this
+                );
             }
+
+            this.LogInformation(
+                "*** Executing switch: {inputSelector} to {outputSelector} with signal type {signalType} ***",
+                inputSelector,
+                outputSelector,
+                signalType
+            );
 
             var rx = outputSelector as IStreamWithHardware ?? throw new ArgumentNullException("rx");
 
@@ -111,7 +140,12 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
         if (outputPort is null)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Unable to find port for {rx}", this, rx.Key);
+            Debug.LogMessage(
+                Serilog.Events.LogEventLevel.Warning,
+                "Unable to find port for {rx}",
+                this,
+                rx.Key
+            );
             return;
         }
 
@@ -133,7 +167,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
     {
         return CurrentRoutes.FirstOrDefault(rd =>
         {
-            if (rd.OutputPort.Selector is not IStream selector)
+            if (rd.OutputPort?.Selector is not IStream selector)
             {
                 return false;
             }
@@ -144,7 +178,8 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     private RoutingInputPort GetRoutingInputPortForSelector(IStream tx)
     {
-        if (tx == null) return null;
+        if (tx == null)
+            return null;
 
         return InputPorts.FirstOrDefault(ip =>
         {
@@ -159,7 +194,8 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     private RoutingOutputPort GetRoutingOutputPortForSelector(IStream rx)
     {
-        if (rx == null) return null;
+        if (rx == null)
+            return null;
 
         return OutputPorts.FirstOrDefault(ip =>
         {
@@ -170,7 +206,6 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
             return selector.Key == rx.Key;
         });
-
     }
 
     public override bool CustomActivate()
@@ -180,70 +215,54 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
         _receivers ??= GetReceiverDictionary();
 
         _transmitters
-            .Values
-            .ToList()
+            .Values.ToList()
             .ForEach(tx =>
-                {
-                    var streamRoutingPort = tx.OutputPorts[SwitcherForStreamOutput.Key];
-                    if (streamRoutingPort == null)
-                        return;
-
-                    var input = new RoutingInputPort(
-                        GetInputPortKeyForTx(tx),
-                        eRoutingSignalType.AudioVideo,
-                        eRoutingPortConnectionType.Streaming,
-                        tx,
-                        this);
-
-                    InputPorts.Add(input);
-                });
-
-        _receivers
-            .Values
-            .ToList()
-            .ForEach(rx =>
-                {
-                    var streamRoutingPort = rx.InputPorts[DeviceInputEnum.Stream.Name];
-                    if (streamRoutingPort == null)
-                        return;
-
-                    var output = new RoutingOutputPort(
-                        GetOutputPortKeyForRx(rx),
-                        eRoutingSignalType.AudioVideo,
-                        eRoutingPortConnectionType.Streaming,
-                        rx,
-                        this);
-
-                    OutputPorts.Add(output);
-
-                    if (rx is IStreamWithHardware rxHardware)
-                    {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Subscribing to base event for {key}", this, rxHardware.Key);
-                        rxHardware.Hardware.BaseEvent += (o, a) => HandleRouteUpdate(rxHardware, a);
-                    }
-                });
-
-        foreach (var routingOutputPort in OutputPorts)
-        {
-            var port = routingOutputPort;
-            const int delayTime = 250;
-
-            var timer = new CTimer(o =>
-                {
-                    if (port.InUseTracker.InUseFeedback.BoolValue)
-                        return;
-
-                    ExecuteSwitch(null, port.Selector, eRoutingSignalType.AudioVideo);
-                }, Timeout.Infinite);
-
-            port.InUseTracker.InUseFeedback.OutputChange += (sender, args) =>
             {
-                if (args.BoolValue)
+                var streamRoutingPort = tx.OutputPorts[SwitcherForStreamOutput.Key];
+                if (streamRoutingPort == null)
                     return;
 
-                timer.Reset(delayTime);
-            };
-        }
+                var input = new RoutingInputPort(
+                    GetInputPortKeyForTx(tx),
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    tx,
+                    this
+                );
+
+                InputPorts.Add(input);
+            });
+
+        _receivers
+            .Values.ToList()
+            .ForEach(rx =>
+            {
+                var streamRoutingPort = rx.InputPorts[DeviceInputEnum.Stream.Name];
+                if (streamRoutingPort == null)
+                    return;
+
+                var output = new RoutingOutputPort(
+                    GetOutputPortKeyForRx(rx),
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.Streaming,
+                    rx,
+                    this
+                );
+
+                OutputPorts.Add(output);
+
+                if (rx is IStreamWithHardware rxHardware)
+                {
+                    Debug.LogMessage(
+                        Serilog.Events.LogEventLevel.Debug,
+                        "Subscribing to base event for {key}",
+                        this,
+                        rxHardware.Key
+                    );
+
+                    rxHardware.Hardware.BaseEvent += (o, a) => HandleRouteUpdate(rxHardware, a);
+                }
+            });
 
         return base.CustomActivate();
     }
@@ -256,19 +275,38 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
                 {
                     if (device == null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Device is null", this);
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "Device is null",
+                            this
+                        );
+
                         return;
                     }
 
                     var currentUrl = device.Hardware.Control.ServerUrlFeedback.StringValue;
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Received Server URL event {deviceKey};{eventId}:{serverUrl}", this, device?.Key, args.EventId, currentUrl);
+                    Debug.LogMessage(
+                        Serilog.Events.LogEventLevel.Verbose,
+                        "Received Server URL event {deviceKey};{eventId}:{serverUrl}",
+                        this,
+                        device?.Key,
+                        args.EventId,
+                        currentUrl
+                    );
 
-                    var existingRoute = CurrentRoutes.FirstOrDefault((cr) => (cr.OutputPort.Selector as IKeyed)?.Key == device.Key);
+                    var existingRoute = CurrentRoutes.FirstOrDefault(
+                        (cr) => (cr.OutputPort.Selector as IKeyed)?.Key == device.Key
+                    );
 
                     if (string.IsNullOrEmpty(currentUrl) && existingRoute != null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Removing route {currentRoute}", this, existingRoute);
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Verbose,
+                            "Removing route {currentRoute}",
+                            this,
+                            existingRoute
+                        );
 
                         CurrentRoutes.Remove(existingRoute);
 
@@ -278,15 +316,32 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
                     var inputPort = InputPorts.FirstOrDefault(ip =>
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Checking {currentUrl} against {feedbackMatchObject}", this, currentUrl, ip.FeedbackMatchObject);
-                        return ip.FeedbackMatchObject != null && ip.FeedbackMatchObject.Equals(currentUrl);
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Debug,
+                            "Checking {currentUrl} against {feedbackMatchObject}",
+                            this,
+                            currentUrl,
+                            ip.FeedbackMatchObject
+                        );
+                        return ip.FeedbackMatchObject != null
+                            && ip.FeedbackMatchObject.Equals(currentUrl);
                     });
 
                     if (inputPort == null && existingRoute != null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "No input port found for URL {currentUrl}", this, currentUrl);
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "No input port found for URL {currentUrl}",
+                            this,
+                            currentUrl
+                        );
 
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Removing route {currentRoute}", this, existingRoute);
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Verbose,
+                            "Removing route {currentRoute}",
+                            this,
+                            existingRoute
+                        );
 
                         CurrentRoutes.Remove(existingRoute);
 
@@ -305,15 +360,27 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
                     if (inputPort == null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "No input port found for URL {currentUrl}", this, currentUrl);
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "No input port found for URL {currentUrl}",
+                            this,
+                            currentUrl
+                        );
                         return;
                     }
 
-                    var outputPort = OutputPorts.FirstOrDefault(op => (op.Selector as IKeyed)?.Key == device.Key);
+                    var outputPort = OutputPorts.FirstOrDefault(op =>
+                        (op.Selector as IKeyed)?.Key == device.Key
+                    );
 
                     if (outputPort == null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "No output port found for {deviceKey}", this, device.Key);
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Information,
+                            "No output port found for {deviceKey}",
+                            this,
+                            device.Key
+                        );
                         break;
                     }
 
@@ -352,7 +419,9 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     public static IStreamWithHardware GetRxById(int rxId)
     {
-        return _receivers.Values.OfType<IStreamWithHardware>().FirstOrDefault(x => x.DeviceId == rxId);
+        return _receivers
+            .Values.OfType<IStreamWithHardware>()
+            .FirstOrDefault(x => x.DeviceId == rxId);
     }
 
     public static IStream GetTxById(int txId)
@@ -398,9 +467,9 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
             return;
         }
 
-        var txByKey = _transmitters
-            .Values
-            .FirstOrDefault(x => x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase));
+        var txByKey = _transmitters.Values.FirstOrDefault(x =>
+            x.Key.Equals(txName, StringComparison.OrdinalIgnoreCase)
+        );
 
         if (txByKey == null)
             return;
@@ -415,21 +484,17 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     private static Dictionary<string, IStream> GetTransmitterDictionary()
     {
-        return
-            DeviceManager
-                .AllDevices
-                .OfType<IStream>()
-                .Where(device => device.IsTransmitter)
-                .ToDictionary(device => device.Key, stream => stream);
+        return DeviceManager
+            .AllDevices.OfType<IStream>()
+            .Where(device => device.IsTransmitter)
+            .ToDictionary(device => device.Key, stream => stream);
     }
 
     private static Dictionary<string, IStream> GetReceiverDictionary()
     {
-        return
-            DeviceManager
-                .AllDevices
-                .OfType<IStream>()
-                .Where(device => !device.IsTransmitter)
-                .ToDictionary(device => device.Key, stream => stream);
+        return DeviceManager
+            .AllDevices.OfType<IStream>()
+            .Where(device => !device.IsTransmitter)
+            .ToDictionary(device => device.Key, stream => stream);
     }
 }

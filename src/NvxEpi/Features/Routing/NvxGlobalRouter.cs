@@ -14,7 +14,6 @@ using PepperDash.Essentials.Core.Routing;
 namespace NvxEpi.Features.Routing;
 
 public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
-
 {
     private static readonly NvxGlobalRouter _instance = new();
 
@@ -44,39 +43,41 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
         AddPostActivationAction(BuildTieLines);
 
         AddPostActivationAction(BuildMatrixRouting);
+
+        InputSlots = new Dictionary<string, IRoutingInputSlot>();
+        OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
     }
 
-    public static NvxGlobalRouter Instance { get { return _instance; } }
+    public static NvxGlobalRouter Instance
+    {
+        get { return _instance; }
+    }
 
     private static void BuildTieLines()
     {
         var transmitters = DeviceManager
-            .AllDevices
-            .OfType<INvxDevice>()
+            .AllDevices.OfType<INvxDevice>()
             .Where(t => t.IsTransmitter)
             .ToList();
 
         TieLineConnector.AddTieLinesForTransmitters(transmitters);
 
         var receivers = DeviceManager
-            .AllDevices
-            .OfType<INvxDevice>()
+            .AllDevices.OfType<INvxDevice>()
             .Where(t => !t.IsTransmitter)
             .ToList();
 
         TieLineConnector.AddTieLinesForReceivers(receivers);
 
         var audioTransmitters = DeviceManager
-            .AllDevices
-            .OfType<INvxDevice>()
+            .AllDevices.OfType<INvxDevice>()
             .Where(t => t.IsTransmitter)
             .ToList();
 
         TieLineConnector.AddTieLinesForAudioTransmitters(audioTransmitters);
 
         var audioReceivers = DeviceManager
-            .AllDevices
-            .OfType<INvxDevice>()
+            .AllDevices.OfType<INvxDevice>()
             .Where(t => !t.IsTransmitter)
             .ToList();
 
@@ -86,15 +87,25 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
     public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
     public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
-    public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+    public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
     {
         if (signalType.Has(eRoutingSignalType.Video))
             PrimaryStreamRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
 
-        if (signalType.Has(eRoutingSignalType.Audio) || signalType.Has(eRoutingSignalType.SecondaryAudio))
+        if (
+            signalType.Has(eRoutingSignalType.Audio)
+            || signalType.Has(eRoutingSignalType.SecondaryAudio)
+        )
             SecondaryAudioRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
 
-        if (signalType.HasFlag(eRoutingSignalType.UsbInput) || signalType.HasFlag(eRoutingSignalType.UsbOutput))
+        if (
+            signalType.HasFlag(eRoutingSignalType.UsbInput)
+            || signalType.HasFlag(eRoutingSignalType.UsbOutput)
+        )
             UsbRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
     }
 
@@ -119,8 +130,8 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
     {
         try
         {
-            _inputSlots = DeviceManager.AllDevices
-                .OfType<NvxBaseDevice>()
+            InputSlots = DeviceManager
+                .AllDevices.OfType<NvxBaseDevice>()
                 .Where(t => t.IsTransmitter)
                 .Select(t =>
                 {
@@ -129,25 +140,36 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
                 .Cast<IRoutingInputSlot>()
                 .ToDictionary(i => i.Key, i => i);
 
-            var clearInput = new NvxMatrixClearInput();
-            _inputSlots.Add(clearInput.Key, clearInput);
+            var mockInputSlots = DeviceManager
+                .AllDevices.OfType<NvxMockDevice>()
+                .Where(md => md.IncludeInMatrixRouting && md.IsTransmitter)
+                .Select(md =>
+                {
+                    return new NvxMockMatrixInput(md);
+                })
+                .Cast<IRoutingInputSlot>()
+                .ToDictionary(i => i.Key, i => i);
 
-            var transmitters = DeviceManager.AllDevices
-               .OfType<NvxBaseDevice>()
-               .Where(t =>
-               {
-                   this.LogVerbose($"{t.Key} is transmitter: {t.IsTransmitter}");
-                   return !t.IsTransmitter;
-               }).ToList();
+            this.LogDebug("Mock Device inputs: {count}", mockInputSlots.Count);
+            this.LogDebug("Real Device inputs: {count}", InputSlots.Count);
 
-            this.LogVerbose($"Receiver count: {transmitters.Count}");
-
-            _outputSlots = transmitters.Select((t) =>
+            foreach (var kvp in mockInputSlots)
             {
-                this.LogInformation($"Getting NvxMatrixOutput for {t.Key}");
+                InputSlots[kvp.Key] = kvp.Value;
+            }
 
-                return new NvxMatrixOutput(t);
-            }).Cast<IRoutingOutputSlot>().ToDictionary(t => t.Key, t => t);
+            this.LogDebug("Total input: {count}", InputSlots.Count);
+
+            var clearInput = new NvxMatrixClearInput();
+
+            InputSlots.Add(clearInput.Key, clearInput);
+
+            OutputSlots = DeviceManager
+                .AllDevices.OfType<NvxBaseDevice>()
+                .Where(t => !t.IsTransmitter)
+                .Select((t) => new NvxMatrixOutput(t))
+                .Cast<IRoutingOutputSlot>()
+                .ToDictionary(t => t.Key, t => t);
         }
         catch (Exception ex)
         {
@@ -171,7 +193,12 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         if (outputSlot is not NvxMatrixOutput output)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Output with key {key} is not NvxMatrixOutput", this, outputSlotKey);
+            Debug.LogMessage(
+                Serilog.Events.LogEventLevel.Error,
+                "Output with key {key} is not NvxMatrixOutput",
+                this,
+                outputSlotKey
+            );
             return;
         }
 
@@ -189,9 +216,10 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
             Routing.PrimaryStreamRouter.Route(inputSlot.SlotNumber, outputDevice);
         }
 
-        if ((type.Has(eRoutingSignalType.SecondaryAudio)
-            || type.Has(eRoutingSignalType.Audio))
-            && outputDevice is ISecondaryAudioStreamWithHardware audioOutput)
+        if (
+            (type.Has(eRoutingSignalType.SecondaryAudio) || type.Has(eRoutingSignalType.Audio))
+            && outputDevice is ISecondaryAudioStreamWithHardware audioOutput
+        )
         {
             // using namespace to qualify type as `Route` is a static method
             Routing.SecondaryAudioRouter.Route(inputSlot.SlotNumber, audioOutput);
