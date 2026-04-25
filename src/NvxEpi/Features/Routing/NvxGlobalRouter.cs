@@ -44,8 +44,8 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         AddPostActivationAction(BuildMatrixRouting);
 
-        InputSlots = new Dictionary<string, IRoutingInputSlot>();
-        OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
+        //InputSlots = new Dictionary<string, IRoutingInputSlot>();
+        //OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
     }
 
     public static NvxGlobalRouter Instance
@@ -121,16 +121,18 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
             .ToDictionary(
                 kvp => kvp.Key,
                 kvp => kvp.Value);
-    public Dictionary<string, IRoutingOutputSlot> OutputSlots => _outputSlots.Where(kvp => kvp.Value is NvxMatrixOutput output && output.IsEnabled)
+    public Dictionary<string, IRoutingOutputSlot> OutputSlots => _outputSlots.Where(
+        kvp => kvp.Value is NvxMatrixOutput output && output.IsEnabled)
             .ToDictionary(
                 kvp => kvp.Key,
                 kvp => kvp.Value);
+
 
     private void BuildMatrixRouting()
     {
         try
         {
-            InputSlots = DeviceManager
+            _inputSlots = DeviceManager
                 .AllDevices.OfType<NvxBaseDevice>()
                 .Where(t => t.IsTransmitter)
                 .Select(t =>
@@ -164,7 +166,7 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
             InputSlots.Add(clearInput.Key, clearInput);
 
-            OutputSlots = DeviceManager
+            _outputSlots = DeviceManager
                 .AllDevices.OfType<NvxBaseDevice>()
                 .Where(t => !t.IsTransmitter)
                 .Select((t) => new NvxMatrixOutput(t))
