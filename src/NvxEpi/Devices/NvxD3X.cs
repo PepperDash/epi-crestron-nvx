@@ -6,7 +6,6 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiOutput;
-using NvxEpi.Abstractions.Usb;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Features.Audio;
@@ -34,7 +33,6 @@ public class NvxD3X :
 {
     private IBasicVolumeWithFeedback _audio;
     private IHdmiOutput _hdmiOutput;
-    private readonly IUsbStream _usbStream;
 
     public event RouteChangedEventHandler RouteChanged;
 
@@ -114,11 +112,6 @@ public class NvxD3X :
     public CrestronCollection<IROutputPort> IROutputPorts
     {
         get { return Hardware.IROutputPorts; }
-    }
-
-    public bool IsRemote
-    {
-        get { return _usbStream.IsRemote; }
     }
 
     public int NumberOfComPorts
