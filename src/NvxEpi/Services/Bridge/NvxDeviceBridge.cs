@@ -51,6 +51,9 @@ public class NvxDeviceBridge : IBridgeAdvanced
             if (feedback.Key == Hdmi1SyncDetectedFeedback.Key)
                 joinNumber = joinMap.Hdmi1SyncDetected.JoinNumber;
 
+            if (feedback.Key == DmSyncDetectedFeedback.Key)
+                joinNumber = joinMap.Hdmi1SyncDetected.JoinNumber;
+
             if (feedback.Key == Hdmi2SyncDetectedFeedback.Key)
                 joinNumber = joinMap.Hdmi2SyncDetected.JoinNumber;
 

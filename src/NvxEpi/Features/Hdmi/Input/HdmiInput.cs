@@ -18,14 +18,16 @@ public class HdmiInput : HdmiInputBase
 
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Hardware is DmNvxE760x", this);
                 var capability = DmHdcpCapabilityValueFeedback.GetFeedback(device.Hardware);
-
                 var sync = DmSyncDetectedFeedback.GetFeedback(device.Hardware);
+                var currentResolution = DmCurrentResolutionFeedback.GetFeedback(device.Hardware);
 
                 _capability.Add(1, capability);
                 _sync.Add(1, sync);
+                _currentResolution.Add(1, currentResolution);
 
                 Feedbacks.Add(capability);
                 Feedbacks.Add(sync);
+                Feedbacks.Add(currentResolution);
 
                 return;
             }
