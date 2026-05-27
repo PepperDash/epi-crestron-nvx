@@ -17,6 +17,7 @@ public class NvxE3XDeviceFactory : NvxBaseDeviceFactory<NvxE3X>
 
         _typeNames ??= new List<string>
             {
+                "dmnvxe20",
                 "dmnvxe30",
                 "dmnvxe30c",
                 "dmnvxe31",
