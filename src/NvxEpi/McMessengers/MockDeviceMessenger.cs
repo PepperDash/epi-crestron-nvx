@@ -1,51 +1,47 @@
 using Newtonsoft.Json;
-using NvxEpi.Devices;
 using PepperDash.Essentials.AppServer.Messengers;
 
-namespace NvxEpi.McMessengers;
-
-public class MockDeviceMessenger : MessengerBase
+namespace NvxEpi.McMessengers
 {
-  private NvxMockDevice device;
-  public MockDeviceMessenger(string key, string messagePath, NvxMockDevice device) : base(key, messagePath, device)
-  {
-    this.device = device;
-  }
-
-  protected override void RegisterActions()
-  {
-    AddAction("/fullStatus", (id, content) =>
+    public class MockDeviceMessenger(string key, string path, NvxMockDevice device) : MessengerBase(key, path, device)
     {
-      SendFullStatus(id);
-    });
+        private NvxMockDevice device = device;
 
-    AddAction("/inputStatus", (id, content) =>
+        protected override void RegisterActions()
+        {
+            AddAction("/fullStatus", (id, content) =>
+            {
+                SendFullStatus(id);
+            });
+
+            AddAction("/inputStatus", (id, content) =>
+            {
+                SendFullStatus(id);
+            });
+
+            device.SyncDetected.OutputChange += (o, a) =>
+            {
+                SendFullStatus();
+            };
+        }
+
+        private void SendFullStatus(string? id = null)
+        {
+            var message = new MockDeviceInputFullState
+            {
+                SyncDetected = device.SyncDetected.BoolValue,
+            };
+
+            PostStatusMessage(message, id);
+        }
+    }
+
+    public class MockDeviceInputFullState : DeviceStateMessageBase
     {
-      SendFullStatus(id);
-    });
-
-    device.SyncDetected.OutputChange += (o, a) =>
-    {
-      SendFullStatus();
-    };
-  }
-
-  private void SendFullStatus(string id = null)
-  {
-    var message = new MockDeviceInputFullState
-    {
-      SyncDetected = device.Sync,
-    };
-
-    PostStatusMessage(message, id);
-  }
-}
-
-public class MockDeviceInputFullState : DeviceStateMessageBase
-{
-    /// <summary>
-    /// Whether or not sync is detected on any input
-    /// </summary>
-    [JsonProperty("syncDetected")]
-    public bool SyncDetected { get; set; }    
+        /// <summary>
+        /// Whether or not sync is detected on any input
+        /// </summary>
+        [JsonProperty("syncDetected")]
+        public bool SyncDetected { get; set; }
+    }
 }
