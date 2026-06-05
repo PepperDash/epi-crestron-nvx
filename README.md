@@ -1,58 +1,44 @@
 # PepperDash NVX Plugin
 
-The NVX plugin endeavors to provide device control and routing over Crestron NVX type devices without the need for an XIO director.
+The NVX plugin provides device control and routing for Crestron NVX streaming devices within the PepperDash Essentials framework, without requiring an XIO Director.
 
 ## Essentials Version
 
-The NVX plugin current requires Essentials 2.7.4 or later.
+Requires Essentials 2.36.2 or later.
 
 > [!IMPORTANT]
-> The name property in the Esssentials Device config is what the actual NVX device will be named.  This value must not contain any spaces or special characters.  
+> The `name` property in the Essentials device config is what the actual NVX device will be named. This value must not contain any spaces or special characters.
 
-## Join Map
+## Supported Device Types
 
-See details section below for detailed description of device properties.
+The `type` field in config is case-insensitive.
 
-### Joins
+| Category | Types |
+|----------|-------|
+| Encoders / Transmitters | DmNvx350, DmNvx350C, DmNvx351, DmNvx351C, DmNvx352, DmNvx352C, DmNvx363, DmNvx363C, DmNvx384, DmNvx384C |
+| E-Series Encoders | DmNvxE10, DmNvxE20, DmNvxE202G, DmNvxE30, DmNvxE30C, DmNvxE31, DmNvxE31C, DmNvxE760, DmNvxE760C |
+| Decoders / Receivers | DmNvx360, DmNvx360C, DmNvxD30, DmNvxD30C |
+| Testing | mockNvxDevice |
 
-| Join | Digital                | Analog                   | Serial                   |
-| ---- | ---------------------- | ------------------------ | ------------------------ |
-| 1    | Device Online          | Video Route              | Video Route              |
-| 2    | Stream Started         | Audio Route              | Audio Route              |
-| 3    | HDMI01 Sync Detected   | Video Input              | Video Input              |
-| 4    | HDMI02 Sync Detected   | Audio Input              | Audio Input              |
-| 5    | -                      | USB Route                | USB Route                |
-| 6    | Supports HDMI01        | HDMI01 HDCP Capability   | HDMI01 HDCP Capability   |
-| 7    | Supports HDMI02        | HDMI02 HDCP Capability   | HDMI02 HDCP Capability   |
-| 8    | Output Disabled by Hdcp| Hdmi Output Res.         | Hdmi Output Res.         |
-| 9    | Supports Videowall     | Videowall Mode           | -                        |
-| 10   | -                      | Video Aspect Ratio Mode  | Dante Input              |
-| 11   | -                      | Nax Input                | Device Name              |
-| 12   | Supports Nax           | Nax Route                | Nax Route                |
-| 13   | -                      | Nax Input                | Nax Input                |
-| 14   | -                      | -                        | Stream Url               |
-| 15   | -                      | -                        | Multicast Video Address  |
-| 16   | -                      | -                        | Secondary Audio Address  |
-| 17   | -                      | -                        | NAX Tx Address           |
-| 18   | -                      | -                        | NAX Rx Address           |
+## Configuration
 
-## Join Details
+### Properties
 
-1. Video Source = In RX mode; will route the video stream of the device with the Virtual ID of the value selected to the receiver.  No action in TX mode.
-2. Audio Source = In RX mode; will route the audio stream of the device with the Virtual ID of the value selected to the receiver.  No action in TX mode.
-3. Video Input Source = Selects the video source of the TX/RX.  DISABLE = 0, Hdmi1 = 1, Hdmi2 = 2, Stream = 3.  This is set automatically in config; do not recommend changing.
-4. Audio Input Source = Selected the audio source of the TX/RX.  AUTOMATIC = 0, NoAudioSelected = 0, Input1 = 1, Input2 = 2, Analog Audio = 3, PrimaryStreamAudio = 4, Secondary Stream Audio = 5, Dante = 6(Not yet supported).  This is set automatically in config; do not recommend changing.
-5. Device Mode = Reports the device mode.  RX = 0, TX = 1
-6. HDCP Capability = Reports and sets HDCP cabaility on selected input.  HDCPSupportOff = 0, HDCPSupportAuto = 1, HDCP1xSupport = 2, HDCP2xSupport = 3
-7. HDCP Supported Level = UNUSED for NVX devices
-8. HDMI Output Horizontal Resolution = Custom Wharton usage; reports the horizontal resolution of the connected display on the HDMI output.
+| Property | Type | Description |
+|----------|------|-------------|
+| `control` | object | Connection method and IPID |
+| `mode` | string | `"tx"` (transmitter) or `"rx"` (receiver). Required. |
+| `deviceId` | int | Unique virtual routing slot number. Used to route sources to destinations. |
+| `multicastAddress` | string | Multicast address for TX streaming. Must have an even last octet. |
+| `streamUrl` | string | Initial stream URL for RX devices. |
+| `dmNaxTransmitAddress` | string | DM-NAX audio transmit address (TX). |
+| `dmNaxReceiveAddress` | string | DM-NAX audio receive address (RX). |
 
-## Config Example
+### Transmitter Example
 
-```JSON
+```json
 {
-    "key": "Tx-1",
-    "uid": 1,
+    "key": "nvx-tx-1",
     "name": "Laptop",
     "type": "DmNvx351",
     "group": "nvx",
@@ -63,20 +49,18 @@ See details section below for detailed description of device properties.
         },
         "mode": "tx",
         "deviceId": 1,
-        "multicastVideoAddress": "239.0.0.2",
-        "multicastAudioAddress": "239.0.0.3",
-        "usb": {
-            "mode": "local",
-            "default": "nvx-decoder11",
-            "followVideo": false
-        }
+        "multicastAddress": "239.0.0.2"
     }
-},
+}
+```
+
+### Receiver Example
+
+```json
 {
-    "key": "Rx-1",
-    "uid": 74,
-    "name": "PC-Cam",
-    "type": "DmNvx363",
+    "key": "nvx-rx-1",
+    "name": "Display1",
+    "type": "DmNvx360",
     "group": "nvx",
     "properties": {
         "control": {
@@ -84,103 +68,252 @@ See details section below for detailed description of device properties.
             "ipid": "51"
         },
         "mode": "rx",
-        "deviceId": 1,
-        "usb": {
-            "mode": "remote",
-            "default": "nvx-encoder5",
-            "followVideo": false
-        }
+        "deviceId": 1
     }
 }
 ```
 
-### Config Details
-
-__Properties:__
-
-1. IPID = sets the IPID of the device.
-2. Model = Case-insentive model number of the actual NVX device.
-3. Mode = VALID VALUES: { "tx", "rx" }; sets the device as a transmitter or receiver.  This must be defined or else the application
-will throw an exception.  Many default values are set based on this property.  Adjusting this value via the web interface is _not_ supported.
-4. Device Id: A unique number that can be thought of as an "input" or "output" number when performing routing.  For example, if you required to route
-TX-1 to RX-1, you would send a value of 1 to the Video Source input of RX-1.
-5. Multicast Video Address = Sets the local multicast Video address that a transmitter will attempt to stream to.  This address __must__ have an even number as the last Octet and is recommended to fall within a locally scoped mulitcast address range. Recommended reading : [http://www.tcpipguide.com/free/t_IPMulticastAddressing.htm]
-6. Multicast Audio Address = Sets the local multicast Audio address that a transmitter will attempt to stream the secondary audio to.  In most cases set this to be +1 of the Multicast Video address.
-
-## Feature Requests
-
-## NVX Router
-
-When using the `nvxRouter` the following `nvxRoutingPort` types are available.
-
-```
-stream
-hdmi1
-hdmi2
-analogAudio
-primaryAudio
-secondaryAudio
-danteAudio
-dmNaxAudio
-automatic
-noSwitch
-```
-
-### NVX Router Config Example
+### E-Series Encoder Example
 
 ```json
 {
-    "key": "NvxRouter",
-    "name": "NvxRouter",
-    "type": "dynNvx",
+    "key": "nvx-e30-1",
+    "name": "WallPlateEncoder",
+    "type": "DmNvxE30",
     "group": "nvx",
     "properties": {
-        "transmitters": {
-            "1"  : { "deviceKey": "nvxTx1" , "videoName": "Input 1" , "nvxRoutingPort": "hdmi1" },
-            "2"  : { "deviceKey": "nvxTx2" , "videoName": "Input 2" , "nvxRoutingPort": "hdmi1" },
-            "3"  : { "deviceKey": "nvxTx3" , "videoName": "Input 3" , "nvxRoutingPort": "hdmi1" },
-            "4"  : { "deviceKey": "nvxTx4" , "videoName": "Input 4" , "nvxRoutingPort": "hdmi1" }
+        "control": {
+            "method": "ipid",
+            "ipid": "61"
         },
-        "receivers": {
-            "1"  : { "deviceKey": "nvxRx1" , "videoName": "Output 1"      },
-            "2"  : { "deviceKey": "nvxRx2" , "videoName": "Output 2"      },
-            "3"  : { "deviceKey": "nvxRx3" , "videoName": "Output 3"      },
-            "4"  : { "deviceKey": "nvxRx4" , "videoName": "Output 4"      }
-        },
-        "audioTransmitters": {
-            "1" : { "deviceKey": "nvxTx1" , "audioName": "Input 1" , "nvxRoutingPort": "hdmi1"       },
-            "2" : { "deviceKey": "nvxTx2" , "audioName": "Input 2" , "nvxRoutingPort": "hdmi1"       },
-            "3" : { "deviceKey": "nvxTx3" , "audioName": "Input 3" , "nvxRoutingPort": "hdmi1"       },
-            "4" : { "deviceKey": "nvxTx4" , "audioName": "Input 4" , "nvxRoutingPort": "analogAudio" }
-        },
-        "audioReceivers": {
-            "1"  : { "deviceKey": "nvxTx1" , "audioName": "Output 1"  },
-            "2"  : { "deviceKey": "nvxTx2" , "audioName": "Output 2"  },
-            "3"  : { "deviceKey": "nvxTx3" , "audioName": "Output 3"  },
-            "4"  : { "deviceKey": "nvxTx4" , "audioName": "Output 4"  }
-        }
+        "mode": "tx",
+        "deviceId": 3,
+        "multicastAddress": "239.0.0.6"
     }
 }
 ```
+
+### D-Series Decoder Example
+
+```json
+{
+    "key": "nvx-d30-1",
+    "name": "MonitorDecoder",
+    "type": "DmNvxD30",
+    "group": "nvx",
+    "properties": {
+        "control": {
+            "method": "ipid",
+            "ipid": "71"
+        },
+        "mode": "rx",
+        "deviceId": 2
+    }
+}
+```
+
+### Transmitter with DM-NAX Audio
+
+```json
+{
+    "key": "nvx-tx-2",
+    "name": "ConferenceRoom",
+    "type": "DmNvx363",
+    "group": "nvx",
+    "properties": {
+        "control": {
+            "method": "ipid",
+            "ipid": "42"
+        },
+        "mode": "tx",
+        "deviceId": 2,
+        "multicastAddress": "239.0.0.4",
+        "dmNaxTransmitAddress": "239.1.0.4"
+    }
+}
+```
+
+### Full System Example
+
+```json
+{
+    "devices": [
+        {
+            "key": "nvx-tx-1",
+            "name": "Laptop",
+            "type": "DmNvx351",
+            "group": "nvx",
+            "properties": {
+                "control": { "method": "ipid", "ipid": "41" },
+                "mode": "tx",
+                "deviceId": 1,
+                "multicastAddress": "239.0.0.2"
+            }
+        },
+        {
+            "key": "nvx-tx-2",
+            "name": "BYOD",
+            "type": "DmNvx363",
+            "group": "nvx",
+            "properties": {
+                "control": { "method": "ipid", "ipid": "42" },
+                "mode": "tx",
+                "deviceId": 2,
+                "multicastAddress": "239.0.0.4",
+                "dmNaxTransmitAddress": "239.1.0.4"
+            }
+        },
+        {
+            "key": "nvx-rx-1",
+            "name": "MainDisplay",
+            "type": "DmNvx360",
+            "group": "nvx",
+            "properties": {
+                "control": { "method": "ipid", "ipid": "51" },
+                "mode": "rx",
+                "deviceId": 1,
+                "dmNaxReceiveAddress": "239.1.0.4"
+            }
+        },
+        {
+            "key": "nvx-rx-2",
+            "name": "SideDisplay",
+            "type": "DmNvxD30",
+            "group": "nvx",
+            "properties": {
+                "control": { "method": "ipid", "ipid": "52" },
+                "mode": "rx",
+                "deviceId": 2
+            }
+        }
+    ]
+}
+```
+
+## Bridge / Join Map
+
+The plugin implements `IBridgeAdvanced` for SIMPL bridge integration via `LinkToApi()`. Each device exposes the following joins relative to its bridge join start.
+
+### Digital Joins
+
+| Join | Direction | Description |
+|------|-----------|-------------|
+| 1 | To SIMPL | Device Online |
+| 11 | To SIMPL | HDMI 1 Sync Detected |
+| 12 | To SIMPL | HDMI 2 Sync Detected |
+
+### Analog Joins
+
+| Join | Direction | Description |
+|------|-----------|-------------|
+| 11 | To/From SIMPL | HDMI 1 HDCP Capability |
+| 12 | To/From SIMPL | HDMI 2 HDCP Capability |
+| 30 | To SIMPL | Network Port Count |
+| 31-35 | To SIMPL | Network Port Index (5 ports) |
+
+### Serial Joins
+
+| Join | Direction | Description |
+|------|-----------|-------------|
+| 1 | To/From SIMPL | Device Name |
+| 3 | To/From SIMPL | Video Input Source |
+| 4 | To/From SIMPL | Audio Input Source |
+| 5 | To/From SIMPL | NAX Audio Transmit Source |
+| 6 | To/From SIMPL | Dante Transmit Input |
+| 21 | To/From SIMPL | Stream URL |
+| 22 | To SIMPL | Multicast Video Address |
+| 23 | To/From SIMPL | NAX TX Address |
+| 24 | To/From SIMPL | NAX RX Address |
+| 31-35 | To SIMPL | Network Port Name (5 ports) |
+| 36-40 | To SIMPL | Network Port Description (5 ports) |
+| 41-45 | To SIMPL | Network Port VLAN Name (5 ports) |
+| 46-50 | To SIMPL | Network Port IP Management Address (5 ports) |
+| 51-55 | To SIMPL | Network Port System Name (5 ports) |
+| 56-60 | To SIMPL | Network Port System Name Description (5 ports) |
+
+### Video Input Source Values
+
+| Value | Source |
+|-------|--------|
+| 0 | Disable |
+| 1 | HDMI 1 |
+| 2 | HDMI 2 |
+| 3 | Stream |
+
+### Audio Input Source Values
+
+| Value | Source |
+|-------|--------|
+| 0 | Automatic / No Audio |
+| 1 | Input 1 |
+| 2 | Input 2 |
+| 3 | Analog Audio |
+| 4 | Primary Stream Audio |
+| 5 | Secondary Stream Audio |
+| 6 | Dante |
+
+### Bridge Config Example
+
+To bridge an NVX device in your Essentials room config:
+
+```json
+{
+    "key": "nvx-tx-1-bridge",
+    "name": "NVX TX 1 Bridge",
+    "type": "eiscApiAdvanced",
+    "group": "api",
+    "properties": {
+        "control": {
+            "method": "ipidTcp",
+            "ipid": "B1",
+            "tcpSshProperties": {
+                "address": "127.0.0.2",
+                "port": 0
+            }
+        },
+        "devices": [
+            {
+                "deviceKey": "nvx-tx-1",
+                "joinStart": 1
+            }
+        ]
+    }
+}
+```
+
+## NVX Router
+
+The plugin automatically creates a singleton `nvxRouter` device (key: `"nvxRouter"`) that implements `IMatrixRouting`. All NVX devices self-register with the router during initialization. No separate router config is needed.
+
+### Routing
+
+To route TX device 1 to RX device 1, send `deviceId` value `1` to the Video Source input of the receiver. The router coordinates the stream URL assignment automatically.
+
+### Routing Port Keys
+
+These port key strings are used when referencing routing inputs/outputs:
+
+| Key | Description |
+|-----|-------------|
+| `stream` | Primary network stream |
+| `hdmi1` | HDMI input 1 |
+| `hdmi2` | HDMI input 2 |
+| `analogAudio` | Analog audio |
+| `dante_aes67` | Dante/AES67 audio |
+| `dmNax` | DM-NAX audio |
+| `dm` | DM input (E-series) |
+| `arc` | eARC |
+| `bts` | Bluetooth audio |
+| `usbCIn1` | USB-C input 1 |
+| `usbCIn2` | USB-C input 2 |
+| `loopOut` | Audio loop out |
 
 ## USB Routing
 
 - Local = `PC`
 - Remote = `Keyboard/Mouse`
 
-### NVX Plugin Device ID Offsets (when bridged)
+### Device ID Offsets (when bridged)
 
 - Encoder-to-Decoder: `0 + deviceId`
 - Decoder-to-Decoder: `1000 + deviceId`
-
-### NVX TX USB Configuration Object
-
-```json
-"usb": { "mode": "{local OR remote}", "followVideo": false, "isLayer3": false}
-```
-
-### NVX RX USB Configuration Object
-
-```json
-"usb": { "mode": "{local OR remote}", "followVideo": false, "isLayer3": false }
-```

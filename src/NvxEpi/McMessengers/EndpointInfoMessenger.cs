@@ -1,62 +1,51 @@
-﻿using System.Linq;
+﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NvxEpi.Devices;
-using NvxEpi.Services.Feedback;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 
-namespace NvxEpi.McMessengers;
-
-public class EndpointInfoMessenger : MessengerBase
+namespace NvxEpi.McMessengers
 {
-    private readonly StringFeedback deviceNameFeedback;
-    public EndpointInfoMessenger(string key, string path, NvxBaseDevice device) : base(key, path, device)
+    public class EndpointInfoMessenger : MessengerBase
     {
-
-        deviceNameFeedback = device.Feedbacks.FirstOrDefault(fb => fb.Key == DeviceNameFeedback.Key) as StringFeedback;
-
-        if (deviceNameFeedback == null)
+        private readonly StringFeedback deviceNameFeedback;
+        public EndpointInfoMessenger(string key, string path, StringFeedback deviceNameFeedback, INvxDevice device) : base(key, path, device)
         {
-            return;
+            this.deviceNameFeedback = deviceNameFeedback ?? throw new ArgumentNullException(nameof(deviceNameFeedback));
+            this.deviceNameFeedback.OutputChange += SendUpdate;
         }
 
-        deviceNameFeedback.OutputChange += SendUpdate;
-    }
-
-    protected override void RegisterActions()
-    {
-        base.RegisterActions();
-
-        AddAction("/fullStatus", SendFullStatus);
-        AddAction("/endpointInfo", SendFullStatus);
-    }
-
-    private void SendFullStatus(string id, JToken content)
-    {
-        PostStatusMessage(new EndpointInfoStateMessage
+        protected override void RegisterActions()
         {
-            DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
-        }, id);
+            base.RegisterActions();
+
+            AddAction("/fullStatus", SendFullStatus);
+            AddAction("/endpointInfo", SendFullStatus);
+        }
+
+        private void SendFullStatus(string id, JToken content) =>
+            PostStatusMessage(new EndpointInfoStateMessage
+            {
+                DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
+            }, id);
+
+        private void SendUpdate(object sender, FeedbackEventArgs args) =>
+            PostStatusMessage(
+                JToken.FromObject(new EndpointInfoUpdateMessage
+                {
+                    DeviceName = args.StringValue ?? string.Empty
+                }));
     }
 
-    private void SendUpdate(object sender, FeedbackEventArgs args)
+    public class EndpointInfoStateMessage : DeviceStateMessageBase
     {
-        PostStatusMessage(JToken.FromObject(new EndpointInfoUpdateMessage
-        {
-            DeviceName = deviceNameFeedback?.StringValue ?? string.Empty
-        }));
+        [JsonProperty("friendlyName")]
+        public required string DeviceName { get; set; }
     }
-}
 
-public class EndpointInfoStateMessage : DeviceStateMessageBase
-{
-    [JsonProperty("friendlyName")]
-    public string DeviceName { get; set; }
-}
-
-public class EndpointInfoUpdateMessage
-{
-    [JsonProperty("friendlyName")]
-    public string DeviceName { get; set; }
+    public class EndpointInfoUpdateMessage
+    {
+        [JsonProperty("friendlyName")]
+        public required string DeviceName { get; set; }
+    }
 }
