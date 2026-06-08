@@ -1,4 +1,4 @@
-﻿using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core;
 
 namespace NvxEpi
 {
@@ -88,83 +88,173 @@ namespace NvxEpi
                 Description = "Dante Transmit Input"
             });
 
-        [JoinName("Hdmi1Capability")] public JoinDataComplete Hdmi1Capability = new(
+        [JoinName("Hdmi1Capability")]
+        public JoinDataComplete Hdmi1Capability = new(
             new JoinData
-                {
-                    JoinNumber = 11,
-                    JoinSpan = 1,
-                },
+            {
+                JoinNumber = 11,
+                JoinSpan = 1,
+            },
             new JoinMetadata
-                {
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Analog,
-                    Description = "Hdmi1 Capability"
-                });
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog,
+                Description = "Hdmi1 Capability"
+            });
 
-        [JoinName("Hdmi1SyncDetected")] public JoinDataComplete Hdmi1SyncDetected = new(
+        [JoinName("Hdmi1SyncDetected")]
+        public JoinDataComplete Hdmi1SyncDetected = new(
             new JoinData
-                {
-                    JoinNumber = 11,
-                    JoinSpan = 1
-                },
+            {
+                JoinNumber = 11,
+                JoinSpan = 1
+            },
             new JoinMetadata
-                {
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Digital,
-                    Description = "Hdmi1 Sync Detected"
-                });
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital,
+                Description = "Hdmi1 Sync Detected"
+            });
 
-        [JoinName("Hdmi2Capability")] public JoinDataComplete Hdmi2Capability = new(
+        [JoinName("Hdmi1Name")]
+        public JoinDataComplete Hdmi1Name = new(
             new JoinData
-                {
-                    JoinNumber = 12,
-                    JoinSpan = 1,
-                },
+            {
+                JoinNumber = 11,
+                JoinSpan = 1
+            },
             new JoinMetadata
-                {
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Analog,
-                    Description = "Hdmi2 Capability"
-                });
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Hdmi1 Name"
+            });
 
-        [JoinName("Hdmi2SyncDetected")] public JoinDataComplete Hdmi2SyncDetected = new(
+        [JoinName("Hdmi2Capability")]
+        public JoinDataComplete Hdmi2Capability = new(
             new JoinData
-                {
-                    JoinNumber = 12,
-                    JoinSpan = 1
-                },
+            {
+                JoinNumber = 12,
+                JoinSpan = 1,
+            },
             new JoinMetadata
-                {
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Digital,
-                    Description = "Hdmi2 Sync Detected"
-                });
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog,
+                Description = "Hdmi2 Capability"
+            });
 
-        [JoinName("HdmiIn1Present")] public JoinDataComplete HdmiIn1Present = new(
+        [JoinName("Hdmi2SyncDetected")]
+        public JoinDataComplete Hdmi2SyncDetected = new(
             new JoinData
-                {
-                    JoinNumber = 11,
-                    JoinSpan = 1
-                },
+            {
+                JoinNumber = 12,
+                JoinSpan = 1
+            },
             new JoinMetadata
-                {
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Digital,
-                    Description = "Hdmi In1 Present"
-                });
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital,
+                Description = "Hdmi2 Sync Detected"
+            });
 
-        [JoinName("HdmiIn2Present")] public JoinDataComplete HdmiIn2Present = new(
+        [JoinName("Hdmi2Name")]
+        public JoinDataComplete Hdmi2Name = new(
             new JoinData
-                {
-                    JoinNumber = 12,
-                    JoinSpan = 1
-                },
+            {
+                JoinNumber = 12,
+                JoinSpan = 1
+            },
             new JoinMetadata
-                {
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Digital,
-                    Description = "Hdmi In2 Present"
-                });
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Hdmi2 Name"
+            });
+
+        [JoinName("Usbc1Capability")]
+        public JoinDataComplete Usbc1Capability = new(
+            new JoinData
+            {
+                JoinNumber = 13,
+                JoinSpan = 1,
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog,
+                Description = "Usbc1 Capability"
+            });
+
+        [JoinName("Usbc1SyncDetected")]
+        public JoinDataComplete Usbc1SyncDetected = new(
+            new JoinData
+            {
+                JoinNumber = 13,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital,
+                Description = "Usbc1 Sync Detected"
+            });
+
+        [JoinName("Usbc1Name")]
+        public JoinDataComplete Usbc1Name = new(
+            new JoinData
+            {
+                JoinNumber = 13,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Usbc1 Name"
+            });
+
+        [JoinName("Usbc2Capability")]
+        public JoinDataComplete Usbc2Capability = new(
+            new JoinData
+            {
+                JoinNumber = 14,
+                JoinSpan = 1,
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog,
+                Description = "Usbc2 Capability"
+            });
+
+        [JoinName("Usbc2SyncDetected")]
+        public JoinDataComplete Usbc2SyncDetected = new(
+            new JoinData
+            {
+                JoinNumber = 14,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital,
+                Description = "Usbc2 Sync Detected"
+            });
+
+        [JoinName("Usbc2Name")]
+        public JoinDataComplete Usbc2Name = new(
+            new JoinData
+            {
+                JoinNumber = 14,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "Usbc1 Name"
+            });
 
         [JoinName("StreamUrl")]
         public JoinDataComplete StreamUrl = new(
@@ -208,19 +298,21 @@ namespace NvxEpi
                 Description = "NaxTxAddress"
             });
 
-        [JoinName("NaxRxAddress")] public JoinDataComplete NaxRxAddress = new(
+        [JoinName("NaxRxAddress")]
+        public JoinDataComplete NaxRxAddress = new(
             new JoinData
-                {
-                    JoinNumber = 24,
-                    JoinSpan = 1,
-                },
+            {
+                JoinNumber = 24,
+                JoinSpan = 1,
+            },
             new JoinMetadata
-                {
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Serial,
-                    Description = "NaxRxAddress"
-                });
+            {
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Serial,
+                Description = "NaxRxAddress"
+            });
 
+        /*
         [JoinName("PortCount")]
         public JoinDataComplete PortCount = new(
             new JoinData
@@ -332,5 +424,6 @@ namespace NvxEpi
                     JoinType = eJoinType.Serial,
                     Description = "Network Port System Name Description"
                 });
+                */
     }
 }

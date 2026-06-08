@@ -6,9 +6,6 @@ The NVX plugin provides device control and routing for Crestron NVX streaming de
 
 Requires Essentials 2.36.2 or later.
 
-> [!IMPORTANT]
-> The `name` property in the Essentials device config is what the actual NVX device will be named. This value must not contain any spaces or special characters.
-
 ## Supported Device Types
 
 The `type` field in config is case-insensitive.
@@ -201,6 +198,8 @@ The plugin implements `IBridgeAdvanced` for SIMPL bridge integration via `LinkTo
 | 1 | To SIMPL | Device Online |
 | 11 | To SIMPL | HDMI 1 Sync Detected |
 | 12 | To SIMPL | HDMI 2 Sync Detected |
+| 13 | To SIMPL | USB-C 1 Sync Detected |
+| 14 | To SIMPL | USB-C 2 Sync Detected |
 
 ### Analog Joins
 
@@ -208,6 +207,8 @@ The plugin implements `IBridgeAdvanced` for SIMPL bridge integration via `LinkTo
 |------|-----------|-------------|
 | 11 | To/From SIMPL | HDMI 1 HDCP Capability |
 | 12 | To/From SIMPL | HDMI 2 HDCP Capability |
+| 13 | To/From SIMPL | USB-C 1 HDCP Capability |
+| 14 | To/From SIMPL | USB-C 2 HDCP Capability |
 | 30 | To SIMPL | Network Port Count |
 | 31-35 | To SIMPL | Network Port Index (5 ports) |
 
@@ -239,6 +240,8 @@ The plugin implements `IBridgeAdvanced` for SIMPL bridge integration via `LinkTo
 | 1 | HDMI 1 |
 | 2 | HDMI 2 |
 | 3 | Stream |
+| 11 | USB-C 1 |
+| 12 | USB-C 2 |
 
 ### Audio Input Source Values
 
@@ -249,8 +252,12 @@ The plugin implements `IBridgeAdvanced` for SIMPL bridge integration via `LinkTo
 | 2 | Input 2 |
 | 3 | Analog Audio |
 | 4 | Primary Stream Audio |
-| 5 | Secondary Stream Audio |
-| 6 | Dante |
+| 5 | DM NAX Audio |
+| 6 | Dante / AES-67 |
+| 7 | Bluetooth (BTS) |
+| 11 | USB-C 1 |
+| 12 | USB-C 2 |
+| 21 | eARC |
 
 ### Bridge Config Example
 
@@ -308,39 +315,12 @@ These port key strings are used when referencing routing inputs/outputs:
 | `usbCIn2` | USB-C input 2 |
 | `loopOut` | Audio loop out |
 
-## USB Routing
 
-- Local = `PC`
-- Remote = `Keyboard/Mouse`
-
-### Device ID Offsets (when bridged)
-
-- Encoder-to-Decoder: `0 + deviceId`
-- Decoder-to-Decoder: `1000 + deviceId`
 <!-- START Minimum Essentials Framework Versions -->
 
 <!-- END Minimum Essentials Framework Versions -->
 <!-- START Config Example -->
-### Config Example
 
-```json
-{
-    "key": "GeneratedKey",
-    "uid": 1,
-    "name": "GeneratedName",
-    "type": "NvxDirectorDomain",
-    "group": "Group",
-    "properties": {
-        "Id": "SampleValue",
-        "Transmitters": [
-            "SampleValue"
-        ],
-        "Receivers": [
-            "SampleValue"
-        ]
-    }
-}
-```
 <!-- END Config Example -->
 <!-- START Supported Types -->
 

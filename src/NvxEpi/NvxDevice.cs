@@ -1,4 +1,4 @@
-﻿using Crestron.SimplSharp;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -201,7 +201,7 @@ namespace NvxEpi
             Feedbacks.Add(DmNaxRxAddressFeedback);
             DmNaxRxAddressFeedback.OutputChange += (s, a) => this.LogInformation("DM NAX RX Address changed to {DmNaxRxAddress}", a.StringValue);
 
-            IsReceivingDmNaxFeedback = new BoolFeedback("IsReceivingDmNax", 
+            IsReceivingDmNaxFeedback = new BoolFeedback("IsReceivingDmNax",
                 () => device.DmNaxRouting.DmNaxReceive.StreamStatusFeedback == DmNvxBaseClass.DmNvx35xDmNaxTransmitReceiveBase.eStreamStatus.StreamStarted);
             Feedbacks.Add(IsReceivingDmNaxFeedback);
 
@@ -420,7 +420,7 @@ namespace NvxEpi
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; } = new();
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; } = new ();
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; } = new();
 
         public List<RouteSwitchDescriptor> CurrentRoutes => GetRoutes().ToList();
 
@@ -835,7 +835,7 @@ namespace NvxEpi
             {
                 yield break;
             }
-            
+
             if (GetAnalogAudioRouteDescriptor(audioSource) is { } analogAudioRoute)
             {
                 yield return analogAudioRoute;
@@ -852,7 +852,7 @@ namespace NvxEpi
             }
         }
 
-        private RoutingInputPort? GetCurrentAudioRoutingInput() => 
+        private RoutingInputPort? GetCurrentAudioRoutingInput() =>
             device.Control.ActiveAudioSourceFeedback switch
             {
                 DmNvxControl.eAudioSource.Input1 => InputPorts[Hdmi1RoutingPortKey],
@@ -864,7 +864,7 @@ namespace NvxEpi
                 _ => default
             };
 
-        private RouteSwitchDescriptor? GetAnalogAudioRouteDescriptor(RoutingInputPort inputPort) => 
+        private RouteSwitchDescriptor? GetAnalogAudioRouteDescriptor(RoutingInputPort inputPort) =>
             OutputPorts[AnalogAudioRoutingPortKey] is { } outputPort
                 ? new RouteSwitchDescriptor(outputPort: outputPort, inputPort: inputPort)
                 : default;
@@ -922,7 +922,7 @@ namespace NvxEpi
             var hdrType = new StringFeedback("hdrType", () => hdmi.HdrTypeFeedback.ToString());
 
             var port = new NvxHdmiInputPort(
-                key, 
+                key,
                 parent,
                 selector,
                 hdcpCapability,
@@ -1000,8 +1000,8 @@ namespace NvxEpi
             var port = new RoutingInputPortWithVideoStatuses(
                 DmInRoutingPortKey,
                 eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.DmCat,    
-                NvxInputSelector.DM, 
+                eRoutingPortConnectionType.DmCat,
+                NvxInputSelector.DM,
                 parent,
                 new VideoStatusFuncsWrapper()
                 {
@@ -1080,7 +1080,7 @@ namespace NvxEpi
 
             device.BaseEvent += (s, e) =>
             {
-                this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(device.BaseEvent));
+                bridge.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(device.BaseEvent));
                 switch (e.EventId)
                 {
                     case DMInputEventIds.NameFeedbackEventId:
@@ -1121,41 +1121,84 @@ namespace NvxEpi
 
             if (device.HdmiIn[1] is { } hdmiIn1)
             {
-                trilist.SetBool(joinMap.HdmiIn1Present.JoinNumber, true);
-
                 hdmiIn1.StreamChange += (s, e) =>
                 {
                     this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(hdmiIn1.StreamChange));
                     trilist.SetUshort(joinMap.Hdmi1Capability.JoinNumber, (ushort) hdmiIn1.HdcpCapabilityFeedback);
                     trilist.SetBool(joinMap.Hdmi1SyncDetected.JoinNumber, hdmiIn1.SyncDetectedFeedback.BoolValue);
+                    trilist.SetString(joinMap.Hdmi1Name.JoinNumber, hdmiIn1.NameFeedback.StringValue);
                 };
+
+                trilist.SetUshort(joinMap.Hdmi1Capability.JoinNumber, (ushort) hdmiIn1.HdcpCapabilityFeedback);
+                trilist.SetBool(joinMap.Hdmi1SyncDetected.JoinNumber, hdmiIn1.SyncDetectedFeedback.BoolValue);
+                trilist.SetString(joinMap.Hdmi1Name.JoinNumber, hdmiIn1.NameFeedback.StringValue);
             }
 
             if (device.DmIn is { } dmIn)
             {
-                trilist.SetBool(joinMap.HdmiIn1Present.JoinNumber, true);
-
                 dmIn.InputStreamChange += (s, e) =>
                 {
                     this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(dmIn.InputStreamChange));
                     trilist.SetUshort(joinMap.Hdmi1Capability.JoinNumber, (ushort) dmIn.HdcpCapabilityFeedback);
                     trilist.SetBool(joinMap.Hdmi1SyncDetected.JoinNumber, dmIn.SyncDetectedFeedback.BoolValue);
+                    trilist.SetString(joinMap.Hdmi1Name.JoinNumber, dmIn.NameFeedback.StringValue);
                 };
+
+                trilist.SetUshort(joinMap.Hdmi1Capability.JoinNumber, (ushort) dmIn.HdcpCapabilityFeedback);
+                trilist.SetBool(joinMap.Hdmi1SyncDetected.JoinNumber, dmIn.SyncDetectedFeedback.BoolValue);
+                trilist.SetString(joinMap.Hdmi1Name.JoinNumber, dmIn.NameFeedback.StringValue);
             }
 
             if (device.HdmiIn[2] is { } hdmiIn2)
             {
-                trilist.SetBool(joinMap.HdmiIn2Present.JoinNumber, true);
-
                 hdmiIn2.StreamChange += (s, e) =>
                 {
                     this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(hdmiIn2.StreamChange));
                     trilist.SetUshort(joinMap.Hdmi2Capability.JoinNumber, (ushort) hdmiIn2.HdcpCapabilityFeedback);
                     trilist.SetBool(joinMap.Hdmi2SyncDetected.JoinNumber, hdmiIn2.SyncDetectedFeedback.BoolValue);
+                    trilist.SetString(joinMap.Hdmi2Name.JoinNumber, hdmiIn2.NameFeedback.StringValue);
                 };
+
+                trilist.SetUshort(joinMap.Hdmi2Capability.JoinNumber, (ushort) hdmiIn2.HdcpCapabilityFeedback);
+                trilist.SetBool(joinMap.Hdmi2SyncDetected.JoinNumber, hdmiIn2.SyncDetectedFeedback.BoolValue);
+                trilist.SetString(joinMap.Hdmi2Name.JoinNumber, hdmiIn2.NameFeedback.StringValue);
+            }
+
+            if (device is DmNvx38x nvx38x)
+            {
+                if (nvx38x.UsbcIn[1] is { } usbcIn1)
+                {
+                    usbcIn1.StreamChange += (s, e) =>
+                    {
+                        this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(usbcIn1.StreamChange));
+                        trilist.SetUshort(joinMap.Usbc1Capability.JoinNumber, (ushort) usbcIn1.HdcpCapabilityFeedback);
+                        trilist.SetBool(joinMap.Usbc1SyncDetected.JoinNumber, usbcIn1.SyncDetectedFeedback.BoolValue);
+                        trilist.SetString(joinMap.Usbc1Name.JoinNumber, usbcIn1.NameFeedback.StringValue);
+                    };
+
+                    trilist.SetUshort(joinMap.Usbc1Capability.JoinNumber, (ushort) usbcIn1.HdcpCapabilityFeedback);
+                    trilist.SetBool(joinMap.Usbc1SyncDetected.JoinNumber, usbcIn1.SyncDetectedFeedback.BoolValue);
+                    trilist.SetString(joinMap.Usbc1Name.JoinNumber, usbcIn1.NameFeedback.StringValue);
+                }
+
+                if (nvx38x.UsbcIn[2] is { } usbcIn2)
+                {
+                    usbcIn2.StreamChange += (s, e) =>
+                    {
+                        this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(usbcIn2.StreamChange));
+                        trilist.SetUshort(joinMap.Usbc2Capability.JoinNumber, (ushort) usbcIn2.HdcpCapabilityFeedback);
+                        trilist.SetBool(joinMap.Usbc2SyncDetected.JoinNumber, usbcIn2.SyncDetectedFeedback.BoolValue);
+                        trilist.SetString(joinMap.Usbc2Name.JoinNumber, usbcIn2.NameFeedback.StringValue);
+                    };
+
+                    trilist.SetUshort(joinMap.Usbc2Capability.JoinNumber, (ushort) usbcIn2.HdcpCapabilityFeedback);
+                    trilist.SetBool(joinMap.Usbc2SyncDetected.JoinNumber, usbcIn2.SyncDetectedFeedback.BoolValue);
+                    trilist.SetString(joinMap.Usbc2Name.JoinNumber, usbcIn2.NameFeedback.StringValue);
+                }
             }
         }
 
+        /*
         private static void UpdateNetworkPortJoins(BasicTriList trilist, NvxDeviceJoinMap joinMap, INvxNetworkPortInformation networkPortInformation)
         {
             for (uint i = 0; i < Math.Min(joinMap.PortIndex.JoinSpan, networkPortInformation.NetworkPorts.Count); i++)
@@ -1169,6 +1212,6 @@ namespace NvxEpi
                 trilist.SetString(joinMap.PortSystemName.JoinNumber + i, port.SystemName);
                 trilist.SetString(joinMap.PortSystemNameDescription.JoinNumber + i, port.SystemNameDescription);
             }
-        }
+        }*/
     }
 }
