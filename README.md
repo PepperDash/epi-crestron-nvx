@@ -317,3 +317,115 @@ These port key strings are used when referencing routing inputs/outputs:
 
 - Encoder-to-Decoder: `0 + deviceId`
 - Decoder-to-Decoder: `1000 + deviceId`
+<!-- START Minimum Essentials Framework Versions -->
+
+<!-- END Minimum Essentials Framework Versions -->
+<!-- START Config Example -->
+### Config Example
+
+```json
+{
+    "key": "GeneratedKey",
+    "uid": 1,
+    "name": "GeneratedName",
+    "type": "NvxDirectorDomain",
+    "group": "Group",
+    "properties": {
+        "Id": "SampleValue",
+        "Transmitters": [
+            "SampleValue"
+        ],
+        "Receivers": [
+            "SampleValue"
+        ]
+    }
+}
+```
+<!-- END Config Example -->
+<!-- START Supported Types -->
+
+<!-- END Supported Types -->
+<!-- START Join Maps -->
+
+<!-- END Join Maps -->
+<!-- START Interfaces Implemented -->
+### Interfaces Implemented
+
+- INvxNetworkPortInformation
+- IMatrixRouting
+- IRoutingWithFeedback
+- INvxDevice
+- IHasFeedback
+- ICommunicationMonitor
+- IBridgeAdvanced
+<!-- END Interfaces Implemented -->
+<!-- START Base Classes -->
+### Base Classes
+
+- EssentialsDevice
+- MessengerBase
+- DeviceStateMessageBase
+<!-- END Base Classes -->
+<!-- START Public Methods -->
+### Public Methods
+
+- public void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void SetIncomingStreamUrl(string streamUrl)
+- public void SetIncomingDmNaxStreamAddress(string address)
+- public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void SetIncomingStreamUrl(string streamUrl)
+- public void SetIncomingDmNaxStreamAddress(string address)
+- public class NvxDeviceJoinMap(uint joinStart)
+- public class HdmiInputState(string key, string hdcpCapability, string hdcpSupport, bool syncDetected, string currentResolution, int audioChannelCount, string audioFormat, string colorspaceMode, string hdrType)
+- public class MockDeviceMessenger(string key, string path, NvxMockDevice device)
+- public class HdmiOutputState(bool disabledByHdcp, string outputResolution, string edidManufacturer)
+- public class SecondaryAudioStateMessage(bool isStreamingSecondaryAudio, string secondaryAudioStreamStatus, string secondaryAudioStreamUrl)
+- public class SecondaryAudioUpdateMessage(bool isStreamingSecondaryAudio, string secondaryAudioStreamStatus, string secondaryAudioStreamUrl)
+- public class StreamStateMessage(bool isStreamingVideo, string videoStreamStatus, string streamUrl, string multicastAddress, bool isTransmitter)
+- public class StreamUpdateMessage(bool isStreamingVideo, string videoStreamStatus, string streamUrl, string multicastAddress, bool isTransmitter)
+<!-- END Public Methods -->
+<!-- START Bool Feedbacks -->
+### Bool Feedbacks
+
+- IsOnline
+- IsOnline
+- IsStreamingFeedback
+- IsTransmittingDmNaxFeedback
+- IsReceivingDmNaxFeedback
+- IsStreamingFeedback
+- IsTransmittingDmNaxFeedback
+- IsReceivingDmNaxFeedback
+- SyncDetected
+- DisabledByHdcpFeedback
+<!-- END Bool Feedbacks -->
+<!-- START Int Feedbacks -->
+### Int Feedbacks
+
+- AudioChannelCount
+<!-- END Int Feedbacks -->
+<!-- START String Feedbacks -->
+### String Feedbacks
+
+- StreamUrlFeedback
+- StreamStatusFeedback
+- DmNaxTxAddressFeedback
+- DmNaxTransmitStatusFeedback
+- DmNaxReceiveStatusFeedback
+- DmNaxRxAddressFeedback
+- MulticastAddressFeedback
+- StreamUrlFeedback
+- StreamStatusFeedback
+- DmNaxTxAddressFeedback
+- DmNaxTransmitStatusFeedback
+- DmNaxRxAddressFeedback
+- DmNaxReceiveStatusFeedback
+- MulticastAddressFeedback
+- HdcpCapability
+- AudioFormat
+- ColorspaceMode
+- HdrType
+- OutputResolutionFeedback
+- EdidManufacturerFeedback
+<!-- END String Feedbacks -->
