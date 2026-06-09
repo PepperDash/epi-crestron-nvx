@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace NvxEpi
 {
-    public class NvxDevice : EssentialsDevice, INvxDevice, INvxNetworkPortInformation, IRoutingWithFeedback, IHasFeedback, ICommunicationMonitor, IBridgeAdvanced
+    public class NvxDevice : EssentialsDevice, INvxDevice, INvxNetworkPortInformation, IRoutingWithFeedback, IHasFeedback, ICommunicationMonitor, IBridgeAdvanced, IComPorts
     {
         public enum NvxInputSelector
         {
@@ -457,6 +457,10 @@ namespace NvxEpi
         public StringFeedback MulticastAddressFeedback { get; }
 
         public int DeviceId => props.DeviceId;
+
+        public CrestronCollection<ComPort> ComPorts => device.ComPorts;
+
+        public int NumberOfComPorts => device.NumberOfComPorts;
 
         public List<NvxNetworkPortInformation> NetworkPorts => networkPortInfo.NetworkPorts;
 
@@ -1060,7 +1064,12 @@ namespace NvxEpi
         public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new NvxDeviceJoinMap(joinStart);
-            bridge.AddJoinMap(joinMapKey, joinMap);
+            var customJoinMap = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+            if (customJoinMap != null)
+            {
+                joinMap.SetCustomJoinData(customJoinMap);
+            }
+            bridge.AddJoinMap(Key, joinMap);
 
             trilist.SetBool(joinMap.DeviceOnline.JoinNumber, device.IsOnline);
             trilist.SetUshort(joinMap.VideoInput.JoinNumber, (ushort) device.Control.ActiveVideoSourceFeedback);
