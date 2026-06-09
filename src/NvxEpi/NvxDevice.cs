@@ -1121,18 +1121,21 @@ namespace NvxEpi
                 }
             };
 
-            device.DmNaxRouting.DmNaxRoutingChange += (s, e) =>
+            if (device.DmNaxRouting is { } dmNax)
             {
-                this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(device.DmNaxRouting.DmNaxRoutingChange));
-                trilist.SetString(joinMap.NaxTxAddress.JoinNumber, device.DmNaxRouting.DmNaxTransmit.MulticastAddress.StringValue);
-                trilist.SetString(joinMap.NaxRxAddress.JoinNumber, device.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue);
-            };
+                dmNax.DmNaxRoutingChange += (s, e) =>
+                {
+                    this.LogDebug("Received event {EventId} from:{Event}", e.EventId, nameof(dmNax.DmNaxRoutingChange));
+                    trilist.SetString(joinMap.NaxTxAddress.JoinNumber, dmNax.DmNaxTransmit.MulticastAddress.StringValue);
+                    trilist.SetString(joinMap.NaxRxAddress.JoinNumber, dmNax.DmNaxReceive.MulticastAddress.StringValue);
+                };
+            }
 
             StreamUrlFeedback.LinkInputSig(trilist.StringInput[joinMap.StreamUrl.JoinNumber]);
             trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetIncomingStreamUrl);
             trilist.SetStringSigAction(joinMap.NaxRxAddress.JoinNumber, SetIncomingDmNaxStreamAddress);
 
-            if (device.HdmiIn[1] is { } hdmiIn1)
+            if (device.HdmiIn?[1] is { } hdmiIn1)
             {
                 hdmiIn1.StreamChange += (s, e) =>
                 {
@@ -1162,7 +1165,7 @@ namespace NvxEpi
                 trilist.SetString(joinMap.Hdmi1Name.JoinNumber, dmIn.NameFeedback.StringValue);
             }
 
-            if (device.HdmiIn[2] is { } hdmiIn2)
+            if (device.HdmiIn?[2] is { } hdmiIn2)
             {
                 hdmiIn2.StreamChange += (s, e) =>
                 {
