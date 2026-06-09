@@ -1165,7 +1165,7 @@ namespace NvxEpi
                 trilist.SetString(joinMap.Hdmi1Name.JoinNumber, dmIn.NameFeedback.StringValue);
             }
 
-            if (device.HdmiIn?[2] is { } hdmiIn2)
+            if (device.HdmiIn?.Count >= 2 && device.HdmiIn[2] is { } hdmiIn2)
             {
                 hdmiIn2.StreamChange += (s, e) =>
                 {
