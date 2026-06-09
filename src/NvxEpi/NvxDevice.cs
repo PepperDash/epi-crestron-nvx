@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace NvxEpi
 {
-    public class NvxDevice : EssentialsDevice, INvxDevice, INvxNetworkPortInformation, IRoutingWithFeedback, IHasFeedback, ICommunicationMonitor, IBridgeAdvanced, IComPorts
+    public class NvxDevice : EssentialsDevice, INvxDevice, INvxNetworkPortInformation, IRoutingWithFeedback, IHasFeedback, ICommunicationMonitor, IBridgeAdvanced, IComPorts, IIROutputPorts
     {
         public enum NvxInputSelector
         {
@@ -461,6 +461,10 @@ namespace NvxEpi
         public CrestronCollection<ComPort> ComPorts => device.ComPorts;
 
         public int NumberOfComPorts => device.NumberOfComPorts;
+
+        public CrestronCollection<IROutputPort> IROutputPorts => device.IROutputPorts;
+
+        public int NumberOfIROutputPorts => device.NumberOfIROutputPorts;
 
         public List<NvxNetworkPortInformation> NetworkPorts => networkPortInfo.NetworkPorts;
 
