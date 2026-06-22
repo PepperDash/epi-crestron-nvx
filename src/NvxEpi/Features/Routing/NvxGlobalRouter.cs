@@ -153,18 +153,18 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
                 .ToDictionary(i => i.Key, i => i);
 
             this.LogDebug("Mock Device inputs: {count}", mockInputSlots.Count);
-            this.LogDebug("Real Device inputs: {count}", InputSlots.Count);
+            this.LogDebug("Real Device inputs: {count}", _inputSlots.Count);
 
             foreach (var kvp in mockInputSlots)
             {
-                InputSlots[kvp.Key] = kvp.Value;
+                _inputSlots[kvp.Key] = kvp.Value;
             }
 
-            this.LogDebug("Total input: {count}", InputSlots.Count);
+            this.LogDebug("Total input: {count}", _inputSlots.Count);
 
             var clearInput = new NvxMatrixClearInput();
 
-            InputSlots.Add(clearInput.Key, clearInput);
+            _inputSlots.Add(clearInput.Key, clearInput);
 
             _outputSlots = DeviceManager
                 .AllDevices.OfType<NvxBaseDevice>()
