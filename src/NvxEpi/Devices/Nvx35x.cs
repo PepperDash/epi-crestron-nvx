@@ -170,7 +170,23 @@ public class Nvx35X :
 
     public Cec StreamCec
     {
-        get { return Hardware.HdmiOut.StreamCec; }
+        get
+        {
+            if (IsTransmitter)
+            {
+                this.LogVerbose("CEC is not available in transmitter mode");
+                return null;
+            }
+
+            var hdmiOut = Hardware?.HdmiOut;
+            if (hdmiOut == null)
+            {
+                this.LogWarning("Unable to access StreamCec; HdmiOut is not available");
+                return null;
+            }
+
+            return hdmiOut.StreamCec;
+        }
     }
 
     public ReadOnlyDictionary<uint, BoolFeedback> SyncDetected
