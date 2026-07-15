@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiOutput;
@@ -30,6 +31,7 @@ public class NvxD3X :
     IIROutputPorts,
     IHdmiOutput,
     IRoutingWithFeedback,
+    ICec,
     IBasicVolumeWithFeedback
 {
     private IBasicVolumeWithFeedback _audio;
@@ -52,7 +54,7 @@ public class NvxD3X :
         var result = base.CustomActivate();
 
         _audio = new NvxD3XAudio(hardware, this);
-        _hdmiOutput = new HdmiOutput(this);
+        _hdmiOutput = new NvxEpi.Features.Hdmi.Output.HdmiOutput(this);
 
         Feedbacks.AddRange(new[] { (Feedback)_audio.MuteFeedback, _audio.VolumeLevelFeedback });
 
@@ -95,6 +97,11 @@ public class NvxD3X :
     }
 
     public new DmNvxD3x Hardware { get; private set; }
+
+    public Cec StreamCec
+    {
+        get { return Hardware.HdmiOut.StreamCec; }
+    }
 
     public IntFeedback HorizontalResolution
     {
