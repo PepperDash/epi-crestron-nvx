@@ -100,7 +100,17 @@ public class NvxD3X :
 
     public Cec StreamCec
     {
-        get { return Hardware.HdmiOut.StreamCec; }
+        get
+        {
+            var hdmiOut = Hardware?.HdmiOut;
+            if (hdmiOut == null)
+            {
+                this.LogWarning("Unable to access StreamCec; HdmiOut is not available");
+                return null;
+            }
+
+            return hdmiOut.StreamCec;
+        }
     }
 
     public IntFeedback HorizontalResolution
