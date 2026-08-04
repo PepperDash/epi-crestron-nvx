@@ -411,7 +411,7 @@ public abstract class NvxBaseDevice
 
             Hardware.Control.Name.StringValue = _hardwareName;
 
-            if (IsTransmitter || hardware is DmNvxE30)
+            if (IsTransmitter || hardware is DmNvxE20 || hardware is DmNvxE30)
                 Hardware.SetTxDefaults(props);
             else
                 Hardware.SetRxDefaults(props);

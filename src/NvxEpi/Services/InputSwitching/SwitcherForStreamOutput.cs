@@ -57,6 +57,10 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
             _device.SetVideoToHdmiInput1();
         else if (input == DeviceInputEnum.Hdmi2)
             _device.SetVideoToHdmiInput2();
+        else if (input == DeviceInputEnum.Usbc1)
+            _device.SetVideoToUsbcInput1();
+        else if (input == DeviceInputEnum.Usbc2)
+            _device.SetVideoToUsbcInput2();
         else if (input == DeviceInputEnum.Automatic)
             _device.SetVideoToAutomatic();
         else
@@ -75,6 +79,8 @@ public class SwitcherForStreamOutput : IHandleInputSwitch
             deviceWithAudioSwitching.SetAudioToHdmiInput1();
         else if (input == DeviceInputEnum.Hdmi2)
             deviceWithAudioSwitching.SetAudioToHdmiInput2();
+        else if (input == DeviceInputEnum.Usbc1 || input == DeviceInputEnum.Usbc2)
+            deviceWithAudioSwitching.SetAudioToInputAutomatic();
         else
             throw new NotSupportedException(input.Name);
     }

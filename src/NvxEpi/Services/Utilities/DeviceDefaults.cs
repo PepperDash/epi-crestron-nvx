@@ -9,7 +9,7 @@ public static class DeviceDefaults
 {
     public static void SetTxDefaults(this DmNvxBaseClass device, NvxDeviceProperties props)
     {
-        if (device is not DmNvxE3x)
+        if (device is not DmNvxE3x && device is not DmNvxE20)
         {
             device.Control.DeviceMode = eDeviceMode.Transmitter;
         }
