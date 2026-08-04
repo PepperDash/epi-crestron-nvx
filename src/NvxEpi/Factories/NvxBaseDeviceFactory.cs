@@ -225,6 +225,7 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                         };
                     }
                 case "dmnvxe20":
+                case "dmnvxe202g":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
                             props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
