@@ -85,7 +85,8 @@ public class NvxE20 :
         }
         catch (Exception ex)
         {
-            Debug.LogMessage(ex, "Exception activating device", this);
+            this.LogError(ex, "Exception activating device");
+            this.LogVerbose(ex.Message);
             return false;
         }
     }
@@ -139,15 +140,16 @@ public class NvxE20 :
         {
             if (outputSelector is not IHandleInputSwitch switcher)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Unable to execute switch. OutputSelector is not IHandleInputSwitch {outputSelectorType}", this, outputSelector.ToString());
+                var outputSelectorType = outputSelector?.GetType().FullName ?? "null";
+                this.LogError("Unable to execute switch. OutputSelector is not IHandleInputSwitch {outputSelectorType}", outputSelectorType);
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Switching {input} to {output} type {type}", inputSelector, outputSelector, signalType.ToString());
+            this.LogDebug("Switching {input} to {output} type {type}", inputSelector, outputSelector, signalType.ToString());
 
             if (inputSelector is null)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Device is DmNvxE20. 'None' input not available", this);
+                this.LogInformation("Device is DmNvxE20. 'None' input not available");
                 return;
             }
 
@@ -155,7 +157,8 @@ public class NvxE20 :
         }
         catch (Exception ex)
         {
-            Debug.LogMessage(ex, "Error executing switch!", this);
+            this.LogError(ex, "Error executing switch!");
+            this.LogVerbose(ex.Message);
         }
     }
 
