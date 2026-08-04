@@ -225,7 +225,6 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                         };
                     }
                 case "dmnvxe20":
-                case "dmnvxe202g":
                     {
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
                             props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
@@ -239,6 +238,22 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                             return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
                                 ? new DmNvxE20((uint)props.DeviceId, domain)
                                 : new DmNvxE20((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
+                        };
+                    }
+                case "dmnvxe202g":
+                    {
+                        if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
+                            props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return () => new DmNvxE20(props.Control.IpIdInt, Global.ControlSystem);
+                        }
+                        return () =>
+                        {
+                            var xio = GetDirector(props.ParentDeviceKey);
+
+                            return xio.Hardware.Domain.TryGetValue(props.DomainId, out DmXioDirectorBase.DmXioDomain domain)
+                                ? new DmNvxE202g((uint)props.DeviceId, domain)
+                                : new DmNvxE202g((uint)props.DeviceId, xio.Hardware.Domain.Values.FirstOrDefault());
                         };
                     }
                 case "dmnvxe30":
