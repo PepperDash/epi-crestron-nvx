@@ -245,7 +245,7 @@ public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T>
                         if (string.IsNullOrEmpty(props.ParentDeviceKey) ||
                             props.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
                         {
-                            return () => new DmNvxE20(props.Control.IpIdInt, Global.ControlSystem);
+                            return () => new DmNvxE202g(props.Control.IpIdInt, Global.ControlSystem);
                         }
                         return () =>
                         {
