@@ -52,8 +52,8 @@ public class NvxE20 :
 
             if (Hardware == null)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Hardware is null", this);
-                return base.CustomActivate();
+                this.LogWarning("Hardware is null");
+                return result;
             }
 
             Hardware.BaseEvent += (o, a) =>
