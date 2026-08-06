@@ -276,7 +276,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         // Remote devices in NVX world are the USB peripherals like keyboards or touchscreen
         var usbRemoteDevices = DeviceManager
             .AllDevices.OfType<IUsbStreamWithHardware>()
-            .Where(usb => usb.IsRemote && usb.Hardware.UsbInput != null);
+            .Where(usb => usb.IsRemote && usb.Hardware?.UsbInput != null);
 
         // Local devices in NVX world are the USB Hosts like a PC
         var usbLocalDevices = DeviceManager
