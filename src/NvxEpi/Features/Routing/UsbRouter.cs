@@ -281,7 +281,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         // Local devices in NVX world are the USB Hosts like a PC
         var usbLocalDevices = DeviceManager
             .AllDevices.OfType<IUsbStreamWithHardware>()
-            .Where(usb => !usb.IsRemote && usb.Hardware.UsbInput != null);
+            .Where(usb => !usb.IsRemote && usb.Hardware?.UsbInput != null);
 
         // A local device can have multiple remote devices, but a remote device can only have one local device.
         // remote devices will be treated as Outputs and local devices as Inputs to mimic traditional video routing behavior.
