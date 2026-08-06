@@ -116,11 +116,11 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
     private Dictionary<string, IRoutingInputSlot> _inputSlots = new();
     private Dictionary<string, IRoutingOutputSlot> _outputSlots = new();
-    public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(
-        kvp => (kvp.Value is NvxMatrixInput input && input.IsEnabled) || kvp.Value is NvxMatrixClearInput)
-            .ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value);
+public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp =>
+        kvp.Value is NvxMatrixClearInput
+        || kvp.Value is NvxMockMatrixInput
+        || (kvp.Value is NvxMatrixInput input && input.IsEnabled))
+    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     public Dictionary<string, IRoutingOutputSlot> OutputSlots => _outputSlots.Where(
         kvp => kvp.Value is NvxMatrixOutput output && output.IsEnabled)
             .ToDictionary(
