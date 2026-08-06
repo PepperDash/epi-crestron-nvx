@@ -37,7 +37,7 @@ public static class VideoInputExtensions
 
     public static void SetVideoToHdmiInput1(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
         {
             return;
         }
@@ -47,7 +47,7 @@ public static class VideoInputExtensions
 
     public static void SetVideoToHdmiInput2(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
         {
             return;
         }
@@ -57,7 +57,7 @@ public static class VideoInputExtensions
 
     public static void SetVideoToUsbcInput1(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
         {
             return;
         }
@@ -67,7 +67,7 @@ public static class VideoInputExtensions
 
     public static void SetVideoToUsbcInput2(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
         {
             return;
         }
@@ -77,7 +77,7 @@ public static class VideoInputExtensions
 
     public static void SetVideoToInputNone(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x)
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
         {
             return;
         }
@@ -87,7 +87,7 @@ public static class VideoInputExtensions
 
     public static void SetVideoToStream(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxD3x || device.IsTransmitter)
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x || device.IsTransmitter)
         {
             return;
         }

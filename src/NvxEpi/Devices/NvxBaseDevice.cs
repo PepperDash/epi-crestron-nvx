@@ -48,6 +48,7 @@ public abstract class NvxBaseDevice
     private ICurrentVideoInput _videoSwitcher;
     private ICurrentAudioInput _audioSwitcher;
     private ICurrentNaxInput _naxSwitcher;
+    private readonly NvxEnableMatchingProperties matchingProperties;
 
     private readonly RoutingPortCollection<RoutingInputPort> _inputPorts = new();
 
@@ -91,6 +92,34 @@ public abstract class NvxBaseDevice
 
         Feedbacks = new FeedbackCollection<Feedback>();
         var props = NvxDeviceProperties.FromDeviceConfig(config);
+        matchingProperties = props.EnableMatching;
+        EnabledFeedback = new BoolFeedback(Key + "-isEnabled", () => isEnabled);
+
+        EnabledFeedback.OutputChange += (sender, args) =>
+        {
+            this.LogInformation("EnabledFeedback changed to {newValue}", args.BoolValue);
+        };
+
+        isEnabled = true;
+        EnabledFeedback.FireUpdate();
+
+        if (matchingProperties != null)
+        {
+            PortInformationChanged += (sender, args) =>
+            {
+                if (!string.IsNullOrEmpty(matchingProperties.DefaultGateway))
+                {
+                    isEnabled = string.Equals(
+                        Hardware.Network.DefaultRouterFeedback.StringValue,
+                        matchingProperties.DefaultGateway,
+                        StringComparison.OrdinalIgnoreCase);
+                }
+
+                this.LogInformation("EnableMatching: Device {key} isEnabled set to {isEnabled} based on DefaultGateway {defaultGateway}", Key, isEnabled, matchingProperties.DefaultGateway);
+                EnabledFeedback.FireUpdate();
+            };
+        }
+
         DeviceId = props.DeviceId;
         IsTransmitter = isTransmitter;
 
@@ -157,12 +186,40 @@ public abstract class NvxBaseDevice
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Activating...", this);
 
+            if (matchingProperties == null)
+            {
+                this.LogInformation("EnableMatching: No matching properties set, device {key} is enabled by default", Key);
+                isEnabled = true;
+            }
+            else
+            {
+                IsOnline.OutputChange += (sender, args) =>
+                {
+                    if (!args.BoolValue)
+                    {
+                        return;
+                    }
+
+                    if (!string.IsNullOrEmpty(matchingProperties.DefaultGateway))
+                    {
+                        isEnabled = string.Equals(
+                            Hardware.Network.DefaultRouterFeedback.StringValue,
+                            matchingProperties.DefaultGateway,
+                            StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    this.LogInformation("EnableMatching: Device {key} isEnabled set to {isEnabled} based on DefaultGateway {defaultGateway}", Key, isEnabled, matchingProperties.DefaultGateway);
+                    EnabledFeedback.FireUpdate();
+                };
+            }
+
             DeviceMode = DeviceModeFeedback.GetFeedback(Hardware);
 
             Feedbacks.AddRange(
                 new Feedback[]
                 {
                     IsOnline,
+                    EnabledFeedback,
                     new IntFeedback("DeviceId", () => DeviceId),
                     DeviceNameFeedback.GetFeedback(Name),
                     DeviceIpFeedback.GetFeedback(Hardware),
@@ -170,7 +227,7 @@ public abstract class NvxBaseDevice
                     DeviceModeNameFeedback.GetFeedback(Hardware),
                     DanteInputFeedback.GetFeedback(Hardware),
                     DanteInputValueFeedback.GetFeedback(Hardware),
-                    DeviceMode,
+                    DeviceMode
                 }
             );
 
@@ -184,7 +241,7 @@ public abstract class NvxBaseDevice
             CommunicationMonitor.Start();
             Hardware.Network.NetworkChange += (sender, args) => UpdateDeviceInfo();
 
-            _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
+            //
 
             if (IsTransmitter || Hardware == null)
                 return base.CustomActivate();
@@ -199,6 +256,11 @@ public abstract class NvxBaseDevice
             Debug.LogMessage(ex, "Exception in base custom activate", this);
             return false;
         }
+    }
+
+    public override void Initialize()
+    {
+        _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
     }
 
     protected void AddMcMessengers()
@@ -349,7 +411,7 @@ public abstract class NvxBaseDevice
 
             Hardware.Control.Name.StringValue = _hardwareName;
 
-            if (IsTransmitter || hardware is DmNvxE30)
+            if (IsTransmitter || hardware is DmNvxE20 || hardware is DmNvxE30)
                 Hardware.SetTxDefaults(props);
             else
                 Hardware.SetRxDefaults(props);
@@ -462,6 +524,11 @@ public abstract class NvxBaseDevice
                 port.Number
             ))
             .ToList();
+
+    private bool isEnabled;
+    public bool IsEnabled => isEnabled;
+
+    public BoolFeedback EnabledFeedback { get; }
 
     public event DeviceInfoChangeHandler DeviceInfoChanged;
 

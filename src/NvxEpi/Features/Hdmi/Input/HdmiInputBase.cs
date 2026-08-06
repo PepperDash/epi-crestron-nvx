@@ -111,4 +111,8 @@ public abstract class HdmiInputBase : IHdmiInput
     public ReadOnlyDictionary<uint, StringFeedback> HdrType { get { return new ReadOnlyDictionary<uint, StringFeedback>(_hdrType); } }
 
     public ReadOnlyDictionary<uint, StringFeedback> HdcpSupport { get { return new ReadOnlyDictionary<uint, StringFeedback>(_hdcpSupport); } }
+
+    public bool IsEnabled => _device.IsEnabled;
+
+    public BoolFeedback EnabledFeedback => _device.EnabledFeedback;
 }

@@ -99,4 +99,8 @@ public class VideoStream : IStreamWithHardware
     {
         get { return _multicastVideoAddress; }
     }
+
+    public bool IsEnabled => _device.IsEnabled;
+
+    public BoolFeedback EnabledFeedback => _device.EnabledFeedback;
 }

@@ -1,16 +1,16 @@
-﻿using NvxEpi.Abstractions.Stream;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Devices;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMatrixOutput :IRoutingOutputSlot
-{       
+public class NvxMatrixOutput : IRoutingOutputSlot
+{
     private readonly NvxBaseDevice _device;
 
     public NvxMatrixOutput(NvxBaseDevice device)
@@ -22,9 +22,10 @@ public class NvxMatrixOutput :IRoutingOutputSlot
             _device.CurrentStreamId.OutputChange += OnPrimaryOutputChange;
 
             _device.CurrentSecondaryAudioStreamId.OutputChange += OnSecondaryAudioOutputChange;
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
-            Debug.LogMessage(ex, "Exception creating NvxMatrixOutput {ex}", this, ex.Message);                
+            Debug.LogMessage(ex, "Exception creating NvxMatrixOutput {ex}", this, ex.Message);
         }
     }
 
@@ -94,6 +95,8 @@ public class NvxMatrixOutput :IRoutingOutputSlot
     public string Name => _device.Name;
 
     public string Key => $"{_device.Key}";
+
+    public bool IsEnabled => _device.IsEnabled;
 
     public event EventHandler OutputSlotChanged;
 }

@@ -44,8 +44,8 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         AddPostActivationAction(BuildMatrixRouting);
 
-        InputSlots = new Dictionary<string, IRoutingInputSlot>();
-        OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
+        //InputSlots = new Dictionary<string, IRoutingInputSlot>();
+        //OutputSlots = new Dictionary<string, IRoutingOutputSlot>();
     }
 
     public static NvxGlobalRouter Instance
@@ -114,15 +114,25 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
         throw new NotImplementedException("Execute Numeric Switch");
     }
 
-    public Dictionary<string, IRoutingInputSlot> InputSlots { get; private set; }
+    private Dictionary<string, IRoutingInputSlot> _inputSlots = new();
+    private Dictionary<string, IRoutingOutputSlot> _outputSlots = new();
+public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp =>
+        kvp.Value is NvxMatrixClearInput
+        || kvp.Value is NvxMockMatrixInput
+        || (kvp.Value is NvxMatrixInput input && input.IsEnabled))
+    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+    public Dictionary<string, IRoutingOutputSlot> OutputSlots => _outputSlots.Where(
+        kvp => kvp.Value is NvxMatrixOutput output && output.IsEnabled)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value);
 
-    public Dictionary<string, IRoutingOutputSlot> OutputSlots { get; private set; }
 
     private void BuildMatrixRouting()
     {
         try
         {
-            InputSlots = DeviceManager
+            _inputSlots = DeviceManager
                 .AllDevices.OfType<NvxBaseDevice>()
                 .Where(t => t.IsTransmitter)
                 .Select(t =>
@@ -143,20 +153,20 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
                 .ToDictionary(i => i.Key, i => i);
 
             this.LogDebug("Mock Device inputs: {count}", mockInputSlots.Count);
-            this.LogDebug("Real Device inputs: {count}", InputSlots.Count);
+            this.LogDebug("Real Device inputs: {count}", _inputSlots.Count);
 
             foreach (var kvp in mockInputSlots)
             {
-                InputSlots[kvp.Key] = kvp.Value;
+                _inputSlots[kvp.Key] = kvp.Value;
             }
 
-            this.LogDebug("Total input: {count}", InputSlots.Count);
+            this.LogDebug("Total input: {count}", _inputSlots.Count);
 
             var clearInput = new NvxMatrixClearInput();
 
-            InputSlots.Add(clearInput.Key, clearInput);
+            _inputSlots.Add(clearInput.Key, clearInput);
 
-            OutputSlots = DeviceManager
+            _outputSlots = DeviceManager
                 .AllDevices.OfType<NvxBaseDevice>()
                 .Where(t => !t.IsTransmitter)
                 .Select((t) => new NvxMatrixOutput(t))

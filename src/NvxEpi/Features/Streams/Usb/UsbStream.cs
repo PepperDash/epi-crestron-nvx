@@ -391,4 +391,8 @@ public class UsbStream : IUsbStreamWithHardware
     {
         get { return _device.IsOnline; }
     }
+
+    public bool IsEnabled => _device.IsEnabled;
+
+    public BoolFeedback EnabledFeedback => _device.EnabledFeedback;
 }

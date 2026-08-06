@@ -92,7 +92,7 @@ public class SecondaryAudioStream : ISecondaryAudioStreamWithHardware
 
     public StringFeedback SecondaryAudioAddress
     {
-        get 
+        get
         {
             return _secondaryAudioAddres;
         }
@@ -112,4 +112,8 @@ public class SecondaryAudioStream : ISecondaryAudioStreamWithHardware
     {
         get { return _device.Hardware; }
     }
+
+    public bool IsEnabled => _device.IsEnabled;
+
+    public BoolFeedback EnabledFeedback => _device.EnabledFeedback;
 }

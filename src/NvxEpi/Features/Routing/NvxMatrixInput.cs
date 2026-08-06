@@ -1,10 +1,10 @@
-﻿using NvxEpi.Abstractions.HdmiInput;
+﻿using System;
+using System.Linq;
+using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Devices;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-using System;
-using System.Linq;
 
 namespace NvxEpi.Features.Routing;
 
@@ -12,10 +12,10 @@ public class NvxMatrixInput : IRoutingInputSlot
 {
     private readonly NvxBaseDevice _device;
 
-    public NvxMatrixInput(NvxBaseDevice device):base()
+    public NvxMatrixInput(NvxBaseDevice device) : base()
     {
         _device = device;
-        
+
         try
         {
             if (_device is not IHdmiInput hdmiInput)
@@ -40,12 +40,13 @@ public class NvxMatrixInput : IRoutingInputSlot
 
                 feedback.Value.OutputChange += (o, a) => VideoSyncChanged?.Invoke(this, new EventArgs());
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.LogMessage(ex, "Exception creating Matrix Input", device);
         }
-        
-    }        
+
+    }
 
     public string TxDeviceKey => _device.Key;
 
@@ -60,6 +61,8 @@ public class NvxMatrixInput : IRoutingInputSlot
     public bool VideoSyncDetected => _device is IHdmiInput inputDevice && inputDevice.SyncDetected.Any(fb => fb.Value.BoolValue);
 
     public string Key => $"{_device.Key}";
+
+    public bool IsEnabled => _device.IsEnabled;
 
     public event EventHandler VideoSyncChanged;
 }

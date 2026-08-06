@@ -7,5 +7,6 @@ namespace NvxEpi.Abstractions;
 public interface INvxDevice : IRoutingInputsOutputs,
     IHasFeedback, IOnline, ITransmitterReceiver, IKeyName, IDeviceId
 {
-
+    bool IsEnabled { get; }
+    BoolFeedback EnabledFeedback { get; }
 }

@@ -7,7 +7,6 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.HdmiInput;
-using NvxEpi.Abstractions.Usb;
 using NvxEpi.Enums;
 using NvxEpi.Extensions;
 using NvxEpi.Services.Bridge;
@@ -31,7 +30,6 @@ public class NvxE3X :
     IRoutingWithFeedback
 {
     private IHdmiInput _hdmiInputs;
-    private readonly IUsbStream _usbStream;
 
     public event RouteChangedEventHandler RouteChanged;
 
@@ -57,7 +55,7 @@ public class NvxE3X :
             if (Hardware == null)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Hardware is null", this);
-                return base.CustomActivate();
+                return result;
             }
 
             Hardware.BaseEvent += (o, a) =>
@@ -109,11 +107,6 @@ public class NvxE3X :
     public CrestronCollection<IROutputPort> IROutputPorts
     {
         get { return Hardware.IROutputPorts; }
-    }
-
-    public bool IsRemote
-    {
-        get { return _usbStream.IsRemote; }
     }
 
     public int NumberOfComPorts

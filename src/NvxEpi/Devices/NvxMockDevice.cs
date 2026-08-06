@@ -365,4 +365,9 @@ public class NvxMockDevice
         deviceBridge.LinkToApi(trilist, joinStart, joinMapKey, bridge);
         trilist.SetStringSigAction(joinMap.StreamUrl.JoinNumber, SetStreamUrl);
     }
+
+
+    public bool IsEnabled => true;
+
+    public BoolFeedback EnabledFeedback { get; } = new BoolFeedback("EnabledFeedback", () => true);
 }

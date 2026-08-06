@@ -21,6 +21,10 @@ public class StreamUrlFeedback
         {
             (device as DmNvxE3x).SourceTransmit.StreamChange += (stream, args) => feedback.FireUpdate();
         }
+        else if (device is DmNvxE20)
+        {
+            (device as DmNvxE20).SourceTransmit.StreamChange += (stream, args) => feedback.FireUpdate();
+        }
         else if (device is DmNvxE760x)
         {
             (device as DmNvxE760x).SourceTransmit.StreamChange += (stream, args) => feedback.FireUpdate();
