@@ -93,6 +93,9 @@ public class NvxDeviceBridge : IBridgeAdvanced
             if (feedback.Key == VideoInputValueFeedback.Key)
                 joinNumber = joinMap.VideoInput.JoinNumber;
 
+            if (feedback.Key == AutomaticInputRoutingEnabledFeedback.Key)
+                joinNumber = joinMap.AutoInputRoutingEnable.JoinNumber;
+
             if (feedback.Key == AudioInputFeedback.Key)
                 joinNumber = joinMap.AudioInput.JoinNumber;
 
@@ -183,7 +186,10 @@ public class NvxDeviceBridge : IBridgeAdvanced
         LinkNetworkPorts(trilist, joinMap);
 
         if (_device is ICurrentVideoInput videoInput)
+        {
             trilist.SetUShortSigAction(joinMap.VideoInput.JoinNumber, videoInput.SetVideoInput);
+            trilist.SetBoolSigAction(joinMap.AutoInputRoutingEnable.JoinNumber, videoInput.SetAutomaticInputRouting);
+        }
 
         var audioInput = _device as ICurrentAudioInput;
         if (audioInput != null)
