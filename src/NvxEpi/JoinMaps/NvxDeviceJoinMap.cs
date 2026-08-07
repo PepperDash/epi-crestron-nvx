@@ -291,6 +291,20 @@ public class NvxDeviceJoinMap : JoinMapBaseAdvanced
             Description = "Dante Input"
         });
 
+    [JoinName("AutoInputRoutingEnable")]
+    public JoinDataComplete AutoInputRoutingEnable = new(
+        new JoinData
+        {
+            JoinNumber = 10,
+            JoinSpan = 1
+        },
+        new JoinMetadata
+        {
+            JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+            JoinType = eJoinType.Digital,
+            Description = "Automatic Input Routing Enable / Feedback"
+        });
+
     [JoinName("SupportsNax")] public JoinDataComplete SupportsNax = new(
         new JoinData
             {

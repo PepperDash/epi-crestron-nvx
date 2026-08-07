@@ -42,6 +42,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Hdmi1'");
+        device.Hardware.Control.DisableAutomaticInputRouting();
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
     }
 
@@ -52,6 +53,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Hdmi2'");
+        device.Hardware.Control.DisableAutomaticInputRouting();
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
     }
 
@@ -62,6 +64,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Usbc1'");
+        device.Hardware.Control.DisableAutomaticInputRouting();
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc1;
     }
 
@@ -72,6 +75,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Usbc2'");
+        device.Hardware.Control.DisableAutomaticInputRouting();
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc2;
     }
 
@@ -82,6 +86,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Disable'");
+        device.Hardware.Control.DisableAutomaticInputRouting();
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
     }
 
@@ -93,12 +98,43 @@ public static class VideoInputExtensions
         }
 
         device.LogDebug("Switching Video Input to : 'Stream'");
+        device.Hardware.Control.DisableAutomaticInputRouting();
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
     }
 
     public static void SetVideoToAutomatic(this ICurrentVideoInput device)
     {
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
+        {
+            return;
+        }
+
         device.LogDebug("Switching Video Input to : 'Automatic'");
         device.Hardware.Control.EnableAutomaticInputRouting();
+    }
+
+    public static void SetAutomaticInputRouting(this ICurrentVideoInput device, bool pressed)
+    {
+        // bridge join is a press/release digital signal; act once per press and ignore the release
+        if (!pressed)
+        {
+            return;
+        }
+
+        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
+        {
+            return;
+        }
+
+        if (device.Hardware.Control.EnableAutomaticInputRoutingFeedback.BoolValue)
+        {
+            device.LogDebug("Disabling Automatic Input Routing");
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
+        else
+        {
+            device.LogDebug("Enabling Automatic Input Routing");
+            device.Hardware.Control.EnableAutomaticInputRouting();
+        }
     }
 }

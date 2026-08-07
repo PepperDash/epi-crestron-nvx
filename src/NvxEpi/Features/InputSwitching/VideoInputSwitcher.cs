@@ -10,6 +10,7 @@ public class VideoInputSwitcher : ICurrentVideoInput
 {
     private readonly StringFeedback _currentVideoInput;
     private readonly IntFeedback _currentVideoInputValue;
+    private readonly BoolFeedback _automaticInputRoutingEnabled;
     private readonly INvxDeviceWithHardware _device;
 
     public VideoInputSwitcher(INvxDeviceWithHardware device)
@@ -18,9 +19,11 @@ public class VideoInputSwitcher : ICurrentVideoInput
 
         _currentVideoInput = VideoInputFeedback.GetFeedback(Hardware);
         _currentVideoInputValue = VideoInputValueFeedback.GetFeedback(Hardware);
+        _automaticInputRoutingEnabled = AutomaticInputRoutingEnabledFeedback.GetFeedback(Hardware);
 
         Feedbacks.Add(_currentVideoInput);
         Feedbacks.Add(_currentVideoInputValue);
+        Feedbacks.Add(_automaticInputRoutingEnabled);
     }
 
     public StringFeedback CurrentVideoInput
@@ -31,6 +34,11 @@ public class VideoInputSwitcher : ICurrentVideoInput
     public IntFeedback CurrentVideoInputValue
     {
         get { return _currentVideoInputValue; }
+    }
+
+    public BoolFeedback AutomaticInputRoutingEnabled
+    {
+        get { return _automaticInputRoutingEnabled; }
     }
 
     public int DeviceId
