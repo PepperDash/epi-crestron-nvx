@@ -8,7 +8,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
 
-public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
+public class UsbRouter : EssentialsDevice, IRoutingMidpointWithFeedback
 {
     public UsbRouter(string key)
         : base(key)
@@ -22,7 +22,12 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
     public event RouteChangedEventHandler RouteChanged;
 
-    #region IRouting Members
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+    {
+        ExecuteSwitch(null, outputSelector, signalType);
+    }
+
+    #region IRoutingMidpointWithFeedback Members
 
     public void ExecuteSwitch(
         object inputSelector,

@@ -7,7 +7,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMockMatrixInput : IRoutingInputSlot
+public class NvxMockMatrixInput : INvxInputSlot
 {
     private readonly NvxMockDevice device;
 

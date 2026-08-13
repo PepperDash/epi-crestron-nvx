@@ -8,9 +8,10 @@ using PepperDash.Essentials.Core;
 using System.Linq;
 
 namespace NvxEpi.Extensions;
+
 public static class RoutingFeedbackExtensions
 {
-    public static RouteSwitchDescriptor HandleBaseEvent(this IRoutingWithFeedback parent, BaseEventArgs args)
+    public static RouteSwitchDescriptor HandleBaseEvent(this IRoutingMidpointWithFeedback parent, BaseEventArgs args)
     {
         if (parent is not NvxBaseDevice parentBase)
         {
@@ -69,8 +70,8 @@ public static class RoutingFeedbackExtensions
 
                         return newRouteDescriptor;
                     }
-                    
-                    if(currentInputPort == null)
+
+                    if (currentInputPort == null)
                     {
                         parent.CurrentRoutes.Remove(existingRouteDescriptor);
                         return null;
@@ -78,7 +79,7 @@ public static class RoutingFeedbackExtensions
 
                     existingRouteDescriptor.InputPort = currentInputPort;
 
-                    return existingRouteDescriptor;                    
+                    return existingRouteDescriptor;
                 }
             case DMInputEventIds.DmNaxAudioSourceFeedbackEventId: //Analog/HDMI Output Audio source
                 {
@@ -170,6 +171,6 @@ public static class RoutingFeedbackExtensions
                 }
             default:
                 return null;
-        }        
+        }
     }
 }

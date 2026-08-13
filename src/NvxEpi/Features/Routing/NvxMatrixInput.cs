@@ -8,7 +8,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMatrixInput : IRoutingInputSlot
+public class NvxMatrixInput : INvxInputSlot
 {
     private readonly NvxBaseDevice _device;
 

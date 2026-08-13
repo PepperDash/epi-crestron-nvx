@@ -29,7 +29,7 @@ public class NvxD3X :
     IComPorts,
     IIROutputPorts,
     IHdmiOutput,
-    IRoutingWithFeedback,
+    IRoutingMidpointWithFeedback,
     ICec,
     IBasicVolumeWithFeedback
 {
@@ -168,6 +168,8 @@ public class NvxD3X :
             Debug.LogMessage(ex, "Error executing switch!", this);
         }
     }
+
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType) { }
 
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {

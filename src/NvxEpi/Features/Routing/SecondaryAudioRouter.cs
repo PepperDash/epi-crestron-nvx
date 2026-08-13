@@ -16,7 +16,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
 
-public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
+public class SecondaryAudioRouter : EssentialsDevice, IRoutingMidpointWithFeedback
 {
     public SecondaryAudioRouter(string key)
         : base(key)
@@ -180,6 +180,11 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
     public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
+
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+    {
+        ExecuteSwitch(null, outputSelector, signalType);
+    }
 
     public void ExecuteSwitch(
         object inputSelector,

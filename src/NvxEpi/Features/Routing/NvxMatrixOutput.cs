@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMatrixOutput : IRoutingOutputSlot
+public class NvxMatrixOutput : INvxOutputSlot
 {
     private readonly NvxBaseDevice _device;
 
@@ -31,7 +31,7 @@ public class NvxMatrixOutput : IRoutingOutputSlot
 
     public string RxDeviceKey => _device.Key;
 
-    private readonly Dictionary<eRoutingSignalType, IRoutingInputSlot> currentRoutes = new()
+    private readonly Dictionary<eRoutingSignalType, INvxInputSlot> currentRoutes = new()
     {
         {eRoutingSignalType.Audio, default },
         {eRoutingSignalType.Video, default },
@@ -68,7 +68,7 @@ public class NvxMatrixOutput : IRoutingOutputSlot
         SetInputRoute(eRoutingSignalType.Audio, inputSlot);
     }
 
-    private void SetInputRoute(eRoutingSignalType type, IRoutingInputSlot input)
+    private void SetInputRoute(eRoutingSignalType type, INvxInputSlot input)
     {
         if (currentRoutes.ContainsKey(type))
         {
@@ -84,7 +84,7 @@ public class NvxMatrixOutput : IRoutingOutputSlot
         OutputSlotChanged?.Invoke(this, new EventArgs());
     }
 
-    public Dictionary<eRoutingSignalType, IRoutingInputSlot> CurrentRoutes => currentRoutes;
+    public Dictionary<eRoutingSignalType, INvxInputSlot> CurrentRoutes => currentRoutes;
 
     public int SlotNumber => _device.DeviceId;
 

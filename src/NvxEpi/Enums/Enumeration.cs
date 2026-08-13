@@ -73,10 +73,10 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
             var a = baseType.Assembly;
 
             Debug.LogVerbose("Base type: {0}", baseType.Name);
-            IEnumerable<CType> enumTypes = a.GetTypes().Where(baseType.IsAssignableFrom);
+            IEnumerable<Type> enumTypes = a.GetTypes().Where(baseType.IsAssignableFrom);
 
             var options = new List<TEnum>();
-            foreach (CType enumType in enumTypes)
+            foreach (Type enumType in enumTypes)
             {
                 Debug.LogVerbose("Found enum type: {0}", enumType.Name);
                 var fields =

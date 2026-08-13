@@ -16,7 +16,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
 
-public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
+public class PrimaryStreamRouter : EssentialsDevice, IRoutingMidpointWithFeedback
 {
     public PrimaryStreamRouter(string key)
         : base(key)
@@ -65,6 +65,11 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
     public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
+
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+    {
+        ExecuteSwitch(null, outputSelector, signalType);
+    }
 
     public void ExecuteSwitch(
         object inputSelector,

@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Abstractions;
 
-public interface INvxDevice : IRoutingInputsOutputs,
+public interface INvxDevice : IRoutingMidpoint,
     IHasFeedback, IOnline, ITransmitterReceiver, IKeyName, IDeviceId
 {
     bool IsEnabled { get; }
