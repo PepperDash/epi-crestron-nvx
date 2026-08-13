@@ -66,7 +66,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
         }
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         _transmitters ??= GetTransmitterDictionary();
 
@@ -196,10 +196,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
                 outputSelector
             );
 
-            if (
-                signalType.Is(eRoutingSignalType.UsbInput)
-                || signalType.Is(eRoutingSignalType.UsbOutput)
-            )
+            if (signalType.Is(eRoutingSignalType.Usb))
             {
                 this.LogInformation(
                     "Skipping switch with USB signal type {signalType}",

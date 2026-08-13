@@ -44,7 +44,7 @@ public class NvxMockMatrixInput : IRoutingInputSlot
     public int SlotNumber => device.DeviceId;
 
     public eRoutingSignalType SupportedSignalTypes =>
-        eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
+        eRoutingSignalType.AudioVideo;
 
     public string Name => device.Name;
 

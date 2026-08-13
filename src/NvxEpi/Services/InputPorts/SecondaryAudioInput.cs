@@ -11,7 +11,7 @@ public class SecondaryAudioInput
     {
         var port = new RoutingInputPort(
             DeviceInputEnum.SecondaryAudio.Name,
-            eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
+            eRoutingSignalType.Audio | eRoutingSignalType.AudioVideo,
             eRoutingPortConnectionType.Streaming,
             DeviceInputEnum.SecondaryAudio,
             device)

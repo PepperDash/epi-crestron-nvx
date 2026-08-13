@@ -12,7 +12,7 @@ namespace NvxEpi.Factories;
 
 public abstract class NvxBaseDeviceFactory<T> : EssentialsPluginDeviceFactory<T> where T : EssentialsDevice
 {
-    public const string MinumumEssentialsVersion = "2.28.0";
+    public const string MinumumEssentialsVersion = "3.0.0-dev-v3-routing.63";
 
     static NvxBaseDeviceFactory()
     {

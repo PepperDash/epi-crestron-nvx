@@ -30,10 +30,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         eRoutingSignalType signalType
     )
     {
-        if (
-            !signalType.Has(eRoutingSignalType.UsbInput)
-            && !signalType.Has(eRoutingSignalType.UsbOutput)
-        )
+        if (!signalType.Has(eRoutingSignalType.Usb))
         {
             this.LogDebug("Skipping switch with signal type {signalType}", signalType);
             return;
@@ -88,7 +85,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         ExecuteSwitch(
             inputPort?.Selector ?? null,
             outputPort.Selector,
-            eRoutingSignalType.UsbInput
+            eRoutingSignalType.Usb
         );
     }
 
@@ -290,7 +287,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         {
             var outputPort = new RoutingOutputPort(
                 $"{remoteDevice.Key}-UsbRemote",
-                eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput,
+                eRoutingSignalType.Usb,
                 eRoutingPortConnectionType.UsbC,
                 remoteDevice,
                 this
@@ -360,7 +357,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
         {
             var inputPort = new RoutingInputPort(
                 $"{localDevice.Key}-UsbLocal",
-                eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput,
+                eRoutingSignalType.Usb,
                 eRoutingPortConnectionType.UsbC,
                 localDevice,
                 this
@@ -421,7 +418,7 @@ public class UsbRouter : EssentialsDevice, IRoutingWithFeedback
 
         var clearRoutePort = new RoutingInputPort(
             "None",
-            eRoutingSignalType.UsbInput | eRoutingSignalType.UsbOutput,
+            eRoutingSignalType.Usb,
             eRoutingPortConnectionType.UsbC,
             null,
             this

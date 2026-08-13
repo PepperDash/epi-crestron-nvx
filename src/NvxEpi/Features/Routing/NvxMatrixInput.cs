@@ -52,7 +52,7 @@ public class NvxMatrixInput : IRoutingInputSlot
 
     public int SlotNumber => _device.DeviceId;
 
-    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
+    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo;
 
     public string Name => _device.Name;
 

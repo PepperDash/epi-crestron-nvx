@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.HdmiInput;
 using NvxEpi.Abstractions.HdmiOutput;
@@ -62,7 +62,7 @@ public abstract class NvxBaseDevice
 
     private static IQueue<IQueueMessage> _queue;
 
-    private Timer debounceTimer;
+    private System.Timers.Timer debounceTimer;
 
     static NvxBaseDevice()
     {
@@ -86,7 +86,7 @@ public abstract class NvxBaseDevice
 
         _queue ??= new GenericQueue(
             "NvxDeviceBuildQueue",
-            Thread.eThreadPriority.LowestPriority,
+            ThreadPriority.Lowest,
             200
         );
 
@@ -137,7 +137,7 @@ public abstract class NvxBaseDevice
         AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
         AddPostActivationAction(() => RegisterForNetworkChangeFeedback());
 
-        debounceTimer = new Timer(30000) { Enabled = false, AutoReset = false };
+        debounceTimer = new System.Timers.Timer(30000) { Enabled = false, AutoReset = false };
 
         debounceTimer.Elapsed += (sender, args) =>
         {
@@ -180,7 +180,7 @@ public abstract class NvxBaseDevice
         _hardwareName = r.Replace(tempName, "");
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         try
         {
@@ -258,7 +258,7 @@ public abstract class NvxBaseDevice
         }
     }
 
-    public override void Initialize()
+    protected override void Initialize()
     {
         _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
     }

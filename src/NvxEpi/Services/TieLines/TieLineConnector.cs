@@ -70,7 +70,7 @@ public class TieLineConnector
                 .SecondaryAudioRouter
                 .InputPorts[SecondaryAudioRouter.GetInputPortKeyForTx(secondaryAudio)] ?? throw new NullReferenceException("SecondaryAudioStreamInput");
 
-            var tieLine = new TieLine(secondaryAudioPort, secondaryAudioInput, eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio);
+            var tieLine = new TieLine(secondaryAudioPort, secondaryAudioInput, eRoutingSignalType.Audio | eRoutingSignalType.AudioVideo);
 
             secondaryAudio.LogVerbose("Adding secondaryAudio tx {tieLine}", tieLine);
 
@@ -90,7 +90,7 @@ public class TieLineConnector
                 .SecondaryAudioRouter
                 .OutputPorts[SecondaryAudioRouter.GetOutputPortKeyForRx(secondaryAudio)] ?? throw new NullReferenceException("SecondaryRouterStreamInput");
 
-            var tieLine = new TieLine(secondaryAudioStreamOutput, secondaryAudioPort, eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio);
+            var tieLine = new TieLine(secondaryAudioStreamOutput, secondaryAudioPort, eRoutingSignalType.Audio | eRoutingSignalType.AudioVideo);
 
             secondaryAudio.LogVerbose("Adding secondaryAudio rx {tieLine}", tieLine);
 

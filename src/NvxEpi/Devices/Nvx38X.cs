@@ -57,7 +57,7 @@ public class Nvx38X
         AddPreActivationAction(AddRoutingPorts);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         try
         {

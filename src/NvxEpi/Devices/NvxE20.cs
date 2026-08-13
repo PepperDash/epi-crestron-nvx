@@ -37,7 +37,7 @@ public class NvxE20 :
         AddPreActivationAction(AddRoutingPorts);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         try
         {

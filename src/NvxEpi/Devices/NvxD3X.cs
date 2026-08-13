@@ -44,7 +44,7 @@ public class NvxD3X :
         AddPreActivationAction(AddRoutingPorts);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         var hardware = base.Hardware as DmNvxD3x ?? throw new Exception("hardware built doesn't match");
         Hardware = hardware;

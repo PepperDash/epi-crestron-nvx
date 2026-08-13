@@ -180,7 +180,7 @@ public class NvxMockDevice
         InputPorts.Add(
             new RoutingInputPort(
                 DeviceInputEnum.SecondaryAudio.Name,
-                eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
+                eRoutingSignalType.Audio | eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Streaming,
                 DeviceInputEnum.SecondaryAudio,
                 this
@@ -190,7 +190,7 @@ public class NvxMockDevice
         OutputPorts.Add(
             new RoutingOutputPort(
                 SwitcherForSecondaryAudioOutput.Key,
-                eRoutingSignalType.Audio | eRoutingSignalType.SecondaryAudio,
+                eRoutingSignalType.Audio | eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.LineAudio,
                 null,
                 this
@@ -236,7 +236,7 @@ public class NvxMockDevice
         }
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         Feedbacks.ToList().ForEach(x => x.FireUpdate());
 

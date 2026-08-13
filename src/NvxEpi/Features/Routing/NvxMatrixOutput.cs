@@ -35,9 +35,7 @@ public class NvxMatrixOutput : IRoutingOutputSlot
     {
         {eRoutingSignalType.Audio, default },
         {eRoutingSignalType.Video, default },
-        {eRoutingSignalType.UsbInput, default },
-        {eRoutingSignalType.UsbOutput, default },
-        {eRoutingSignalType.SecondaryAudio, default },
+        {eRoutingSignalType.Usb, default },
     };
 
     public IStreamWithHardware Device => _device;
@@ -66,7 +64,7 @@ public class NvxMatrixOutput : IRoutingOutputSlot
 
         Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Audio: Found input slot {inputSlot} for {inputNumber}", this, inputSlot?.Key ?? "null", args.IntValue);
 
-        SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot);
+        SetInputRoute(eRoutingSignalType.AudioVideo, inputSlot);
         SetInputRoute(eRoutingSignalType.Audio, inputSlot);
     }
 
@@ -90,7 +88,7 @@ public class NvxMatrixOutput : IRoutingOutputSlot
 
     public int SlotNumber => _device.DeviceId;
 
-    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
+    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo;
 
     public string Name => _device.Name;
 

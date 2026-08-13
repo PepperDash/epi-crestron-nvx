@@ -39,7 +39,7 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline, ICommunic
         AddPreActivationAction(() => CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, _hardware));
     }
 
-    public override void Initialize()
+    protected override void Initialize()
     {
         this.LogDebug("Director configured with {count} domains out of {max}", _hardware.Domain.Count, _hardware.MaximumNumberOfDomains);
 
@@ -55,7 +55,7 @@ public class NvxXioDirector : EssentialsDevice, INvxDirector, IOnline, ICommunic
         _hardware.RegisterWithLogging(Key);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         CommunicationMonitor.Start();
 

@@ -98,14 +98,11 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
         if (
             signalType.Has(eRoutingSignalType.Audio)
-            || signalType.Has(eRoutingSignalType.SecondaryAudio)
+            || signalType.Has(eRoutingSignalType.AudioVideo)
         )
             SecondaryAudioRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
 
-        if (
-            signalType.HasFlag(eRoutingSignalType.UsbInput)
-            || signalType.HasFlag(eRoutingSignalType.UsbOutput)
-        )
+        if (signalType.HasFlag(eRoutingSignalType.Usb))
             UsbRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
     }
 
@@ -116,11 +113,16 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
     private Dictionary<string, IRoutingInputSlot> _inputSlots = new();
     private Dictionary<string, IRoutingOutputSlot> _outputSlots = new();
-public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp =>
-        kvp.Value is NvxMatrixClearInput
-        || kvp.Value is NvxMockMatrixInput
-        || (kvp.Value is NvxMatrixInput input && input.IsEnabled))
-    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+    public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp =>
+
+            kvp.Value is NvxMatrixClearInput
+
+            || kvp.Value is NvxMockMatrixInput
+
+            || (kvp.Value is NvxMatrixInput input && input.IsEnabled))
+
+        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
     public Dictionary<string, IRoutingOutputSlot> OutputSlots => _outputSlots.Where(
         kvp => kvp.Value is NvxMatrixOutput output && output.IsEnabled)
             .ToDictionary(
@@ -219,7 +221,7 @@ public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp
         }
 
         if (
-            (type.Has(eRoutingSignalType.SecondaryAudio) || type.Has(eRoutingSignalType.Audio))
+            (type.Has(eRoutingSignalType.AudioVideo) || type.Has(eRoutingSignalType.Audio))
             && outputDevice is ISecondaryAudioStreamWithHardware audioOutput
         )
         {
