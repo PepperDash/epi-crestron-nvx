@@ -8,7 +8,7 @@ namespace NvxEpi.Tests;
 // to verify these without spinning up the Essentials runtime.
 public class FactoryMetadataTests
 {
-    private const string ExpectedMinimumEssentialsFrameworkVersion = "3.0.0-dev-v3-routing.63";
+    private const string ExpectedMinimumEssentialsFrameworkVersion = "3.0.0";
 
     [Theory]
     [InlineData("Nvx35XDeviceFactory")]
