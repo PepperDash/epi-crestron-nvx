@@ -167,6 +167,15 @@ public abstract class NvxBaseDevice
 
     private void RegisterForNetworkChangeFeedback()
     {
+        if (Hardware == null)
+        {
+            this.LogError(
+                "Cannot subscribe to network changes for {key}: Hardware is null",
+                Key
+            );
+            return;
+        }
+
         Hardware.Network.NetworkChange += (sender, args) =>
         {
             debounceTimer.Stop();
@@ -466,6 +475,16 @@ public abstract class NvxBaseDevice
 
     private void RegisterForOnlineFeedback(GenericBase hardware)
     {
+        if (hardware == null)
+        {
+            this.LogError(
+                "Cannot subscribe to online status for {key}: Hardware is null. Config defaults "
+                    + "(multicast addresses, default inputs, device name) will not be applied",
+                Key
+            );
+            return;
+        }
+
         hardware.OnlineStatusChange += (device, args) =>
         {
             // Apply the config defaults before fanning out feedback updates. A feedback whose
