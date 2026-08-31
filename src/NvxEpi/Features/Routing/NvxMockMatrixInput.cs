@@ -7,7 +7,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMockMatrixInput : IRoutingInputSlot
+public class NvxMockMatrixInput : INvxInputSlot
 {
     private readonly NvxMockDevice device;
 
@@ -44,7 +44,7 @@ public class NvxMockMatrixInput : IRoutingInputSlot
     public int SlotNumber => device.DeviceId;
 
     public eRoutingSignalType SupportedSignalTypes =>
-        eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
+        eRoutingSignalType.AudioVideo;
 
     public string Name => device.Name;
 

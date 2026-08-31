@@ -18,7 +18,7 @@ public class NvxApplicationAudioReceiver : EssentialsDevice
     private readonly IEnumerable<NvxApplicationAudioTransmitter> _transmitters;
     public int DeviceId { get; private set; }
     public INvxDeviceWithHardware Device { get; private set; }
-    public IRoutingSink Amp { get; private set; }
+    public IRoutingInputs Amp { get; private set; }
     public StringFeedback AudioName { get; private set; }
     public StringFeedback CurrentAudioRouteName { get; private set; }
     public IntFeedback CurrentAudioRouteId { get; private set; }

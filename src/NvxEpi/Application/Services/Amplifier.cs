@@ -6,32 +6,8 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials;
 
-public class Amplifier : EssentialsDevice, IRoutingSink
+public class Amplifier : EssentialsDevice, IRoutingInputs
 {
-    public event SourceInfoChangeHandler CurrentSourceChange;
-
-    public string CurrentSourceInfoKey { get; set; }
-    public SourceListItem CurrentSourceInfo
-    {
-        get
-        {
-            return _CurrentSourceInfo;
-        }
-        set
-        {
-            if (value == _CurrentSourceInfo) return;
-
-            var handler = CurrentSourceChange;
-
-            handler?.Invoke(_CurrentSourceInfo, ChangeType.WillChange);
-
-            _CurrentSourceInfo = value;
-
-            handler?.Invoke(_CurrentSourceInfo, ChangeType.DidChange);
-        }
-    }
-    SourceListItem _CurrentSourceInfo;
-
     public RoutingInputPort CurrentInputPort => AudioIn;
 
     public RoutingInputPort AudioIn { get; private set; }

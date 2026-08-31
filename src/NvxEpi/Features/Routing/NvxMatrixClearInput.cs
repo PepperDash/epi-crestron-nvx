@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMatrixClearInput : IRoutingInputSlot
+public class NvxMatrixClearInput : INvxInputSlot
 {
     public string TxDeviceKey => string.Empty;
 

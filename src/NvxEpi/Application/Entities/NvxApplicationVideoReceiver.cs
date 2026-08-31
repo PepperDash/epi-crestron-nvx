@@ -17,7 +17,7 @@ public class NvxApplicationVideoReceiver : EssentialsDevice, IOnline
     private readonly IEnumerable<NvxApplicationVideoTransmitter> _transmitters;
     public int DeviceId { get; private set; }
     public INvxDevice Device { get; private set; }
-    public IRoutingSink Display { get; private set; }
+    public IRoutingInputs Display { get; private set; }
     public StringFeedback NameFeedback { get; private set; }
     public StringFeedback VideoName { get; private set; }
     public StringFeedback CurrentVideoRouteName { get; private set; }

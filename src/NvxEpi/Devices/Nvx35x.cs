@@ -34,7 +34,7 @@ public class Nvx35X :
     IUsbStreamWithHardware,
     IHdmiInput,
     IVideowallMode,
-    IRoutingWithFeedback,
+    IRoutingMidpointWithFeedback,
     ICec,
     INvx35XDeviceWithHardware
 {
@@ -52,7 +52,7 @@ public class Nvx35X :
         AddPreActivationAction(AddRoutingPorts);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         var hardware = base.Hardware as DmNvx35x ?? throw new Exception("hardware built doesn't match");
         Hardware = hardware;
@@ -223,6 +223,10 @@ public class Nvx35X :
             this.LogDebug(ex, "Stack Trace: ");
         }
     }
+
+    // NvxGlobalRouter/NvxMatrixOutput already own the matrix-layer clear operation -
+    // no per-device clear semantics exist below that layer today.
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType) { }
 
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {

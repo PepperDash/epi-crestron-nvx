@@ -8,7 +8,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMatrixInput : IRoutingInputSlot
+public class NvxMatrixInput : INvxInputSlot
 {
     private readonly NvxBaseDevice _device;
 
@@ -52,7 +52,7 @@ public class NvxMatrixInput : IRoutingInputSlot
 
     public int SlotNumber => _device.DeviceId;
 
-    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
+    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo;
 
     public string Name => _device.Name;
 

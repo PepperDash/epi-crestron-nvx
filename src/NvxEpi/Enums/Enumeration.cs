@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using PepperDash.Core;
 
 namespace NvxEpi.Enums;
@@ -44,7 +44,7 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
         if (obj is not Enumeration<TEnum> otherValue)
             return false;
 
-        bool typeMatches = GetType().GetCType() == obj.GetType().GetCType();
+        bool typeMatches = GetType() == obj.GetType();
         bool valueMatches = Value.Equals(otherValue.Value);
 
         return typeMatches && valueMatches;
@@ -69,14 +69,14 @@ public abstract class Enumeration<TEnum> : IComparable<Enumeration<TEnum>> where
     {
         try
         {
-            var baseType = typeof(TEnum).GetCType();
+            var baseType = typeof(TEnum);
             var a = baseType.Assembly;
 
             Debug.LogVerbose("Base type: {0}", baseType.Name);
-            IEnumerable<CType> enumTypes = a.GetTypes().Where(baseType.IsAssignableFrom);
+            IEnumerable<Type> enumTypes = a.GetTypes().Where(baseType.IsAssignableFrom);
 
             var options = new List<TEnum>();
-            foreach (CType enumType in enumTypes)
+            foreach (Type enumType in enumTypes)
             {
                 Debug.LogVerbose("Found enum type: {0}", enumType.Name);
                 var fields =

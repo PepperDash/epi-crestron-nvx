@@ -13,6 +13,8 @@ public class NvxDirectorFactory : EssentialsPluginDeviceFactory<NvxXioDirector>
 {
     public NvxDirectorFactory()
     {
+        MinimumEssentialsFrameworkVersion = NvxBaseDeviceFactory<NvxXioDirector>.MinumumEssentialsVersion;
+
         TypeNames = new List<string>
             {
                 "xiodirector",

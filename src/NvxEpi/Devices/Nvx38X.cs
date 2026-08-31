@@ -37,7 +37,7 @@ public class Nvx38X
         IUsbcInput,
         IVideowallMode,
         IMultiview,
-        IRoutingWithFeedback,
+        IRoutingMidpointWithFeedback,
         ICec,
         IBasicVolumeWithFeedback
 {
@@ -57,7 +57,7 @@ public class Nvx38X
         AddPreActivationAction(AddRoutingPorts);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         try
         {
@@ -406,6 +406,8 @@ public class Nvx38X
             this.LogDebug(ex, "Stack Trace: ");
         }
     }
+
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType) { }
 
     public override void LinkToApi(
         BasicTriList trilist,

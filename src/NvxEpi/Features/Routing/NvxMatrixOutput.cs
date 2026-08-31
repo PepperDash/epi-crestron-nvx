@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxMatrixOutput : IRoutingOutputSlot
+public class NvxMatrixOutput : INvxOutputSlot
 {
     private readonly NvxBaseDevice _device;
 
@@ -31,13 +31,11 @@ public class NvxMatrixOutput : IRoutingOutputSlot
 
     public string RxDeviceKey => _device.Key;
 
-    private readonly Dictionary<eRoutingSignalType, IRoutingInputSlot> currentRoutes = new()
+    private readonly Dictionary<eRoutingSignalType, INvxInputSlot> currentRoutes = new()
     {
         {eRoutingSignalType.Audio, default },
         {eRoutingSignalType.Video, default },
-        {eRoutingSignalType.UsbInput, default },
-        {eRoutingSignalType.UsbOutput, default },
-        {eRoutingSignalType.SecondaryAudio, default },
+        {eRoutingSignalType.Usb, default },
     };
 
     public IStreamWithHardware Device => _device;
@@ -66,11 +64,11 @@ public class NvxMatrixOutput : IRoutingOutputSlot
 
         Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Audio: Found input slot {inputSlot} for {inputNumber}", this, inputSlot?.Key ?? "null", args.IntValue);
 
-        SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot);
+        SetInputRoute(eRoutingSignalType.AudioVideo, inputSlot);
         SetInputRoute(eRoutingSignalType.Audio, inputSlot);
     }
 
-    private void SetInputRoute(eRoutingSignalType type, IRoutingInputSlot input)
+    private void SetInputRoute(eRoutingSignalType type, INvxInputSlot input)
     {
         if (currentRoutes.ContainsKey(type))
         {
@@ -86,11 +84,15 @@ public class NvxMatrixOutput : IRoutingOutputSlot
         OutputSlotChanged?.Invoke(this, new EventArgs());
     }
 
-    public Dictionary<eRoutingSignalType, IRoutingInputSlot> CurrentRoutes => currentRoutes;
+    public Dictionary<eRoutingSignalType, INvxInputSlot> CurrentRoutes => currentRoutes;
+
+    // IRoutingOutputSlotInfo view of CurrentRoutes - input slot key per signal type.
+    public IReadOnlyDictionary<eRoutingSignalType, string> CurrentRouteInputKeys =>
+        currentRoutes.Where(kvp => kvp.Value != null).ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Key);
 
     public int SlotNumber => _device.DeviceId;
 
-    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio;
+    public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo;
 
     public string Name => _device.Name;
 

@@ -16,7 +16,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
 
-public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
+public class SecondaryAudioRouter : EssentialsDevice, IRoutingMidpointWithFeedback
 {
     public SecondaryAudioRouter(string key)
         : base(key)
@@ -66,7 +66,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
         }
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         _transmitters ??= GetTransmitterDictionary();
 
@@ -181,6 +181,11 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+    {
+        ExecuteSwitch(null, outputSelector, signalType);
+    }
+
     public void ExecuteSwitch(
         object inputSelector,
         object outputSelector,
@@ -196,10 +201,7 @@ public class SecondaryAudioRouter : EssentialsDevice, IRoutingWithFeedback
                 outputSelector
             );
 
-            if (
-                signalType.Is(eRoutingSignalType.UsbInput)
-                || signalType.Is(eRoutingSignalType.UsbOutput)
-            )
+            if (signalType.Is(eRoutingSignalType.Usb))
             {
                 this.LogInformation(
                     "Skipping switch with USB signal type {signalType}",

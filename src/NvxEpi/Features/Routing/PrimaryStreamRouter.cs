@@ -16,7 +16,7 @@ using PepperDash.Essentials.Core;
 
 namespace NvxEpi.Features.Routing;
 
-public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
+public class PrimaryStreamRouter : EssentialsDevice, IRoutingMidpointWithFeedback
 {
     public PrimaryStreamRouter(string key)
         : base(key)
@@ -66,6 +66,11 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+    {
+        ExecuteSwitch(null, outputSelector, signalType);
+    }
+
     public void ExecuteSwitch(
         object inputSelector,
         object outputSelector,
@@ -74,10 +79,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
     {
         try
         {
-            if (
-                signalType.Is(eRoutingSignalType.UsbInput)
-                || signalType.Is(eRoutingSignalType.UsbOutput)
-            )
+            if (signalType.Is(eRoutingSignalType.Usb))
             {
                 this.LogDebug("Skipping switch with USB signal type {signalType}", signalType);
 
@@ -208,7 +210,7 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingWithFeedback
         });
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         _transmitters ??= GetTransmitterDictionary();
 

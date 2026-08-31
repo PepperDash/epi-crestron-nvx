@@ -25,7 +25,7 @@ public class NvxE20 :
     NvxBaseDevice,
     INvxE20DeviceWithHardware,
     IHdmiInput,
-    IRoutingWithFeedback
+    IRoutingMidpointWithFeedback
 {
     private IHdmiInput _hdmiInputs;
 
@@ -37,7 +37,7 @@ public class NvxE20 :
         AddPreActivationAction(AddRoutingPorts);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         try
         {
@@ -161,6 +161,8 @@ public class NvxE20 :
             this.LogVerbose(ex.Message);
         }
     }
+
+    public void ClearRoute(object outputSelector, eRoutingSignalType signalType) { }
 
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
