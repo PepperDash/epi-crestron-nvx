@@ -13,7 +13,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace NvxEpi.Features.Routing;
 
-public class NvxGlobalRouter : EssentialsDevice, IRoutingMidpointWithFeedback
+public class NvxGlobalRouter : EssentialsDevice, IRoutingMidpointWithFeedback, IHasNamedRoutingSlots
 {
     private static readonly NvxGlobalRouter _instance = new();
 
@@ -157,6 +157,13 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingMidpointWithFeedback
             .ToDictionary(
                 kvp => kvp.Key,
                 kvp => kvp.Value);
+
+    // IHasNamedRoutingSlots view of the plugin-local slot dictionaries above. IReadOnlyDictionary
+    // has no value-type variance, so the values are converted, not cast.
+    IReadOnlyDictionary<string, IRoutingSlotInfo> IHasNamedRoutingSlots.InputSlots =>
+        InputSlots.ToDictionary(kvp => kvp.Key, kvp => (IRoutingSlotInfo)kvp.Value);
+    IReadOnlyDictionary<string, IRoutingOutputSlotInfo> IHasNamedRoutingSlots.OutputSlots =>
+        OutputSlots.ToDictionary(kvp => kvp.Key, kvp => (IRoutingOutputSlotInfo)kvp.Value);
 
 
     private void BuildMatrixRouting()

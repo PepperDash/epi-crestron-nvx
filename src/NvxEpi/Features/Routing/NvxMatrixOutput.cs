@@ -86,6 +86,10 @@ public class NvxMatrixOutput : INvxOutputSlot
 
     public Dictionary<eRoutingSignalType, INvxInputSlot> CurrentRoutes => currentRoutes;
 
+    // IRoutingOutputSlotInfo view of CurrentRoutes - input slot key per signal type.
+    public IReadOnlyDictionary<eRoutingSignalType, string> CurrentRouteInputKeys =>
+        currentRoutes.Where(kvp => kvp.Value != null).ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Key);
+
     public int SlotNumber => _device.DeviceId;
 
     public eRoutingSignalType SupportedSignalTypes => eRoutingSignalType.AudioVideo;
