@@ -101,32 +101,64 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingMidpointWithFeedback, I
         eRoutingSignalType signalType
     )
     {
+        // Selector may be the port's real stream object or, from mobile control's matrix routing,
+        // the named slot key (= slot Key) - resolve back to the transmitter/receiver device before
+        // delegating, or the sub-routers' casts silently drop the switch.
+        var resolvedInput = ResolveInputSelector(inputSelector);
+        var resolvedOutput = ResolveOutputSelector(outputSelector);
+
         if (signalType.Has(eRoutingSignalType.Video))
-            PrimaryStreamRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
+            PrimaryStreamRouter.ExecuteSwitch(resolvedInput, resolvedOutput, signalType);
 
         if (
             signalType.Has(eRoutingSignalType.Audio)
             || signalType.Has(eRoutingSignalType.AudioVideo)
         )
-            SecondaryAudioRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
+            SecondaryAudioRouter.ExecuteSwitch(resolvedInput, resolvedOutput, signalType);
 
         if (signalType.HasFlag(eRoutingSignalType.Usb))
-            UsbRouter.ExecuteSwitch(inputSelector, outputSelector, signalType);
+            UsbRouter.ExecuteSwitch(resolvedInput, resolvedOutput, signalType);
     }
 
     public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
     {
+        var resolvedOutput = ResolveOutputSelector(outputSelector);
+
         if (signalType.Has(eRoutingSignalType.Video))
-            PrimaryStreamRouter.ClearRoute(outputSelector, signalType);
+            PrimaryStreamRouter.ClearRoute(resolvedOutput, signalType);
 
         if (
             signalType.Has(eRoutingSignalType.Audio)
             || signalType.Has(eRoutingSignalType.AudioVideo)
         )
-            SecondaryAudioRouter.ClearRoute(outputSelector, signalType);
+            SecondaryAudioRouter.ClearRoute(resolvedOutput, signalType);
 
         if (signalType.HasFlag(eRoutingSignalType.Usb))
-            UsbRouter.ClearRoute(outputSelector, signalType);
+            UsbRouter.ClearRoute(resolvedOutput, signalType);
+    }
+
+    // Non-string selectors (the EISC bridge path, which already passes the real device) pass
+    // through unchanged; an unmatched key also passes through so the sub-router reports/rejects
+    // it the same way it always has. NvxMatrixClearInput's TxDeviceKey is empty, which
+    // GetDeviceForKey resolves to null - the "clear this output" input the sub-routers expect.
+    private object ResolveInputSelector(object selector)
+    {
+        if (selector is not string key)
+            return selector;
+
+        return InputSlots.TryGetValue(key, out var slot)
+            ? DeviceManager.GetDeviceForKey(slot.TxDeviceKey)
+            : selector;
+    }
+
+    private object ResolveOutputSelector(object selector)
+    {
+        if (selector is not string key)
+            return selector;
+
+        return OutputSlots.TryGetValue(key, out var slot)
+            ? DeviceManager.GetDeviceForKey(slot.RxDeviceKey)
+            : selector;
     }
 
     public List<RouteSwitchDescriptor> CurrentRoutes =>
