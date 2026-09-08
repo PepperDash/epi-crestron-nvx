@@ -10,7 +10,7 @@ public class AutomaticInputRoutingEnabledFeedback
     public static BoolFeedback GetFeedback(DmNvxBaseClass device)
     {
         var feedback = new BoolFeedback(Key,
-            () => device.Control.EnableAutomaticInputRoutingFeedback.BoolValue);
+            () => device.Control.EnableAutomaticInputRoutingFeedback?.BoolValue ?? false);
 
         device.BaseEvent += (@base, args) => feedback.FireUpdate();
         return feedback;
