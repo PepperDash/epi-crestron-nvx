@@ -35,6 +35,16 @@ public static class VideoInputExtensions
         }
     }
 
+    // The automatic-input-routing sig is not populated on every model. Crestron returns its
+    // internal NullSig sentinel for it, so Enable/DisableAutomaticInputRouting() throw rather
+    // than no-opping. E760 has a single DM input and no input switching, so the concept does
+    // not apply there at all.
+    private static bool SupportsAutomaticInputRouting(ICurrentVideoInput device) =>
+        device.Hardware is not DmNvxE760x
+        && device.Hardware is not DmNvxE3x
+        && device.Hardware is not DmNvxE20
+        && device.Hardware is not DmNvxD3x;
+
     public static void SetVideoToHdmiInput1(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
@@ -42,7 +52,10 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Hdmi1'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
+        if (SupportsAutomaticInputRouting(device))
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
     }
 
@@ -53,7 +66,10 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Hdmi2'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
+        if (SupportsAutomaticInputRouting(device))
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
     }
 
@@ -64,7 +80,10 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Usbc1'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
+        if (SupportsAutomaticInputRouting(device))
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc1;
     }
 
@@ -75,7 +94,10 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Usbc2'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
+        if (SupportsAutomaticInputRouting(device))
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc2;
     }
 
@@ -86,7 +108,10 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Disable'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
+        if (SupportsAutomaticInputRouting(device))
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
     }
 
@@ -98,13 +123,16 @@ public static class VideoInputExtensions
         }
 
         device.LogDebug("Switching Video Input to : 'Stream'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
+        if (SupportsAutomaticInputRouting(device))
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
     }
 
     public static void SetVideoToAutomatic(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
+        if (!SupportsAutomaticInputRouting(device))
         {
             return;
         }
@@ -121,7 +149,7 @@ public static class VideoInputExtensions
             return;
         }
 
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE20 || device.Hardware is DmNvxD3x)
+        if (!SupportsAutomaticInputRouting(device))
         {
             return;
         }
