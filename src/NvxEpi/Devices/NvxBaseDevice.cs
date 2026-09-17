@@ -49,6 +49,7 @@ public abstract class NvxBaseDevice
     private ICurrentAudioInput _audioSwitcher;
     private ICurrentNaxInput _naxSwitcher;
     private readonly NvxEnableMatchingProperties matchingProperties;
+    private readonly NvxDeviceProperties deviceProperties;
 
     private readonly RoutingPortCollection<RoutingInputPort> _inputPorts = new();
 
@@ -92,6 +93,7 @@ public abstract class NvxBaseDevice
 
         Feedbacks = new FeedbackCollection<Feedback>();
         var props = NvxDeviceProperties.FromDeviceConfig(config);
+        deviceProperties = props;
         matchingProperties = props.EnableMatching;
         EnabledFeedback = new BoolFeedback(Key + "-isEnabled", () => isEnabled);
 
@@ -134,7 +136,7 @@ public abstract class NvxBaseDevice
         AddPreActivationAction(() =>
             CommunicationMonitor = new NvxCommunicationMonitor(this, 10000, 30000, Hardware)
         );
-        AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware, props));
+        AddPreActivationAction(() => RegisterForOnlineFeedback(Hardware));
         AddPostActivationAction(() => RegisterForNetworkChangeFeedback());
 
         debounceTimer = new Timer(30000) { Enabled = false, AutoReset = false };
@@ -165,6 +167,15 @@ public abstract class NvxBaseDevice
 
     private void RegisterForNetworkChangeFeedback()
     {
+        if (Hardware == null)
+        {
+            this.LogError(
+                "Cannot subscribe to network changes for {key}: Hardware is null",
+                Key
+            );
+            return;
+        }
+
         Hardware.Network.NetworkChange += (sender, args) =>
         {
             debounceTimer.Stop();
@@ -241,7 +252,13 @@ public abstract class NvxBaseDevice
             CommunicationMonitor.Start();
             Hardware.Network.NetworkChange += (sender, args) => UpdateDeviceInfo();
 
-            //
+            // Devices parented to the processor have no registration ordering dependency, so
+            // register here — the same phase as v3.13.x. Devices behind an XIO Director must wait
+            // for the director to register, which happens in NvxXioDirector.Initialize(), so those
+            // stay on the Initialize() path below. Registration is idempotent (see
+            // BuildNvxDeviceMessage.Dispatch), so enqueueing in both phases is safe.
+            if (!HasXioDirectorParent)
+                EnqueueHardwareRegistration();
 
             if (IsTransmitter || Hardware == null)
                 return base.CustomActivate();
@@ -260,7 +277,63 @@ public abstract class NvxBaseDevice
 
     public override void Initialize()
     {
+        EnqueueHardwareRegistration();
+
+        // If the hardware was already online by the time we got here, the OnlineStatusChange edge
+        // that normally applies the config defaults has already passed, and properties such as
+        // multicastVideoAddress would never be written. Apply them explicitly in that case.
+        if (Hardware != null && Hardware.IsOnline)
+        {
+            this.LogDebug("Hardware already online at Initialize; applying config defaults directly");
+            ApplyHardwareDefaults();
+        }
+    }
+
+    private bool HasXioDirectorParent =>
+        !string.IsNullOrEmpty(deviceProperties.ParentDeviceKey)
+        && !deviceProperties.ParentDeviceKey.Equals("processor", StringComparison.OrdinalIgnoreCase);
+
+    private void EnqueueHardwareRegistration()
+    {
+        if (Hardware == null)
+        {
+            this.LogError(
+                "Cannot register hardware for {key}: Hardware is null. Config defaults "
+                    + "(multicast addresses, default inputs, device name) will not be applied",
+                Key
+            );
+            return;
+        }
+
+        if (Hardware.Registered)
+            return;
+
+        this.LogDebug("Enqueueing hardware registration for {key}", Key);
         _queue.Enqueue(new BuildNvxDeviceMessage(Key, Hardware));
+    }
+
+    /// <summary>
+    /// Writes the config-supplied defaults (multicast video/audio addresses, default video/audio
+    /// inputs, automatic initiation) to the hardware. Safe to call more than once.
+    /// </summary>
+    private void ApplyHardwareDefaults()
+    {
+        if (Hardware == null)
+            return;
+
+        try
+        {
+            Hardware.Control.Name.StringValue = _hardwareName;
+
+            if (IsTransmitter || Hardware is DmNvxE20 || Hardware is DmNvxE30)
+                Hardware.SetTxDefaults(deviceProperties);
+            else
+                Hardware.SetRxDefaults(deviceProperties);
+        }
+        catch (Exception ex)
+        {
+            this.LogError(ex, "Failed to apply config defaults to hardware for {key}", Key);
+        }
     }
 
     protected void AddMcMessengers()
@@ -400,21 +473,34 @@ public abstract class NvxBaseDevice
         return Key;
     }
 
-    private void RegisterForOnlineFeedback(GenericBase hardware, NvxDeviceProperties props)
+    private void RegisterForOnlineFeedback(GenericBase hardware)
     {
+        if (hardware == null)
+        {
+            this.LogError(
+                "Cannot subscribe to online status for {key}: Hardware is null. Config defaults "
+                    + "(multicast addresses, default inputs, device name) will not be applied",
+                Key
+            );
+            return;
+        }
+
         hardware.OnlineStatusChange += (device, args) =>
         {
-            Feedbacks.Where(x => x != null).ToList().ForEach(f => f.FireUpdate());
+            // Apply the config defaults before fanning out feedback updates. A feedback whose
+            // evaluator throws (e.g. a null sig on hardware that isn't fully up) must not be able
+            // to prevent multicast addresses and default inputs from being written.
+            if (args.DeviceOnLine)
+                ApplyHardwareDefaults();
 
-            if (!args.DeviceOnLine)
-                return;
-
-            Hardware.Control.Name.StringValue = _hardwareName;
-
-            if (IsTransmitter || hardware is DmNvxE20 || hardware is DmNvxE30)
-                Hardware.SetTxDefaults(props);
-            else
-                Hardware.SetRxDefaults(props);
+            try
+            {
+                Feedbacks.Where(x => x != null).ToList().ForEach(f => f.FireUpdate());
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error firing feedback updates on online change for {key}", Key);
+            }
         };
     }
 
