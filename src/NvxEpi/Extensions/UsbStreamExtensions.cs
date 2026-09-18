@@ -35,6 +35,11 @@ public static class UsbStreamExt
             ValidateDeviceTypes(local, remote);
 
             var localId = remote.Hardware.UsbInput.LocalDeviceIdFeedback.StringValue;
+            if (string.IsNullOrEmpty(localId) )
+            {
+                remote.LogDebug("Remote device {remoteKey} has no local ID, skipping", remote.Key);
+                return;
+            }
 
             remote.LogDebug(
                 "Attempting to pair remote device {remoteKey} with local device {localKey} (local ID: {localId})",
@@ -46,10 +51,11 @@ public static class UsbStreamExt
             if (local.Hardware.UsbInput.MultipleUsbDeviceEnabledFeedback.BoolValue)
             {
                 var remoteIds = local
-                    .Hardware.UsbInput.RemoteDeviceIds.Values.Select(x => x.StringValue)
+                    .Hardware.UsbInput.RemoteDeviceIdFeedbacks.Values.Select(x => x.StringValue)
                     .ToList();
 
-                if (remoteIds.Contains(localId))
+                var pairedIndex = remoteIds.FindIndex(x => x.Equals(localId, StringComparison.OrdinalIgnoreCase));
+                if (pairedIndex >= 0)
                 {
                     local.LogDebug(
                         "Local device {remoteKey} already has local ID {localId}",
@@ -59,7 +65,7 @@ public static class UsbStreamExt
                 }
                 else
                 {
-                    var firstEmptyIndex = remoteIds.FindIndex(x => x == ClearUsbValue);
+                    var firstEmptyIndex = remoteIds.FindIndex(x => x.Equals(ClearUsbValue, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(x));
                     if (firstEmptyIndex >= 0)
                     {
                         local.LogDebug(
@@ -74,6 +80,14 @@ public static class UsbStreamExt
                             .UsbInput
                             .RemoteDeviceIds[(uint)(firstEmptyIndex + 1)]
                             .StringValue = localId;
+                    }
+                    else
+                    {
+                        local.LogDebug(
+                            "Couldn't find any available slots on local device {localKey} for remote device {remoteKey}",
+                            local.Key,
+                            remote.Key
+                        );
                     }
                 }
             }
