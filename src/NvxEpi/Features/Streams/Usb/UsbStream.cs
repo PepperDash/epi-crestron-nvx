@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
@@ -11,6 +9,9 @@ using NvxEpi.Features.Config;
 using NvxEpi.Services.Feedback;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
+using System;
+using System.Linq;
+using System.Threading;
 
 namespace NvxEpi.Features.Streams.Usb;
 
@@ -117,24 +118,25 @@ public class UsbStream : IUsbStreamWithHardware
                 ? DmNvxUsbInput.eUsbTransportMode.Layer3
                 : DmNvxUsbInput.eUsbTransportMode.Layer2;
 
-            if (!string.IsNullOrEmpty(_defaultPair) && IsRemote)
+            if (DeviceManager.GetDeviceForKey(_defaultPair) is not IUsbStreamWithHardware local)
             {
-                if (DeviceManager.GetDeviceForKey(_defaultPair) is not IUsbStreamWithHardware local)
-                {
-                    return;
-                }
+                return;
+            }
 
-                if (!hasSubscribed)
-                {
-                    local.IsOnline.OutputChange += LocalIsOnlineOutputChange;
-                    hasSubscribed = true;
-                }
+            if (!hasSubscribed)
+            {
+                var timer = new Timer(_ => SetDefaultStream(IsRemote, _defaultPair), null, TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5));
 
-                if (local.IsOnline.BoolValue)
+                CrestronEnvironment.ProgramStatusEventHandler += (type) =>
                 {
-                    this.LogInformation("Pairing default USB to {defaultPair}", _defaultPair);
-                    SetDefaultStream(IsRemote, _defaultPair);
-                }
+                    if (type == eProgramStatusEventType.Stopping)
+                    {
+                        timer.Dispose();
+                    }
+                };
+
+                hasSubscribed = true;
+                SetDefaultStream(IsRemote, _defaultPair);
             }
         };
 
@@ -161,15 +163,6 @@ public class UsbStream : IUsbStreamWithHardware
         stream.StreamUrl.OutputChange += (sender, args) => FollowCurrentRoute(args.StringValue);
     }
 
-    private void LocalIsOnlineOutputChange(object sender, FeedbackEventArgs e)
-    {
-        if (e.BoolValue)
-        {
-            this.LogInformation("Pairing default USB to {defaultPair}", _defaultPair);
-            SetDefaultStream(IsRemote, _defaultPair);
-        }
-    }
-
     void UsbInput_UsbInputChange(
         object sender,
         Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args
@@ -177,8 +170,12 @@ public class UsbStream : IUsbStreamWithHardware
     {
         if (args.EventId == UsbInputEventIds.RemoteDeviceIdFeedbackEventId)
         {
-            var feedback = _device.Feedbacks.FirstOrDefault(o => o.Key == UsbRouteFeedback.Key);
-            feedback.FireUpdate();
+            _usbRemoteIds.ToList().ForEach(kvp => kvp.Value.FireUpdate());
+        }
+
+        if (args.EventId == UsbInputEventIds.LocalDeviceIdFeedbackEventId)
+        {
+            _usbLocalId.FireUpdate();
         }
     }
 
@@ -324,6 +321,7 @@ public class UsbStream : IUsbStreamWithHardware
         if (DeviceManager.GetDeviceForKey(defaultPair) is not IUsbStreamWithHardware local)
             return;
 
+        this.LogInformation("Setting Default Stream to {defaultPair}", defaultPair);
         local.AddRemoteUsbStreamToLocal(this);
     }
 
