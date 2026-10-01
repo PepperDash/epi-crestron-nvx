@@ -41,7 +41,7 @@ public class NvxE20 :
     {
         try
         {
-            var hardware = base.Hardware as DmNvxE20 ?? throw new Exception("hardware built doesn't match");
+            var hardware = base.Hardware as DmNvxE10E20Base ?? throw new Exception("hardware built doesn't match");
             Hardware = hardware;
 
             var result = base.CustomActivate();
@@ -91,7 +91,7 @@ public class NvxE20 :
         }
     }
 
-    public new DmNvxE20 Hardware { get; private set; }
+    public new DmNvxE10E20Base Hardware { get; private set; }
 
     public ReadOnlyDictionary<uint, IntFeedback> HdcpCapability
     {
@@ -149,7 +149,7 @@ public class NvxE20 :
 
             if (inputSelector is null)
             {
-                this.LogInformation("Device is DmNvxE20. 'None' input not available");
+                this.LogInformation("Device is an encoder. 'None' input not available");
                 return;
             }
 
