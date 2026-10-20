@@ -370,8 +370,30 @@ public class NvxMockDevice
 
     public StatusMonitorBase CommunicationMonitor => communicationMonitor;
 
-    /// <summary>Reports OK while the mock is online and in error while it is set offline (bridge / SetIsOnline);
-    /// nothing to poll.</summary>
+    /// <summary>
+    /// Bench control of the communication status, from the console:
+    /// <c>devjson {"deviceKey":"nvx-tx-atv","methodName":"SetCommStatus","params":["warning"]}</c>.
+    /// Takes ok / warning / error / unknown (or the MonitorStatus names). Online follows: only "ok" is online.
+    /// </summary>
+    public void SetCommStatus(string status)
+    {
+        if (!MockOnlineMonitor.TryParse(status, out var parsed))
+        {
+            this.LogWarning("SetCommStatus: '{status}' is not ok, warning, error or unknown", status);
+            return;
+        }
+
+        this.LogInformation("MOCK comm status {status}", parsed);
+        communicationMonitor.SetStatus(parsed);
+        if (isOnline != (parsed == MonitorStatus.IsOk))
+        {
+            isOnline = parsed == MonitorStatus.IsOk;
+            IsOnline.FireUpdate();
+        }
+    }
+
+    /// <summary>Reports OK while the mock is online and in error while it is set offline; nothing to poll. Set
+    /// from the console with SetIsOnline / SetCommStatus (devjson).</summary>
     private sealed class MockOnlineMonitor : StatusMonitorBase
     {
         public MockOnlineMonitor(IKeyed parent)
@@ -385,6 +407,20 @@ public class NvxMockDevice
         public override void Stop() { }
 
         public void SetOnline(bool online) => Status = online ? MonitorStatus.IsOk : MonitorStatus.InError;
+
+        public void SetStatus(MonitorStatus status) => Status = status;
+
+        public static bool TryParse(string text, out MonitorStatus status)
+        {
+            switch ((text ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case "ok": case "isok": case "online": status = MonitorStatus.IsOk; return true;
+                case "warning": case "inwarning": status = MonitorStatus.InWarning; return true;
+                case "error": case "inerror": case "offline": status = MonitorStatus.InError; return true;
+                case "unknown": case "statusunknown": status = MonitorStatus.StatusUnknown; return true;
+                default: status = MonitorStatus.StatusUnknown; return false;
+            }
+        }
     }
 
     public BoolFeedback IsOnline { get; private set; }
@@ -434,9 +470,16 @@ public class NvxMockDevice
         Sync = state;
     }
 
+    /// <summary>
+    /// Bench control, from the console:
+    /// <c>devjson {"deviceKey":"nvx-tx-atv","methodName":"SetIsOnline","params":[false]}</c>.
+    /// Offline reports the communication monitor in error; online reports it OK.
+    /// </summary>
     public void SetIsOnline(bool state)
     {
+        this.LogInformation("MOCK set {state}", state ? "online" : "offline");
         Online = state;
+        communicationMonitor.SetOnline(state);
     }
 
     public void LinkToApi(
