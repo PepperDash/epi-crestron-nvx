@@ -25,7 +25,7 @@ namespace NvxEpi.Devices;
 
 public class NvxMockDevice
     : ReconfigurableDevice,
-        IStream,
+        IMockStreamReceiver,
         ISecondaryAudioStream,
         IRoutingMidpointWithFeedback,
         IBridgeAdvanced,
@@ -59,8 +59,10 @@ public class NvxMockDevice
 
         DeviceId = properties.DeviceId;
         IsTransmitter = isTransmitter;
+        sync = isTransmitter && (properties.SyncDetected ?? true);
         BuildFeedbacks();
         BuildRoutingPorts();
+        BuildCurrentRoutes();
     }
 
     protected override void CustomSetConfig(DeviceConfig config)
@@ -277,6 +279,8 @@ public class NvxMockDevice
         eRoutingSignalType signalType
     )
     {
+        // The mock's crosspoints are fixed (a transmitter streams its HDMI input, a receiver shows its stream),
+        // so a switch through the mock changes nothing; the stream a receiver shows comes from ReceiveStream.
         this.LogVerbose("Executing switch : {0}", signalType);
     }
 
@@ -284,7 +288,55 @@ public class NvxMockDevice
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 
-    public event RouteChangedEventHandler RouteChanged { add { } remove { } }
+    public event RouteChangedEventHandler RouteChanged;
+
+    // The receiver's Stream -> HDMI crosspoint; its input is set while a stream is routed to it.
+    private RouteSwitchDescriptor receiverRoute;
+
+    /// <summary>
+    /// The crosspoints a real NVX reports, so the routing feedback can trace a sink back through the mock:
+    /// a transmitter always streams its HDMI input; a receiver shows its stream on HDMI once one is routed.
+    /// </summary>
+    private void BuildCurrentRoutes()
+    {
+        if (IsTransmitter)
+        {
+            var hdmiIn = InputPorts[DeviceInputEnum.Hdmi1.Name];
+            var streamOut = OutputPorts[SwitcherForStreamOutput.Key];
+            if (hdmiIn != null && streamOut != null)
+                CurrentRoutes.Add(new RouteSwitchDescriptor(streamOut, hdmiIn));
+            return;
+        }
+
+        var hdmiOut = OutputPorts[SwitcherForHdmiOutput.Key];
+        if (hdmiOut == null)
+            return;
+
+        receiverRoute = new RouteSwitchDescriptor(hdmiOut, null);
+        CurrentRoutes.Add(receiverRoute);
+    }
+
+    /// <summary>
+    /// Called by the primary stream router in place of switching hardware. Takes on the transmitter's stream
+    /// URL and video sync (no sync when cleared), and reports the Stream -> HDMI crosspoint.
+    /// </summary>
+    public void ReceiveStream(IStream tx)
+    {
+        if (IsTransmitter)
+            return;
+
+        var url = tx?.StreamUrl?.StringValue ?? string.Empty;
+        this.LogInformation("MOCK receive stream from {tx} ({url})", tx?.Key ?? "none", url);
+
+        SetStreamUrl(url);
+        Sync = tx != null && (tx is not NvxMockDevice mockTx || mockTx.Sync);
+
+        if (receiverRoute == null)
+            return;
+
+        receiverRoute.InputPort = tx == null ? null : InputPorts[DeviceInputEnum.Stream.Name];
+        RouteChanged?.Invoke(this, receiverRoute);
+    }
 
     public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
     {
@@ -342,11 +394,13 @@ public class NvxMockDevice
 
     private void SetStreamUrl(string url)
     {
-        if (url.Equals(properties.StreamUrl))
+        if (url.Equals(properties.StreamUrl ?? string.Empty))
             return;
 
         properties.StreamUrl = url;
         StreamUrl.FireUpdate();
+        IsStreamingVideo.FireUpdate();
+        VideoStreamStatus.FireUpdate();
     }
 
     public void SetSyncState(bool state)

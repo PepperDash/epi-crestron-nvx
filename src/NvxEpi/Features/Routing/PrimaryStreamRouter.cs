@@ -101,6 +101,15 @@ public class PrimaryStreamRouter : EssentialsDevice, IRoutingMidpointWithFeedbac
                 signalType
             );
 
+            // A mock receiver has no hardware to switch: hand it the stream and track the route as for a real one.
+            if (outputSelector is IMockStreamReceiver mockRx)
+            {
+                var mockTx = inputSelector as IStream;
+                mockRx.ReceiveStream(mockTx);
+                UpdateCurrentRoutes(mockTx, mockRx);
+                return;
+            }
+
             var rx = outputSelector as IStreamWithHardware ?? throw new ArgumentNullException("rx");
 
             if (inputSelector is not IStream tx || inputSelector is null)

@@ -41,6 +41,10 @@ public class NvxMockDeviceProperties : BaseStreamingDeviceProperties
     public bool IncludeInMatrixRouting { get; set; }
 
     public NvxUsbProperties Usb { get; set; }
+
+    /// <summary>A transmitter's starting video sync (its HDMI input has a signal). Defaults to true: a bench
+    /// source counts as connected. A receiver's sync follows the stream routed to it.</summary>
+    public bool? SyncDetected { get; set; }
 }
 
 internal static class NvxDevicePropertiesExt
