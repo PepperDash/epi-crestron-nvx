@@ -31,5 +31,17 @@
     <PackageReference Include="PepperDashEssentials" Version="3.0.0-rc.5">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
+    <!-- Compile against the Crestron SDK that Essentials v3 ships (rc.17+: 2.21.274). Built against the older
+         SDK that rc.5 brings, the DM streaming types (eSfpVideoSourceTypes, eAudioSource) fail to load on a
+         2.21.274 runtime, so no NVX device type registers. -->
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.274">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.274">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.274">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>
