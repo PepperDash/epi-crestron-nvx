@@ -29,7 +29,8 @@ public class NvxMockDevice
         ISecondaryAudioStream,
         IRoutingMidpointWithFeedback,
         IBridgeAdvanced,
-        IHasFeedback
+        IHasFeedback,
+        ICommunicationMonitor
 {
     private object propertiesLock = new();
     private NvxMockDeviceProperties properties;
@@ -60,6 +61,7 @@ public class NvxMockDevice
         DeviceId = properties.DeviceId;
         IsTransmitter = isTransmitter;
         sync = isTransmitter && (properties.SyncDetected ?? true);
+        communicationMonitor = new MockOnlineMonitor(this);
         BuildFeedbacks();
         BuildRoutingPorts();
         BuildCurrentRoutes();
@@ -358,7 +360,31 @@ public class NvxMockDevice
             isOnline = value;
 
             IsOnline.FireUpdate();
+            communicationMonitor.SetOnline(value);
         }
+    }
+
+    // ---- ICommunicationMonitor: as a real NVX has (NvxBaseDevice), so status pages treat the mock alike ----
+
+    private readonly MockOnlineMonitor communicationMonitor;
+
+    public StatusMonitorBase CommunicationMonitor => communicationMonitor;
+
+    /// <summary>Reports OK while the mock is online and in error while it is set offline (bridge / SetIsOnline);
+    /// nothing to poll.</summary>
+    private sealed class MockOnlineMonitor : StatusMonitorBase
+    {
+        public MockOnlineMonitor(IKeyed parent)
+            : base(parent, 10000, 30000)
+        {
+            Status = MonitorStatus.IsOk;
+        }
+
+        public override void Start() { }
+
+        public override void Stop() { }
+
+        public void SetOnline(bool online) => Status = online ? MonitorStatus.IsOk : MonitorStatus.InError;
     }
 
     public BoolFeedback IsOnline { get; private set; }
