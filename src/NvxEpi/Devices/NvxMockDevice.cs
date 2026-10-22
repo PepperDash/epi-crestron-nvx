@@ -7,6 +7,8 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
 using NvxEpi.Features.Config;
+using NvxEpi.Features.Routing;
+using NvxEpi.Features.Streams.Video;
 using NvxEpi.JoinMaps;
 using NvxEpi.McMessengers;
 using NvxEpi.Services.Bridge;
@@ -148,6 +150,24 @@ public class NvxMockDevice
         );
 
         SyncDetected = new BoolFeedback("syncDetected", () => Sync);
+
+        // A receiver reports the transmitter routed to it under the same keys as a real NVX
+        // (CurrentVideoStream), so dynNvx and the bridge can resolve the current route.
+        if (!IsTransmitter)
+        {
+            CurrentVideoRouteName = new StringFeedback(
+                CurrentVideoStream.RouteNameKey,
+                () => currentVideoRoute != null ? currentVideoRoute.Name : NvxGlobalRouter.NoSourceText
+            );
+
+            CurrentVideoRouteValue = new IntFeedback(
+                CurrentVideoStream.RouteValueKey,
+                () => currentVideoRoute != null ? currentVideoRoute.DeviceId : 0
+            );
+
+            Feedbacks.Add(CurrentVideoRouteName);
+            Feedbacks.Add(CurrentVideoRouteValue);
+        }
 
         Feedbacks.AddRange(
             new Feedback[]
@@ -333,6 +353,10 @@ public class NvxMockDevice
         SetStreamUrl(url);
         Sync = tx != null && (tx is not NvxMockDevice mockTx || mockTx.Sync);
 
+        currentVideoRoute = tx;
+        CurrentVideoRouteName?.FireUpdate();
+        CurrentVideoRouteValue?.FireUpdate();
+
         if (receiverRoute == null)
             return;
 
@@ -453,6 +477,13 @@ public class NvxMockDevice
     }
 
     public BoolFeedback SyncDetected { get; private set; }
+
+    // The transmitter currently routed to this (receiver) mock, as set by ReceiveStream.
+    private IStream currentVideoRoute;
+
+    public StringFeedback CurrentVideoRouteName { get; private set; }
+
+    public IntFeedback CurrentVideoRouteValue { get; private set; }
 
     private void SetStreamUrl(string url)
     {
