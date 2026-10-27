@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Devices;
 using PepperDash.Core;
@@ -22,6 +23,8 @@ public class NvxMatrixOutput : IRoutingOutputSlot
             _device.CurrentStreamId.OutputChange += OnPrimaryOutputChange;
 
             _device.CurrentSecondaryAudioStreamId.OutputChange += OnSecondaryAudioOutputChange;
+
+            _device.CurrentAudioInputValue.OutputChange += (sender, args) => UpdateAudioRoute();
         }
         catch (Exception ex)
         {
@@ -52,10 +55,7 @@ public class NvxMatrixOutput : IRoutingOutputSlot
 
         SetInputRoute(eRoutingSignalType.Video, inputSlot);
 
-        if (!_device.IsStreamingSecondaryAudio.BoolValue)
-        {
-            SetInputRoute(eRoutingSignalType.Audio, inputSlot);
-        }
+        UpdateAudioRoute();
     }
 
     private void OnSecondaryAudioOutputChange(object sender, FeedbackEventArgs args)
@@ -67,6 +67,24 @@ public class NvxMatrixOutput : IRoutingOutputSlot
         Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Audio: Found input slot {inputSlot} for {inputNumber}", this, inputSlot?.Key ?? "null", args.IntValue);
 
         SetInputRoute(eRoutingSignalType.SecondaryAudio, inputSlot);
+
+        UpdateAudioRoute();
+    }
+
+    /// <summary>
+    /// Audio follows the secondary audio stream when NAX audio is selected, otherwise the primary stream
+    /// </summary>
+    private void UpdateAudioRoute()
+    {
+        var audioSlotNumber = _device.Hardware.Control.ActiveAudioSourceFeedback == DmNvxControl.eAudioSource.DmNaxAudio
+            ? _device.CurrentSecondaryAudioStreamId.IntValue
+            : _device.CurrentStreamId.IntValue;
+
+        var inputSlot = NvxGlobalRouter.Instance.InputSlots.Values.FirstOrDefault(input => input.SlotNumber == audioSlotNumber);
+
+        if (currentRoutes.TryGetValue(eRoutingSignalType.Audio, out var currentAudioSlot) && currentAudioSlot == inputSlot)
+            return;
+
         SetInputRoute(eRoutingSignalType.Audio, inputSlot);
     }
 

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharpPro.DM.Streaming;
 using NvxEpi.Abstractions;
+using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
+using NvxEpi.Abstractions.Stream;
 using NvxEpi.Devices;
+using NvxEpi.Extensions;
 using NvxEpi.Services.TieLines;
 using NvxEpi.Services.Utilities;
 using PepperDash.Core;
@@ -116,11 +120,11 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingNumeric, IMatrixRouting
 
     private Dictionary<string, IRoutingInputSlot> _inputSlots = new();
     private Dictionary<string, IRoutingOutputSlot> _outputSlots = new();
-public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp =>
-        kvp.Value is NvxMatrixClearInput
-        || kvp.Value is NvxMockMatrixInput
-        || (kvp.Value is NvxMatrixInput input && input.IsEnabled))
-    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp =>
+        kvp.Value is NvxMatrixClearInput
+        || kvp.Value is NvxMockMatrixInput
+        || (kvp.Value is NvxMatrixInput input && input.IsEnabled))
+    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     public Dictionary<string, IRoutingOutputSlot> OutputSlots => _outputSlots.Where(
         kvp => kvp.Value is NvxMatrixOutput output && output.IsEnabled)
             .ToDictionary(
@@ -212,19 +216,87 @@ public Dictionary<string, IRoutingInputSlot> InputSlots => _inputSlots.Where(kvp
             return;
         }
 
-        if (type.Has(eRoutingSignalType.Video))
+        var routeVideo = type.Has(eRoutingSignalType.Video);
+        var routeAudio =
+            type.Has(eRoutingSignalType.SecondaryAudio) || type.Has(eRoutingSignalType.Audio);
+
+        // capture the current sources before the video route changes them
+        var currentVideoId = outputDevice is ICurrentStream currentStream
+            ? currentStream.CurrentStreamId.IntValue
+            : 0;
+        var currentAudioId = GetCurrentStreamAudioId(outputDevice, currentVideoId);
+
+        if (routeVideo)
         {
             // using namespace to qualify type as `Route` is a static method
             Routing.PrimaryStreamRouter.Route(inputSlot.SlotNumber, outputDevice);
         }
 
-        if (
-            (type.Has(eRoutingSignalType.SecondaryAudio) || type.Has(eRoutingSignalType.Audio))
-            && outputDevice is ISecondaryAudioStreamWithHardware audioOutput
-        )
+        if (outputDevice is not ISecondaryAudioStreamWithHardware audioOutput)
+            return;
+
+        var videoId = routeVideo ? inputSlot.SlotNumber : currentVideoId;
+
+        int audioId;
+
+        if (routeAudio)
         {
-            // using namespace to qualify type as `Route` is a static method
-            Routing.SecondaryAudioRouter.Route(inputSlot.SlotNumber, audioOutput);
+            audioId = inputSlot.SlotNumber;
         }
+        else if (currentAudioId.HasValue && currentAudioId.Value != 0)
+        {
+            // video-only route: keep the audio on its current source, moving it between the
+            // primary and secondary paths as needed
+            audioId = currentAudioId.Value;
+        }
+        else
+        {
+            return;
+        }
+
+        RouteAudio(audioId, videoId, audioOutput);
+    }
+
+    /// <summary>
+    /// Uses the primary stream audio when the audio source matches the video source,
+    /// otherwise routes the audio over the secondary audio (NAX) stream
+    /// </summary>
+    private void RouteAudio(int audioId, int videoId, ISecondaryAudioStreamWithHardware audioOutput)
+    {
+        if (audioId != 0 && audioId == videoId && audioOutput is ICurrentAudioInput audioInput)
+        {
+            this.LogDebug(
+                "Audio source {audioId} matches video source on {device}, using primary stream audio",
+                audioId,
+                audioOutput.Key
+            );
+
+            audioInput.SetAudioToPrimaryStreamAudio();
+            audioOutput.ClearSecondaryStream();
+            return;
+        }
+
+        // using namespace to qualify type as `Route` is a static method
+        Routing.SecondaryAudioRouter.Route(audioId, audioOutput);
+    }
+
+    /// <summary>
+    /// Gets the id of the transmitter currently providing streamed audio to the device,
+    /// or null if the device is using a local audio input
+    /// </summary>
+    private static int? GetCurrentStreamAudioId(IStreamWithHardware device, int currentVideoId)
+    {
+        var audioSource = device.Hardware.Control.AudioSourceFeedback;
+
+        if (audioSource == DmNvxControl.eAudioSource.PrimaryStreamAudio)
+            return currentVideoId;
+
+        if (
+            audioSource == DmNvxControl.eAudioSource.DmNaxAudio
+            && device is ICurrentSecondaryAudioStream secondaryAudio
+        )
+            return secondaryAudio.CurrentSecondaryAudioStreamId.IntValue;
+
+        return null;
     }
 }
