@@ -142,7 +142,8 @@ public class NvxMockDevice
                 !string.IsNullOrEmpty(properties.MulticastAudioAddress) ? "Streaming" : string.Empty
         );
 
-        SyncDetected = new BoolFeedback("syncDetected", () => Sync);
+        // Same key as a real device's HDMI 1 sync, so NvxDeviceBridge maps it to the Hdmi1SyncDetected join.
+        SyncDetected = new BoolFeedback(Hdmi1SyncDetectedFeedback.Key, () => Sync);
 
         Feedbacks.AddRange(
             new Feedback[]
