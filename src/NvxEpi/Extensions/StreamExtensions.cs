@@ -65,7 +65,22 @@ public static class StreamExtensions
             CancelPendingRoute(device);
             device.LogDebug("Clearing stream");
             device.Hardware.Control.ServerUrl.StringValue = string.Empty;
+            device.DisableVideoOutputIfConfigured();
         }
+    }
+
+    // ApplyStreamUrl (a routed or deferred stream) sets VideoSource back to Stream, so routing a source turns
+    // the output on again. A deferred route clears first, so the output stays off until the encoder's URL arrives.
+    public static void DisableVideoOutputIfConfigured(this IStreamWithHardware device)
+    {
+        if (device.IsTransmitter || device is not IDisableOutputOnNoStream { DisableOutputOnNoStream: true })
+            return;
+
+        if (device.Hardware is DmNvxD3x || device.Hardware is DmNvxE3x)
+            return;
+
+        device.LogDebug("No stream routed, disabling video output");
+        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
     }
 
     public static void RouteStream(this IStreamWithHardware device, IStream tx)
