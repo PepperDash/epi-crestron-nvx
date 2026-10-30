@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro.AudioDistribution;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -6,6 +7,7 @@ using Newtonsoft.Json;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Extensions;
 using NvxEpi.Features.Routing;
+using NvxEpi.Features.Streams.Video;
 using NvxEpi.JoinMaps;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
@@ -50,6 +52,59 @@ public class DmNaxAudIo : CrestronGenericBridgeableBaseDevice
         CurrentRouteName = new StringFeedback(RouteNameKey, () => _current?.Name ?? NvxGlobalRouter.NoSourceText);
 
         AddToFeedbackList(RxAudioAddress, StreamStatus, IsStreaming, CurrentRouteValue, CurrentRouteName);
+
+        AddPostActivationAction(LinkFollowReceivers);
+    }
+
+    // Audio follows video: the NVX receiver last routed among followReceivers, and the encoder routed to it.
+    private string _followedReceiverKey;
+    private int _followedTxDeviceId;
+
+    /// <summary>
+    /// Follow the video route of the room's NVX receivers (their current video route feedback, the encoder
+    /// DeviceId): the last receiver routed sets the source; clearing that receiver clears the audio.
+    /// </summary>
+    private void LinkFollowReceivers()
+    {
+        if (_props.FollowReceivers == null)
+            return;
+
+        foreach (var key in _props.FollowReceivers)
+        {
+            if (DeviceManager.GetDeviceForKey(key) is not IHasFeedback rx
+                || rx.Feedbacks[CurrentVideoStream.RouteValueKey] is not IntFeedback route)
+            {
+                this.LogError("followReceivers: {key} is not an NVX receiver with a video route", key);
+                continue;
+            }
+
+            var receiverKey = key;
+            route.OutputChange += (sender, args) => OnReceiverRoute(receiverKey, args.IntValue);
+            this.LogDebug("Following the video route of {key}", key);
+
+            if (route.IntValue != 0)
+                OnReceiverRoute(receiverKey, route.IntValue);
+        }
+    }
+
+    private void OnReceiverRoute(string receiverKey, int txDeviceId)
+    {
+        if (txDeviceId != 0)
+        {
+            this.LogDebug("{rx} routed to encoder {tx}; following", receiverKey, txDeviceId);
+            _followedReceiverKey = receiverKey;
+            _followedTxDeviceId = txDeviceId;
+            RouteFrom(txDeviceId);
+            return;
+        }
+
+        if (receiverKey != _followedReceiverKey)
+            return;
+
+        this.LogDebug("{rx} cleared; clearing audio", receiverKey);
+        _followedReceiverKey = null;
+        _followedTxDeviceId = 0;
+        Clear();
     }
 
     private DmNaxXNax.NaxReceive Rx =>
@@ -89,6 +144,10 @@ public class DmNaxAudIo : CrestronGenericBridgeableBaseDevice
 
         if (_props.Zone > 0 && _hardware.Routing.Zones.Keys.Contains((uint)_props.Zone))
             _hardware.Routing.Zones[(uint)_props.Zone].UShortValue = (ushort)_props.ZoneSource;
+
+        // A route made while the unit was offline
+        if (_followedTxDeviceId != 0)
+            RouteFrom(_followedTxDeviceId);
     }
 
     /// <summary>Receive the encoder's secondary audio stream; null clears it.</summary>
@@ -220,4 +279,11 @@ public class DmNaxAudIoProperties
     /// <summary>Zone source value; 17 = AES67 stream.</summary>
     [JsonProperty("zoneSource")]
     public int ZoneSource { get; set; } = 17;
+
+    /// <summary>
+    /// Keys of the NVX receivers (room displays) whose video route the audio follows; the last one routed wins.
+    /// Empty: routed only from the bridge / dynNvx naxReceivers.
+    /// </summary>
+    [JsonProperty("followReceivers")]
+    public List<string> FollowReceivers { get; set; } = new();
 }

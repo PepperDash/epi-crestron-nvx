@@ -177,11 +177,13 @@ Type `dmNaxAudIo` is a DM-NAX-AUD-IO used as a NAX (AES67) audio receiver. It re
         "control": { "method": "ipid", "ipid": "A1" },
         "rxStream": 1,
         "zone": 1,
-        "zoneSource": 17
+        "zoneSource": 17,
+        "followReceivers": [ "nvxRx-SimLab1" ]
     }
 }
 ```
 
+- `followReceivers`: keys of the room's NVX receivers. The audio follows their video route: when one of them is routed, the unit receives that encoder's audio (the last one routed wins), and when that receiver is cleared, the audio is cleared. No SIMPL needed. Leave it out to route only from the joins below.
 - `rxStream`: NAX receive stream that takes the encoder audio. Default 1.
 - `zone` / `zoneSource`: each time the unit comes online, zone `zone` is set to source `zoneSource` (17 = AES67 stream). Defaults 1 / 17. `zone: 0` leaves the zone routing to the unit's own setup.
 - A route sets the receive stream's multicast address and starts the stream. Clearing it sets `0.0.0.0` and stops the stream, which leaves the output silent.
