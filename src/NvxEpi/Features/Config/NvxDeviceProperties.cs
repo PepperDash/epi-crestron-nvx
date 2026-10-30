@@ -23,6 +23,7 @@ public class NvxDeviceProperties
     public string DefaultAudioInput { get; set; }
     public string DefaultVideoInput { get; set; }
     public bool EnableAutoRoute { get; set; }
+    public bool DisableOutputOnNoStream { get; set; }
     public string DefaultMulticastSource { get; set; }
 }
 

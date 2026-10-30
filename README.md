@@ -106,6 +106,7 @@ will throw an exception.  Many default values are set based on this property.  A
 TX-1 to RX-1, you would send a value of 1 to the Video Source input of RX-1.
 5. Multicast Video Address = Sets the local multicast Video address that a transmitter will attempt to stream to.  This address __must__ have an even number as the last Octet and is recommended to fall within a locally scoped mulitcast address range. Recommended reading : [http://www.tcpipguide.com/free/t_IPMulticastAddressing.htm]
 6. Multicast Audio Address = Sets the local multicast Audio address that a transmitter will attempt to stream the secondary audio to.  In most cases set this to be +1 of the Multicast Video address.
+7. Disable Output On No Stream (`disableOutputOnNoStream`) = RX only, default `false`.  When `true`, clearing the receiver's stream (routing source 0 / None) also sets its video source to Disable, so the HDMI output drops sync instead of sending black.  Routing any stream switches the video source back to Stream.  Use it on receivers feeding a codec content input, where a black-but-synced signal would start or hold a content share.
 
 ## Feature Requests
 
