@@ -24,6 +24,7 @@ public class NvxApplication : EssentialsBridgeableDevice
     private readonly Dictionary<int, NvxApplicationVideoReceiver> _receivers;
     private readonly Dictionary<int, NvxApplicationAudioTransmitter> _audioTransmitters;
     private readonly Dictionary<int, NvxApplicationAudioReceiver> _audioReceivers;
+    private readonly Dictionary<int, NvxApplicationNaxReceiver> _naxReceivers;
 
     public NvxApplication(INvxApplicationBuilder applicationBuilder) : base(applicationBuilder.Key)
     {
@@ -63,6 +64,25 @@ public class NvxApplication : EssentialsBridgeableDevice
                               .ToDictionary(x => x.DeviceId);
 
         _audioReceivers
+            .Values
+            .ToList()
+            .ForEach(DeviceManager.AddDevice);
+
+        // NAX receivers share the OutputAudio joins with the audio receivers, so their numbers must not overlap.
+        _naxReceivers =
+            applicationBuilder.NaxReceivers
+                .Where(x =>
+                    {
+                        if (!_audioReceivers.ContainsKey(x.Key))
+                            return true;
+
+                        this.LogError("naxReceivers {0} ({1}) uses the same output number as an audioReceiver; skipped", x.Key, x.Value.DeviceKey);
+                        return false;
+                    })
+                .Select(x => new NvxApplicationNaxReceiver(x.Value.DeviceKey + "--NaxRoutingRx", x.Value, x.Key, _transmitters.Values))
+                .ToDictionary(x => x.DeviceId);
+
+        _naxReceivers
             .Values
             .ToList()
             .ForEach(DeviceManager.AddDevice);
@@ -111,6 +131,7 @@ public class NvxApplication : EssentialsBridgeableDevice
         LinkReceivers(trilist, joinMap);
         LinkAudioTransmitters(trilist, joinMap);
         LinkAudioReceivers(trilist, joinMap);
+        LinkNaxReceivers(trilist, joinMap);
     }
 
     private void LinkTransmitters(BasicTriList trilist, NvxApplicationJoinMap joinMap)
@@ -272,6 +293,46 @@ public class NvxApplication : EssentialsBridgeableDevice
 
                         rx.Amp.ReleaseAndMakeRoute((IRoutingOutputs)device.Source, eRoutingSignalType.Audio);
                     }
+                });
+        }
+    }
+
+    private void LinkNaxReceivers(BasicTriList trilist, NvxApplicationJoinMap joinMap)
+    {
+        foreach (var item in _naxReceivers.Select(x => new { DeviceId = x.Key, DeviceActual = x.Value }))
+        {
+            var join = (uint)(joinMap.OutputAudio.JoinNumber + item.DeviceId - 1);
+
+            this.LogVerbose("Linking {0} NAX Audio Name to join {1}", item.DeviceActual.Key, joinMap.OutputAudioNames.JoinNumber + item.DeviceId - 1);
+            item.DeviceActual.AudioName.LinkInputSig(
+                trilist.StringInput[(uint)(joinMap.OutputAudioNames.JoinNumber + item.DeviceId - 1)]);
+
+            this.LogVerbose("Linking {0} NAX Audio Route to join {1}", item.DeviceActual.Key, join);
+            item.DeviceActual.CurrentAudioRouteId.LinkInputSig(trilist.UShortInput[join]);
+
+            this.LogVerbose("Linking {0} Current NAX Audio Name to join {1}", item.DeviceActual.Key, joinMap.OutputCurrentAudioInputNames.JoinNumber + item.DeviceId - 1);
+            item.DeviceActual.CurrentAudioRouteName.LinkInputSig(
+                trilist.StringInput[(uint)(joinMap.OutputCurrentAudioInputNames.JoinNumber + item.DeviceId - 1)]);
+
+            var rx = item.DeviceActual;
+
+            // Value is the video transmitter number: the same number SIMPL sends to the room display's OutputVideo.
+            trilist.SetUShortSigAction(join,
+                s =>
+                {
+                    if (s == 0)
+                    {
+                        rx.Route(null);
+                        return;
+                    }
+
+                    if (!_transmitters.TryGetValue(s, out NvxApplicationVideoTransmitter device))
+                    {
+                        this.LogWarning("NAX route to {0}: no transmitter {1}", rx.Key, s);
+                        return;
+                    }
+
+                    rx.Route(device);
                 });
         }
     }

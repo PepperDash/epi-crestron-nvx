@@ -16,6 +16,13 @@ public class NvxApplicationConfig
 
     [JsonProperty("audioReceivers")]
     public Dictionary<string, NvxApplicationDeviceAudioConfig> AudioReceivers { get; set; }
+
+    /// <summary>
+    /// DM-NAX-AUD-IO units (dmNaxAudIo), keyed by audio output number. Routed on the OutputAudio joins with
+    /// the video transmitter number, so the room audio can follow the video route.
+    /// </summary>
+    [JsonProperty("naxReceivers")]
+    public Dictionary<string, NvxApplicationDeviceAudioConfig> NaxReceivers { get; set; }
 }
 
 public class NvxApplicationDeviceVideoConfig

@@ -15,6 +15,7 @@ public class NvxApplicationApplicationBuilder : INvxApplicationBuilder
     public Dictionary<int, NvxApplicationDeviceVideoConfig> Receivers { get; private set; }
     public Dictionary<int, NvxApplicationDeviceAudioConfig> AudioTransmitters { get; private set; }
     public Dictionary<int, NvxApplicationDeviceAudioConfig> AudioReceivers { get; private set; }
+    public Dictionary<int, NvxApplicationDeviceAudioConfig> NaxReceivers { get; private set; }
 
     public EssentialsDevice Build()
     {
@@ -27,6 +28,7 @@ public class NvxApplicationApplicationBuilder : INvxApplicationBuilder
         Receivers = new Dictionary<int, NvxApplicationDeviceVideoConfig>();
         AudioTransmitters = new Dictionary<int, NvxApplicationDeviceAudioConfig>();
         AudioReceivers = new Dictionary<int, NvxApplicationDeviceAudioConfig>();
+        NaxReceivers = new Dictionary<int, NvxApplicationDeviceAudioConfig>();
 
         Key = config.Key;
         var props = JsonConvert.DeserializeObject<NvxApplicationConfig>(config.Properties.ToString());
@@ -42,5 +44,8 @@ public class NvxApplicationApplicationBuilder : INvxApplicationBuilder
 
         if (props.AudioReceivers != null)
             AudioReceivers = props.AudioReceivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
+
+        if (props.NaxReceivers != null)
+            NaxReceivers = props.NaxReceivers.ToDictionary(x => Convert.ToInt32(x.Key), x => x.Value);
     }
 }

@@ -11,6 +11,7 @@ public interface INvxApplicationBuilder : IKeyed
     Dictionary<int, NvxApplicationDeviceVideoConfig> Receivers { get; }
     Dictionary<int, NvxApplicationDeviceAudioConfig> AudioTransmitters { get; }
     Dictionary<int, NvxApplicationDeviceAudioConfig> AudioReceivers { get; }
+    Dictionary<int, NvxApplicationDeviceAudioConfig> NaxReceivers { get; }
 
     EssentialsDevice Build();
 }

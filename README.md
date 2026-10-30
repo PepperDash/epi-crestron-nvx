@@ -163,6 +163,45 @@ noSwitch
 }
 ```
 
+## DM-NAX-AUD-IO
+
+Type `dmNaxAudIo` is a DM-NAX-AUD-IO used as a NAX (AES67) audio receiver. It receives an NVX encoder's secondary audio stream (the encoder's `multicastAudioAddress`) on one of its NAX receive streams and plays it on its output zone. It is not an NVX endpoint, so it is not in the NVX tie lines or the matrix routing.
+
+```json
+{
+    "key": "nax-SimLab1",
+    "name": "Sim Lab 1 NAX",
+    "type": "dmNaxAudIo",
+    "group": "nvx",
+    "properties": {
+        "control": { "method": "ipid", "ipid": "A1" },
+        "rxStream": 1,
+        "zone": 1,
+        "zoneSource": 17
+    }
+}
+```
+
+- `rxStream`: NAX receive stream that takes the encoder audio. Default 1.
+- `zone` / `zoneSource`: each time the unit comes online, zone `zone` is set to source `zoneSource` (17 = AES67 stream). Defaults 1 / 17. `zone: 0` leaves the zone routing to the unit's own setup.
+- A route sets the receive stream's multicast address and starts the stream. Clearing it sets `0.0.0.0` and stops the stream, which leaves the output silent.
+
+### Routing through dynNvx
+
+Add the units under `naxReceivers`, keyed by audio output number:
+
+```json
+"naxReceivers": {
+    "1": { "deviceKey": "nax-SimLab1", "audioName": "Sim Lab 1" }
+}
+```
+
+They use the application's audio output joins: OutputAudio (analog 301 + n - 1, set / get), OutputAudioNames and OutputCurrentAudioInputNames (serial 1101 / 2201 + n - 1). The route value is the __video transmitter number__ (the `transmitters` key), the same value sent to a display's OutputVideo, so SIMPL can make the audio follow the video by sending the same number to both. 0 clears. A `naxReceivers` number can't also be an `audioReceivers` number.
+
+### Bridged on its own
+
+On an `eiscApiAdvanced` bridge it uses the NVX device joins that apply: Device Online (d1), Stream Started (d2), Audio Route (a2, encoder `deviceId`, 0 clears), Audio Route name (s2), Device Name (s11), NAX Rx Address (s18).
+
 ## USB Routing
 
 - Local = `PC`
