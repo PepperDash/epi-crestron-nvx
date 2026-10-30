@@ -12,6 +12,7 @@ using NvxEpi.Abstractions.HdmiOutput;
 using NvxEpi.Abstractions.InputSwitching;
 using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
+using NvxEpi.Extensions;
 using NvxEpi.Features.Config;
 using NvxEpi.Features.InputSwitching;
 using NvxEpi.Features.Monitor;
@@ -41,7 +42,8 @@ public abstract class NvxBaseDevice
         ICurrentNaxInput,
         ICommunicationMonitor,
         IDeviceInfoProvider,
-        INvxNetworkPortInformation
+        INvxNetworkPortInformation,
+        IDisableOutputOnNoStream
 {
     private ICurrentSecondaryAudioStream _currentSecondaryAudioStream;
     private ICurrentStream _currentVideoStream;
@@ -60,6 +62,8 @@ public abstract class NvxBaseDevice
     private const string _showNvxCmdHelp = "Prints all keyed feedback status";
 
     public readonly string DefaultMulticastRoute;
+
+    public bool DisableOutputOnNoStream { get; }
 
     private static IQueue<IQueueMessage> _queue;
 
@@ -129,6 +133,7 @@ public abstract class NvxBaseDevice
         NoSwitchInput.AddRoutingPort(this);
 
         DefaultMulticastRoute = props.DefaultMulticastSource;
+        DisableOutputOnNoStream = props.DisableOutputOnNoStream;
 
         SetDeviceName();
 
@@ -265,6 +270,8 @@ public abstract class NvxBaseDevice
             if (Hardware.Control.ServerUrlFeedback.StringValue != string.Empty)
                 Hardware.Control.ServerUrl.StringValue = string.Empty;
             Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
+            if (string.IsNullOrEmpty(DefaultMulticastRoute))
+                this.DisableVideoOutputIfConfigured();
 
             return base.CustomActivate();
         }
