@@ -185,7 +185,8 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingMidpointWithFeedback, I
         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
     public Dictionary<string, INvxOutputSlot> OutputSlots => _outputSlots.Where(
-        kvp => kvp.Value is NvxMatrixOutput output && output.IsEnabled)
+        kvp => kvp.Value is NvxMockMatrixOutput
+            || (kvp.Value is NvxMatrixOutput output && output.IsEnabled))
             .ToDictionary(
                 kvp => kvp.Key,
                 kvp => kvp.Value);
@@ -242,6 +243,21 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingMidpointWithFeedback, I
                 .Select((t) => new NvxMatrixOutput(t))
                 .Cast<INvxOutputSlot>()
                 .ToDictionary(t => t.Key, t => t);
+
+            var mockOutputSlots = DeviceManager
+                .AllDevices.OfType<NvxMockDevice>()
+                .Where(md => md.IncludeInMatrixRouting && !md.IsTransmitter)
+                .Select(md => new NvxMockMatrixOutput(md))
+                .Cast<INvxOutputSlot>()
+                .ToDictionary(o => o.Key, o => o);
+
+            this.LogDebug("Mock Device outputs: {count}", mockOutputSlots.Count);
+            this.LogDebug("Real Device outputs: {count}", _outputSlots.Count);
+
+            foreach (var kvp in mockOutputSlots)
+            {
+                _outputSlots[kvp.Key] = kvp.Value;
+            }
         }
         catch (Exception ex)
         {
@@ -260,6 +276,22 @@ public class NvxGlobalRouter : EssentialsDevice, IRoutingMidpointWithFeedback, I
         if (!OutputSlots.TryGetValue(outputSlotKey, out var outputSlot))
         {
             this.LogError("Unable to find output slot with key {0}", outputSlotKey);
+            return;
+        }
+
+        // A mock receiver has no hardware: route through the primary stream router, which hands the mock the
+        // stream and records the route. Mocks have no separate secondary audio, so only video is routed.
+        if (outputSlot is NvxMockMatrixOutput mockOutput)
+        {
+            if (type.Has(eRoutingSignalType.Video))
+            {
+                PrimaryStreamRouter.ExecuteSwitch(
+                    DeviceManager.GetDeviceForKey(inputSlot.TxDeviceKey),
+                    mockOutput.Device,
+                    eRoutingSignalType.Video
+                );
+            }
+
             return;
         }
 
