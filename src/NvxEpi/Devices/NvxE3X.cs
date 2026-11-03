@@ -171,9 +171,17 @@ public class NvxE3X :
     {
         try
         {
+            // A null output means the route ends at this device (a route whose destination is the
+            // device itself, with no port); there is nothing to switch.
+            if (outputSelector is null)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "No output selector; route ends at this device", this);
+                return;
+            }
+
             if (outputSelector is not IHandleInputSwitch switcher)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Unable to execute switch. OutputSelector is not IHandleInputSwitch {outputSelectorType}", this, outputSelector.ToString());
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Unable to execute switch. OutputSelector is not IHandleInputSwitch {outputSelectorType}", this, outputSelector.GetType().FullName);
                 return;
             }
 
