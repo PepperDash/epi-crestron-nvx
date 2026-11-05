@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Streaming;
+using NvxEpi.Abstractions;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Abstractions.Usb;
 using PepperDash.Core.Logging;
@@ -14,8 +15,8 @@ public static class StreamExtensions
 {
     // A route made before the transmitter has reported its stream URL (typically the rooms' default routes
     // right after program start, before the NVX endpoints are online) is held here and applied when that
-    // URL arrives, instead of leaving the receiver cleared. Keyed by receiver; any later route, clear or
-    // URL set on the same receiver cancels it, so a late URL can never override a newer choice.
+    // URL arrives, instead of leaving the receiver cleared. Keyed by receiver; any later route, clear,
+    // URL set or explicit local/automatic/none input selection on the same receiver cancels it, so a late URL can never override a newer choice.
     // pendingLock serializes each cancellation/check with the receiver write that follows it, on every
     // path (clear, set, deferred apply), so a stale callback cannot write after a newer route has won.
     private sealed class PendingRoute
@@ -27,7 +28,21 @@ public static class StreamExtensions
     private static readonly object pendingLock = new();
     private static readonly Dictionary<string, PendingRoute> pendingRoutes = new();
 
-    private static void CancelPendingRoute(IStreamWithHardware device)
+    /// <summary>
+    /// Runs an explicit non-stream input selection (a local input, automatic or none) on a receiver:
+    /// cancels its pending deferred route and makes the selection under the same lock, so a late
+    /// stream URL can't switch the receiver back to Stream over it.
+    /// </summary>
+    internal static void SelectInputCancellingPendingRoute(INvxDevice device, Action select)
+    {
+        lock (pendingLock)
+        {
+            CancelPendingRoute(device);
+            select();
+        }
+    }
+
+    private static void CancelPendingRoute(INvxDevice device)
     {
         lock (pendingLock)
         {

@@ -42,8 +42,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Hdmi1'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
-        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi1;
+        SelectLocalSource(device, eSfpVideoSourceTypes.Hdmi1);
     }
 
     public static void SetVideoToHdmiInput2(this ICurrentVideoInput device)
@@ -53,8 +52,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Hdmi2'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
-        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Hdmi2;
+        SelectLocalSource(device, eSfpVideoSourceTypes.Hdmi2);
     }
 
     public static void SetVideoToUsbcInput1(this ICurrentVideoInput device)
@@ -64,8 +62,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Usbc1'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
-        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc1;
+        SelectLocalSource(device, eSfpVideoSourceTypes.Usbc1);
     }
 
     public static void SetVideoToUsbcInput2(this ICurrentVideoInput device)
@@ -75,8 +72,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Usbc2'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
-        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Usbc2;
+        SelectLocalSource(device, eSfpVideoSourceTypes.Usbc2);
     }
 
     public static void SetVideoToInputNone(this ICurrentVideoInput device)
@@ -86,8 +82,7 @@ public static class VideoInputExtensions
             return;
         }
         device.LogDebug("Switching Video Input to : 'Disable'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
-        device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
+        SelectLocalSource(device, eSfpVideoSourceTypes.Disable);
     }
 
     public static void SetVideoToStream(this ICurrentVideoInput device)
@@ -110,7 +105,18 @@ public static class VideoInputExtensions
         }
 
         device.LogDebug("Switching Video Input to : 'Automatic'");
-        device.Hardware.Control.EnableAutomaticInputRouting();
+        StreamExtensions.SelectInputCancellingPendingRoute(device, () => device.Hardware.Control.EnableAutomaticInputRouting());
+    }
+
+    // An explicit local (or disabled) source replaces any stream route still waiting for its encoder's
+    // URL, so cancel that pending route under the same lock the deferred apply uses.
+    private static void SelectLocalSource(ICurrentVideoInput device, eSfpVideoSourceTypes source)
+    {
+        StreamExtensions.SelectInputCancellingPendingRoute(device, () =>
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+            device.Hardware.Control.VideoSource = source;
+        });
     }
 
     public static void SetAutomaticInputRouting(this ICurrentVideoInput device, bool pressed)
@@ -134,7 +140,7 @@ public static class VideoInputExtensions
         else
         {
             device.LogDebug("Enabling Automatic Input Routing");
-            device.Hardware.Control.EnableAutomaticInputRouting();
+            StreamExtensions.SelectInputCancellingPendingRoute(device, () => device.Hardware.Control.EnableAutomaticInputRouting());
         }
     }
 }
