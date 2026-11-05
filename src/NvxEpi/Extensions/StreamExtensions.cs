@@ -16,6 +16,8 @@ public static class StreamExtensions
     // right after program start, before the NVX endpoints are online) is held here and applied when that
     // URL arrives, instead of leaving the receiver cleared. Keyed by receiver; any later route, clear or
     // URL set on the same receiver cancels it, so a late URL can never override a newer choice.
+    // pendingLock serializes each cancellation/check with the receiver write that follows it, on every
+    // path (clear, set, deferred apply), so a stale callback cannot write after a newer route has won.
     private sealed class PendingRoute
     {
         public IStream Tx;
@@ -43,9 +45,12 @@ public static class StreamExtensions
         if (device.IsTransmitter)
             return;
 
-        CancelPendingRoute(device);
-        device.LogDebug("Clearing stream");
-        device.Hardware.Control.ServerUrl.StringValue = string.Empty;
+        lock (pendingLock)
+        {
+            CancelPendingRoute(device);
+            device.LogDebug("Clearing stream");
+            device.Hardware.Control.ServerUrl.StringValue = string.Empty;
+        }
     }
 
     public static void RouteStream(this IStreamWithHardware device, IStream tx)
@@ -73,7 +78,6 @@ public static class StreamExtensions
         }
 
         // The transmitter has no stream URL yet: clear the receiver as before, then wait for the URL.
-        device.ClearStream();
         DeferRoute(device, tx);
     }
 
@@ -86,6 +90,8 @@ public static class StreamExtensions
             if (string.IsNullOrEmpty(url))
                 return;
 
+            // Check and write under the lock: a newer clear/set either ran first and removed this entry
+            // (so this returns), or waits until this write is done and then overrides it.
             lock (pendingLock)
             {
                 if (!pendingRoutes.TryGetValue(device.Key, out var current) || current != pending)
@@ -93,19 +99,27 @@ public static class StreamExtensions
 
                 tx.StreamUrl.OutputChange -= pending.Handler;
                 pendingRoutes.Remove(device.Key);
-            }
 
-            device.LogInformation("Applying deferred route from {txName}: '{url}'", tx.Name, url);
-            ApplyStreamUrl(device, url);
+                device.LogInformation("Applying deferred route from {txName}: '{url}'", tx.Name, url);
+                ApplyStreamUrl(device, url);
+            }
         };
 
+        // Clear and register in one step, so no newer route can land between them.
         lock (pendingLock)
         {
+            device.ClearStream(); // re-enters pendingLock (Monitor is reentrant); cancels any older pending route
+
             pendingRoutes[device.Key] = pending;
             tx.StreamUrl.OutputChange += pending.Handler;
         }
 
         device.LogInformation("{txName} has no stream URL yet; route deferred until it reports one", tx.Name);
+
+        // The URL may have arrived after RouteStream's check but before the handler was subscribed;
+        // that change was not delivered, so check once now. The handler is a no-op if the URL is still
+        // empty or the route was already applied or cancelled.
+        pending.Handler(tx, null);
     }
 
     public static void SetStreamUrl(this IStreamWithHardware device, string url)
@@ -113,8 +127,11 @@ public static class StreamExtensions
         if (device.IsTransmitter)
             return;
 
-        CancelPendingRoute(device);
-        ApplyStreamUrl(device, url);
+        lock (pendingLock)
+        {
+            CancelPendingRoute(device);
+            ApplyStreamUrl(device, url);
+        }
     }
 
     private static void ApplyStreamUrl(IStreamWithHardware device, string url)
