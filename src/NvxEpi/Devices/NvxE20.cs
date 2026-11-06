@@ -138,9 +138,16 @@ public class NvxE20 :
     {
         try
         {
+            // A null output means the route ends at this device; there is nothing to switch.
+            if (outputSelector is null)
+            {
+                this.LogDebug("No output selector; route ends at this device");
+                return;
+            }
+
             if (outputSelector is not IHandleInputSwitch switcher)
             {
-                var outputSelectorType = outputSelector?.GetType().FullName ?? "null";
+                var outputSelectorType = outputSelector.GetType().FullName;
                 this.LogError("Unable to execute switch. OutputSelector is not IHandleInputSwitch {outputSelectorType}", outputSelectorType);
                 return;
             }
