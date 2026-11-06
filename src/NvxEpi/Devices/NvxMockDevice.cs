@@ -340,18 +340,18 @@ public class NvxMockDevice
 
     /// <summary>
     /// Called by the primary stream router in place of switching hardware. Takes on the transmitter's stream
-    /// URL and video sync (no sync when cleared), and reports the Stream -> HDMI crosspoint.
+    /// URL and video sync (no sync when cleared), follows later changes to either while that transmitter stays
+    /// routed (like a real receiver once the encoder reports its URL), and reports the Stream -> HDMI crosspoint.
     /// </summary>
     public void ReceiveStream(IStream tx)
     {
         if (IsTransmitter)
             return;
 
-        var url = tx?.StreamUrl?.StringValue ?? string.Empty;
-        this.LogInformation("MOCK receive stream from {tx} ({url})", tx?.Key ?? "none", url);
+        this.LogInformation("MOCK receive stream from {tx} ({url})", tx?.Key ?? "none", tx?.StreamUrl?.StringValue ?? string.Empty);
 
-        SetStreamUrl(url);
-        Sync = tx != null && (tx is not NvxMockDevice mockTx || mockTx.Sync);
+        FollowTransmitter(tx);
+        RefreshFromTransmitter();
 
         currentVideoRoute = tx;
         CurrentVideoRouteName?.FireUpdate();
@@ -480,6 +480,44 @@ public class NvxMockDevice
 
     // The transmitter currently routed to this (receiver) mock, as set by ReceiveStream.
     private IStream currentVideoRoute;
+
+    // The routed transmitter whose URL/sync feedback this receiver follows, and the handler subscribed to it.
+    private IStream followedTx;
+    private EventHandler<FeedbackEventArgs> followedTxChanged;
+
+    /// <summary>
+    /// Moves the URL/sync subscriptions to <paramref name="tx"/>, detaching them from the previously routed
+    /// transmitter, so a re-route or clear stops the old one from updating this receiver.
+    /// </summary>
+    private void FollowTransmitter(IStream tx)
+    {
+        if (followedTx != null && followedTxChanged != null)
+        {
+            if (followedTx.StreamUrl != null)
+                followedTx.StreamUrl.OutputChange -= followedTxChanged;
+            if (followedTx is NvxMockDevice oldMock)
+                oldMock.SyncDetected.OutputChange -= followedTxChanged;
+        }
+
+        followedTx = tx;
+        followedTxChanged = null;
+        if (tx == null)
+            return;
+
+        followedTxChanged = (sender, args) => RefreshFromTransmitter();
+        if (tx.StreamUrl != null)
+            tx.StreamUrl.OutputChange += followedTxChanged;
+        if (tx is NvxMockDevice mockTx)
+            mockTx.SyncDetected.OutputChange += followedTxChanged;
+    }
+
+    // Takes on the followed transmitter's current URL and sync; a real (non-mock) transmitter counts as synced.
+    private void RefreshFromTransmitter()
+    {
+        var tx = followedTx;
+        SetStreamUrl(tx?.StreamUrl?.StringValue ?? string.Empty);
+        Sync = tx != null && (tx is not NvxMockDevice mockTx || mockTx.Sync);
+    }
 
     public StringFeedback CurrentVideoRouteName { get; private set; }
 
