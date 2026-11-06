@@ -31,6 +31,8 @@ public class NvxMatrixOutput : INvxOutputSlot
 
     public string RxDeviceKey => _device.Key;
 
+    public BoolFeedback IsOnline => _device.IsOnline;
+
     private readonly Dictionary<eRoutingSignalType, INvxInputSlot> currentRoutes = new()
     {
         {eRoutingSignalType.Audio, default },

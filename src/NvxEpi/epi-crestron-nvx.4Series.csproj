@@ -28,7 +28,20 @@
     <None Remove="Properties\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="PepperDashEssentials" Version="3.0.0-feat-named-routing-slots.1">
+    <PackageReference Include="PepperDashEssentials" Version="3.0.0-rc.20">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <!-- Compile against the Crestron SDK that Essentials v3 ships (rc.17+: 2.21.274). rc.20+ already brings it;
+         the explicit pins keep it there. Built against an older SDK (rc.5 brought 2.21.128), the DM streaming
+         types (eSfpVideoSourceTypes, eAudioSource) fail to load on a 2.21.274 runtime, so no NVX device type
+         registers. -->
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.274">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.274">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.274">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>

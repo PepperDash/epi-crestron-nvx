@@ -12,7 +12,7 @@ public class DeviceModeFeedback
         if (device is DmNvxD3x)
             return new IntFeedback(Key, () => (int)eDeviceMode.Receiver);
 
-        if (device is DmNvxE3x || device is DmNvxE20)
+        if (device is DmNvxE3x || device is DmNvxE10E20Base)
             return new IntFeedback(Key, () => (int)eDeviceMode.Transmitter);
 
         var feedback = new IntFeedback(Key, () => (int)device.Control.DeviceModeFeedback);

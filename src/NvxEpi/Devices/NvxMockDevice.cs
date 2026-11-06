@@ -7,6 +7,8 @@ using NvxEpi.Abstractions.SecondaryAudio;
 using NvxEpi.Abstractions.Stream;
 using NvxEpi.Enums;
 using NvxEpi.Features.Config;
+using NvxEpi.Features.Routing;
+using NvxEpi.Features.Streams.Video;
 using NvxEpi.JoinMaps;
 using NvxEpi.McMessengers;
 using NvxEpi.Services.Bridge;
@@ -25,11 +27,12 @@ namespace NvxEpi.Devices;
 
 public class NvxMockDevice
     : ReconfigurableDevice,
-        IStream,
+        IMockStreamReceiver,
         ISecondaryAudioStream,
         IRoutingMidpointWithFeedback,
         IBridgeAdvanced,
-        IHasFeedback
+        IHasFeedback,
+        ICommunicationMonitor
 {
     private object propertiesLock = new();
     private NvxMockDeviceProperties properties;
@@ -59,8 +62,11 @@ public class NvxMockDevice
 
         DeviceId = properties.DeviceId;
         IsTransmitter = isTransmitter;
+        sync = isTransmitter && (properties.SyncDetected ?? true);
+        communicationMonitor = new MockOnlineMonitor(this);
         BuildFeedbacks();
         BuildRoutingPorts();
+        BuildCurrentRoutes();
     }
 
     protected override void CustomSetConfig(DeviceConfig config)
@@ -144,6 +150,24 @@ public class NvxMockDevice
         );
 
         SyncDetected = new BoolFeedback("syncDetected", () => Sync);
+
+        // A receiver reports the transmitter routed to it under the same keys as a real NVX
+        // (CurrentVideoStream), so dynNvx and the bridge can resolve the current route.
+        if (!IsTransmitter)
+        {
+            CurrentVideoRouteName = new StringFeedback(
+                CurrentVideoStream.RouteNameKey,
+                () => currentVideoRoute != null ? currentVideoRoute.Name : NvxGlobalRouter.NoSourceText
+            );
+
+            CurrentVideoRouteValue = new IntFeedback(
+                CurrentVideoStream.RouteValueKey,
+                () => currentVideoRoute != null ? currentVideoRoute.DeviceId : 0
+            );
+
+            Feedbacks.Add(CurrentVideoRouteName);
+            Feedbacks.Add(CurrentVideoRouteValue);
+        }
 
         Feedbacks.AddRange(
             new Feedback[]
@@ -277,6 +301,8 @@ public class NvxMockDevice
         eRoutingSignalType signalType
     )
     {
+        // The mock's crosspoints are fixed (a transmitter streams its HDMI input, a receiver shows its stream),
+        // so a switch through the mock changes nothing; the stream a receiver shows comes from ReceiveStream.
         this.LogVerbose("Executing switch : {0}", signalType);
     }
 
@@ -284,7 +310,64 @@ public class NvxMockDevice
 
     public List<RouteSwitchDescriptor> CurrentRoutes { get; } = new();
 
-    public event RouteChangedEventHandler RouteChanged { add { } remove { } }
+    public event RouteChangedEventHandler RouteChanged;
+
+    // The receiver's Stream -> HDMI crosspoint; its input is set while a stream is routed to it.
+    private RouteSwitchDescriptor receiverRoute;
+
+    /// <summary>
+    /// The crosspoints a real NVX reports, so the routing feedback can trace a sink back through the mock:
+    /// a transmitter always streams its HDMI input; a receiver shows its stream on HDMI once one is routed.
+    /// </summary>
+    private void BuildCurrentRoutes()
+    {
+        if (IsTransmitter)
+        {
+            var hdmiIn = InputPorts[DeviceInputEnum.Hdmi1.Name];
+            var streamOut = OutputPorts[SwitcherForStreamOutput.Key];
+            if (hdmiIn != null && streamOut != null)
+                CurrentRoutes.Add(new RouteSwitchDescriptor(streamOut, hdmiIn));
+            return;
+        }
+
+        var hdmiOut = OutputPorts[SwitcherForHdmiOutput.Key];
+        if (hdmiOut == null)
+            return;
+
+        receiverRoute = new RouteSwitchDescriptor(hdmiOut, null);
+        CurrentRoutes.Add(receiverRoute);
+    }
+
+    /// <summary>
+    /// Called by the primary stream router in place of switching hardware. Takes on the transmitter's stream
+    /// URL and video sync (no sync when cleared), follows later changes to either while that transmitter stays
+    /// routed (like a real receiver once the encoder reports its URL), and reports the Stream -> HDMI crosspoint.
+    /// </summary>
+    public void ReceiveStream(IStream tx)
+    {
+        if (IsTransmitter)
+            return;
+
+        this.LogInformation("MOCK receive stream from {tx} ({url})", tx?.Key ?? "none", tx?.StreamUrl?.StringValue ?? string.Empty);
+
+        // Under followLock so an in-flight callback from the previous transmitter can't write after this
+        // route (or clear) has taken over; see FollowTransmitter.
+        lock (followLock)
+        {
+            FollowTransmitter(tx);
+            ApplyFromTransmitter(tx);
+
+            currentVideoRoute = tx;
+            CurrentVideoRouteName?.FireUpdate();
+            CurrentVideoRouteValue?.FireUpdate();
+
+            if (receiverRoute == null)
+                return;
+
+            receiverRoute.InputPort = tx == null ? null : InputPorts[DeviceInputEnum.Stream.Name];
+            RouteChanged?.Invoke(this, receiverRoute);
+        }
+    }
 
     public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
     {
@@ -306,6 +389,66 @@ public class NvxMockDevice
             isOnline = value;
 
             IsOnline.FireUpdate();
+            communicationMonitor.SetOnline(value);
+        }
+    }
+
+    // ---- ICommunicationMonitor: as a real NVX has (NvxBaseDevice), so status pages treat the mock alike ----
+
+    private readonly MockOnlineMonitor communicationMonitor;
+
+    public StatusMonitorBase CommunicationMonitor => communicationMonitor;
+
+    /// <summary>
+    /// Bench control of the communication status, from the console:
+    /// <c>devjson {"deviceKey":"nvx-tx-atv","methodName":"SetCommStatus","params":["warning"]}</c>.
+    /// Takes ok / warning / error / unknown (or the MonitorStatus names). Online follows: only "ok" is online.
+    /// </summary>
+    public void SetCommStatus(string status)
+    {
+        if (!MockOnlineMonitor.TryParse(status, out var parsed))
+        {
+            this.LogWarning("SetCommStatus: '{status}' is not ok, warning, error or unknown", status);
+            return;
+        }
+
+        this.LogInformation("MOCK comm status {status}", parsed);
+        communicationMonitor.SetStatus(parsed);
+        if (isOnline != (parsed == MonitorStatus.IsOk))
+        {
+            isOnline = parsed == MonitorStatus.IsOk;
+            IsOnline.FireUpdate();
+        }
+    }
+
+    /// <summary>Reports OK while the mock is online and in error while it is set offline; nothing to poll. Set
+    /// from the console with SetIsOnline / SetCommStatus (devjson).</summary>
+    private sealed class MockOnlineMonitor : StatusMonitorBase
+    {
+        public MockOnlineMonitor(IKeyed parent)
+            : base(parent, 10000, 30000)
+        {
+            Status = MonitorStatus.IsOk;
+        }
+
+        public override void Start() { }
+
+        public override void Stop() { }
+
+        public void SetOnline(bool online) => Status = online ? MonitorStatus.IsOk : MonitorStatus.InError;
+
+        public void SetStatus(MonitorStatus status) => Status = status;
+
+        public static bool TryParse(string text, out MonitorStatus status)
+        {
+            switch ((text ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case "ok": case "isok": case "online": status = MonitorStatus.IsOk; return true;
+                case "warning": case "inwarning": status = MonitorStatus.InWarning; return true;
+                case "error": case "inerror": case "offline": status = MonitorStatus.InError; return true;
+                case "unknown": case "statusunknown": status = MonitorStatus.StatusUnknown; return true;
+                default: status = MonitorStatus.StatusUnknown; return false;
+            }
         }
     }
 
@@ -340,13 +483,91 @@ public class NvxMockDevice
 
     public BoolFeedback SyncDetected { get; private set; }
 
+    // The transmitter currently routed to this (receiver) mock, as set by ReceiveStream.
+    private IStream currentVideoRoute;
+
+    // The routed transmitter whose URL/sync feedback this receiver follows, and the handler subscribed to it.
+    // followLock serializes following changes (route, clear, explicit URL write) with the callback's writes.
+    private readonly object followLock = new();
+    private IStream followedTx;
+    private EventHandler<FeedbackEventArgs> followedTxChanged;
+
+    /// <summary>
+    /// Moves the URL/sync subscriptions to <paramref name="tx"/>, detaching them from the previously routed
+    /// transmitter, so a re-route or clear stops the old one from updating this receiver. Call under followLock.
+    /// The callback re-checks under the lock that its transmitter is still the followed one, so a callback
+    /// already in flight when the route changed does nothing.
+    /// </summary>
+    private void FollowTransmitter(IStream tx)
+    {
+        if (followedTx != null && followedTxChanged != null)
+        {
+            if (followedTx.StreamUrl != null)
+                followedTx.StreamUrl.OutputChange -= followedTxChanged;
+            if (followedTx is NvxMockDevice oldMock)
+                oldMock.SyncDetected.OutputChange -= followedTxChanged;
+        }
+
+        followedTx = tx;
+        followedTxChanged = null;
+        if (tx == null)
+            return;
+
+        followedTxChanged = (sender, args) =>
+        {
+            lock (followLock)
+            {
+                if (!ReferenceEquals(followedTx, tx))
+                    return;
+
+                ApplyFromTransmitter(tx);
+            }
+        };
+        if (tx.StreamUrl != null)
+            tx.StreamUrl.OutputChange += followedTxChanged;
+        if (tx is NvxMockDevice mockTx)
+            mockTx.SyncDetected.OutputChange += followedTxChanged;
+    }
+
+    // Takes on the transmitter's current URL and sync (none when cleared); a real (non-mock) transmitter
+    // counts as synced. Call under followLock.
+    private void ApplyFromTransmitter(IStream tx)
+    {
+        ApplyStreamUrl(tx?.StreamUrl?.StringValue ?? string.Empty);
+        Sync = tx != null && (tx is not NvxMockDevice mockTx || mockTx.Sync);
+    }
+
+    public StringFeedback CurrentVideoRouteName { get; private set; }
+
+    public IntFeedback CurrentVideoRouteValue { get; private set; }
+
+    // Explicit URL write (bridge StreamUrl join): stops following the routed transmitter, so its next URL or
+    // sync change doesn't undo this write. An empty URL on a receiver is a clear: it goes through
+    // ReceiveStream(null) so sync, route feedback and the HDMI crosspoint are cleared too.
     private void SetStreamUrl(string url)
     {
-        if (url.Equals(properties.StreamUrl))
+        if (!IsTransmitter && string.IsNullOrEmpty(url))
+        {
+            ReceiveStream(null);
+            return;
+        }
+
+        lock (followLock)
+        {
+            FollowTransmitter(null);
+            ApplyStreamUrl(url);
+        }
+    }
+
+    private void ApplyStreamUrl(string url)
+    {
+        if (url.Equals(properties.StreamUrl ?? string.Empty))
             return;
 
         properties.StreamUrl = url;
         StreamUrl.FireUpdate();
+        IsStreamingVideo.FireUpdate();
+        VideoStreamStatus.FireUpdate();
     }
 
     public void SetSyncState(bool state)
@@ -354,9 +575,16 @@ public class NvxMockDevice
         Sync = state;
     }
 
+    /// <summary>
+    /// Bench control, from the console:
+    /// <c>devjson {"deviceKey":"nvx-tx-atv","methodName":"SetIsOnline","params":[false]}</c>.
+    /// Offline reports the communication monitor in error; online reports it OK.
+    /// </summary>
     public void SetIsOnline(bool state)
     {
+        this.LogInformation("MOCK set {state}", state ? "online" : "offline");
         Online = state;
+        communicationMonitor.SetOnline(state);
     }
 
     public void LinkToApi(

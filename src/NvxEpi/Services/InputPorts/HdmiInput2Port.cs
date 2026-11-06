@@ -40,7 +40,10 @@ public class HdmiInput2Port
         hdmi.VideoAttributes.AttributeChange += (sender, args) => port.VideoStatus.FireAll();
 
         device.InputPorts.Add(port);
-        foreach (var videoStatusOutput in port.VideoStatus.ToList().Where(x => x != null))
-            device.Feedbacks.Add(videoStatusOutput);
+        // VideoStatus feedbacks are intentionally not added to device.Feedbacks here.
+        // HdmiInput1Port already registered them under the same hardcoded keys
+        // (HasVideoStatusFeedback, etc.) — adding them again throws ArgumentException
+        // and aborts AddRoutingPorts(), which prevents the stream output port from being
+        // registered and causes NullReferenceException in TieLineConnector.
     }
 }

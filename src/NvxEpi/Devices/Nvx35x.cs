@@ -208,7 +208,14 @@ public class Nvx35X :
     {
         try
         {
-            var switcher = outputSelector as IHandleInputSwitch ?? throw new NullReferenceException("outputSelector");
+            // A null output means the route ends at this device; there is nothing to switch.
+            if (outputSelector is null)
+            {
+                this.LogDebug("No output selector; route ends at this device");
+                return;
+            }
+
+            var switcher = outputSelector as IHandleInputSwitch ?? throw new InvalidCastException($"outputSelector is not IHandleInputSwitch: {outputSelector.GetType().FullName}");
             this.LogDebug(
                 "Executing switch : '{0}' | '{1}' | '{2}'",
                 inputSelector?.ToString() ?? "{null}",
