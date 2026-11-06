@@ -350,18 +350,23 @@ public class NvxMockDevice
 
         this.LogInformation("MOCK receive stream from {tx} ({url})", tx?.Key ?? "none", tx?.StreamUrl?.StringValue ?? string.Empty);
 
-        FollowTransmitter(tx);
-        RefreshFromTransmitter();
+        // Under followLock so an in-flight callback from the previous transmitter can't write after this
+        // route (or clear) has taken over; see FollowTransmitter.
+        lock (followLock)
+        {
+            FollowTransmitter(tx);
+            ApplyFromTransmitter(tx);
 
-        currentVideoRoute = tx;
-        CurrentVideoRouteName?.FireUpdate();
-        CurrentVideoRouteValue?.FireUpdate();
+            currentVideoRoute = tx;
+            CurrentVideoRouteName?.FireUpdate();
+            CurrentVideoRouteValue?.FireUpdate();
 
-        if (receiverRoute == null)
-            return;
+            if (receiverRoute == null)
+                return;
 
-        receiverRoute.InputPort = tx == null ? null : InputPorts[DeviceInputEnum.Stream.Name];
-        RouteChanged?.Invoke(this, receiverRoute);
+            receiverRoute.InputPort = tx == null ? null : InputPorts[DeviceInputEnum.Stream.Name];
+            RouteChanged?.Invoke(this, receiverRoute);
+        }
     }
 
     public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
@@ -482,12 +487,16 @@ public class NvxMockDevice
     private IStream currentVideoRoute;
 
     // The routed transmitter whose URL/sync feedback this receiver follows, and the handler subscribed to it.
+    // followLock serializes following changes (route, clear, explicit URL write) with the callback's writes.
+    private readonly object followLock = new();
     private IStream followedTx;
     private EventHandler<FeedbackEventArgs> followedTxChanged;
 
     /// <summary>
     /// Moves the URL/sync subscriptions to <paramref name="tx"/>, detaching them from the previously routed
-    /// transmitter, so a re-route or clear stops the old one from updating this receiver.
+    /// transmitter, so a re-route or clear stops the old one from updating this receiver. Call under followLock.
+    /// The callback re-checks under the lock that its transmitter is still the followed one, so a callback
+    /// already in flight when the route changed does nothing.
     /// </summary>
     private void FollowTransmitter(IStream tx)
     {
@@ -504,18 +513,27 @@ public class NvxMockDevice
         if (tx == null)
             return;
 
-        followedTxChanged = (sender, args) => RefreshFromTransmitter();
+        followedTxChanged = (sender, args) =>
+        {
+            lock (followLock)
+            {
+                if (!ReferenceEquals(followedTx, tx))
+                    return;
+
+                ApplyFromTransmitter(tx);
+            }
+        };
         if (tx.StreamUrl != null)
             tx.StreamUrl.OutputChange += followedTxChanged;
         if (tx is NvxMockDevice mockTx)
             mockTx.SyncDetected.OutputChange += followedTxChanged;
     }
 
-    // Takes on the followed transmitter's current URL and sync; a real (non-mock) transmitter counts as synced.
-    private void RefreshFromTransmitter()
+    // Takes on the transmitter's current URL and sync (none when cleared); a real (non-mock) transmitter
+    // counts as synced. Call under followLock.
+    private void ApplyFromTransmitter(IStream tx)
     {
-        var tx = followedTx;
-        SetStreamUrl(tx?.StreamUrl?.StringValue ?? string.Empty);
+        ApplyStreamUrl(tx?.StreamUrl?.StringValue ?? string.Empty);
         Sync = tx != null && (tx is not NvxMockDevice mockTx || mockTx.Sync);
     }
 
@@ -523,7 +541,18 @@ public class NvxMockDevice
 
     public IntFeedback CurrentVideoRouteValue { get; private set; }
 
+    // Explicit URL write (bridge StreamUrl join): stops following the routed transmitter, so its next URL or
+    // sync change doesn't undo this write.
     private void SetStreamUrl(string url)
+    {
+        lock (followLock)
+        {
+            FollowTransmitter(null);
+            ApplyStreamUrl(url);
+        }
+    }
+
+    private void ApplyStreamUrl(string url)
     {
         if (url.Equals(properties.StreamUrl ?? string.Empty))
             return;
