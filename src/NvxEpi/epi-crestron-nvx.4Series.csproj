@@ -28,7 +28,7 @@
     <None Remove="Properties\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="PepperDashEssentials" Version="3.0.0-rc.23">
+    <PackageReference Include="PepperDashEssentials" Version="3.0.0-rc.20">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <!-- Compile against the Crestron SDK that Essentials v3 ships (rc.17+: 2.21.274). rc.20+ already brings it;
