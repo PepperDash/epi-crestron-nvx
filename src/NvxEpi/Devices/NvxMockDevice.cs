@@ -542,9 +542,16 @@ public class NvxMockDevice
     public IntFeedback CurrentVideoRouteValue { get; private set; }
 
     // Explicit URL write (bridge StreamUrl join): stops following the routed transmitter, so its next URL or
-    // sync change doesn't undo this write.
+    // sync change doesn't undo this write. An empty URL on a receiver is a clear: it goes through
+    // ReceiveStream(null) so sync, route feedback and the HDMI crosspoint are cleared too.
     private void SetStreamUrl(string url)
     {
+        if (!IsTransmitter && string.IsNullOrEmpty(url))
+        {
+            ReceiveStream(null);
+            return;
+        }
+
         lock (followLock)
         {
             FollowTransmitter(null);
