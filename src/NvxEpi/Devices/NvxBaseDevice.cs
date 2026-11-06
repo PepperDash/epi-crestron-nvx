@@ -252,9 +252,21 @@ public abstract class NvxBaseDevice
                 return base.CustomActivate();
             if (Hardware.Control.ServerUrlFeedback.StringValue != string.Empty)
                 Hardware.Control.ServerUrl.StringValue = string.Empty;
-            Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
             if (string.IsNullOrEmpty(DefaultMulticastRoute))
+            {
+                Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
                 this.DisableVideoOutputIfConfigured();
+            }
+            else if (DisableOutputOnNoStream)
+            {
+                // An earlier clear may have left the output on Disable; route the default like any other
+                // stream so VideoSource goes back to Stream.
+                this.SetStreamUrl(DefaultMulticastRoute);
+            }
+            else
+            {
+                Hardware.Control.ServerUrl.StringValue = DefaultMulticastRoute;
+            }
 
             return base.CustomActivate();
         }
@@ -421,7 +433,10 @@ public abstract class NvxBaseDevice
             if (IsTransmitter || hardware is DmNvxE10E20Base || hardware is DmNvxE30)
                 Hardware.SetTxDefaults(props);
             else
+            {
                 Hardware.SetRxDefaults(props);
+                this.ReapplyDisableOutputIfNoStream();
+            }
         };
     }
 

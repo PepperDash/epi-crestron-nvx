@@ -83,6 +83,26 @@ public static class StreamExtensions
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Disable;
     }
 
+    // Online defaults (defaultVideoInput: "Stream") can switch a receiver with no stream back to Stream when it
+    // reconnects. Re-disable it if it is on Stream with no URL; a local input selection or a routed stream is
+    // left alone, and a deferred route still switches it back to Stream when the encoder's URL arrives.
+    public static void ReapplyDisableOutputIfNoStream(this IStreamWithHardware device)
+    {
+        if (device.IsTransmitter || device is not IDisableOutputOnNoStream { DisableOutputOnNoStream: true })
+            return;
+
+        lock (pendingLock)
+        {
+            if (!string.IsNullOrEmpty(device.Hardware.Control.ServerUrl.StringValue))
+                return;
+
+            if (device.Hardware.Control.VideoSource != eSfpVideoSourceTypes.Stream)
+                return;
+
+            device.DisableVideoOutputIfConfigured();
+        }
+    }
+
     public static void RouteStream(this IStreamWithHardware device, IStream tx)
     {
         if (device.IsTransmitter)
@@ -159,6 +179,14 @@ public static class StreamExtensions
 
         lock (pendingLock)
         {
+            // An empty URL (e.g. the bridge's StreamUrl join) is a clear: with disableOutputOnNoStream it must
+            // disable the output like ClearStream, not switch the receiver back to Stream.
+            if (string.IsNullOrEmpty(url) && device is IDisableOutputOnNoStream { DisableOutputOnNoStream: true })
+            {
+                device.ClearStream(); // re-enters pendingLock; cancels any pending route
+                return;
+            }
+
             CancelPendingRoute(device);
             ApplyStreamUrl(device, url);
         }
