@@ -79,7 +79,10 @@ public class CurrentVideoStream : VideoStream, ICurrentStream
 
     private IStream GetCurrentStream()
     {
-        if (string.IsNullOrEmpty(StreamUrl.StringValue) || MulticastAddress.StringValue.Equals("0.0.0.0"))
+        // The route is the transmitter whose URL this receiver is set to, valid while that transmitter is online,
+        // whether or not video is flowing. Not gated on the cached MulticastAddress: after a release it reads
+        // 0.0.0.0, and re-routing the same encoder may not refresh it, leaving "No Source" while the decoder streams.
+        if (string.IsNullOrEmpty(StreamUrl.StringValue))
             return null;
 
         var result = _transmitters
@@ -87,25 +90,25 @@ public class CurrentVideoStream : VideoStream, ICurrentStream
             .FirstOrDefault(
                 x => x.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
 
-        if (result != null)
+        if (result == null)
         {
-            return result;
+            result = DeviceManager
+                .AllDevices
+                .OfType<IStream>()
+                .Where(t => t.IsTransmitter)
+                .Where(x => !string.IsNullOrEmpty(x.StreamUrl.StringValue))
+                .FirstOrDefault(
+                    tx => tx.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
+
+            if (result != null)
+            {
+                _transmitters.Add(result);
+                // Re-resolve when this transmitter goes offline or comes back, so the name follows it.
+                result.IsOnline.OutputChange += (sender, args) => UpdateCurrentRoute();
+            }
         }
 
-        result = DeviceManager
-            .AllDevices
-            .OfType<IStream>()
-            .Where(t => t.IsTransmitter)
-            .Where(x => !string.IsNullOrEmpty(x.StreamUrl.StringValue))
-            .FirstOrDefault(
-                tx => tx.StreamUrl.StringValue.Equals(StreamUrl.StringValue, StringComparison.OrdinalIgnoreCase));
-
-        if (result != null)
-        {
-            _transmitters.Add(result);
-        }
-
-        return result;
+        return result != null && result.IsOnline.BoolValue ? result : null;
     }
 
     private void Initialize()
