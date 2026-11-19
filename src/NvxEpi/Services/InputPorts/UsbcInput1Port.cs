@@ -51,8 +51,15 @@ public class UsbcInput1Port
 
             device.InputPorts.Add(port);
 
-            foreach (var videoStatusOutput in port.VideoStatus.ToList().Where(x => x != null))
-                device.Feedbacks.Add(videoStatusOutput);
+            // VideoStatus feedbacks are intentionally not added to device.Feedbacks here.
+
+            // HdmiInput1Port already registered them under the same hardcoded keys
+
+            // (HasVideoStatusFeedback, etc.). Adding them again throws ArgumentException and
+
+            // aborts AddRoutingPorts(), so every port after this one (including the encoder
+
+            // stream output) is never registered. Same fix as HdmiInput2Port.
         }
         else if (nvx38xDevice.DmIn != null)
         {
@@ -82,8 +89,15 @@ public class UsbcInput1Port
 
             device.InputPorts.Add(port);
 
-            foreach (var videoStatusOutput in port.VideoStatus.ToList().Where(x => x != null))
-                device.Feedbacks.Add(videoStatusOutput);
+            // VideoStatus feedbacks are intentionally not added to device.Feedbacks here.
+
+            // HdmiInput1Port already registered them under the same hardcoded keys
+
+            // (HasVideoStatusFeedback, etc.). Adding them again throws ArgumentException and
+
+            // aborts AddRoutingPorts(), so every port after this one (including the encoder
+
+            // stream output) is never registered. Same fix as HdmiInput2Port.
         }
         else
         {
