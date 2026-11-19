@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using Xunit;
 
@@ -45,6 +46,9 @@ public class FactoryMetadataTests
     [InlineData("Nvx35XDeviceFactory", "dmnvx350")]
     [InlineData("Nvx36XDeviceFactory", "dmnvx360")]
     [InlineData("Nvx38XDeviceFactory", "dmnvx384")]
+    [InlineData("Nvx38XDeviceFactory", "dmnvx384c")]
+    [InlineData("Nvx38XDeviceFactory", "dmnvx385")]
+    [InlineData("Nvx38XDeviceFactory", "dmnvx385c")]
     [InlineData("NvxD3XDeviceFactory", "dmnvxd30")]
     [InlineData("NvxE20DeviceFactory", "dmnvxe20")]
     [InlineData("NvxE3XDeviceFactory", "dmnvxe30")]
@@ -56,5 +60,21 @@ public class FactoryMetadataTests
         var source = AssemblyFixture.FindSourceForClass(factoryClassName);
         source.Should().NotBeNull();
         source!.Should().Contain($"\"{typeName}\"");
+    }
+
+    // TypeNames and the hardware switch must stay in sync: a type listed in a factory but
+    // missing from NvxBaseDeviceFactory.GetDeviceBuildAction throws NotSupportedException at load.
+    [Theory]
+    [InlineData("dmnvx384")]
+    [InlineData("dmnvx384c")]
+    [InlineData("dmnvx385")]
+    [InlineData("dmnvx385c")]
+    public void BaseFactory_Source_Has_Active_Case_For_TypeName(string typeName)
+    {
+        var source = AssemblyFixture.FindSourceForClass("NvxBaseDeviceFactory");
+        source.Should().NotBeNull();
+        source!.Split('\n')
+            .Select(line => line.Trim())
+            .Should().Contain($"case \"{typeName}\":");
     }
 }
