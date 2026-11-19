@@ -28,7 +28,11 @@ public static class SecondaryAudioExtensions
         else
         {
             deviceWithHardware.Hardware.DmNaxRouting.DmNaxReceive.MulticastAddress.StringValue = address;
-            deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
+
+            // Clearing a route must not *select* NAX as the audio source, or a restart-time clear
+            // parks the device on NAX and overwrites whatever the device was already set to.
+            if (address != NoRouteString)
+                deviceWithHardware.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
         }
     }
 

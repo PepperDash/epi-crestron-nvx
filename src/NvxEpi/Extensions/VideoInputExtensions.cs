@@ -35,6 +35,16 @@ public static class VideoInputExtensions
         }
     }
 
+    // The automatic-input-routing sig is not populated on every model. Crestron returns its
+    // internal NullSig sentinel for it, so Enable/DisableAutomaticInputRouting() throw rather
+    // than no-opping. E760 has a single DM input and no input switching, so the concept does
+    // not apply there at all.
+    private static bool SupportsAutomaticInputRouting(ICurrentVideoInput device) =>
+        device.Hardware is not DmNvxE760x
+        && device.Hardware is not DmNvxE3x
+        && device.Hardware is not DmNvxE10E20Base
+        && device.Hardware is not DmNvxD3x;
+
     public static void SetVideoToHdmiInput1(this ICurrentVideoInput device)
     {
         if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE10E20Base || device.Hardware is DmNvxD3x)
@@ -93,13 +103,16 @@ public static class VideoInputExtensions
         }
 
         device.LogDebug("Switching Video Input to : 'Stream'");
-        device.Hardware.Control.DisableAutomaticInputRouting();
+        if (SupportsAutomaticInputRouting(device))
+        {
+            device.Hardware.Control.DisableAutomaticInputRouting();
+        }
         device.Hardware.Control.VideoSource = eSfpVideoSourceTypes.Stream;
     }
 
     public static void SetVideoToAutomatic(this ICurrentVideoInput device)
     {
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE10E20Base || device.Hardware is DmNvxD3x)
+        if (!SupportsAutomaticInputRouting(device))
         {
             return;
         }
@@ -114,7 +127,10 @@ public static class VideoInputExtensions
     {
         StreamExtensions.SelectInputCancellingPendingRoute(device, () =>
         {
-            device.Hardware.Control.DisableAutomaticInputRouting();
+            if (SupportsAutomaticInputRouting(device))
+            {
+                device.Hardware.Control.DisableAutomaticInputRouting();
+            }
             device.Hardware.Control.VideoSource = source;
         });
     }
@@ -127,7 +143,7 @@ public static class VideoInputExtensions
             return;
         }
 
-        if (device.Hardware is DmNvxE3x || device.Hardware is DmNvxE10E20Base || device.Hardware is DmNvxD3x)
+        if (!SupportsAutomaticInputRouting(device))
         {
             return;
         }

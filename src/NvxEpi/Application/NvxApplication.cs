@@ -260,7 +260,6 @@ public class NvxApplication : EssentialsBridgeableDevice
                 {
                     if (s == 0)
                     {
-                        rx.Device.Hardware.Control.AudioSource = DmNvxControl.eAudioSource.DmNaxAudio;
                         audioStream?.ClearSecondaryStream();
 
                         rx.Amp.ReleaseRoute();
