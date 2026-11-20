@@ -36,6 +36,9 @@ public class PrimaryStreamStatusMessenger : MessengerBase
         device.VideoStreamStatus.OutputChange += Debounce;
         device.StreamUrl.OutputChange += Debounce;
         device.MulticastAddress.OutputChange += Debounce;
+
+        // The technician NVX pages also show these (see StreamFields).
+        StreamFields.Subscribe(device, Debounce);
     }
 
     private void Debounce(object sender, FeedbackEventArgs args)
@@ -76,6 +79,32 @@ public class StreamStateMessage : DeviceStateMessageBase
     [JsonProperty("isTransmitter")]
     public bool IsTransmitter => device.IsTransmitter;
 
+    // What the technician NVX Encoders and Decoders pages show besides the stream URL (a null is a unit without that feature).
+    [JsonProperty("multicastVideoAddress")]
+    public string MulticastVideoAddress => device.MulticastAddress.StringValue;
+
+    // The secondary audio address is the NAX address (the transmitter's, or the receiver's): there is one audio multicast address.
+    [JsonProperty("multicastAudioAddress")]
+    public string MulticastAudioAddress => StreamFields.Read(device.SecondaryAudioAddress);
+
+    [JsonProperty("streamActive")]
+    public bool StreamActive => device.IsStreamingVideo.BoolValue;
+
+    [JsonProperty("videoInput")]
+    public string VideoInput => StreamFields.Read(device.CurrentVideoInput);
+
+    [JsonProperty("audioInput")]
+    public string AudioInput => StreamFields.Read(device.CurrentAudioInput);
+
+    [JsonProperty("naxInput")]
+    public string NaxInput => StreamFields.Read(device.CurrentNaxInput);
+
+    [JsonProperty("videoStream")]
+    public string VideoStream => StreamFields.Read(device.CurrentStreamName);
+
+    [JsonProperty("audioStream")]
+    public string AudioStream => StreamFields.Read(device.CurrentSecondaryAudioStreamName);
+
     public StreamStateMessage(NvxBaseDevice device)
     {
         this.device = device;
@@ -102,8 +131,69 @@ public class StreamUpdateMessage
     [JsonProperty("isTransmitter")]
     public bool IsTransmitter => device.IsTransmitter;
 
+    // What the technician NVX Encoders and Decoders pages show besides the stream URL (a null is a unit without that feature).
+    [JsonProperty("multicastVideoAddress")]
+    public string MulticastVideoAddress => device.MulticastAddress.StringValue;
+
+    // The secondary audio address is the NAX address (the transmitter's, or the receiver's): there is one audio multicast address.
+    [JsonProperty("multicastAudioAddress")]
+    public string MulticastAudioAddress => StreamFields.Read(device.SecondaryAudioAddress);
+
+    [JsonProperty("streamActive")]
+    public bool StreamActive => device.IsStreamingVideo.BoolValue;
+
+    [JsonProperty("videoInput")]
+    public string VideoInput => StreamFields.Read(device.CurrentVideoInput);
+
+    [JsonProperty("audioInput")]
+    public string AudioInput => StreamFields.Read(device.CurrentAudioInput);
+
+    [JsonProperty("naxInput")]
+    public string NaxInput => StreamFields.Read(device.CurrentNaxInput);
+
+    [JsonProperty("videoStream")]
+    public string VideoStream => StreamFields.Read(device.CurrentStreamName);
+
+    [JsonProperty("audioStream")]
+    public string AudioStream => StreamFields.Read(device.CurrentSecondaryAudioStreamName);
+
     public StreamUpdateMessage(NvxBaseDevice device)
     {
         this.device = device;
+    }
+}
+
+/// <summary>
+/// Reads the feedbacks the technician NVX pages show. A unit that does not have a feedback (no NAX, no secondary audio) gives null
+/// instead of failing the whole status message.
+/// </summary>
+internal static class StreamFields
+{
+    internal static string Read(PepperDash.Essentials.Core.StringFeedback feedback)
+    {
+        try
+        {
+            return feedback?.StringValue;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    internal static void Subscribe(NvxBaseDevice device, System.EventHandler<FeedbackEventArgs> handler)
+    {
+        foreach (var feedback in new PepperDash.Essentials.Core.Feedback[]
+                 {
+                     device.SecondaryAudioAddress,
+                     device.CurrentVideoInput,
+                     device.CurrentAudioInput,
+                     device.CurrentNaxInput,
+                     device.CurrentStreamName,
+                     device.CurrentSecondaryAudioStreamName,
+                 })
+        {
+            if (feedback != null) feedback.OutputChange += handler;
+        }
     }
 }
