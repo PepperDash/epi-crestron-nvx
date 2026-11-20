@@ -185,3 +185,467 @@ noSwitch
 ```json
 "usb": { "mode": "{local OR remote}", "followVideo": false, "isLayer3": false }
 ```
+<!-- START Minimum Essentials Framework Versions -->
+
+<!-- END Minimum Essentials Framework Versions -->
+<!-- START Config Example -->
+### Config Example
+
+```json
+{
+    "key": "GeneratedKey",
+    "uid": 1,
+    "name": "GeneratedName",
+    "type": "amplifier",
+    "group": "Group",
+    "properties": {
+        "transmitters": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "VideoName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        },
+        "receivers": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "VideoName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        },
+        "audioTransmitters": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "AudioName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        },
+        "audioReceivers": {
+            "SampleString": {
+                "DeviceKey": "SampleString",
+                "AudioName": "SampleString",
+                "NvxRoutingPort": "SampleString"
+            }
+        }
+    }
+}
+```
+<!-- END Config Example -->
+<!-- START Supported Types -->
+### Supported Types
+
+- amplifier
+<!-- END Supported Types -->
+<!-- START Join Maps -->
+
+<!-- END Join Maps -->
+<!-- START Interfaces Implemented -->
+### Interfaces Implemented
+
+- IStreamWithHardware
+- ICurrentStream
+- IUsbStreamWithHardware
+- ISecondaryAudioStreamWithHardware
+- ICurrentSecondaryAudioStream
+- ICurrentNaxInput
+- ICurrentAudioInput
+- ICurrentVideoInput
+- ICurrentDanteInput
+- IRoutingMidpointWithFeedback
+- INvxOutputSlot
+- IHasNamedRoutingSlots
+- INvxInputSlot
+- IHdmiInput
+- IVideowallMode
+- IHdmiOutput
+- IBasicVolumeWithFeedback
+- IUsbcInput
+- IHandleInputSwitch
+- IQueueMessage
+- IKeyed
+- IBridgeAdvanced
+- INvxE20DeviceWithHardware
+- INvxE3XDeviceWithHardware
+- IComPorts
+- IIROutputPorts
+- ICommunicationMonitor
+- IDeviceInfoProvider
+- INvxNetworkPortInformation
+- IDisableOutputOnNoStream
+- INvxD3XDeviceWithHardware
+- ICec
+- IMockStreamReceiver
+- ISecondaryAudioStream
+- IHasFeedback
+- INvx35XDeviceWithHardware
+- IMultiview
+- INvxDirector
+- IOnline
+- IRoutingInputs
+- INvxApplicationBuilder
+<!-- END Interfaces Implemented -->
+<!-- START Base Classes -->
+### Base Classes
+
+- VideoStream
+- SecondaryAudioStream
+- EssentialsDevice
+- HdmiInputBase
+- HdmiOutput
+- StatusMonitorBase
+- BaseStreamingDeviceProperties
+- UsbcInputBase
+- NvxBaseDevice
+- EssentialsBridgeableDevice
+- ReconfigurableDevice
+- MessengerBase
+- JoinMapBaseAdvanced
+- NvxBaseDeviceFactory<Nvx38X>
+- NvxBaseDeviceFactory<Nvx36X>
+- NvxBaseDeviceFactory<NvxMockDevice>
+- NvxBaseDeviceFactory<NvxE3X>
+- NvxBaseDeviceFactory<NvxE20>
+- NvxBaseDeviceFactory<Nvx35X>
+- NvxBaseDeviceFactory<NvxD3X>
+- Enumeration<NaxInputEnum>
+- Enumeration<HdcpCapabilityEnum>
+- Enumeration<VideoInputEnum>
+- Enumeration<DeviceInputEnum>
+- Enumeration<StreamingStatusEnum>
+- Enumeration<AudioInputEnum>
+- Enumeration<AudioOutputEnum>
+- Enumeration<VideoOutputEnum>
+- Enumeration<DeviceModeEnum>
+<!-- END Base Classes -->
+<!-- START Public Methods -->
+### Public Methods
+
+- public void Config_Class_Exists(string className)
+- public void Config_Has_Parameterless_Constructor(string className)
+- public void Config_Has_Expected_Property(string className, string propertyName)
+- public void Secondary_Input_Port_Does_Not_Register_VideoStatus_Feedbacks(string portClassName)
+- public void Assembly_Loads_Successfully()
+- public void Assembly_Name_Matches_Expected()
+- public void Factory_Count_Matches_Expected()
+- public void Factory_Exists_ByName(string factoryClassName)
+- public void All_Factories_Have_Parameterless_Constructor()
+- public void Factory_Source_Sets_MinimumEssentialsFrameworkVersion_Via_Shared_Const(string factoryClassName)
+- public void NvxDirectorFactory_Sets_MinimumEssentialsFrameworkVersion_Via_Shared_Const()
+- public void SharedMinimumEssentialsVersionConst_Matches_Expected()
+- public void Factory_Source_Contains_TypeName(string factoryClassName, string typeName)
+- public void BaseFactory_Source_Has_Active_Case_For_TypeName(string typeName)
+- public void UpdateCurrentRoute()
+- public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+- public void ClearCurrentUsbRoute()
+- public void ClearRemoteUsbRoute()
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
+- public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
+- public void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type)
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
+- public void TestUsbRoute(string inputPortKey, string outputPortKey)
+- public void CheckIfDeviceIsOnlineAndUpdate()
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void HandleSwitch(object input, eRoutingSignalType type)
+- public void Dispatch()
+- public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void UpdateDeviceInfo()
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void ReceiveStream(IStream tx)
+- public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
+- public void SetCommStatus(string status)
+- public void SetOnline(bool online)
+- public void SetStatus(MonitorStatus status)
+- public void SetSyncState(bool state)
+- public void SetIsOnline(bool state)
+- public void LinkToApi(
+        BasicTriList trilist,
+        uint joinStart,
+        string joinMapKey,
+        EiscApiAdvanced bridge
+    )
+- public void ClearCurrentUsbRoute()
+- public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+- public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void ClearCurrentUsbRoute()
+- public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+- public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void ClearCurrentUsbRoute()
+- public void MakeUsbRoute(IUsbStreamWithHardware hardware)
+- public void ExecuteSwitch(
+        object inputSelector,
+        object outputSelector,
+        eRoutingSignalType signalType
+    )
+- public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
+- public void VolumeUp(bool pressRelease)
+- public void VolumeDown(bool pressRelease)
+- public void MuteToggle()
+- public void SetVolume(ushort level)
+- public void MuteOn()
+- public void MuteOff()
+- public void SendUpdate()
+- public void SetAudioFollowsVideoTrue()
+- public void SetAudioFollowsVideoFalse()
+- public EssentialsDevice Build()
+- public void SetHdcpState(ushort state)
+- public int CompareTo(Enumeration<TEnum> other)
+- public int CompareTo(object other)
+<!-- END Public Methods -->
+<!-- START Bool Feedbacks -->
+### Bool Feedbacks
+
+- IsOnline
+- IsStreamingVideo
+- EnabledFeedback
+- IsOnline
+- EnabledFeedback
+- IsOnline
+- IsStreamingSecondaryAudio
+- EnabledFeedback
+- IsOnline
+- EnabledFeedback
+- IsOnline
+- EnabledFeedback
+- AutomaticInputRoutingEnabled
+- IsOnline
+- EnabledFeedback
+- IsOnline
+- EnabledFeedback
+- IsOnline
+- IsOnline
+- IsOnline
+- IsOnline
+- IsOnline
+- IsOnline
+- EnabledFeedback
+- DisabledByHdcp
+- IsOnline
+- EnabledFeedback
+- MuteFeedback
+- MuteFeedback
+- MuteFeedback
+- MuteFeedback
+- IsOnline
+- EnabledFeedback
+- IsStreamingVideo
+- IsStreamingSecondaryAudio
+- IsOnline
+- EnabledFeedback
+- DisabledByHdcp
+- MuteFeedback
+- IsOnline
+- IsStreamingVideo
+- IsStreamingSecondaryAudio
+- SyncDetected
+- EnabledFeedback
+- DisabledByHdcp
+- MuteFeedback
+- DisabledByHdcp
+- DisabledByHdcp
+- MultiviewEnabled
+- MuteFeedback
+- IsOnline
+- DisabledByHdcp
+- IsOnline
+- HdmiSyncDetected
+- IsOnline
+<!-- END Bool Feedbacks -->
+<!-- START Int Feedbacks -->
+### Int Feedbacks
+
+- DeviceMode
+- CurrentStreamId
+- DeviceMode
+- DeviceMode
+- CurrentSecondaryAudioStreamId
+- CurrentNaxInputValue
+- DeviceMode
+- CurrentAudioInputValue
+- DeviceMode
+- CurrentVideoInputValue
+- DeviceMode
+- DeviceMode
+- CurrentDanteInputValue
+- DeviceMode
+- VideowallMode
+- VideoAspectRatioMode
+- HorizontalResolution
+- DeviceMode
+- VolumeLevelFeedback
+- VolumeLevelFeedback
+- VolumeLevelFeedback
+- VolumeLevelFeedback
+- DeviceMode
+- CurrentAudioInputValue
+- CurrentNaxInputValue
+- CurrentVideoInputValue
+- DeviceMode
+- CurrentStreamId
+- CurrentSecondaryAudioStreamId
+- HorizontalResolution
+- VolumeLevelFeedback
+- DeviceMode
+- CurrentVideoRouteValue
+- HorizontalResolution
+- VideoAspectRatioMode
+- VideowallMode
+- VolumeLevelFeedback
+- HorizontalResolution
+- VideoAspectRatioMode
+- VideowallMode
+- HorizontalResolution
+- VideoAspectRatioMode
+- VideowallMode
+- MultiviewLayout
+- VolumeLevelFeedback
+- CurrentVideoRouteId
+- HorizontalResolution
+- AspectRatioMode
+- CurrentAudioRouteId
+- HdcpState
+- HdcpCapability
+<!-- END Int Feedbacks -->
+<!-- START String Feedbacks -->
+### String Feedbacks
+
+- VideoStreamStatus
+- StreamUrl
+- MulticastAddress
+- CurrentStreamName
+- UsbLocalId
+- SecondaryAudioStreamStatus
+- SecondaryAudioAddress
+- TxAudioAddress
+- RxAudioAddress
+- CurrentSecondaryAudioStreamName
+- CurrentNaxInput
+- CurrentAudioInput
+- CurrentVideoInput
+- CurrentDanteInput
+- EdidManufacturer
+- OutputResolution
+- CurrentAudioInput
+- CurrentNaxInput
+- CurrentVideoInput
+- StreamUrl
+- VideoStreamStatus
+- CurrentStreamName
+- SecondaryAudioAddress
+- TxAudioAddress
+- RxAudioAddress
+- SecondaryAudioStreamStatus
+- CurrentSecondaryAudioStreamName
+- MulticastAddress
+- EdidManufacturer
+- OutputResolution
+- StreamUrl
+- SecondaryAudioAddress
+- TxAudioAddress
+- RxAudioAddress
+- VideoStreamStatus
+- SecondaryAudioStreamStatus
+- MulticastAddress
+- CurrentVideoRouteName
+- EdidManufacturer
+- OutputResolution
+- UsbLocalId
+- EdidManufacturer
+- OutputResolution
+- UsbLocalId
+- EdidManufacturer
+- OutputResolution
+- WindowAStreamUrl
+- WindowBStreamUrl
+- WindowCStreamUrl
+- WindowDStreamUrl
+- WindowEStreamUrl
+- WindowFStreamUrl
+- UsbLocalId
+- AudioName
+- NameFeedback
+- VideoName
+- CurrentVideoRouteName
+- EdidManufacturer
+- AudioName
+- CurrentAudioRouteName
+- InputResolution
+- NameFeedback
+- VideoName
+<!-- END String Feedbacks -->
